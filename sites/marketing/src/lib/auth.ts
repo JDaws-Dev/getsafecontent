@@ -23,6 +23,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/admin-login",
     error: "/admin-login",
   },
+  trustHost: true,
 });
 
 export function isAdmin(email: string | null | undefined): boolean {

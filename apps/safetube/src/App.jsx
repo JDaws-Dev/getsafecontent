@@ -11,6 +11,7 @@ import KidPlayer from './pages/KidPlayer';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import SupportPage from './pages/SupportPage';
+import ComparePage from './pages/ComparePage';
 
 // Loading component
 function LoadingScreen() {
@@ -63,6 +64,8 @@ function AppRoutes() {
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/support" element={<SupportPage />} />
+      <Route path="/compare" element={<ComparePage />} />
+      <Route path="/vs-youtube-kids" element={<ComparePage />} />
 
       {/* Kid player - accessible via family code */}
       <Route path="/play" element={<KidPlayer />} />

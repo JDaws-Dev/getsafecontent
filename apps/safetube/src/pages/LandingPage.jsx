@@ -856,7 +856,8 @@ export default function LandingPage() {
                 {
                   id: 'youtube-kids',
                   question: "Why not just use YouTube Kids?",
-                  answer: "YouTube Kids is limited to pre-selected content that's often too babyish for older kids. The algorithm still controls what's shown. SafeTube gives YOU complete control—your kids see exactly what you've approved, nothing more."
+                  answer: "YouTube Kids is limited to pre-selected content that's often too babyish for older kids. The algorithm still controls what's shown. SafeTube gives YOU complete control—your kids see exactly what you've approved, nothing more.",
+                  link: { text: "See full comparison", url: "/compare" }
                 },
                 {
                   id: 'devices',
@@ -905,6 +906,11 @@ export default function LandingPage() {
                   >
                     <p className={`px-5 ${faq.featured ? 'text-red-800' : 'text-gray-600'}`}>
                       {faq.answer}
+                      {faq.link && (
+                        <Link to={faq.link.url} className="block mt-2 text-red-600 hover:text-red-700 font-medium text-sm">
+                          {faq.link.text} →
+                        </Link>
+                      )}
                     </p>
                   </div>
                 </div>

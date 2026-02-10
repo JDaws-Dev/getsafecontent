@@ -204,7 +204,7 @@ function LandingPageSimple() {
               </svg>
             </div>
             {/* Text */}
-            <span className="text-white font-semibold text-sm">Mobile Apps Coming Soon</span>
+            <span className="text-white font-semibold text-sm">iOS & Android Apps Coming Soon</span>
           </div>
         </div>
       </section>
