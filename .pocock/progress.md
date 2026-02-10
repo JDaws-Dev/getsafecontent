@@ -10,6 +10,41 @@ This file maintains context between autonomous iterations.
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
 
+### safecontent-jsq.13: Mobile responsive design and UX polish (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Added mobile card view for users table (shows on screens < md)
+- Added pagination (20 users per page) with page navigation
+- Added sortable columns (name, type, status, joined) with sort indicators
+- Fixed Resend build error (lazy initialization of client)
+
+**Files modified:**
+- `sites/marketing/src/components/admin/GroupedUserTable.tsx` - Mobile view, pagination, sorting
+- `sites/marketing/src/app/api/admin/send-email/route.ts` - Fixed lazy Resend init
+
+**Mobile card view features:**
+- User name/email, status badge, app icons
+- Subscription type, kid count, trial expiry
+- Action buttons (email, grant lifetime, delete, Stripe)
+- Highlighted expired trial cards
+
+**Pagination:**
+- 20 users per page
+- Previous/Next buttons
+- Page number buttons (up to 5 visible)
+- Resets to page 1 on filter change
+
+**Sorting:**
+- Click column headers to sort
+- Arrow indicators show sort direction
+- Default: joined descending (newest first)
+
+**Build verified:** npm run build passes (31 routes)
+
+---
+
 ### safecontent-jsq.14: Add email sending via Resend API (Feb 10, 2026 - COMPLETE)
 
 **Status:** Complete
