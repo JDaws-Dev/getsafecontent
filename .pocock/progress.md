@@ -10,9 +10,9 @@ This file maintains context between autonomous iterations.
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
 
-### safecontent-jsq.1: Unify users by email in admin dashboard (Feb 10, 2026 - COMPLETE)
+### safecontent-jsq: Admin Dashboard Revamp - Phase 1 (Feb 10, 2026 - IN PROGRESS)
 
-**Status:** Complete
+**Status:** Core features complete (email export, bulk actions, unified view)
 
 **What was done:**
 - Grouped users by email instead of by app in admin dashboard
@@ -20,6 +20,7 @@ This file maintains context between autonomous iterations.
 - Added subscription type detection: 3-App Bundle | 2-App Bundle | Single App
 - Added trial expiry tracking with expired trial highlighting
 - Added bulk actions: Grant Lifetime All, Delete All (across all apps at once)
+- Added email export: CSV download of filtered users
 
 **Files created:**
 - `sites/marketing/src/components/admin/GroupedUserTable.tsx` - New unified user table
@@ -40,7 +41,13 @@ This file maintains context between autonomous iterations.
 - "Expired Trials (Conversion Opportunities)" quick filter button
 - Grant lifetime grants to ALL user's apps at once
 - Delete user deletes from ALL apps at once
-- Quick stats: Unique Users, 3-App Bundles, Lifetime, Active Trial, Expired Trials
+- **Export button**: Downloads filtered users as CSV (name, email, apps, type, status, kids, joined)
+- Stripe link for users with stripeCustomerId
+- Quick mailto link for each user
+
+**Remaining for jsq:**
+- MRR/ARR revenue dashboard
+- Email sending via Resend (direct from admin)
 
 **Build verified:** npm run build passes (30 routes)
 
