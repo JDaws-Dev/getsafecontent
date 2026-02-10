@@ -108,3 +108,32 @@ export interface DashboardStats {
   safereads: AppStats;
   combined: AppStats;
 }
+
+// Detailed revenue breakdown by plan type
+export interface RevenueBreakdown {
+  // Bundle subscribers (3-app)
+  bundleMonthly: { count: number; mrr: number };
+  bundleYearly: { count: number; mrr: number }; // mrr = yearly/12
+  // 2-app bundle subscribers
+  twoAppBundle: { count: number; mrr: number };
+  // Single app subscribers
+  singleApp: {
+    safetunes: { count: number; mrr: number };
+    safetube: { count: number; mrr: number };
+    safereads: { count: number; mrr: number };
+  };
+  // Non-revenue users
+  lifetime: number;
+  trial: number;
+  expired: number;
+}
+
+export interface RevenueStats {
+  mrr: number;           // Monthly Recurring Revenue
+  arr: number;           // Annual Recurring Revenue (MRR * 12)
+  breakdown: RevenueBreakdown;
+  // Summary metrics
+  totalPaying: number;
+  totalFree: number;     // trial + expired + lifetime
+  trialConversionRate: number; // % of expired trials that converted
+}

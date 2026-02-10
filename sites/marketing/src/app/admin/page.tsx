@@ -1,6 +1,7 @@
-import { fetchAllUsers, unifyUsers, calculateStats } from "@/lib/admin-api";
+import { fetchAllUsers, unifyUsers, calculateStats, groupUsers, calculateRevenueStats } from "@/lib/admin-api";
 import { StatsCards } from "@/components/admin/StatsCards";
 import { RecentSignups } from "@/components/admin/RecentSignups";
+import { RevenueCard } from "@/components/admin/RevenueCard";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,8 @@ export default async function AdminPage() {
   const rawData = await fetchAllUsers();
   const users = unifyUsers(rawData);
   const stats = calculateStats(rawData);
+  const groupedUsers = groupUsers(rawData);
+  const revenueStats = calculateRevenueStats(groupedUsers);
 
   return (
     <div className="space-y-6">
@@ -28,6 +31,9 @@ export default async function AdminPage() {
       </div>
 
       <StatsCards stats={stats} />
+
+      {/* Revenue Dashboard */}
+      <RevenueCard stats={revenueStats} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RecentSignups users={users} />

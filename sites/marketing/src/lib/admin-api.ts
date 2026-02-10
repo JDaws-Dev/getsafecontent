@@ -7,6 +7,8 @@ import type {
   AppAccess,
   AppStats,
   DashboardStats,
+  RevenueStats,
+  RevenueBreakdown,
 } from "@/types/admin";
 
 // Use environment variable, with fallback to hardcoded key for local development
@@ -407,4 +409,102 @@ export async function deleteUserAll(
 
   const allSuccess = results.every(r => r.success);
   return { success: allSuccess, results };
+}
+
+// Pricing constants
+const PRICING = {
+  bundleMonthly: 9.99,
+  bundleYearly: 99.0,
+  twoAppBundle: 7.99,
+  singleApp: 4.99, // SafeTunes, SafeTube, SafeReads all at $4.99/mo now
+};
+
+// Calculate revenue stats based on grouped users
+export function calculateRevenueStats(groupedUsers: GroupedUser[]): RevenueStats {
+  const breakdown: RevenueBreakdown = {
+    bundleMonthly: { count: 0, mrr: 0 },
+    bundleYearly: { count: 0, mrr: 0 },
+    twoAppBundle: { count: 0, mrr: 0 },
+    singleApp: {
+      safetunes: { count: 0, mrr: 0 },
+      safetube: { count: 0, mrr: 0 },
+      safereads: { count: 0, mrr: 0 },
+    },
+    lifetime: 0,
+    trial: 0,
+    expired: 0,
+  };
+
+  let mrr = 0;
+  let totalPaying = 0;
+  let totalExpiredTrials = 0;
+  let totalConvertedFromTrial = 0;
+
+  for (const user of groupedUsers) {
+    // Track expired users
+    if (user.hasExpiredTrial || user.planTier === "expired") {
+      breakdown.expired++;
+      totalExpiredTrials++;
+      continue;
+    }
+
+    // Lifetime users don't contribute to recurring revenue
+    if (user.planTier === "lifetime") {
+      breakdown.lifetime++;
+      // Count as converted if they were previously trial
+      totalConvertedFromTrial++;
+      continue;
+    }
+
+    // Trial users - potential future revenue
+    if (user.planTier === "trial") {
+      breakdown.trial++;
+      continue;
+    }
+
+    // Active paying subscribers
+    totalPaying++;
+    totalConvertedFromTrial++; // Active payers came from trial
+
+    if (user.subscriptionType === "3-app-bundle") {
+      if (user.planTier === "yearly") {
+        breakdown.bundleYearly.count++;
+        const monthlyEquivalent = PRICING.bundleYearly / 12;
+        breakdown.bundleYearly.mrr += monthlyEquivalent;
+        mrr += monthlyEquivalent;
+      } else {
+        breakdown.bundleMonthly.count++;
+        breakdown.bundleMonthly.mrr += PRICING.bundleMonthly;
+        mrr += PRICING.bundleMonthly;
+      }
+    } else if (user.subscriptionType === "2-app-bundle") {
+      breakdown.twoAppBundle.count++;
+      breakdown.twoAppBundle.mrr += PRICING.twoAppBundle;
+      mrr += PRICING.twoAppBundle;
+    } else {
+      // Single app subscription - identify which app
+      const activeApp = user.apps.find(a => a.subscriptionStatus === "active");
+      if (activeApp) {
+        breakdown.singleApp[activeApp.app].count++;
+        breakdown.singleApp[activeApp.app].mrr += PRICING.singleApp;
+        mrr += PRICING.singleApp;
+      }
+    }
+  }
+
+  // Calculate trial conversion rate
+  // Total who ever had trial = expired + converted (paying + lifetime)
+  const totalEverTrialed = totalExpiredTrials + totalConvertedFromTrial;
+  const trialConversionRate = totalEverTrialed > 0
+    ? (totalConvertedFromTrial / totalEverTrialed) * 100
+    : 0;
+
+  return {
+    mrr,
+    arr: mrr * 12,
+    breakdown,
+    totalPaying,
+    totalFree: breakdown.lifetime + breakdown.trial + breakdown.expired,
+    trialConversionRate,
+  };
 }

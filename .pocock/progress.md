@@ -10,44 +10,62 @@ This file maintains context between autonomous iterations.
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
 
+### safecontent-jsq.12: Add revenue dashboard with MRR/ARR (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Created RevenueCard component with MRR/ARR display
+- Extended RevenueStats/RevenueBreakdown types for detailed breakdown
+- Updated calculateRevenueStats() to properly count bundle vs single-app subscribers
+- Added revenue card to admin dashboard main page
+
+**Files created:**
+- `sites/marketing/src/components/admin/RevenueCard.tsx` - Revenue dashboard component
+
+**Files modified:**
+- `sites/marketing/src/types/admin.ts` - Enhanced RevenueBreakdown type with detailed counts
+- `sites/marketing/src/lib/admin-api.ts` - Updated calculateRevenueStats() function
+- `sites/marketing/src/app/admin/page.tsx` - Added RevenueCard to dashboard
+
+**Revenue card features:**
+- MRR (Monthly Recurring Revenue) and ARR (Annual Recurring Revenue) header
+- Summary metrics: Paying users, Free users, Trial conversion rate
+- Breakdown by plan type: 3-app bundle (monthly/yearly), 2-app bundle, single apps
+- Each plan shows count and monthly revenue contribution
+- Non-revenue section: Lifetime, Trial, Expired counts
+
+**Key decisions:**
+- Yearly bundle revenue is amortized to monthly (99/12 = $8.25/mo MRR)
+- Trial conversion rate = (converted) / (converted + expired)
+- Single app users tracked by which specific app they're subscribed to
+
+**Build verified:** npm run build passes (30 routes)
+
+---
+
 ### safecontent-jsq: Admin Dashboard Revamp - Phase 1 (Feb 10, 2026 - IN PROGRESS)
 
-**Status:** Core features complete (email export, bulk actions, unified view)
+**Status:** Revenue dashboard added (jsq.12 complete)
 
 **What was done:**
 - Grouped users by email instead of by app in admin dashboard
-- Users with multiple apps now show as one row with app badges (🎵📺📚)
+- Users with multiple apps now show as one row with app badges
 - Added subscription type detection: 3-App Bundle | 2-App Bundle | Single App
 - Added trial expiry tracking with expired trial highlighting
 - Added bulk actions: Grant Lifetime All, Delete All (across all apps at once)
 - Added email export: CSV download of filtered users
+- **Added MRR/ARR revenue dashboard (jsq.12)**
 
 **Files created:**
 - `sites/marketing/src/components/admin/GroupedUserTable.tsx` - New unified user table
 - `sites/marketing/src/app/api/admin/grant-lifetime-all/route.ts` - Bulk grant endpoint
 - `sites/marketing/src/app/api/admin/delete-user-all/route.ts` - Bulk delete endpoint
-
-**Files modified:**
-- `sites/marketing/src/types/admin.ts` - Added GroupedUser and AppAccess types
-- `sites/marketing/src/lib/admin-api.ts` - Added groupUsers(), grantLifetimeAll(), deleteUserAll()
-- `sites/marketing/src/app/api/admin/users/route.ts` - Returns groupedUsers
-- `sites/marketing/src/app/admin/users/page.tsx` - Uses GroupedUserTable, new modals
-
-**Key features:**
-- One row per email with app badges showing which apps they have
-- Subscription type column: 3-App Bundle | 2-App Bundle | Single App
-- Plan tier column: lifetime | monthly | trial | expired
-- Trial expiry column with "X days left" or "Expired Xd ago"
-- "Expired Trials (Conversion Opportunities)" quick filter button
-- Grant lifetime grants to ALL user's apps at once
-- Delete user deletes from ALL apps at once
-- **Export button**: Downloads filtered users as CSV (name, email, apps, type, status, kids, joined)
-- Stripe link for users with stripeCustomerId
-- Quick mailto link for each user
+- `sites/marketing/src/components/admin/RevenueCard.tsx` - Revenue dashboard
 
 **Remaining for jsq:**
-- MRR/ARR revenue dashboard
-- Email sending via Resend (direct from admin)
+- Email sending via Resend (direct from admin) - jsq.14
+- Mobile responsive design - jsq.13
 
 **Build verified:** npm run build passes (30 routes)
 
