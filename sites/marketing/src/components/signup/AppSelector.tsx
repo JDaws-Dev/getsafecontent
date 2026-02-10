@@ -19,10 +19,13 @@ interface AppSelectorProps {
 export interface PricingInfo {
   monthly: number;
   yearly: number;
-  savingsFromBundle: number;
+  regularPrice: number; // What it would cost without bundle discount
+  savings: number; // How much they save
   isBundlePrice: boolean;
   isYearly?: boolean;
 }
+
+const SINGLE_APP_PRICE = 4.99;
 
 const apps = [
   {
@@ -83,15 +86,16 @@ function calculatePricing(selectedCount: number): PricingInfo {
       break;
   }
 
+  // What they'd pay if each app was $4.99
+  const regularPrice = selectedCount * SINGLE_APP_PRICE;
+  const savings = regularPrice - pricing.monthly;
   const isBundlePrice = selectedCount === 3;
-  const savingsFromBundle = isBundlePrice
-    ? INDIVIDUAL_TOTAL - pricing.monthly
-    : 0;
 
   return {
     monthly: pricing.monthly,
     yearly: pricing.yearly,
-    savingsFromBundle,
+    regularPrice,
+    savings,
     isBundlePrice,
   };
 }
@@ -203,19 +207,26 @@ export default function AppSelector({
                 <p className={`text-navy/60 ${compact ? "text-xs" : "text-sm"}`}>
                   {app.tagline}
                 </p>
+                {!compact && (
+                  <p className="text-xs text-navy/50 mt-1">
+                    ${SINGLE_APP_PRICE}/mo
+                  </p>
+                )}
               </div>
             </button>
           );
         })}
       </div>
 
-      {/* Bundle savings badge */}
-      {pricing.isBundlePrice && (
+      {/* Savings badge - show when 2+ apps selected */}
+      {pricing.savings > 0 && (
         <div className="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl animate-in fade-in slide-in-from-bottom-2 duration-300">
           <Sparkles className="w-5 h-5" />
-          <span className="font-semibold">Bundle savings!</span>
+          <span className="font-semibold">
+            {selectedApps.size === 2 ? "Multi-app discount!" : "Best value!"}
+          </span>
           <span className="text-sm">
-            Save ${pricing.savingsFromBundle.toFixed(2)}/mo vs. buying separately
+            Save ${pricing.savings.toFixed(2)}/mo
           </span>
         </div>
       )}
@@ -232,6 +243,12 @@ export default function AppSelector({
                 : "All 3 apps"}
             </p>
             <div className="flex items-baseline gap-2 mt-1">
+              {/* Show crossed-out regular price when there are savings */}
+              {pricing.savings > 0 && !isYearly && (
+                <span className="text-lg text-navy/40 line-through">
+                  ${pricing.regularPrice.toFixed(2)}
+                </span>
+              )}
               <span className="text-2xl font-bold text-navy">
                 ${isYearly ? pricing.yearly : pricing.monthly.toFixed(2)}
               </span>

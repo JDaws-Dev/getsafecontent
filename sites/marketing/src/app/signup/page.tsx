@@ -46,7 +46,8 @@ function SignupContent() {
   const [pricingInfo, setPricingInfo] = useState<PricingInfo>({
     monthly: 9.99,
     yearly: 99,
-    savingsFromBundle: 4.98,
+    regularPrice: 14.97,
+    savings: 4.98,
     isBundlePrice: true,
   });
 
@@ -178,6 +179,8 @@ function SignupContent() {
               <AccountForm
                 selectedApps={appSelection}
                 monthlyPrice={pricingInfo.monthly}
+                yearlyPrice={pricingInfo.yearly}
+                isYearly={isYearly}
                 onSubmit={handleSubmit}
                 onGoogleSignIn={handleGoogleSignIn}
                 error={error}

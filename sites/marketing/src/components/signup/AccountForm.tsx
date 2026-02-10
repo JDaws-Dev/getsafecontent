@@ -21,6 +21,10 @@ interface AccountFormProps {
   selectedApps: AppSelection;
   /** Monthly price to display */
   monthlyPrice: number;
+  /** Yearly price to display */
+  yearlyPrice?: number;
+  /** Whether yearly billing is selected */
+  isYearly?: boolean;
   /** Callback when form is submitted with email/password */
   onSubmit: (data: AccountFormData) => Promise<void>;
   /** Callback when Google sign-in is clicked */
@@ -44,6 +48,8 @@ const APP_LABELS: Record<keyof AppSelection, string> = {
 export default function AccountForm({
   selectedApps,
   monthlyPrice,
+  yearlyPrice,
+  isYearly = false,
   onSubmit,
   onGoogleSignIn,
   error: externalError,
@@ -172,12 +178,18 @@ export default function AccountForm({
       {/* Header */}
       <div className="text-center mb-6">
         <h1 className="text-3xl font-bold text-navy mb-2">
-          {isLifetimeCode ? "Get Lifetime Access" : "Start Your Free Trial"}
+          {isLifetimeCode
+            ? "Get Lifetime Access"
+            : isYearly
+              ? "Get Started Now"
+              : "Start Your Free Trial"}
         </h1>
         <p className="text-navy/60">
           {isLifetimeCode
             ? "Your code unlocks free access forever!"
-            : "7 days free. No credit card required."}
+            : isYearly
+              ? "Save 17% with yearly billing"
+              : "7 days free. No credit card required."}
         </p>
       </div>
 
@@ -197,9 +209,13 @@ export default function AccountForm({
             </div>
             <div className="text-right">
               <div className="text-lg font-bold text-navy">
-                ${monthlyPrice.toFixed(2)}/mo
+                {isYearly && yearlyPrice
+                  ? `$${yearlyPrice}/year`
+                  : `$${monthlyPrice.toFixed(2)}/mo`}
               </div>
-              <div className="text-xs text-navy/50">after trial</div>
+              <div className="text-xs text-navy/50">
+                {isYearly ? "billed annually" : "after trial"}
+              </div>
             </div>
           </div>
         </div>
@@ -522,26 +538,46 @@ export default function AccountForm({
             ? "Creating Account..."
             : isLifetimeCode
               ? "Get Lifetime Access"
-              : "Start Free Trial"}
+              : isYearly
+                ? "Subscribe Now"
+                : "Start Free Trial"}
         </button>
       </form>
 
       {/* Trust signals */}
       <div className="mt-6 flex items-center justify-center gap-4 text-sm text-gray-500">
-        <span className="flex items-center gap-1">
-          <svg
-            className="w-4 h-4 text-green-500"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-          No credit card
-        </span>
+        {!isYearly && (
+          <span className="flex items-center gap-1">
+            <svg
+              className="w-4 h-4 text-green-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            No credit card
+          </span>
+        )}
+        {isYearly && (
+          <span className="flex items-center gap-1">
+            <svg
+              className="w-4 h-4 text-green-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+            30-day money-back guarantee
+          </span>
+        )}
         <span className="flex items-center gap-1">
           <svg
             className="w-4 h-4 text-green-500"
