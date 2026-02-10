@@ -50,15 +50,19 @@ function SignupContent() {
     isBundlePrice: true,
   });
 
+  // State for billing interval
+  const [isYearly, setIsYearly] = useState(false);
+
   // Loading and error state
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // Handle app selection changes
   const handleAppSelectionChange = useCallback(
-    (apps: AppId[], pricing: PricingInfo) => {
+    (apps: AppId[], pricing: PricingInfo, yearly: boolean) => {
       setSelectedApps(apps);
       setPricingInfo(pricing);
+      setIsYearly(yearly);
     },
     []
   );
@@ -89,6 +93,7 @@ function SignupContent() {
           selectedApps,
           name: data.name,
           couponCode: data.couponCode,
+          isYearly,
         }),
       });
 

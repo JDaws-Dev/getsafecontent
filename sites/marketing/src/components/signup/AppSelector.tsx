@@ -9,7 +9,7 @@ interface AppSelectorProps {
   /** Which app(s) to pre-select (e.g., from referrer) */
   initialApps?: AppId[];
   /** Callback when selection changes */
-  onChange?: (selectedApps: AppId[], pricing: PricingInfo) => void;
+  onChange?: (selectedApps: AppId[], pricing: PricingInfo, isYearly: boolean) => void;
   /** Show yearly toggle */
   showYearlyToggle?: boolean;
   /** Compact mode for inline forms */
@@ -21,6 +21,7 @@ export interface PricingInfo {
   yearly: number;
   savingsFromBundle: number;
   isBundlePrice: boolean;
+  isYearly?: boolean;
 }
 
 const apps = [
@@ -109,8 +110,8 @@ export default function AppSelector({
   const pricing = calculatePricing(selectedApps.size);
 
   useEffect(() => {
-    onChange?.(Array.from(selectedApps), pricing);
-  }, [selectedApps, pricing, onChange]);
+    onChange?.(Array.from(selectedApps), pricing, isYearly);
+  }, [selectedApps, pricing, isYearly, onChange]);
 
   const toggleApp = (appId: AppId) => {
     setSelectedApps((prev) => {

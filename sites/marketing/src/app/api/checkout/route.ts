@@ -29,15 +29,18 @@ const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
 
 export async function POST(req: Request) {
   try {
-    const { email, priceId, apps, isYearly } = await req.json();
+    const { email, priceId, apps, selectedApps, isYearly } = await req.json();
+
+    // Support both 'apps' and 'selectedApps' field names
+    const appsInput = apps || selectedApps;
 
     // Validate apps array if provided
-    let selectedApps: AppName[] = VALID_APPS; // Default to all 3 apps
-    if (apps && Array.isArray(apps)) {
-      selectedApps = apps.filter((app: string) =>
+    let finalApps: AppName[] = VALID_APPS; // Default to all 3 apps
+    if (appsInput && Array.isArray(appsInput)) {
+      finalApps = appsInput.filter((app: string) =>
         VALID_APPS.includes(app as AppName)
       ) as AppName[];
-      if (selectedApps.length === 0) {
+      if (finalApps.length === 0) {
         return NextResponse.json(
           { error: "At least 1 app must be selected" },
           { status: 400 }
@@ -48,19 +51,19 @@ export async function POST(req: Request) {
     // Determine price ID based on selection
     let finalPriceId = priceId;
     if (!finalPriceId) {
-      if (selectedApps.length === 1) {
+      if (finalApps.length === 1) {
         // Single app - use individual app price
-        const appPriceId = APP_TO_PRICE[selectedApps[0]];
+        const appPriceId = APP_TO_PRICE[finalApps[0]];
         if (!appPriceId) {
           return NextResponse.json(
-            { error: `Price not configured for ${selectedApps[0]}` },
+            { error: `Price not configured for ${finalApps[0]}` },
             { status: 500 }
           );
         }
         finalPriceId = appPriceId;
-      } else if (selectedApps.length === 2) {
+      } else if (finalApps.length === 2) {
         finalPriceId = PRICE_IDS.TWO_APP;
-      } else if (selectedApps.length === 3) {
+      } else if (finalApps.length === 3) {
         finalPriceId = isYearly
           ? PRICE_IDS.THREE_APP_YEARLY
           : PRICE_IDS.THREE_APP_MONTHLY;
@@ -80,8 +83,8 @@ export async function POST(req: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
 
     // Store apps as comma-separated string in metadata (sorted for consistency)
-    const appsMetadata = selectedApps.sort().join(",");
-    const isBundle = selectedApps.length > 1;
+    const appsMetadata = finalApps.sort().join(",");
+    const isBundle = finalApps.length > 1;
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
@@ -93,17 +96,19 @@ export async function POST(req: Request) {
         },
       ],
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/#pricing`,
+      cancel_url: `${baseUrl}/signup`,
       metadata: {
         bundle: isBundle ? "true" : "false",
         apps: appsMetadata,
-        app_count: selectedApps.length.toString(),
+        app_count: finalApps.length.toString(),
+        billing_interval: isYearly ? "yearly" : "monthly",
       },
       subscription_data: {
         metadata: {
           bundle: isBundle ? "true" : "false",
           apps: appsMetadata,
-          app_count: selectedApps.length.toString(),
+          app_count: finalApps.length.toString(),
+          billing_interval: isYearly ? "yearly" : "monthly",
         },
       },
     };
