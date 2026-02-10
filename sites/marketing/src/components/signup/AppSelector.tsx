@@ -120,6 +120,10 @@ export default function AppSelector({
         // Don't allow deselecting last app
         if (next.size === 1) return prev;
         next.delete(appId);
+        // Reset to monthly if dropping below 3 apps
+        if (next.size < 3) {
+          setIsYearly(false);
+        }
       } else {
         next.add(appId);
       }
@@ -242,8 +246,8 @@ export default function AppSelector({
             )}
           </div>
 
-          {/* Yearly toggle */}
-          {showYearlyToggle && (
+          {/* Yearly toggle - only show for 3-app bundle */}
+          {showYearlyToggle && selectedApps.size === 3 && (
             <div className="flex items-center gap-2">
               <span
                 className={`text-xs font-medium ${
