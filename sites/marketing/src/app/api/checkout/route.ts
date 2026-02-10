@@ -104,6 +104,8 @@ export async function POST(req: Request) {
         billing_interval: isYearly ? "yearly" : "monthly",
       },
       subscription_data: {
+        // 7-day free trial for monthly plans, no trial for yearly (charges immediately)
+        ...(isYearly ? {} : { trial_period_days: 7 }),
         metadata: {
           bundle: isBundle ? "true" : "false",
           apps: appsMetadata,
