@@ -10,6 +10,41 @@ This file maintains context between autonomous iterations.
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
 
+### safecontent-jsq.14: Add email sending via Resend API (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Created `/api/admin/send-email` endpoint for sending templated emails
+- Created EmailComposer component for admin UI
+- Added "📧 Template" button to user table actions
+- 5 email templates: trial_expiring, trial_expired, re_engagement, announcement, custom
+
+**Files created:**
+- `sites/marketing/src/app/api/admin/send-email/route.ts` - Email API with templates
+- `sites/marketing/src/components/admin/EmailComposer.tsx` - Modal component for composing emails
+
+**Files modified:**
+- `sites/marketing/src/app/admin/users/page.tsx` - Added emailTarget state and EmailComposer modal
+- `sites/marketing/src/components/admin/GroupedUserTable.tsx` - Added onSendEmail prop and template button
+
+**Email templates included:**
+- `trial_expiring` - Reminder for expiring trial with days left
+- `trial_expired` - Re-engage expired trial users
+- `re_engagement` - Reach out to inactive users
+- `announcement` - Custom subject/body announcement
+- `custom` - Fully custom email
+
+**Key decisions:**
+- Used lazy Resend initialization to avoid build-time errors when env var missing
+- Emails sent from "Jeremiah from Safe Family" with reply-to jeremiah@getsafefamily.com
+- Preview endpoint (GET) returns template list or rendered HTML preview
+- Template button distinct from mailto link (✉️ for quick email, 📧 for templates)
+
+**Build verified:** npm run build passes (31 routes)
+
+---
+
 ### safecontent-jsq.12: Add revenue dashboard with MRR/ARR (Feb 10, 2026 - COMPLETE)
 
 **Status:** Complete
@@ -46,7 +81,7 @@ This file maintains context between autonomous iterations.
 
 ### safecontent-jsq: Admin Dashboard Revamp - Phase 1 (Feb 10, 2026 - IN PROGRESS)
 
-**Status:** Revenue dashboard added (jsq.12 complete)
+**Status:** Revenue dashboard added (jsq.12 complete), Email sending added (jsq.14 complete)
 
 **What was done:**
 - Grouped users by email instead of by app in admin dashboard

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { GroupedUserTable } from "@/components/admin/GroupedUserTable";
+import { EmailComposer } from "@/components/admin/EmailComposer";
 import type { GroupedUser, DashboardStats } from "@/types/admin";
 
 export default function UsersPage() {
@@ -13,6 +14,7 @@ export default function UsersPage() {
   // Modal state
   const [grantLifetimeUser, setGrantLifetimeUser] = useState<GroupedUser | null>(null);
   const [deleteUserTarget, setDeleteUserTarget] = useState<GroupedUser | null>(null);
+  const [emailTarget, setEmailTarget] = useState<GroupedUser | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -195,6 +197,7 @@ export default function UsersPage() {
         users={groupedUsers}
         onGrantLifetime={setGrantLifetimeUser}
         onDeleteUser={setDeleteUserTarget}
+        onSendEmail={setEmailTarget}
       />
 
       {/* Grant Lifetime Modal */}
@@ -290,6 +293,17 @@ export default function UsersPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Email Composer Modal */}
+      {emailTarget && (
+        <EmailComposer
+          user={emailTarget}
+          onClose={() => setEmailTarget(null)}
+          onSent={() => {
+            // Optionally refresh or show success message
+          }}
+        />
       )}
     </div>
   );
