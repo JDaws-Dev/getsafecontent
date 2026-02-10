@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.getsafetunes.twa",
+      "sha256_cert_fingerprints": [
+        "A0:AC:53:41:F8:64:74:1C:89:B7:E7:05:5F:14:33:B5:1E:21:37:30:79:71:6B:9B:A3:36:6B:E2:04:15:2C:6A"
+      ]
+    }
+  }
+]

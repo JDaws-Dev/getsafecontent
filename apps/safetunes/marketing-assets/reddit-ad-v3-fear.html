@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reddit Ad V3 - Fear/Question Hook</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .ad-container {
+      width: 1200px;
+      height: 628px;
+      background: linear-gradient(180deg, #0c0c1d 0%, #1a1a3e 50%, #0c0c1d 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .content {
+      text-align: center;
+      z-index: 2;
+      padding: 0 100px;
+    }
+
+    /* Hook question */
+    .hook {
+      color: #f87171;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* Main headline */
+    h1 {
+      color: white;
+      font-size: 68px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 30px;
+    }
+
+    .emphasis {
+      color: #fbbf24;
+    }
+
+    /* Answer */
+    .answer {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 20px 36px;
+      margin-bottom: 32px;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg {
+      width: 26px;
+      height: 26px;
+      color: white;
+    }
+
+    .answer-text {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    .answer-text span {
+      color: #c084fc;
+    }
+
+    /* CTA */
+    .cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+      color: white;
+      padding: 22px 52px;
+      border-radius: 14px;
+      font-size: 26px;
+      font-weight: 800;
+      box-shadow: 0 10px 40px rgba(168, 85, 247, 0.45);
+    }
+
+    .trust {
+      margin-top: 22px;
+      color: #6b7280;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    /* Decorative */
+    .glow {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 60%);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="glow"></div>
+
+    <div class="content">
+      <div class="hook">Honest question</div>
+
+      <h1>
+        Do you <span class="emphasis">actually know</span><br>
+        what your kid is<br>
+        listening to?
+      </h1>
+
+      <div class="answer">
+        <div class="brand-icon">
+          <svg fill="currentColor" viewBox="0 0 20 20">
+            <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+          </svg>
+        </div>
+        <div class="answer-text">
+          SafeTunes: They <span>only play</span> what you approve
+        </div>
+      </div>
+
+      <div class="cta">Start Free Trial</div>
+      <div class="trust">Apple Music • 7 days free • No credit card</div>
+    </div>
+  </div>
+</body>
+</html>

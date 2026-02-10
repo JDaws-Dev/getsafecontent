@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Carousel V4 - Slide 3 (Discover Tab)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(145deg, #7C3AED 0%, #9333EA 50%, #A855F7 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 70px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ad-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .headline {
+      font-size: 52px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .subheadline {
+      font-size: 28px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 50px;
+      position: relative;
+    }
+
+    .discover-mockup {
+      background: white;
+      border-radius: 32px;
+      padding: 30px;
+      width: 700px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .mockup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 700;
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, #7C3AED 0%, #9333EA 100%);
+      color: white;
+    }
+
+    .albums-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .album-card {
+      text-align: center;
+    }
+
+    .album-cover {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      color: white;
+    }
+
+    .album-cover.elvis { background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); }
+    .album-cover.forrest { background: linear-gradient(135deg, #059669 0%, #10B981 100%); }
+    .album-cover.benny { background: linear-gradient(135deg, #B45309 0%, #F59E0B 100%); }
+    .album-cover.harry { background: linear-gradient(135deg, #7C2D12 0%, #DC2626 100%); }
+
+    .album-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1F2937;
+      margin-bottom: 2px;
+    }
+
+    .album-artist {
+      font-size: 12px;
+      color: #6B7280;
+    }
+
+    .add-btn {
+      margin-top: 8px;
+      background: #E0E7FF;
+      color: #4338CA;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .caption {
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      margin-top: 40px;
+      position: relative;
+      max-width: 700px;
+      line-height: 1.4;
+    }
+
+    .swipe-hint {
+      position: absolute;
+      bottom: 50px;
+      right: 60px;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 28px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="headline">
+      The "Discover" Tab:<br>
+      Give Them Autonomy
+    </div>
+
+    <div class="subheadline">
+      Pre-approve music without forcing it on them.
+    </div>
+
+    <div class="discover-mockup">
+      <div class="mockup-header">
+        <div class="tab-group">
+          <div class="tab">Library</div>
+          <div class="tab active">Discover</div>
+        </div>
+      </div>
+
+      <div class="albums-grid">
+        <div class="album-card">
+          <div class="album-cover elvis">&#9835;</div>
+          <div class="album-title">Elvis Presley</div>
+          <div class="album-artist">40 songs</div>
+          <button class="add-btn">+ Add to Library</button>
+        </div>
+        <div class="album-card">
+          <div class="album-cover forrest">&#9835;</div>
+          <div class="album-title">Forrest Frank</div>
+          <div class="album-artist">24 songs</div>
+          <button class="add-btn">+ Add to Library</button>
+        </div>
+        <div class="album-card">
+          <div class="album-cover benny">&#9835;</div>
+          <div class="album-title">Benny Goodman</div>
+          <div class="album-artist">32 songs</div>
+          <button class="add-btn">+ Add to Library</button>
+        </div>
+        <div class="album-card">
+          <div class="album-cover harry">&#9835;</div>
+          <div class="album-title">Harry Potter</div>
+          <div class="album-artist">Soundtrack</div>
+          <button class="add-btn">+ Add to Library</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="caption">
+      "I want him to know Elvis, but I'm not going to force it on him."<br>
+      Let them explore what you've curated.
+    </div>
+
+    <div class="swipe-hint">&#8594;</div>
+  </div>
+</body>
+</html>

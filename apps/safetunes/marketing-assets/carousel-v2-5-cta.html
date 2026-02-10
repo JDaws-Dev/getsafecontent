@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Carousel V2 - Slide 5 (CTA)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(145deg, #0F172A 0%, #1E293B 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 70px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ad-container::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      left: -30%;
+      width: 160%;
+      height: 160%;
+      background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.12) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .brand {
+      font-size: 56px;
+      font-weight: 900;
+      color: white;
+      margin-bottom: 30px;
+      letter-spacing: -2px;
+      position: relative;
+    }
+
+    .headline {
+      font-size: 58px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #A78BFA 0%, #EC4899 50%, #FBBF24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+      margin-bottom: 50px;
+      position: relative;
+    }
+
+    .benefits-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 40px 50px;
+      margin-bottom: 45px;
+      position: relative;
+      backdrop-filter: blur(10px);
+    }
+
+    .benefit {
+      font-size: 28px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .benefit:last-child {
+      margin-bottom: 0;
+    }
+
+    .check {
+      color: #10B981;
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+
+    .pricing {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .price {
+      font-size: 72px;
+      font-weight: 900;
+      color: #10B981;
+    }
+
+    .period {
+      font-size: 32px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .url {
+      font-size: 48px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .guarantee {
+      font-size: 22px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+      position: relative;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="brand">SafeTunes</div>
+
+    <div class="headline">
+      Give Your Kids Real Music.<br>
+      Keep Your Peace of Mind.
+    </div>
+
+    <div class="benefits-box">
+      <div class="benefit">
+        <span class="check">✓</span>
+        <span>100M+ songs from Apple Music</span>
+      </div>
+      <div class="benefit">
+        <span class="check">✓</span>
+        <span>You approve—they play only what's approved</span>
+      </div>
+      <div class="benefit">
+        <span class="check">✓</span>
+        <span>Hide artwork • Get alerts • Full control</span>
+      </div>
+    </div>
+
+    <div class="pricing">
+      <span class="price">$4.99</span>
+      <span class="period">/month</span>
+    </div>
+
+    <div class="url">getsafetunes.com</div>
+
+    <div class="guarantee">7-Day Free Trial • Cancel Anytime • No Risk</div>
+  </div>
+</body>
+</html>

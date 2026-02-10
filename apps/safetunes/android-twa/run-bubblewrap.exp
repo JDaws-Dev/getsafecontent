@@ -1,0 +1,139 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+
+# Set environment
+set env(PATH) "/opt/homebrew/opt/openjdk@17/bin:/opt/homebrew/bin:$env(PATH)"
+set env(JAVA_HOME) "/opt/homebrew/opt/openjdk@17"
+
+spawn npx @bubblewrap/cli init --manifest https://getsafetunes.com/manifest.json
+
+# Answer "Do you want Bubblewrap to install the JDK" - No, use our own
+expect {
+    "Do you want Bubblewrap to install the JDK" {
+        send "n\r"
+        exp_continue
+    }
+    "Path to the JDK" {
+        send "/opt/homebrew/opt/openjdk@17\r"
+        exp_continue
+    }
+    "Do you want Bubblewrap to install the Android SDK" {
+        send "Y\r"
+        exp_continue
+    }
+    "Domain being opened in the TWA" {
+        send "\r"
+        exp_continue
+    }
+    "Name of the application" {
+        send "\r"
+        exp_continue
+    }
+    "Short name of the application" {
+        send "\r"
+        exp_continue
+    }
+    "Application ID" {
+        send "com.getsafetunes.app\r"
+        exp_continue
+    }
+    "Starting URL" {
+        send "\r"
+        exp_continue
+    }
+    "URL of the Splash Screen icon" {
+        send "\r"
+        exp_continue
+    }
+    "URL of the icon" {
+        send "\r"
+        exp_continue
+    }
+    "URL of the maskable icon" {
+        send "\r"
+        exp_continue
+    }
+    "Primary color" {
+        send "\r"
+        exp_continue
+    }
+    "Background color" {
+        send "\r"
+        exp_continue
+    }
+    "Status bar color" {
+        send "\r"
+        exp_continue
+    }
+    "Navigation bar color" {
+        send "\r"
+        exp_continue
+    }
+    "Theme color" {
+        send "\r"
+        exp_continue
+    }
+    "Display mode" {
+        send "\r"
+        exp_continue
+    }
+    "Orientation" {
+        send "\r"
+        exp_continue
+    }
+    "Enable notifications" {
+        send "Y\r"
+        exp_continue
+    }
+    "shortcuts" {
+        send "\r"
+        exp_continue
+    }
+    "Signing key" {
+        send "\r"
+        exp_continue
+    }
+    "Key alias" {
+        send "safetunes\r"
+        exp_continue
+    }
+    "Key password" {
+        # Generate a random password
+        send "SafeTunes2024!\r"
+        exp_continue
+    }
+    "Keystore password" {
+        send "SafeTunes2024!\r"
+        exp_continue
+    }
+    "FullName" {
+        send "SafeTunes\r"
+        exp_continue
+    }
+    "Organizational Unit" {
+        send "Apps\r"
+        exp_continue
+    }
+    "Organization" {
+        send "SafeTunes\r"
+        exp_continue
+    }
+    "Country" {
+        send "US\r"
+        exp_continue
+    }
+    "save this" {
+        send "Y\r"
+        exp_continue
+    }
+    "project files" {
+        send "Y\r"
+        exp_continue
+    }
+    eof {
+        puts "Bubblewrap completed"
+    }
+}
+
+wait

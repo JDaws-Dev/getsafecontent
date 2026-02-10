@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ef4444"/>
+      <stop offset="100%" style="stop-color:#f97316"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#grad)"/>
+  <!-- Play button with shield outline -->
+  <path d="M24 18v28l22-14z" fill="white"/>
+  <!-- Small shield accent -->
+  <path d="M32 8c-8 4-16 4-16 4v20c0 12 16 20 16 20s16-8 16-20V12s-8 0-16-4z" fill="none" stroke="white" stroke-width="2" opacity="0.3"/>
+</svg>

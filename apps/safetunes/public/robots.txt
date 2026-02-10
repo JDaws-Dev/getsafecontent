@@ -1,0 +1,11 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow admin and user-specific pages
+Disallow: /admin
+Disallow: /player
+Disallow: /onboarding
+
+# Sitemap
+Sitemap: https://getsafetunes.com/sitemap.xml

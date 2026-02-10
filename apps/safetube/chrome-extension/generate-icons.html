@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate SafeTube Icons</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .icon-preview { margin: 20px 0; }
+    canvas { border: 1px solid #ccc; margin: 5px; }
+    button { padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>SafeTube Icon Generator</h1>
+  <p>Click the button to download all icon sizes.</p>
+
+  <div class="icon-preview">
+    <canvas id="canvas128" width="128" height="128"></canvas>
+    <canvas id="canvas48" width="48" height="48"></canvas>
+    <canvas id="canvas16" width="16" height="16"></canvas>
+  </div>
+
+  <button onclick="downloadAll()">Download All Icons</button>
+
+  <script>
+    function drawIcon(ctx, size) {
+      const scale = size / 128;
+
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#ef4444');
+      gradient.addColorStop(1, '#f97316');
+
+      // Rounded rectangle
+      const radius = 28 * scale;
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(size - radius, 0);
+      ctx.quadraticCurveTo(size, 0, size, radius);
+      ctx.lineTo(size, size - radius);
+      ctx.quadraticCurveTo(size, size, size - radius, size);
+      ctx.lineTo(radius, size);
+      ctx.quadraticCurveTo(0, size, 0, size - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      // Circle
+      ctx.beginPath();
+      ctx.arc(size/2, size/2, 36 * scale, 0, Math.PI * 2);
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 4 * scale;
+      ctx.stroke();
+
+      // Play triangle
+      ctx.beginPath();
+      ctx.moveTo(54 * scale, 44 * scale);
+      ctx.lineTo(54 * scale, 84 * scale);
+      ctx.lineTo(86 * scale, 64 * scale);
+      ctx.closePath();
+      ctx.fillStyle = 'white';
+      ctx.fill();
+    }
+
+    // Draw all sizes
+    [128, 48, 16].forEach(size => {
+      const canvas = document.getElementById('canvas' + size);
+      const ctx = canvas.getContext('2d');
+      drawIcon(ctx, size);
+    });
+
+    function downloadAll() {
+      [128, 48, 16].forEach(size => {
+        const canvas = document.getElementById('canvas' + size);
+        const link = document.createElement('a');
+        link.download = `icon${size}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html>

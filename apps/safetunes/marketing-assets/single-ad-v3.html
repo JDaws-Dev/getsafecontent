@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes - Facebook Ad V3</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: #0F172A;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glow {
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(236,72,153,0.4) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .tag {
+      background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
+      color: white;
+      padding: 14px 36px;
+      border-radius: 50px;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 50px;
+      position: relative;
+    }
+
+    .headline {
+      font-size: 92px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.1;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .subtext {
+      font-size: 34px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 60px;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    .cta-box {
+      background: linear-gradient(135deg, #EC4899 0%, #BE185D 100%);
+      border-radius: 20px;
+      padding: 36px 70px;
+      position: relative;
+    }
+
+    .url {
+      font-size: 48px;
+      font-weight: 900;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .trial {
+      font-size: 24px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .bottom {
+      position: absolute;
+      bottom: 50px;
+      font-size: 20px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="glow"></div>
+
+    <div class="tag">HEY MAMA</div>
+
+    <div class="headline">
+      Guard your kids'<br>
+      hearts and ears.
+    </div>
+
+    <div class="subtext">
+      Control what plays on Apple Music.<br>
+      Kids only hear what you approve.
+    </div>
+
+    <div class="cta-box">
+      <div class="url">getsafetunes.com</div>
+      <div class="trial">Try free for 7 days</div>
+    </div>
+
+    <div class="bottom">Apple Music parental controls that actually work</div>
+  </div>
+</body>
+</html>

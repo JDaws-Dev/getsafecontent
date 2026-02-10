@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Carousel C - Slide 1 (Not Kidz Bop Hook)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px;
+      text-align: center;
+      position: relative;
+    }
+
+    .slide-number {
+      position: absolute;
+      top: 30px;
+      right: 40px;
+      background: #E5E7EB;
+      color: #1F2937;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .brand {
+      font-size: 64px;
+      font-weight: 900;
+      color: #1F2937;
+      margin-bottom: 60px;
+      letter-spacing: -2px;
+    }
+
+    .emoji {
+      font-size: 120px;
+      margin-bottom: 40px;
+    }
+
+    .problem {
+      font-size: 56px;
+      font-weight: 800;
+      color: #1F2937;
+      line-height: 1.3;
+      margin-bottom: 50px;
+    }
+
+    .highlight {
+      color: #EF4444;
+    }
+
+    .quote {
+      background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+      border-left: 6px solid #EF4444;
+      padding: 35px 45px;
+      border-radius: 16px;
+      margin-bottom: 50px;
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
+    }
+
+    .quote-text {
+      font-size: 32px;
+      font-weight: 700;
+      color: #991B1B;
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    .subtext {
+      font-size: 36px;
+      font-weight: 700;
+      color: #6B7280;
+    }
+
+    .swipe-hint {
+      position: absolute;
+      bottom: 40px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #6B7280;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .arrow {
+      font-size: 28px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="slide-number">1/5</div>
+
+    <div class="brand">SafeTunes</div>
+
+    <div class="emoji">🙄</div>
+
+    <div class="problem">
+      Your 12-Year-Old<br>
+      <span class="highlight">Hates</span> Kidz Bop
+    </div>
+
+    <div class="quote">
+      <div class="quote-text">
+        "Mom, this is baby music.<br>
+        I want REAL songs."
+      </div>
+    </div>
+
+    <div class="subtext">
+      Sound familiar? →
+    </div>
+
+    <div class="swipe-hint">
+      Swipe to see the solution <span class="arrow">→</span>
+    </div>
+  </div>
+</body>
+</html>

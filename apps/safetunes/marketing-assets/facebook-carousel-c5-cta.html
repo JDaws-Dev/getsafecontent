@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Carousel C - Slide 5 (CTA)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px;
+      text-align: center;
+      position: relative;
+    }
+
+    .slide-number {
+      position: absolute;
+      top: 30px;
+      right: 40px;
+      background: #E5E7EB;
+      color: #1F2937;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .brand {
+      font-size: 64px;
+      font-weight: 900;
+      color: #1F2937;
+      margin-bottom: 40px;
+      letter-spacing: -2px;
+    }
+
+    .cta-headline {
+      font-size: 56px;
+      font-weight: 900;
+      color: #1F2937;
+      line-height: 1.2;
+      margin-bottom: 30px;
+    }
+
+    .highlight {
+      background: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subheadline {
+      font-size: 32px;
+      font-weight: 700;
+      color: #6B7280;
+      margin-bottom: 50px;
+      line-height: 1.4;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-bottom: 50px;
+      max-width: 850px;
+    }
+
+    .option {
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .option.bad {
+      background: #FEE2E2;
+      border: 3px solid #EF4444;
+    }
+
+    .option.good {
+      background: #D1FAE5;
+      border: 3px solid #10B981;
+    }
+
+    .option-mark {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .option-label {
+      font-size: 24px;
+      font-weight: 800;
+      color: #1F2937;
+      margin-bottom: 10px;
+    }
+
+    .option-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #6B7280;
+    }
+
+    .offer {
+      font-size: 48px;
+      font-weight: 900;
+      color: #1F2937;
+      margin-bottom: 20px;
+    }
+
+    .offer .price {
+      color: #10B981;
+    }
+
+    .url {
+      font-size: 36px;
+      font-weight: 800;
+      color: #7C3AED;
+      margin-bottom: 30px;
+    }
+
+    .trial {
+      font-size: 24px;
+      font-weight: 700;
+      color: #6B7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="slide-number">5/5</div>
+
+    <div class="brand">SafeTunes</div>
+
+    <div class="cta-headline">
+      Stop Choosing Between<br>
+      <span class="highlight">Baby Music</span> and <span class="highlight">No Control</span>
+    </div>
+
+    <div class="subheadline">
+      Real music. Real protection. Real simple.
+    </div>
+
+    <div class="comparison">
+      <div class="option bad">
+        <div class="option-mark">✗</div>
+        <div class="option-label">Spotify Kids</div>
+        <div class="option-text">Kidz Bop covers</div>
+      </div>
+      <div class="option good">
+        <div class="option-mark">✓</div>
+        <div class="option-label">SafeTunes</div>
+        <div class="option-text">Real artists you approve</div>
+      </div>
+    </div>
+
+    <div class="offer">
+      Only <span class="price">$4.99/month</span>
+    </div>
+
+    <div class="url">getsafetunes.com</div>
+
+    <div class="trial">7-Day Free Trial • Cancel Anytime</div>
+  </div>
+</body>
+</html>

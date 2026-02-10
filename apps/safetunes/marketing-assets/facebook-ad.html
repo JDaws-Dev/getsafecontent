@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Facebook Ad</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(135deg, #FFF4ED 0%, #FFE4D6 25%, #FFF9F5 50%, #FFEEE3 75%, #FFF4ED 100%);
+      border-radius: 0;
+      padding: 60px 70px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 45px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(255, 107, 157, 0.2), 0 10px 30px rgba(0, 0, 0, 0.1);
+      border: 3px solid rgba(255, 107, 157, 0.12);
+    }
+
+    /* Decorative corner accent - top left */
+    .ad-container::before {
+      content: '';
+      position: absolute;
+      top: -15%;
+      left: -10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(255, 107, 157, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* Decorative corner accent - bottom right */
+    .ad-container::after {
+      content: '';
+      position: absolute;
+      bottom: -20%;
+      right: -15%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(72, 187, 120, 0.06) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .brand {
+      font-size: 56px;
+      font-weight: 800;
+      color: #1A202C;
+      margin-bottom: 25px;
+      letter-spacing: -1.5px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .badge {
+      background: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
+      color: white;
+      padding: 14px 36px;
+      border-radius: 50px;
+      font-size: 20px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 8px 24px rgba(72, 187, 120, 0.45);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      display: inline-block;
+      margin-bottom: 25px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .badge::before {
+      content: '✓ ';
+      margin-right: 4px;
+      font-size: 22px;
+    }
+
+    .headline {
+      font-size: 72px;
+      font-weight: 800;
+      color: #1A202C;
+      margin-bottom: 50px;
+      line-height: 1.15;
+      text-align: center;
+      letter-spacing: -2px;
+      text-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    .headline .highlight {
+      background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 50px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: white;
+      padding: 20px 30px;
+      border-radius: 16px;
+      border: 2px solid rgba(255, 107, 157, 0.2);
+      box-shadow: 0 4px 16px rgba(255, 107, 157, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s ease;
+    }
+
+    .feature:hover {
+      box-shadow: 0 6px 24px rgba(255, 107, 157, 0.25), 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateX(4px);
+      border-color: rgba(255, 107, 157, 0.3);
+    }
+
+    .feature-icon {
+      font-size: 40px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #FFF4ED 0%, #FFE4D6 100%);
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(255, 107, 157, 0.1);
+    }
+
+    .feature-text {
+      color: #1A202C;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: left;
+      line-height: 1.4;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .cta-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.02);
+      }
+    }
+
+    @keyframes glow {
+      0%, 100% {
+        box-shadow: 0 10px 32px rgba(255, 107, 157, 0.5), 0 4px 12px rgba(255, 107, 157, 0.3);
+      }
+      50% {
+        box-shadow: 0 12px 40px rgba(255, 107, 157, 0.6), 0 0 20px 4px rgba(255, 107, 157, 0.3);
+      }
+    }
+
+    .cta-button {
+      background: linear-gradient(135deg, #FF6B9D 0%, #FF5C8D 100%);
+      color: white;
+      padding: 28px 70px;
+      border-radius: 50px;
+      font-size: 32px;
+      font-weight: 800;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 10px 32px rgba(255, 107, 157, 0.5), 0 4px 12px rgba(255, 107, 157, 0.3);
+      border: 3px solid rgba(255, 255, 255, 0.4);
+      transition: all 0.3s ease;
+      display: inline-block;
+      animation: pulse 2.5s ease-in-out infinite, glow 3s ease-in-out infinite;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .cta-button:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 14px 48px rgba(255, 107, 157, 0.6), 0 0 24px 6px rgba(255, 107, 157, 0.4);
+      animation: none;
+    }
+
+    .cta-button:active {
+      transform: translateY(-1px) scale(1);
+      box-shadow: 0 8px 28px rgba(255, 107, 157, 0.4);
+    }
+
+    .social-proof {
+      color: #4A5568;
+      font-size: 19px;
+      font-style: italic;
+      font-weight: 600;
+      margin-top: 8px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .url {
+      color: #2D3748;
+      font-size: 26px;
+      font-weight: 800;
+      opacity: 1;
+      margin-top: 6px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="content">
+      <div class="brand">SafeTunes</div>
+
+      <div class="badge">Parent Approved</div>
+
+      <div class="headline">
+        <span class="highlight">Stop Worrying.</span><br>
+        Start Sleeping.
+      </div>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-text">Auto-Blocks Explicit Songs BEFORE They Play (Not After)</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📱</div>
+          <div class="feature-text">Know What They're Searching—Get Instant Text Alerts</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-text">Connects to Your Apple Music in 60 Seconds Flat</div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">💰</div>
+          <div class="feature-text">Try FREE for 7 Days • Then Just $4.99/Month</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <a href="#" class="cta-button">Yes, Give Me Peace of Mind</a>
+      <p class="social-proof">Join 12,000+ parents who sleep better at night</p>
+      <div class="url">getsafetunes.com</div>
+    </div>
+  </div>
+</body>
+</html>

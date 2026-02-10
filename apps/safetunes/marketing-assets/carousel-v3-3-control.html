@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Carousel V3 - Slide 3 (Take Control)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(145deg, #7C3AED 0%, #9333EA 50%, #A855F7 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 70px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ad-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .brand {
+      font-size: 36px;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 30px;
+      letter-spacing: -1px;
+      position: relative;
+    }
+
+    .headline {
+      font-size: 58px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 50px;
+      position: relative;
+    }
+
+    .phone-mockup {
+      background: white;
+      border-radius: 32px;
+      padding: 20px;
+      width: 380px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .notification {
+      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      text-align: left;
+      border-left: 5px solid #F59E0B;
+    }
+
+    .notification-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .notification-icon {
+      width: 32px;
+      height: 32px;
+      background: #F59E0B;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .notification-app {
+      font-size: 14px;
+      font-weight: 700;
+      color: #92400E;
+    }
+
+    .notification-time {
+      font-size: 12px;
+      color: #B45309;
+      margin-left: auto;
+    }
+
+    .notification-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1F2937;
+      margin-bottom: 4px;
+    }
+
+    .notification-body {
+      font-size: 15px;
+      color: #4B5563;
+    }
+
+    .caption {
+      font-size: 28px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.95);
+      margin-top: 40px;
+      position: relative;
+    }
+
+    .swipe-hint {
+      position: absolute;
+      bottom: 50px;
+      right: 60px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 20px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="brand">SafeTunes</div>
+
+    <div class="headline">
+      Get notified instantly<br>
+      when they search for<br>
+      something inappropriate.
+    </div>
+
+    <div class="phone-mockup">
+      <div class="notification">
+        <div class="notification-header">
+          <div class="notification-icon">!</div>
+          <span class="notification-app">SafeTunes</span>
+          <span class="notification-time">now</span>
+        </div>
+        <div class="notification-title">Blocked Search Alert</div>
+        <div class="notification-body">Emma searched for "WAP" — Content blocked. Tap to review.</div>
+      </div>
+      <div class="notification" style="background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%); border-left-color: #22C55E;">
+        <div class="notification-header">
+          <div class="notification-icon" style="background: #22C55E;">+</div>
+          <span class="notification-app" style="color: #166534;">SafeTunes</span>
+          <span class="notification-time" style="color: #15803D;">2m ago</span>
+        </div>
+        <div class="notification-title">New Music Request</div>
+        <div class="notification-body">Emma wants "Fearless (Taylor's Version)" — Tap to approve.</div>
+      </div>
+    </div>
+
+    <div class="caption">
+      Stay informed. Stay in control.
+    </div>
+
+    <div class="swipe-hint">
+      <span>→</span>
+    </div>
+  </div>
+</body>
+</html>

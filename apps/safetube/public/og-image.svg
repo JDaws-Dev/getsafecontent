@@ -1,0 +1,66 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#dc2626;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f97316;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+
+  <!-- Shield with Play Icon - 120x120 container with 100x100 icon -->
+  <g transform="translate(540, 60)">
+    <rect x="0" y="0" width="120" height="120" rx="30" fill="white"/>
+    <g transform="translate(10, 8)">
+      <path d="M50 102s36-18 36-45V22l-36-13.5-36 13.5v35c0 27 36 45 36 45z" fill="#dc2626"/>
+      <path d="M41 35v32l25-16L41 35z" fill="white"/>
+    </g>
+  </g>
+
+  <!-- Main Content Container -->
+  <g>
+    <!-- App Name -->
+    <text x="600" y="260" font-family="system-ui, -apple-system, sans-serif" font-size="80" font-weight="800" fill="white" text-anchor="middle">
+      SafeTube
+    </text>
+
+    <!-- Tagline -->
+    <text x="600" y="340" font-family="system-ui, -apple-system, sans-serif" font-size="36" font-weight="600" fill="white" fill-opacity="0.95" text-anchor="middle">
+      Parental Controls for YouTube
+    </text>
+
+    <!-- Key Benefit -->
+    <text x="600" y="420" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="500" fill="white" text-anchor="middle">
+      Give your kids safe access to YouTube.
+    </text>
+    <text x="600" y="455" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="500" fill="white" text-anchor="middle">
+      You approve every channel they watch.
+    </text>
+
+    <!-- Features Row -->
+    <g transform="translate(0, 500)">
+      <!-- No Algorithm -->
+      <circle cx="280" cy="30" r="14" fill="rgba(255,255,255,0.3)"/>
+      <text x="280" y="35" font-family="system-ui" font-size="14" fill="white" text-anchor="middle">✓</text>
+      <text x="320" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="500" fill="white" fill-opacity="0.9">
+        No Algorithm
+      </text>
+
+      <!-- AI Channel Scanner -->
+      <circle cx="510" cy="30" r="14" fill="rgba(255,255,255,0.3)"/>
+      <text x="510" y="35" font-family="system-ui" font-size="14" fill="white" text-anchor="middle">✓</text>
+      <text x="550" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="500" fill="white" fill-opacity="0.9">
+        AI Channel Scanner
+      </text>
+
+      <!-- Total Parent Control -->
+      <circle cx="770" cy="30" r="14" fill="rgba(255,255,255,0.3)"/>
+      <text x="770" y="35" font-family="system-ui" font-size="14" fill="white" text-anchor="middle">✓</text>
+      <text x="810" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="500" fill="white" fill-opacity="0.9">
+        Total Parent Control
+      </text>
+    </g>
+  </g>
+</svg>

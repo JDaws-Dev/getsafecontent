@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reddit Ad V4 - Ultra Simple</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .ad-container {
+      width: 1200px;
+      height: 628px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Left side - mockup hint */
+    .visual {
+      width: 400px;
+      height: 100%;
+      background: linear-gradient(135deg, #1f1f3a 0%, #3d1f5e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .phone-frame {
+      width: 200px;
+      height: 400px;
+      background: #000;
+      border-radius: 32px;
+      border: 3px solid #333;
+      padding: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+      border-radius: 24px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .phone-header {
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 12px;
+      opacity: 0.7;
+    }
+
+    .album-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .album {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      position: relative;
+    }
+
+    .album.approved {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    }
+
+    .album.approved::after {
+      content: '✓';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .album.blocked {
+      background: #374151;
+      opacity: 0.4;
+    }
+
+    .album.blocked::after {
+      content: '✕';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ca3af;
+      font-size: 16px;
+    }
+
+    .phone-label {
+      color: #a855f7;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: auto;
+      text-align: center;
+    }
+
+    /* Right side - copy */
+    .content {
+      flex: 1;
+      padding: 60px 80px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-icon svg {
+      width: 26px;
+      height: 26px;
+      color: white;
+    }
+
+    .brand-name {
+      font-size: 28px;
+      font-weight: 800;
+      color: white;
+    }
+
+    h1 {
+      color: white;
+      font-size: 56px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .highlight {
+      background: linear-gradient(90deg, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subhead {
+      color: #9ca3af;
+      font-size: 24px;
+      font-weight: 500;
+      margin-bottom: 36px;
+      line-height: 1.4;
+    }
+
+    .cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+      color: white;
+      padding: 20px 48px;
+      border-radius: 14px;
+      font-size: 24px;
+      font-weight: 800;
+      box-shadow: 0 10px 40px rgba(168, 85, 247, 0.4);
+    }
+
+    .trust {
+      margin-top: 20px;
+      color: #6b7280;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <!-- Left - Visual -->
+    <div class="visual">
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="phone-header">Your Kid's Library</div>
+          <div class="album-row">
+            <div class="album approved"></div>
+            <div class="album approved"></div>
+            <div class="album blocked"></div>
+          </div>
+          <div class="album-row">
+            <div class="album approved"></div>
+            <div class="album blocked"></div>
+            <div class="album approved"></div>
+          </div>
+          <div class="album-row">
+            <div class="album blocked"></div>
+            <div class="album approved"></div>
+            <div class="album approved"></div>
+          </div>
+          <div class="phone-label">Only approved music plays</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right - Copy -->
+    <div class="content">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg fill="currentColor" viewBox="0 0 20 20">
+            <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+          </svg>
+        </div>
+        <span class="brand-name">SafeTunes</span>
+      </div>
+
+      <h1>
+        You approve.<br>
+        <span class="highlight">They listen.</span>
+      </h1>
+
+      <p class="subhead">
+        Real parental controls for Apple Music.<br>
+        Kids only hear what you've approved.
+      </p>
+
+      <div class="cta">Try Free for 7 Days</div>
+      <p class="trust">No credit card required</p>
+    </div>
+  </div>
+</body>
+</html>

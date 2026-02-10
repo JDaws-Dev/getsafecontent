@@ -1,0 +1,14 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Explicitly allow Facebook crawler
+User-agent: facebookexternalhit
+Allow: /
+
+# Explicitly allow Facebook's Open Graph crawler
+User-agent: Facebot
+Allow: /
+
+# Sitemap
+Sitemap: https://getsafetube.com/sitemap.xml

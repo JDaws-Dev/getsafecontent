@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  /* Warm soft UI design system */
+  --background: #FDF8F3;
+  --foreground: #1a1a2e;
+
+  /* Primary colors */
+  --navy: #1a1a2e;
+  --navy-light: #2d2d44;
+  --cream: #FDF8F3;
+  --cream-dark: #F5EDE4;
+
+  /* Peach gradient colors */
+  --peach-start: #F5A962;
+  --peach-end: #E88B6A;
+
+  /* App brand colors */
+  --safetunes-primary: #6366f1;
+  --safetunes-secondary: #8b5cf6;
+  --safetube-primary: #ef4444;
+  --safetube-secondary: #f97316;
+  --safereads-primary: #10b981;
+  --safereads-secondary: #14b8a6;
+
+  /* Shadows */
+  --shadow-soft: 0 4px 20px rgba(26, 26, 46, 0.08);
+  --shadow-card: 0 8px 30px rgba(26, 26, 46, 0.12);
+
+  /* Radius */
+  --radius-card: 24px;
+  --radius-button: 9999px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-navy: var(--navy);
+  --color-navy-light: var(--navy-light);
+  --color-cream: var(--cream);
+  --color-cream-dark: var(--cream-dark);
+  --color-peach-start: var(--peach-start);
+  --color-peach-end: var(--peach-end);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Offset for fixed header */
+  scroll-padding-top: 80px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Utility classes for the design system */
+.btn-navy {
+  background-color: var(--navy);
+  color: white;
+  border-radius: var(--radius-button);
+  padding: 0.875rem 2rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.btn-navy:hover {
+  background-color: var(--navy-light);
+}
+
+.btn-peach {
+  background: linear-gradient(135deg, var(--peach-start), var(--peach-end));
+  color: white;
+  border-radius: var(--radius-button);
+  padding: 0.875rem 2rem;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.btn-peach:hover {
+  opacity: 0.9;
+}
+
+.card-soft {
+  background: white;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.gradient-peach {
+  background: linear-gradient(135deg, var(--peach-start), var(--peach-end));
+}

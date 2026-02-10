@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reddit Ad V6 - Branded but Clean</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .ad-container {
+      width: 1200px;
+      height: 628px;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .content {
+      text-align: center;
+    }
+
+    /* Brand - prominent but not huge */
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+
+    .brand-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-icon svg {
+      width: 30px;
+      height: 30px;
+      color: white;
+    }
+
+    .brand-name {
+      font-size: 36px;
+      font-weight: 800;
+      color: white;
+    }
+
+    h1 {
+      color: white;
+      font-size: 64px;
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+
+    .highlight {
+      color: #c084fc;
+    }
+
+    .subhead {
+      color: #9ca3af;
+      font-size: 26px;
+      font-weight: 500;
+      margin-bottom: 40px;
+    }
+
+    .cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+      color: white;
+      padding: 20px 48px;
+      border-radius: 12px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .trust {
+      margin-top: 20px;
+      color: #6b7280;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="content">
+      <!-- Brand first -->
+      <div class="brand">
+        <div class="brand-icon">
+          <svg fill="currentColor" viewBox="0 0 20 20">
+            <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+          </svg>
+        </div>
+        <span class="brand-name">SafeTunes</span>
+      </div>
+
+      <h1>
+        Kids only hear<br>
+        <span class="highlight">music you approve</span>
+      </h1>
+
+      <p class="subhead">Parental controls for Apple Music</p>
+
+      <div class="cta">Try Free for 7 Days</div>
+      <p class="trust">No credit card required</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeTunes Profile Picture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            gap: 40px;
+            flex-wrap: wrap;
+            padding: 40px;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .profile-pic {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(147, 51, 234, 0.3);
+            margin: 0 auto 20px;
+        }
+
+        /* Subtle pattern overlay */
+        .profile-pic::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        }
+
+        .logo-icon {
+            width: 200px;
+            height: 200px;
+            fill: white;
+            z-index: 1;
+            filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.2));
+        }
+
+        .label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 12px;
+            font-weight: 600;
+        }
+
+        .size-note {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* Alternative version with white background */
+        .profile-pic.alt {
+            background: white;
+            border: 8px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+        }
+
+        .profile-pic.alt::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .profile-pic.alt .logo-icon {
+            fill: url(#gradient);
+        }
+
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            color: #333;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .instructions strong {
+            color: #9333ea;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <svg style="position: absolute; width: 0; height: 0;">
+        <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#9333ea;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <div class="container">
+        <div class="profile-pic">
+            <svg class="logo-icon" viewBox="0 0 88.994 96.651">
+                <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
+            </svg>
+        </div>
+        <div class="label">Version 1: Gradient Background</div>
+        <div class="size-note">Screenshot at 400×400px</div>
+    </div>
+
+    <div class="container">
+        <div class="profile-pic alt">
+            <svg class="logo-icon" viewBox="0 0 88.994 96.651">
+                <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
+            </svg>
+        </div>
+        <div class="label">Version 2: White Background</div>
+        <div class="size-note">Screenshot at 400×400px</div>
+    </div>
+
+    <div class="instructions">
+        <strong>Instructions:</strong>
+        Take a screenshot of either circle (400×400px works perfectly)<br>
+        Instagram/Facebook will automatically crop it to a circle<br>
+        <strong>Recommended:</strong> Version 1 for Instagram, either works for Facebook
+    </div>
+</body>
+</html>

@@ -1,0 +1,222 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+import { useAuth } from '../hooks/useAuth';
+import { AVATAR_ICONS, COLORS } from '../constants/avatars';
+import musicKitService from '../config/musickit';
+import ChildDashboard from '../components/child/ChildDashboard';
+
+function ChildLoginPage() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [kidProfile, setKidProfile] = useState(null);
+
+  // Check if already logged in
+  useEffect(() => {
+    const profileData = localStorage.getItem('safetunes_kid_profile');
+    if (profileData) {
+      setKidProfile(JSON.parse(profileData));
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  // Initialize MusicKit
+  useEffect(() => {
+    const initMusicKit = async () => {
+      try {
+        await musicKitService.initialize();
+      } catch (err) {
+        console.error('Failed to initialize MusicKit:', err);
+      }
+    };
+    initMusicKit();
+  }, []);
+
+  // Fetch kid profiles
+  const kidProfiles = useQuery(
+    api.kidProfiles.getKidProfiles,
+    user ? { userId: user._id } : 'skip'
+  );
+
+  const getAvatarIcon = (avatarId) => {
+    const icon = AVATAR_ICONS.find(a => a.id === avatarId);
+    return icon ? icon.svg : AVATAR_ICONS[0].svg;
+  };
+
+  const getColorClass = (colorId) => {
+    const color = COLORS.find(c => c.id === colorId);
+    return color ? color.class : COLORS[0].class;
+  };
+
+  const handleProfileSelect = (profile) => {
+    setSelectedProfile(profile);
+    setPin('');
+    setError('');
+  };
+
+  const handlePinInput = (digit) => {
+    if (pin.length < 4) {
+      const newPin = pin + digit;
+      setPin(newPin);
+
+      // Auto-submit when 4 digits entered
+      if (newPin.length === 4) {
+        verifyPin(newPin);
+      }
+    }
+  };
+
+  const handleBackspace = () => {
+    setPin(pin.slice(0, -1));
+    setError('');
+  };
+
+  const verifyPin = (pinToVerify) => {
+    if (pinToVerify === selectedProfile.pin) {
+      // Success - save to localStorage
+      localStorage.setItem('safetunes_kid_profile', JSON.stringify(selectedProfile));
+      setKidProfile(selectedProfile);
+      setIsLoggedIn(true);
+    } else {
+      setError('Incorrect PIN');
+      setPin('');
+    }
+  };
+
+  // If logged in, show dashboard
+  if (isLoggedIn && kidProfile) {
+    return <ChildDashboard />;
+  }
+
+  // Login screen
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        {/* Logo */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
+            SafeTunes
+          </h1>
+          <p className="text-gray-600">Choose your profile to start listening</p>
+        </div>
+
+        {!selectedProfile ? (
+          /* Profile Selection */
+          <div className="w-full max-w-4xl">
+            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-8">Who's Listening?</h2>
+
+            {!kidProfiles || kidProfiles.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
+                <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p className="text-gray-600 mb-2">No profiles found</p>
+                <p className="text-sm text-gray-500">Ask your parent to create a profile for you</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {kidProfiles.map((profile) => (
+                  <button
+                    key={profile._id}
+                    onClick={() => handleProfileSelect(profile)}
+                    className="bg-white rounded-2xl p-6 md:hover:shadow-2xl active:shadow-2xl transition-all transform md:hover:scale-105 active:scale-95 group"
+                  >
+                    <div className={`w-24 h-24 mx-auto rounded-full ${getColorClass(profile.color)} flex items-center justify-center text-white p-5 mb-4 md:group-hover:scale-110 transition-transform`}>
+                      {getAvatarIcon(profile.avatar)}
+                    </div>
+                    <p className="font-semibold text-gray-900 text-center">{profile.name}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Back to Parent Login */}
+            <div className="mt-8 text-center">
+              <button
+                onClick={() => navigate('/login')}
+                className="text-purple-600 hover:text-purple-700 font-medium text-sm"
+              >
+                Parent Login
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* PIN Entry */
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            {/* Profile Header */}
+            <div className="text-center mb-8">
+              <div className={`w-20 h-20 mx-auto rounded-full ${getColorClass(selectedProfile.color)} flex items-center justify-center text-white p-4 mb-4`}>
+                {getAvatarIcon(selectedProfile.avatar)}
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">{selectedProfile.name}</h2>
+              <p className="text-gray-600">Enter your PIN</p>
+            </div>
+
+            {/* PIN Display */}
+            <div className="flex justify-center gap-3 mb-6">
+              {[0, 1, 2, 3].map((index) => (
+                <div
+                  key={index}
+                  className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl font-bold transition ${
+                    pin.length > index
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 text-transparent'
+                  }`}
+                >
+                  •
+                </div>
+              ))}
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
+                {error}
+              </div>
+            )}
+
+            {/* Number Pad */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => handlePinInput(num.toString())}
+                  className="h-14 bg-gray-100 hover:bg-gray-200 rounded-xl text-xl font-semibold text-gray-900 transition"
+                >
+                  {num}
+                </button>
+              ))}
+              <button
+                onClick={() => setSelectedProfile(null)}
+                className="h-14 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium text-gray-600 transition"
+              >
+                Back
+              </button>
+              <button
+                onClick={() => handlePinInput('0')}
+                className="h-14 bg-gray-100 hover:bg-gray-200 rounded-xl text-xl font-semibold text-gray-900 transition"
+              >
+                0
+              </button>
+              <button
+                onClick={handleBackspace}
+                className="h-14 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center text-gray-600 transition"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default ChildLoginPage;

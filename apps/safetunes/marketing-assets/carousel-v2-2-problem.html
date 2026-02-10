@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Carousel V2 - Slide 2 (Problem)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: #FFFBEB;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 70px;
+      text-align: center;
+      position: relative;
+    }
+
+    .headline {
+      font-size: 52px;
+      font-weight: 900;
+      color: #1F2937;
+      line-height: 1.2;
+      margin-bottom: 50px;
+    }
+
+    .problems {
+      width: 100%;
+      max-width: 850px;
+    }
+
+    .problem-item {
+      background: white;
+      border: 3px solid #FCA5A5;
+      border-radius: 20px;
+      padding: 28px 40px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.1);
+    }
+
+    .x-icon {
+      width: 48px;
+      height: 48px;
+      background: #FEE2E2;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #DC2626;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .problem-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1F2937;
+      text-align: left;
+    }
+
+    .bottom-text {
+      font-size: 36px;
+      font-weight: 800;
+      color: #7C3AED;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="headline">You've tried everything...</div>
+
+    <div class="problems">
+      <div class="problem-item">
+        <div class="x-icon">✕</div>
+        <div class="problem-text">Apple Music's "Clean" filter still shows inappropriate covers</div>
+      </div>
+      <div class="problem-item">
+        <div class="x-icon">✕</div>
+        <div class="problem-text">Spotify Kids is too babyish for your 10-year-old</div>
+      </div>
+      <div class="problem-item">
+        <div class="x-icon">✕</div>
+        <div class="problem-text">Making playlists yourself takes forever</div>
+      </div>
+      <div class="problem-item">
+        <div class="x-icon">✕</div>
+        <div class="problem-text">You can't monitor what they're actually searching</div>
+      </div>
+    </div>
+
+    <div class="bottom-text">There's a better way.</div>
+  </div>
+</body>
+</html>

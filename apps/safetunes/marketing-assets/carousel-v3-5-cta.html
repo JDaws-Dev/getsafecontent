@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Carousel V3 - Slide 5 (CTA)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(145deg, #7C3AED 0%, #9333EA 50%, #DB2777 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 70px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ad-container::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      left: -30%;
+      width: 160%;
+      height: 160%;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .brand {
+      font-size: 48px;
+      font-weight: 900;
+      color: white;
+      margin-bottom: 20px;
+      letter-spacing: -2px;
+      position: relative;
+    }
+
+    .headline {
+      font-size: 64px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.15;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .subheadline {
+      font-size: 32px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 50px;
+      position: relative;
+    }
+
+    .cta-box {
+      background: white;
+      border-radius: 24px;
+      padding: 40px 60px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .pricing {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .price {
+      font-size: 72px;
+      font-weight: 900;
+      color: #7C3AED;
+    }
+
+    .period {
+      font-size: 28px;
+      font-weight: 600;
+      color: #6B7280;
+    }
+
+    .trial {
+      font-size: 28px;
+      font-weight: 800;
+      color: #16A34A;
+      margin-bottom: 24px;
+    }
+
+    .url {
+      font-size: 40px;
+      font-weight: 900;
+      color: #7C3AED;
+    }
+
+    .guarantees {
+      display: flex;
+      gap: 30px;
+      margin-top: 40px;
+      position: relative;
+    }
+
+    .guarantee {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .check {
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="brand">SafeTunes</div>
+
+    <div class="headline">
+      Tonight, sleep easy.<br>
+      They're only hearing<br>
+      what you approved.
+    </div>
+
+    <div class="subheadline">
+      Works with your Apple Music subscription.
+    </div>
+
+    <div class="cta-box">
+      <div class="pricing">
+        <span class="price">$4.99</span>
+        <span class="period">/month</span>
+      </div>
+      <div class="trial">7-Day Free Trial</div>
+      <div class="url">getsafetunes.com</div>
+    </div>
+
+    <div class="guarantees">
+      <div class="guarantee">
+        <div class="check">&#10003;</div>
+        <span>Cancel anytime</span>
+      </div>
+      <div class="guarantee">
+        <div class="check">&#10003;</div>
+        <span>5-min setup</span>
+      </div>
+      <div class="guarantee">
+        <div class="check">&#10003;</div>
+        <span>Works on any device</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Carousel V4 - Slide 2 (Approve)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(145deg, #7C3AED 0%, #9333EA 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .headline {
+      font-size: 52px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .screenshot-frame {
+      background: #1F2937;
+      border-radius: 24px;
+      padding: 12px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+      position: relative;
+    }
+
+    .screenshot {
+      height: 600px;
+      width: auto;
+      border-radius: 16px;
+      display: block;
+    }
+
+    .badge {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      background: #10B981;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-size: 18px;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+    }
+
+    .caption {
+      font-size: 28px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 40px;
+      position: relative;
+    }
+
+    .swipe-hint {
+      position: absolute;
+      bottom: 50px;
+      right: 60px;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 28px;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="headline">
+      You approve the music.<br>
+      They only hear what you chose.
+    </div>
+
+    <div class="screenshot-frame">
+      <img src="../pics/REVIEW_1126.png" alt="Search and approve music" class="screenshot">
+      <div class="badge">100M+ Songs</div>
+    </div>
+
+    <div class="caption">
+      Search Apple Music. Approve with one tap.
+    </div>
+
+    <div class="swipe-hint">&#8594;</div>
+  </div>
+</body>
+</html>

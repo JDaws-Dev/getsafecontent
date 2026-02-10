@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Carousel B - Slide 2 (Solution)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px;
+      text-align: center;
+      position: relative;
+    }
+
+    .slide-number {
+      position: absolute;
+      top: 30px;
+      right: 40px;
+      background: rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .headline {
+      font-size: 64px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 60px;
+      text-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .benefit-box {
+      background: white;
+      border-radius: 24px;
+      padding: 50px 60px;
+      margin-bottom: 40px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      max-width: 850px;
+    }
+
+    .benefit {
+      font-size: 38px;
+      font-weight: 800;
+      color: #1F2937;
+      line-height: 1.4;
+      margin-bottom: 30px;
+    }
+
+    .benefit:last-child {
+      margin-bottom: 0;
+    }
+
+    .highlight {
+      color: #10B981;
+    }
+
+    .subtext {
+      font-size: 32px;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="slide-number">2/5</div>
+
+    <div class="headline">
+      You CAN Say Yes.
+    </div>
+
+    <div class="benefit-box">
+      <div class="benefit">
+        They get <span class="highlight">autonomy</span>.
+      </div>
+      <div class="benefit">
+        You keep <span class="highlight">control</span>.
+      </div>
+    </div>
+
+    <div class="subtext">
+      Real music. Real protection.
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+import { v } from "convex/values";
+import { action } from "../_generated/server";
+
+// Generate alternative artist name formats to try
+function generateArtistNameAlternatives(artistName: string): string[] {
+  const alternatives: string[] = [artistName]; // Start with original
+
+  // Remove common suffixes and parentheticals
+  const patterns = [
+    /\s+Tell\s+'Em$/i,
+    /\s+Tell\s+Em$/i,
+    /\s+\(.*?\)$/,  // Remove anything in parentheses at the end
+    /\s+featuring.*$/i,
+    /\s+feat\..*$/i,
+    /\s+ft\..*$/i,
+    /\s+with.*$/i,
+  ];
+
+  patterns.forEach(pattern => {
+    const simplified = artistName.replace(pattern, '').trim();
+    if (simplified && !alternatives.includes(simplified)) {
+      alternatives.push(simplified);
+    }
+  });
+
+  // Try just the first name/word
+  const firstWord = artistName.split(/[\s,&]+/)[0];
+  if (firstWord && firstWord.length > 2 && !alternatives.includes(firstWord)) {
+    alternatives.push(firstWord);
+  }
+
+  return alternatives;
+}
+
+// Action to fetch lyrics from Musixmatch API
+export const fetchLyrics = action({
+  args: {
+    trackName: v.string(),
+    artistName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const apiKey = process.env.MUSIXMATCH_API_KEY;
+    if (!apiKey) {
+      throw new Error("MUSIXMATCH_API_KEY environment variable not set");
+    }
+
+    const artistAlternatives = generateArtistNameAlternatives(args.artistName);
+    console.log(`[Lyrics Fetch] Will try ${artistAlternatives.length} artist name variations:`, artistAlternatives);
+
+    // Try each artist name variation
+    for (let i = 0; i < artistAlternatives.length; i++) {
+      const artistName = artistAlternatives[i];
+      const attemptLabel = i === 0 ? "original" : `alternative ${i}`;
+
+      try {
+        console.log(`[Lyrics Fetch] Attempt ${i + 1}/${artistAlternatives.length} (${attemptLabel}): "${args.trackName}" by "${artistName}"`);
+
+        // Step 1: Search for the track to get the track_id
+        const searchUrl = `https://api.musixmatch.com/ws/1.1/track.search?q_track=${encodeURIComponent(args.trackName)}&q_artist=${encodeURIComponent(artistName)}&apikey=${apiKey}`;
+
+        const searchResponse = await fetch(searchUrl);
+        if (!searchResponse.ok) {
+          console.log(`[Lyrics Fetch] Search request failed with status ${searchResponse.status}, trying next alternative`);
+          continue; // Try next artist name
+        }
+
+        const searchData = await searchResponse.json();
+
+        if (searchData.message.header.status_code !== 200 || !searchData.message.body.track_list.length) {
+          console.log(`[Lyrics Fetch] No results found for: ${args.trackName} by ${artistName}, trying next alternative`);
+          continue; // Try next artist name
+        }
+
+        // Find best match by comparing both artist and track name
+        const trackList = searchData.message.body.track_list;
+        const normalizeString = (str: string) => str.toLowerCase().trim().replace(/[^\w\s]/g, '');
+
+        const targetTrack = normalizeString(args.trackName);
+        const targetArtist = normalizeString(artistName);
+
+        // Score each result based on how well it matches
+        const scoredResults = trackList.map((item: any) => {
+          const track = item.track;
+          const trackName = normalizeString(track.track_name);
+          const artistNameNorm = normalizeString(track.artist_name);
+
+          let score = 0;
+
+          // Exact match on track name (highest priority)
+          if (trackName === targetTrack) score += 100;
+          else if (trackName.includes(targetTrack) || targetTrack.includes(trackName)) score += 50;
+
+          // Exact match on artist name (high priority)
+          if (artistNameNorm === targetArtist) score += 100;
+          else if (artistNameNorm.includes(targetArtist) || targetArtist.includes(artistNameNorm)) score += 50;
+
+          return { track, score };
+        });
+
+        // Sort by score descending and pick the best match
+        scoredResults.sort((a, b) => b.score - a.score);
+        const bestMatch = scoredResults[0];
+
+        if (bestMatch.score < 50) {
+          console.log(`[Lyrics Fetch] No good match found. Best score: ${bestMatch.score} for "${bestMatch.track.track_name}" by "${bestMatch.track.artist_name}", trying next alternative`);
+          continue; // Try next artist name
+        }
+
+        const track = bestMatch.track;
+        const trackId = track.track_id;
+
+        console.log(`[Lyrics Fetch] Found track ID: ${trackId} (score: ${bestMatch.score}) - "${track.track_name}" by "${track.artist_name}"`);
+
+        // Step 2: Get lyrics using the track_id
+        const lyricsUrl = `https://api.musixmatch.com/ws/1.1/track.lyrics.get?track_id=${trackId}&apikey=${apiKey}`;
+
+        const lyricsResponse = await fetch(lyricsUrl);
+        if (!lyricsResponse.ok) {
+          console.log(`[Lyrics Fetch] Lyrics request failed with status ${lyricsResponse.status}, trying next alternative`);
+          continue; // Try next artist name
+        }
+
+        const lyricsData = await lyricsResponse.json();
+
+        if (lyricsData.message.header.status_code !== 200 || !lyricsData.message.body.lyrics) {
+          console.log(`[Lyrics Fetch] No lyrics available for track ID: ${trackId}, trying next alternative`);
+          continue; // Try next artist name
+        }
+
+        const lyricsBody = lyricsData.message.body.lyrics.lyrics_body;
+
+        // Musixmatch free tier returns partial lyrics with a disclaimer at the end
+        // Remove the disclaimer
+        const cleanedLyrics = lyricsBody.replace(/\*{4,}.*?\*{4,}/gs, '').trim();
+
+        // Check if lyrics are actually present (not just empty after cleaning)
+        if (!cleanedLyrics || cleanedLyrics.length < 10) {
+          console.log(`[Lyrics Fetch] Lyrics too short or empty after cleaning (${cleanedLyrics.length} chars), trying next alternative`);
+          continue; // Try next artist name
+        }
+
+        console.log(`[Lyrics Fetch] Successfully fetched lyrics (${cleanedLyrics.length} characters) using artist name: "${artistName}"`);
+
+        return {
+          success: true,
+          lyrics: cleanedLyrics,
+          source: "musixmatch",
+          trackInfo: {
+            trackName: track.track_name,
+            artistName: track.artist_name,
+            albumName: track.album_name,
+          },
+        };
+      } catch (error) {
+        console.error(`[Lyrics Fetch] Error with artist name "${artistName}":`, error);
+        // Continue to next alternative instead of returning error
+        continue;
+      }
+    }
+
+    // If we've exhausted all alternatives, return error
+    console.log(`[Lyrics Fetch] Failed to fetch lyrics after trying ${artistAlternatives.length} artist name variations`);
+    return {
+      success: false,
+      lyrics: null,
+      source: null,
+      error: `Lyrics not found. Tried ${artistAlternatives.length} artist name variations: ${artistAlternatives.join(', ')}`,
+    };
+  },
+});

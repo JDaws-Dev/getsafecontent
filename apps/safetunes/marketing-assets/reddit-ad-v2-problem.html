@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reddit Ad V2 - Problem-Focused</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .ad-container {
+      width: 1200px;
+      height: 628px;
+      background: #0f0f0f;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Left side - The Problem */
+    .left {
+      flex: 1;
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 50px;
+      position: relative;
+    }
+
+    .left::after {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      background: #0f0f0f;
+      transform: skewX(-6deg);
+    }
+
+    .problem-label {
+      color: rgba(255,255,255,0.7);
+      font-size: 18px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 16px;
+    }
+
+    .problem-text {
+      color: white;
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+
+    .explicit-tag {
+      display: inline-block;
+      background: #000;
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 20px;
+      letter-spacing: 1px;
+    }
+
+    /* Right side - The Solution */
+    .right {
+      flex: 1;
+      background: linear-gradient(135deg, #1f1f3a 0%, #3d1f5e 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 50px 50px 50px 70px;
+    }
+
+    .solution-label {
+      color: rgba(255,255,255,0.7);
+      font-size: 18px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-icon svg {
+      width: 28px;
+      height: 28px;
+      color: white;
+    }
+
+    .brand-name {
+      font-size: 32px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .solution-text {
+      color: white;
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 28px;
+    }
+
+    .highlight {
+      color: #c084fc;
+    }
+
+    .cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+      color: white;
+      padding: 18px 40px;
+      border-radius: 12px;
+      font-size: 22px;
+      font-weight: 800;
+      box-shadow: 0 8px 30px rgba(168, 85, 247, 0.4);
+    }
+
+    .trust {
+      margin-top: 18px;
+      color: #9ca3af;
+      font-size: 16px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <!-- Left - Problem -->
+    <div class="left">
+      <div class="problem-label">The Problem</div>
+      <div class="problem-text">
+        Your kid just played<br>
+        WAP on repeat<br>
+        in the kitchen
+      </div>
+      <div class="explicit-tag">🅴 EXPLICIT</div>
+    </div>
+
+    <!-- Right - Solution -->
+    <div class="right">
+      <div class="solution-label">The Fix</div>
+      <div class="brand">
+        <div class="brand-icon">
+          <svg fill="currentColor" viewBox="0 0 20 20">
+            <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+          </svg>
+        </div>
+        <span class="brand-name">SafeTunes</span>
+      </div>
+      <div class="solution-text">
+        Kids <span class="highlight">only play</span><br>
+        what you approve.<br>
+        Nothing else.
+      </div>
+      <div class="cta">Try Free →</div>
+      <div class="trust">Works with Apple Music • No credit card</div>
+    </div>
+  </div>
+</body>
+</html>

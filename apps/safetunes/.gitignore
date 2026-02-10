@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Apple MusicKit Private Keys (NEVER commit these!)
+*.p8
+generate-musickit-token.cjs
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vercel
+.env*.local
+public/SAFETUNES_DEMO.mp4
+
+# Vercel env files (NEVER commit these)
+.env.vercel
+.env.vercel.production
+.env.production.pulled

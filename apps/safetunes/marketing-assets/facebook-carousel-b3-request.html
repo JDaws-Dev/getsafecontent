@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeTunes Carousel B - Slide 3 (Request System)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .ad-container {
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 50px;
+      text-align: center;
+      position: relative;
+    }
+
+    .slide-number {
+      position: absolute;
+      top: 30px;
+      right: 40px;
+      background: rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .badge {
+      background: white;
+      color: #2563EB;
+      padding: 12px 32px;
+      border-radius: 50px;
+      font-size: 20px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .headline {
+      font-size: 48px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 30px;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .screenshots-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 25px;
+      max-width: 900px;
+    }
+
+    .screenshot-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .screenshot-label {
+      background: white;
+      color: #2563EB;
+      padding: 8px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .screenshot {
+      width: 100%;
+      max-width: 380px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border: 5px solid white;
+    }
+
+    .arrow {
+      font-size: 48px;
+      color: white;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .description {
+      font-size: 26px;
+      font-weight: 700;
+      color: white;
+      line-height: 1.4;
+      max-width: 800px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="slide-number">3/5</div>
+
+    <div class="badge">How It Works</div>
+
+    <div class="headline">
+      They Request. You Approve.
+    </div>
+
+    <div class="screenshots-grid">
+      <div class="screenshot-box">
+        <div class="screenshot-label">👶 Kid View</div>
+        <img src="http://localhost:5173/screenshots/KID_REQUEST.png" alt="Kid request interface" class="screenshot">
+      </div>
+
+      <div class="screenshot-box">
+        <div class="screenshot-label">👨‍👩‍👧 Parent View</div>
+        <img src="http://localhost:5173/screenshots/2_ADMIN ALBUM REQUEST.png" alt="Parent approval interface" class="screenshot">
+      </div>
+    </div>
+
+    <div class="description">
+      Complete control. One tap to approve or deny.
+    </div>
+  </div>
+</body>
+</html>
