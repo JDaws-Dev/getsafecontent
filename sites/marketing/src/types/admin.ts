@@ -43,6 +43,7 @@ export interface SafeReadsUser {
   onboardingComplete: boolean;
 }
 
+// Legacy per-app user (kept for backward compat)
 export interface UnifiedUser {
   email: string;
   name: string | null;
@@ -58,6 +59,39 @@ export interface UnifiedUser {
   videoCount?: number;
   analysisCount?: number;
   couponCode?: string | null;
+}
+
+// Per-app access info for grouped users
+export interface AppAccess {
+  app: "safetunes" | "safetube" | "safereads";
+  subscriptionStatus: string;
+  createdAt: number | null;
+  stripeCustomerId: string | null;
+  trialExpiresAt?: number | null;
+  subscriptionEndsAt?: number | null;
+  // App-specific stats
+  kidCount?: number;
+  albumCount?: number;
+  songCount?: number;
+  channelCount?: number;
+  videoCount?: number;
+  analysisCount?: number;
+  couponCode?: string | null;
+}
+
+// Grouped user - one row per email with all their apps
+export interface GroupedUser {
+  email: string;
+  name: string | null;
+  apps: AppAccess[];
+  // Derived fields
+  subscriptionType: "3-app-bundle" | "2-app-bundle" | "single-app";
+  planTier: "lifetime" | "yearly" | "monthly" | "trial" | "expired";
+  earliestCreatedAt: number | null;
+  latestTrialExpiry: number | null;
+  hasExpiredTrial: boolean;
+  totalKids: number;
+  isActive: boolean; // has any non-expired subscription
 }
 
 export interface AppStats {

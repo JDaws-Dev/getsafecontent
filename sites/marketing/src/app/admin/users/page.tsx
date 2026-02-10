@@ -1,24 +1,20 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { UserTable } from "@/components/admin/UserTable";
-import {
-  GrantLifetimeModal,
-  DeleteUserModal,
-} from "@/components/admin/ActionModals";
-import type { UnifiedUser, DashboardStats } from "@/types/admin";
+import { GroupedUserTable } from "@/components/admin/GroupedUserTable";
+import type { GroupedUser, DashboardStats } from "@/types/admin";
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<UnifiedUser[]>([]);
+  const [groupedUsers, setGroupedUsers] = useState<GroupedUser[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Modal state
-  const [grantLifetimeUser, setGrantLifetimeUser] = useState<UnifiedUser | null>(
-    null
-  );
-  const [deleteUser, setDeleteUser] = useState<UnifiedUser | null>(null);
+  const [grantLifetimeUser, setGrantLifetimeUser] = useState<GroupedUser | null>(null);
+  const [deleteUserTarget, setDeleteUserTarget] = useState<GroupedUser | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -29,7 +25,7 @@ export default function UsersPage() {
         throw new Error("Failed to fetch users");
       }
       const data = await res.json();
-      setUsers(data.users);
+      setGroupedUsers(data.groupedUsers || []);
       setStats(data.stats);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to fetch users");
@@ -45,43 +41,65 @@ export default function UsersPage() {
   const handleGrantLifetime = async () => {
     if (!grantLifetimeUser) return;
 
-    const res = await fetch("/api/admin/grant-lifetime", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        app: grantLifetimeUser.app,
-        email: grantLifetimeUser.email,
-      }),
-    });
+    setActionLoading(true);
+    setActionError(null);
 
-    if (!res.ok) {
+    try {
+      const res = await fetch("/api/admin/grant-lifetime-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: grantLifetimeUser.email,
+          apps: grantLifetimeUser.apps.map((a) => a.app),
+        }),
+      });
+
       const data = await res.json();
-      throw new Error(data.error || "Failed to grant lifetime");
-    }
 
-    // Refresh users
-    await fetchUsers();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to grant lifetime");
+      }
+
+      // Refresh users
+      await fetchUsers();
+      setGrantLifetimeUser(null);
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Failed to grant lifetime");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleDeleteUser = async () => {
-    if (!deleteUser) return;
+    if (!deleteUserTarget) return;
 
-    const res = await fetch("/api/admin/delete-user", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        app: deleteUser.app,
-        email: deleteUser.email,
-      }),
-    });
+    setActionLoading(true);
+    setActionError(null);
 
-    if (!res.ok) {
+    try {
+      const res = await fetch("/api/admin/delete-user-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: deleteUserTarget.email,
+          apps: deleteUserTarget.apps.map((a) => a.app),
+        }),
+      });
+
       const data = await res.json();
-      throw new Error(data.error || "Failed to delete user");
-    }
 
-    // Refresh users
-    await fetchUsers();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete user");
+      }
+
+      // Refresh users
+      await fetchUsers();
+      setDeleteUserTarget(null);
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Failed to delete user");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   if (isLoading) {
@@ -139,57 +157,139 @@ export default function UsersPage() {
         </button>
       </div>
 
-      {/* Quick stats */}
-      {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-sm text-gray-500">Total Users</p>
-            <p className="text-xl font-bold text-gray-900">
-              {stats.combined.totalUsers}
+      {/* Quick stats - based on unique users */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <p className="text-sm text-gray-500">Unique Users</p>
+          <p className="text-xl font-bold text-gray-900">
+            {groupedUsers.length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <p className="text-sm text-gray-500">3-App Bundles</p>
+          <p className="text-xl font-bold text-indigo-600">
+            {groupedUsers.filter(u => u.subscriptionType === "3-app-bundle").length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <p className="text-sm text-gray-500">Lifetime</p>
+          <p className="text-xl font-bold text-purple-600">
+            {groupedUsers.filter(u => u.planTier === "lifetime").length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <p className="text-sm text-gray-500">Active Trial</p>
+          <p className="text-xl font-bold text-blue-600">
+            {groupedUsers.filter(u => u.planTier === "trial").length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <p className="text-sm text-gray-500">Expired Trials</p>
+          <p className="text-xl font-bold text-red-600">
+            {groupedUsers.filter(u => u.hasExpiredTrial).length}
+          </p>
+        </div>
+      </div>
+
+      <GroupedUserTable
+        users={groupedUsers}
+        onGrantLifetime={setGrantLifetimeUser}
+        onDeleteUser={setDeleteUserTarget}
+      />
+
+      {/* Grant Lifetime Modal */}
+      {grantLifetimeUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Grant Lifetime Access
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Grant lifetime access to <strong>{grantLifetimeUser.email}</strong> on all their apps:
             </p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-sm text-gray-500">Active</p>
-            <p className="text-xl font-bold text-green-600">
-              {stats.combined.activeSubscriptions}
-            </p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-sm text-gray-500">Trial</p>
-            <p className="text-xl font-bold text-blue-600">
-              {stats.combined.trialUsers}
-            </p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-sm text-gray-500">Lifetime</p>
-            <p className="text-xl font-bold text-purple-600">
-              {stats.combined.lifetimeUsers}
-            </p>
+            <div className="flex gap-2 mb-4">
+              {grantLifetimeUser.apps.map((app) => (
+                <span
+                  key={app.app}
+                  className="px-3 py-1 bg-gray-100 rounded-full text-sm"
+                >
+                  {app.app.replace("safe", "Safe")}
+                </span>
+              ))}
+            </div>
+            {actionError && (
+              <p className="text-red-600 text-sm mb-4">{actionError}</p>
+            )}
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setGrantLifetimeUser(null);
+                  setActionError(null);
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                disabled={actionLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGrantLifetime}
+                className="px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                disabled={actionLoading}
+              >
+                {actionLoading ? "Granting..." : "Grant Lifetime"}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      <UserTable
-        users={users}
-        onGrantLifetime={setGrantLifetimeUser}
-        onDeleteUser={setDeleteUser}
-      />
-
-      {/* Modals */}
-      {grantLifetimeUser && (
-        <GrantLifetimeModal
-          user={grantLifetimeUser}
-          onClose={() => setGrantLifetimeUser(null)}
-          onConfirm={handleGrantLifetime}
-        />
-      )}
-
-      {deleteUser && (
-        <DeleteUserModal
-          user={deleteUser}
-          onClose={() => setDeleteUser(null)}
-          onConfirm={handleDeleteUser}
-        />
+      {/* Delete User Modal */}
+      {deleteUserTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Delete User
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Delete <strong>{deleteUserTarget.email}</strong> from all apps:
+            </p>
+            <div className="flex gap-2 mb-4">
+              {deleteUserTarget.apps.map((app) => (
+                <span
+                  key={app.app}
+                  className="px-3 py-1 bg-red-50 text-red-700 rounded-full text-sm"
+                >
+                  {app.app.replace("safe", "Safe")}
+                </span>
+              ))}
+            </div>
+            <p className="text-red-600 text-sm mb-4">
+              This action cannot be undone. The user will be removed from all apps.
+            </p>
+            {actionError && (
+              <p className="text-red-600 text-sm mb-4">{actionError}</p>
+            )}
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setDeleteUserTarget(null);
+                  setActionError(null);
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                disabled={actionLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteUser}
+                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                disabled={actionLoading}
+              >
+                {actionLoading ? "Deleting..." : "Delete User"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

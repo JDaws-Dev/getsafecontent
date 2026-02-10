@@ -3,6 +3,8 @@ import type {
   SafeTubeUser,
   SafeReadsUser,
   UnifiedUser,
+  GroupedUser,
+  AppAccess,
   AppStats,
   DashboardStats,
 } from "@/types/admin";
@@ -144,6 +146,140 @@ export function unifyUsers(data: {
   return users;
 }
 
+// Group users by email - one row per person with all their apps
+export function groupUsers(data: {
+  safetunes: SafeTunesUser[];
+  safetube: SafeTubeUser[];
+  safereads: SafeReadsUser[];
+}): GroupedUser[] {
+  const byEmail = new Map<string, { name: string | null; apps: AppAccess[] }>();
+
+  // Process SafeTunes users
+  for (const user of data.safetunes) {
+    const email = user.email.toLowerCase();
+    const existing = byEmail.get(email) || { name: user.name, apps: [] };
+    existing.apps.push({
+      app: "safetunes",
+      subscriptionStatus: user.subscriptionStatus,
+      createdAt: user.createdAt,
+      stripeCustomerId: user.stripeCustomerId,
+      subscriptionEndsAt: user.subscriptionEndsAt,
+      kidCount: user.kidProfileCount,
+      albumCount: user.approvedAlbumCount,
+      songCount: user.approvedSongCount,
+      couponCode: user.couponCode,
+    });
+    if (!existing.name && user.name) existing.name = user.name;
+    byEmail.set(email, existing);
+  }
+
+  // Process SafeTube users
+  for (const user of data.safetube) {
+    const email = user.email.toLowerCase();
+    const existing = byEmail.get(email) || { name: user.name, apps: [] };
+    existing.apps.push({
+      app: "safetube",
+      subscriptionStatus: user.subscriptionStatus,
+      createdAt: user.createdAt,
+      stripeCustomerId: user.stripeCustomerId || null,
+      trialExpiresAt: user.trialEndsAt,
+      kidCount: user.kidCount,
+      channelCount: user.channelCount,
+      videoCount: user.videoCount,
+    });
+    if (!existing.name && user.name) existing.name = user.name;
+    byEmail.set(email, existing);
+  }
+
+  // Process SafeReads users
+  for (const user of data.safereads) {
+    const email = user.email.toLowerCase();
+    const existing = byEmail.get(email) || { name: user.name, apps: [] };
+    existing.apps.push({
+      app: "safereads",
+      subscriptionStatus: user.subscriptionStatus,
+      createdAt: user.createdAt,
+      stripeCustomerId: user.stripeCustomerId,
+      trialExpiresAt: user.trialExpiresAt,
+      subscriptionEndsAt: user.subscriptionEndsAt,
+      kidCount: user.kidCount,
+      analysisCount: user.analysisCount,
+      couponCode: user.couponCode,
+    });
+    if (!existing.name && user.name) existing.name = user.name;
+    byEmail.set(email, existing);
+  }
+
+  // Convert to GroupedUser array
+  const now = Date.now();
+  const grouped: GroupedUser[] = [];
+
+  for (const [email, data] of byEmail) {
+    const appCount = data.apps.length;
+
+    // Determine subscription type based on app count
+    const subscriptionType: GroupedUser["subscriptionType"] =
+      appCount >= 3 ? "3-app-bundle" :
+      appCount === 2 ? "2-app-bundle" : "single-app";
+
+    // Determine plan tier (highest priority status across apps)
+    const hasLifetime = data.apps.some(a => a.subscriptionStatus === "lifetime");
+    const hasActive = data.apps.some(a => a.subscriptionStatus === "active");
+    const hasTrial = data.apps.some(a => a.subscriptionStatus === "trial");
+
+    let planTier: GroupedUser["planTier"];
+    if (hasLifetime) {
+      planTier = "lifetime";
+    } else if (hasActive) {
+      // TODO: Could check Stripe for yearly vs monthly
+      planTier = "monthly";
+    } else if (hasTrial) {
+      planTier = "trial";
+    } else {
+      planTier = "expired";
+    }
+
+    // Get earliest created date
+    const createdDates = data.apps
+      .map(a => a.createdAt)
+      .filter((d): d is number => d !== null);
+    const earliestCreatedAt = createdDates.length > 0 ? Math.min(...createdDates) : null;
+
+    // Get latest trial expiry
+    const trialDates = data.apps
+      .map(a => a.trialExpiresAt)
+      .filter((d): d is number => d !== null && d !== undefined);
+    const latestTrialExpiry = trialDates.length > 0 ? Math.max(...trialDates) : null;
+
+    // Check if trial has expired
+    const hasExpiredTrial = latestTrialExpiry !== null && latestTrialExpiry < now && planTier === "expired";
+
+    // Count total kids
+    const totalKids = data.apps.reduce((sum, a) => sum + (a.kidCount || 0), 0);
+
+    // Determine if user is active (has any non-expired subscription)
+    const isActive = hasLifetime || hasActive || (hasTrial && latestTrialExpiry !== null && latestTrialExpiry > now);
+
+    grouped.push({
+      email,
+      name: data.name,
+      apps: data.apps,
+      subscriptionType,
+      planTier,
+      earliestCreatedAt,
+      latestTrialExpiry,
+      hasExpiredTrial,
+      totalKids,
+      isActive,
+    });
+  }
+
+  // Sort by earliest created date descending (newest first)
+  grouped.sort((a, b) => (b.earliestCreatedAt || 0) - (a.earliestCreatedAt || 0));
+
+  return grouped;
+}
+
 function calculateAppStats(
   users: { subscriptionStatus: string }[],
   pricePerMonth: number
@@ -239,4 +375,36 @@ export async function deleteUser(
   }
 
   return { success: true, message: `Deleted ${email} from ${app}` };
+}
+
+// Grant lifetime to all apps that the user has
+export async function grantLifetimeAll(
+  email: string,
+  apps: ("safetunes" | "safetube" | "safereads")[]
+): Promise<{ success: boolean; results: { app: string; success: boolean; message: string }[] }> {
+  const results = await Promise.all(
+    apps.map(async (app) => {
+      const result = await grantLifetime(app, email);
+      return { app, ...result };
+    })
+  );
+
+  const allSuccess = results.every(r => r.success);
+  return { success: allSuccess, results };
+}
+
+// Delete user from all apps
+export async function deleteUserAll(
+  email: string,
+  apps: ("safetunes" | "safetube" | "safereads")[]
+): Promise<{ success: boolean; results: { app: string; success: boolean; message: string }[] }> {
+  const results = await Promise.all(
+    apps.map(async (app) => {
+      const result = await deleteUser(app, email);
+      return { app, ...result };
+    })
+  );
+
+  const allSuccess = results.every(r => r.success);
+  return { success: allSuccess, results };
 }

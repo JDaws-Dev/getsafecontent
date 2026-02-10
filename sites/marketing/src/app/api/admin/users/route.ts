@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { fetchAllUsers, unifyUsers, calculateStats } from "@/lib/admin-api";
+import { fetchAllUsers, unifyUsers, groupUsers, calculateStats } from "@/lib/admin-api";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -12,9 +12,10 @@ export async function GET() {
   try {
     const rawData = await fetchAllUsers();
     const users = unifyUsers(rawData);
+    const groupedUsers = groupUsers(rawData);
     const stats = calculateStats(rawData);
 
-    return NextResponse.json({ users, stats, raw: rawData });
+    return NextResponse.json({ users, groupedUsers, stats, raw: rawData });
   } catch (error) {
     console.error("Error fetching users:", error);
     return NextResponse.json(

@@ -10,6 +10,42 @@ This file maintains context between autonomous iterations.
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
 
+### safecontent-jsq.1: Unify users by email in admin dashboard (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Grouped users by email instead of by app in admin dashboard
+- Users with multiple apps now show as one row with app badges (🎵📺📚)
+- Added subscription type detection: 3-App Bundle | 2-App Bundle | Single App
+- Added trial expiry tracking with expired trial highlighting
+- Added bulk actions: Grant Lifetime All, Delete All (across all apps at once)
+
+**Files created:**
+- `sites/marketing/src/components/admin/GroupedUserTable.tsx` - New unified user table
+- `sites/marketing/src/app/api/admin/grant-lifetime-all/route.ts` - Bulk grant endpoint
+- `sites/marketing/src/app/api/admin/delete-user-all/route.ts` - Bulk delete endpoint
+
+**Files modified:**
+- `sites/marketing/src/types/admin.ts` - Added GroupedUser and AppAccess types
+- `sites/marketing/src/lib/admin-api.ts` - Added groupUsers(), grantLifetimeAll(), deleteUserAll()
+- `sites/marketing/src/app/api/admin/users/route.ts` - Returns groupedUsers
+- `sites/marketing/src/app/admin/users/page.tsx` - Uses GroupedUserTable, new modals
+
+**Key features:**
+- One row per email with app badges showing which apps they have
+- Subscription type column: 3-App Bundle | 2-App Bundle | Single App
+- Plan tier column: lifetime | monthly | trial | expired
+- Trial expiry column with "X days left" or "Expired Xd ago"
+- "Expired Trials (Conversion Opportunities)" quick filter button
+- Grant lifetime grants to ALL user's apps at once
+- Delete user deletes from ALL apps at once
+- Quick stats: Unique Users, 3-App Bundles, Lifetime, Active Trial, Expired Trials
+
+**Build verified:** npm run build passes (30 routes)
+
+---
+
 ### safecontent-1gy.17: Build central account page at /account (Feb 10, 2026 - COMPLETE)
 
 **Status:** Complete
