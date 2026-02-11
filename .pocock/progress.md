@@ -7,11 +7,12 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-d8z complete** - Local events research
+**safecontent-vlk complete** - Unified color scheme tokens
 
 As of Feb 10, 2026:
-- safecontent-jsq (Admin Dashboard) - CLOSED
-- safecontent-d8z (Local Events Research) - COMPLETE
+- safecontent-auv (Brand Consistency Epic) - IN PROGRESS
+- safecontent-vlk (Unify color scheme) - COMPLETE (tokens only)
+- Subtasks vlk.4/5/6 created for actual CTA updates
 
 Run `bd ready` to check for new issues.
 
@@ -21,6 +22,51 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-vlk: Unify color scheme across all Safe Family sites (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete (Phase 1 - Token Standardization)
+
+**What was done:**
+- Verified brand color tokens are consistent across all 4 sites
+- Standardized `.btn-brand` class across all apps:
+  - Same peach gradient: `#F5A962` → `#E88B6A`
+  - Same padding: `0.875rem 2rem`
+  - Same box-shadow: `0 4px 14px rgba(245, 169, 98, 0.3)`
+- Added `.btn-brand-outline` secondary button to all apps
+- Added `.btn-brand` alias to marketing site (alongside `.btn-peach`)
+
+**Brand color tokens (verified consistent):**
+| Token | Value |
+|-------|-------|
+| brand.cream | `#FDF8F3` |
+| brand.cream-dark | `#F5EDE4` |
+| brand.navy | `#1a1a2e` |
+| brand.navy-light | `#2d2d44` |
+| brand.peach-start | `#F5A962` |
+| brand.peach-end | `#E88B6A` |
+
+**App accent colors (kept for brand identity):**
+- SafeTunes: Purple (`#8b5cf6`)
+- SafeTube: Red/Orange (`#ef4444`)
+- SafeReads: Parchment/Amber
+
+**Files modified:**
+- `apps/safetunes/src/index.css` - Standardized btn-brand, added btn-brand-outline
+- `apps/safetube/src/index.css` - Standardized btn-brand, added btn-brand-outline
+- `apps/safereads/src/app/globals.css` - Added box-shadow, added btn-brand-outline
+- `sites/marketing/src/app/globals.css` - Added btn-brand alias, added btn-brand-outline
+
+**Follow-up subtasks created:**
+- safecontent-vlk.4: Update SafeTunes CTAs to use brand peach
+- safecontent-vlk.5: Update SafeTube CTAs to use brand peach
+- safecontent-vlk.6: Update SafeReads CTAs to use brand peach
+
+**Key decision:** Separated token standardization (this task) from actual CTA updates (subtasks). Tokens are now ready; subtasks will update individual buttons.
+
+**Build verified:** All 4 sites build successfully
+
+---
 
 ### safecontent-d8z: Research local events for Safe Family booth presence (Feb 10, 2026 - COMPLETE)
 

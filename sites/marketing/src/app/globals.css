@@ -71,17 +71,38 @@ body {
   background-color: var(--navy-light);
 }
 
-.btn-peach {
+/* Primary brand CTA - peach gradient (alias: btn-brand for cross-app consistency) */
+.btn-peach,
+.btn-brand {
   background: linear-gradient(135deg, var(--peach-start), var(--peach-end));
   color: white;
   border-radius: var(--radius-button);
   padding: 0.875rem 2rem;
   font-weight: 500;
   transition: opacity 0.2s ease;
+  box-shadow: 0 4px 14px rgba(245, 169, 98, 0.3);
 }
 
-.btn-peach:hover {
+.btn-peach:hover,
+.btn-brand:hover {
   opacity: 0.9;
+}
+
+/* Secondary brand button (outline) */
+.btn-brand-outline {
+  background: transparent;
+  color: var(--navy);
+  border: 2px solid var(--peach-start);
+  border-radius: var(--radius-button);
+  padding: 0.875rem 2rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-brand-outline:hover {
+  background: linear-gradient(135deg, var(--peach-start), var(--peach-end));
+  color: white;
+  border-color: transparent;
 }
 
 .card-soft {

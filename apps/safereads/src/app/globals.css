@@ -5,7 +5,15 @@
   --font-sans: var(--font-inter);
   --font-serif: var(--font-serif);
 
-  /* Parchment palette */
+  /* Safe Family brand colors (shared across all apps) */
+  --color-brand-cream: #FDF8F3;
+  --color-brand-cream-dark: #F5EDE4;
+  --color-brand-navy: #1a1a2e;
+  --color-brand-navy-light: #2d2d44;
+  --color-brand-peach-start: #F5A962;
+  --color-brand-peach-end: #E88B6A;
+
+  /* Parchment palette (SafeReads accent - amber/brown for books) */
   --color-parchment-50: #fdf8f0;
   --color-parchment-100: #f9eedd;
   --color-parchment-200: #f3dcba;
@@ -38,6 +46,38 @@
 
 /* Base styles */
 body {
-  background-color: var(--color-parchment-50);
+  background-color: var(--color-brand-cream);
   color: var(--color-ink-900);
+}
+
+/* Brand CTA button - peach gradient (shared across Safe Family) */
+.btn-brand {
+  background: linear-gradient(135deg, var(--color-brand-peach-start), var(--color-brand-peach-end));
+  color: white;
+  border-radius: 9999px;
+  padding: 0.875rem 2rem;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 4px 14px rgba(245, 169, 98, 0.3);
+}
+
+.btn-brand:hover {
+  opacity: 0.9;
+}
+
+/* Secondary brand button (outline) */
+.btn-brand-outline {
+  background: transparent;
+  color: var(--color-brand-navy);
+  border: 2px solid var(--color-brand-peach-start);
+  border-radius: 9999px;
+  padding: 0.875rem 2rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-brand-outline:hover {
+  background: linear-gradient(135deg, var(--color-brand-peach-start), var(--color-brand-peach-end));
+  color: white;
+  border-color: transparent;
 }
