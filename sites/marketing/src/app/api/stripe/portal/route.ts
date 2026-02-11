@@ -1,24 +1,48 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "../../../../../convex/_generated/api";
+import { getStripe } from "@/lib/stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-export async function POST(req: Request) {
+/**
+ * Stripe Customer Portal API
+ *
+ * SECURITY: This endpoint requires authentication and derives the customerId
+ * from the authenticated user's Convex record. Never trust customerId from
+ * the client - that would allow any user to access any other user's portal.
+ */
+export async function POST() {
   try {
-    // Get the customer ID from the request body or from the user session
-    const body = await req.json().catch(() => ({}));
-    const customerId = body.customerId;
-
-    if (!customerId) {
+    // 1. Authenticate the user via Convex Auth
+    const token = await convexAuthNextjsToken();
+    if (!token) {
       return NextResponse.json(
-        { error: "Customer ID is required" },
-        { status: 400 }
+        { error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
-    // Create a portal session
+    // 2. Get the current user from Convex (includes stripeCustomerId)
+    const user = await fetchQuery(api.accounts.getCurrentUser, {}, { token });
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // 3. Verify user has a Stripe customer ID
+    if (!user.stripeCustomerId) {
+      return NextResponse.json(
+        { error: "No subscription found" },
+        { status: 404 }
+      );
+    }
+
+    // 4. Create the portal session using the authenticated user's customer ID
+    const stripe = getStripe();
     const session = await stripe.billingPortal.sessions.create({
-      customer: customerId,
+      customer: user.stripeCustomerId,
       return_url: `${process.env.NEXT_PUBLIC_URL}/account`,
     });
 

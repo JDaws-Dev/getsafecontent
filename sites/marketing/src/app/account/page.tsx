@@ -114,6 +114,8 @@ export default function AccountPage() {
   };
 
   // Handle Stripe portal
+  // Note: The portal endpoint derives customerId from the authenticated session,
+  // not from the request body, to prevent unauthorized access to other users' portals
   const handleManageSubscription = async () => {
     if (!currentUser?.stripeCustomerId) return;
 
@@ -122,12 +124,12 @@ export default function AccountPage() {
       const res = await fetch("/api/stripe/portal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerId: currentUser.stripeCustomerId }),
       });
-      const data = (await res.json()) as { url?: string };
+      const data = (await res.json()) as { url?: string; error?: string };
       if (data.url) {
         window.location.href = data.url;
       } else {
+        console.error("[Account] Portal error:", data.error);
         setPortalLoading(false);
       }
     } catch {

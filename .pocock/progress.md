@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-nfh complete** - Secured checkout session endpoint
+**safecontent-v6z complete** - Secured Stripe portal endpoint
 
 As of Feb 11, 2026:
+- safecontent-v6z (Stripe portal customerId validation) - COMPLETE
 - safecontent-98h (Email capture for blog) - COMPLETE
 - safecontent-auv (Brand Consistency Epic) - COMPLETE (all subtasks done)
 - safecontent-6uh (Standardize typography) - COMPLETE
@@ -29,6 +30,39 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-v6z: Validate Stripe portal customerId from session (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** `/api/stripe/portal` took `customerId` from request body with NO authentication. Attacker could access billing portal of ANY customer by knowing/guessing their Stripe customer ID.
+
+**Security risk eliminated:**
+- Customer impersonation
+- Cancel other customers' subscriptions
+- Change payment methods
+- Download invoices with PII
+
+**Solution:**
+1. Require Convex Auth authentication via `convexAuthNextjsToken()`
+2. Look up `stripeCustomerId` from authenticated user's Convex record
+3. Never accept `customerId` from client request
+
+**Files modified:**
+- `sites/marketing/src/app/api/stripe/portal/route.ts` - Complete rewrite for secure auth
+- `sites/marketing/src/app/account/page.tsx` - Removed customerId from request body
+
+**Security model:**
+- Unauthenticated requests → 401 Unauthorized
+- No Convex user found → 404 User not found
+- User has no stripeCustomerId → 404 No subscription found
+- Authenticated user → Gets their own portal only
+
+**Pattern matched:** SafeReads `/api/stripe/portal/route.ts` already had secure implementation
+
+**Build verified:** npm run build passes (37 routes)
+
+---
 
 ### safecontent-nfh: Secure checkout session endpoint (Feb 11, 2026 - COMPLETE)
 
