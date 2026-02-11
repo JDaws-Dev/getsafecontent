@@ -27,19 +27,19 @@ function StickyCTA() {
         isVisible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-4 shadow-2xl">
+      <div className="bg-gradient-to-r from-[#F5A962] to-[#E88B6A] text-white px-4 py-4 shadow-2xl">
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1">
             <p className="font-bold text-sm">
               Start Your Free Trial
             </p>
-            <p className="text-xs text-purple-100">
+            <p className="text-xs text-white/80">
               7 days free • No credit card required
             </p>
           </div>
           <a
             href="/signup"
-            className="bg-white text-purple-700 px-6 py-3 min-h-[48px] rounded-lg font-bold text-sm hover:bg-purple-50 transition shadow-lg whitespace-nowrap flex items-center justify-center"
+            className="bg-white text-[#1a1a2e] px-6 py-3 min-h-[48px] rounded-lg font-bold text-sm hover:bg-gray-50 transition shadow-lg whitespace-nowrap flex items-center justify-center"
           >
             Try Free
           </a>

@@ -90,7 +90,7 @@ function LandingPage() {
               </Link>
               <Link
                 to="/signup"
-                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 min-h-[48px] rounded-lg font-medium transition shadow-sm flex items-center"
+                className="btn-brand min-h-[48px] rounded-lg flex items-center"
               >
                 Start 7-Day Free Trial
               </Link>
@@ -152,7 +152,7 @@ function LandingPage() {
                 </Link>
                 <Link
                   to="/signup"
-                  className="block text-center bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 min-h-[48px] rounded-lg font-medium transition flex items-center justify-center"
+                  className="btn-brand block text-center min-h-[48px] rounded-lg flex items-center justify-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Start 7-Day Free Trial
@@ -457,7 +457,7 @@ function LandingPage() {
             <div className="text-center">
               <Link
                 to="/signup"
-                className="block sm:inline-block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 sm:px-20 py-6 rounded-2xl font-bold text-xl sm:text-2xl transition shadow-lg hover:shadow-2xl transform hover:scale-105"
+                className="btn-brand block sm:inline-block px-12 sm:px-20 py-6 rounded-2xl font-bold text-xl sm:text-2xl transition shadow-lg hover:shadow-2xl transform hover:scale-105"
               >
                 Start 7-Day Free Trial
               </Link>
@@ -602,7 +602,7 @@ function LandingPage() {
 
                 <Link
                   to="/signup"
-                  className="block w-full bg-purple-600 hover:bg-purple-700 text-white text-center px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition shadow-lg hover:shadow-xl"
+                  className="btn-brand block w-full text-center rounded-lg text-base sm:text-lg"
                 >
                   Start 7-Day Free Trial
                 </Link>
@@ -778,7 +778,7 @@ function LandingPage() {
             </div>
             <Link
               to="/signup"
-              className="inline-block bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition shadow-lg hover:shadow-xl mb-4 w-full sm:w-auto"
+              className="btn-brand inline-block rounded-lg text-base sm:text-lg mb-4 w-full sm:w-auto text-center"
             >
               Start 7-Day Free Trial
             </Link>

@@ -92,7 +92,7 @@ function SignupPage() {
                 </p>
                 <Link
                   to="/login"
-                  className="block w-full bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl font-bold text-lg text-center transition"
+                  className="btn-brand block w-full rounded-xl text-lg text-center"
                 >
                   Log In
                 </Link>

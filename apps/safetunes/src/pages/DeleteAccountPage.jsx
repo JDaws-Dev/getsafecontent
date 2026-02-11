@@ -30,7 +30,7 @@ export default function DeleteAccountPage() {
 
           <a
             href="mailto:jeremiah@getsafefamily.com?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20SafeTunes%20account.%0A%0AEmail%20address%20on%20account%3A%20%0A%0AThank%20you."
-            className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition mb-6"
+            className="btn-brand inline-block rounded-lg mb-6"
           >
             Email: jeremiah@getsafefamily.com
           </a>

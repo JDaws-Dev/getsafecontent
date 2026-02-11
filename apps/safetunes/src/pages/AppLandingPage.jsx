@@ -120,7 +120,7 @@ export default function AppLandingPage() {
         {/* Parent Login */}
         <Link
           to="/login"
-          className="block w-full bg-purple-600 hover:bg-purple-700 text-white py-4 px-6 rounded-xl font-semibold text-center text-lg transition shadow-lg"
+          className="btn-brand block w-full rounded-xl text-lg"
         >
           <div className="flex items-center justify-center gap-3">
             <span className="text-2xl">👤</span>

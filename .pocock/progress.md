@@ -7,12 +7,13 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-vlk complete** - Unified color scheme tokens
+**safecontent-vlk.1 complete** - SafeTunes CTA buttons updated to brand peach
 
 As of Feb 10, 2026:
 - safecontent-auv (Brand Consistency Epic) - IN PROGRESS
 - safecontent-vlk (Unify color scheme) - COMPLETE (tokens only)
-- Subtasks vlk.4/5/6 created for actual CTA updates
+- safecontent-vlk.1 (SafeTunes CTAs) - COMPLETE
+- Remaining: vlk.2 (SafeTube), vlk.3 (SafeReads)
 
 Run `bd ready` to check for new issues.
 
@@ -22,6 +23,30 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-vlk.1: SafeTunes - Change CTA buttons from purple to peach gradient (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Updated "Massive CTA" button in LandingPage.jsx from purple gradient to btn-brand
+- Updated ImprovedHero.jsx primary CTA from white-on-purple to btn-brand (peach gradient)
+- Updated StickyCTA.jsx background from purple gradient to peach gradient
+- StickyCTA button changed from purple text to navy (#1a1a2e)
+
+**Files modified:**
+- `apps/safetunes/src/pages/LandingPage.jsx` - Line 458-462, massive CTA now uses btn-brand
+- `apps/safetunes/src/components/landing/ImprovedHero.jsx` - Line 85-90, primary CTA now uses btn-brand
+- `apps/safetunes/src/components/landing/StickyCTA.jsx` - Background now peach gradient, button text navy
+
+**Key decisions:**
+- Hero secondary CTA ("See How It Works") kept white/transparent - it's not a conversion CTA
+- StickyCTA button uses white bg + navy text for contrast against peach bar
+- Kept existing header and footer CTAs which already used btn-brand
+
+**Build verified:** npm run build + npx convex dev --once pass
+
+---
 
 ### safecontent-vlk: Unify color scheme across all Safe Family sites (Feb 10, 2026 - COMPLETE)
 

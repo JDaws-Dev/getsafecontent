@@ -235,7 +235,7 @@ function LoginPage() {
               <button
                 type="submit"
                 disabled={loading || googleLoading}
-                className="w-full min-h-[48px] bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-brand w-full min-h-[48px] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>

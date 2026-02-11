@@ -96,7 +96,7 @@ function FoundBadMusicPage() {
               </Link>
               <Link
                 to="/signup"
-                className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-semibold transition"
+                className="btn-brand rounded-lg"
               >
                 Start Free Trial
               </Link>
@@ -149,7 +149,7 @@ function FoundBadMusicPage() {
                 <div className="mt-8">
                   <Link
                     to="/signup"
-                    className="inline-block bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition shadow-lg"
+                    className="btn-brand inline-block rounded-xl text-lg"
                   >
                     Fix This Now - Start Free Trial
                   </Link>
@@ -422,7 +422,7 @@ function FoundBadMusicPage() {
 
               <Link
                 to="/signup"
-                className="inline-block bg-purple-600 hover:bg-purple-700 text-white px-10 py-4 rounded-xl font-bold text-lg transition shadow-lg mb-6"
+                className="btn-brand inline-block rounded-xl text-lg mb-6"
               >
                 Start 7-Day Free Trial
               </Link>
