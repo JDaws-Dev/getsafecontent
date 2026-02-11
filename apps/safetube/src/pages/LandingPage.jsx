@@ -928,37 +928,51 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="py-16 bg-white">
+      <section id="pricing" className="py-16 bg-gray-50 scroll-mt-20">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-lg mx-auto">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Simple Pricing</h2>
-              <p className="text-gray-600">One plan. Everything included. Cancel anytime.</p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">Simple Pricing</h2>
+              <p className="text-base sm:text-lg text-gray-600">
+                One plan. Everything included. Cancel anytime.
+              </p>
             </div>
 
-            <div className="max-w-md mx-auto">
-              <div className="bg-gradient-to-br from-red-600 to-orange-500 rounded-2xl p-8 text-white shadow-xl">
+            <div className="bg-white rounded-2xl shadow-xl border-2 border-red-500 overflow-hidden">
+              <div className="p-6 sm:p-8">
                 <div className="text-center mb-6">
-                  <div className="text-5xl font-bold mb-1">$4.99</div>
-                  <div className="text-white/80">/month after trial</div>
+                  <p className="text-sm font-medium text-gray-600 mb-2">
+                    7-day free trial, then
+                  </p>
+                  <div className="flex items-center justify-center mb-2">
+                    <span className="text-4xl sm:text-5xl font-bold text-gray-900">$4.99</span>
+                    <span className="text-gray-600 ml-2 text-lg sm:text-xl">/month</span>
+                  </div>
                 </div>
 
-                <ul className="space-y-3 mb-8">
-                  {['7-day free trial', 'No credit card to start', 'Unlimited children', 'Unlimited channels', 'Time limits included', 'Cancel anytime'].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <svg className="w-5 h-5 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+                  {[
+                    'Unlimited children',
+                    'Unlimited approved channels',
+                    'Time limits included',
+                    'Manage from any device',
+                    'No credit card to start',
+                    'Cancel anytime'
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center">
+                      <svg className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
-                      <span>{item}</span>
+                      <span className="text-sm sm:text-base text-gray-700">{item}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Link
                   to="/signup"
-                  className="block w-full bg-white text-red-600 hover:bg-gray-100 text-center py-4 rounded-xl font-bold text-lg transition"
+                  className="btn-brand block w-full text-center rounded-lg text-base sm:text-lg"
                 >
-                  Get 7 Days Free
+                  Start 7-Day Free Trial
                 </Link>
               </div>
             </div>
