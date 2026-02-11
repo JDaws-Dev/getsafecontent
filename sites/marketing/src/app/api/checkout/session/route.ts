@@ -6,8 +6,11 @@ type AppId = "safetunes" | "safetube" | "safereads";
 /**
  * GET /api/checkout/session?session_id=cs_xxx
  *
- * Retrieves checkout session details including the apps metadata.
+ * Retrieves non-sensitive checkout session details (apps list only).
  * Used by the success page to know which apps the user purchased.
+ *
+ * Security: Only returns apps metadata, not PII (email, subscription_id, etc.)
+ * This prevents information disclosure if session IDs are leaked/guessed.
  */
 export async function GET(req: NextRequest) {
   try {
@@ -21,8 +24,36 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Validate session ID format (Stripe checkout sessions start with cs_)
+    if (!sessionId.startsWith("cs_")) {
+      return NextResponse.json(
+        { error: "Invalid session ID format" },
+        { status: 400 }
+      );
+    }
+
     const stripe = getStripe();
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    let session;
+    try {
+      session = await stripe.checkout.sessions.retrieve(sessionId);
+    } catch (stripeError) {
+      // Stripe throws for invalid/nonexistent session IDs
+      // Return generic error to avoid information disclosure
+      return NextResponse.json(
+        { error: "Session not found" },
+        { status: 404 }
+      );
+    }
+
+    // Only return data for completed sessions
+    // Pending sessions shouldn't be accessible from success page
+    if (session.status !== "complete") {
+      return NextResponse.json(
+        { error: "Session not completed" },
+        { status: 400 }
+      );
+    }
 
     // Parse apps from metadata
     const appsString = session.metadata?.apps || "";
@@ -37,16 +68,16 @@ export async function GET(req: NextRequest) {
       apps.push("safetunes", "safetube", "safereads");
     }
 
+    // SECURITY: Only return non-sensitive data
+    // Do NOT return: customer_email, payment_status, subscription_id
     return NextResponse.json({
       apps,
-      customer_email: session.customer_email || null,
-      payment_status: session.payment_status,
-      subscription_id: typeof session.subscription === "string" ? session.subscription : null,
     });
   } catch (error) {
     console.error("Session retrieval error:", error);
+    // Generic error message to avoid information disclosure
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to retrieve session" },
+      { error: "Failed to retrieve session" },
       { status: 500 }
     );
   }

@@ -9,7 +9,6 @@ type AppId = "safetunes" | "safetube" | "safereads";
 
 interface SessionData {
   apps: AppId[];
-  email: string | null;
 }
 
 // Loading component
@@ -42,7 +41,7 @@ function SuccessContent() {
       if (!sessionId) {
         // No session ID - show default success page
         setLoading(false);
-        setSessionData({ apps: ["safetunes", "safetube", "safereads"], email: null });
+        setSessionData({ apps: ["safetunes", "safetube", "safereads"] });
         return;
       }
 
@@ -54,12 +53,11 @@ function SuccessContent() {
         const data = await response.json();
         setSessionData({
           apps: data.apps || ["safetunes", "safetube", "safereads"],
-          email: data.customer_email || null,
         });
       } catch (err) {
         console.error("Error fetching session:", err);
         // Default to all apps on error
-        setSessionData({ apps: ["safetunes", "safetube", "safereads"], email: null });
+        setSessionData({ apps: ["safetunes", "safetube", "safereads"] });
       } finally {
         setLoading(false);
       }

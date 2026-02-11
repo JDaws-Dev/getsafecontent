@@ -7,9 +7,9 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-98h complete** - Email capture opt-in added to blog
+**safecontent-nfh complete** - Secured checkout session endpoint
 
-As of Feb 10, 2026:
+As of Feb 11, 2026:
 - safecontent-98h (Email capture for blog) - COMPLETE
 - safecontent-auv (Brand Consistency Epic) - COMPLETE (all subtasks done)
 - safecontent-6uh (Standardize typography) - COMPLETE
@@ -29,6 +29,35 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-nfh: Secure checkout session endpoint (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** `/api/checkout/session?session_id=cs_xxx` had NO authentication. Anyone with a session ID could retrieve customer email, subscription details, and app list. Session IDs could leak from error logs or be guessed.
+
+**Solution:** Removed sensitive data from response. Endpoint now only returns `apps` list (which is all the success page needs).
+
+**Security improvements:**
+1. Validate session ID format (must start with `cs_`)
+2. Return 404 for invalid/nonexistent sessions (no info disclosure)
+3. Only return data for completed sessions (status === "complete")
+4. Removed PII from response: customer_email, payment_status, subscription_id
+5. Generic error messages to prevent information disclosure
+
+**Files modified:**
+- `sites/marketing/src/app/api/checkout/session/route.ts` - Security hardening
+- `sites/marketing/src/app/success/page.tsx` - Removed email from SessionData type
+
+**Tests verified:**
+- Invalid format (no cs_) → 400 "Invalid session ID format"
+- Valid format, nonexistent → 404 "Session not found"
+- Missing session_id → 400 "session_id is required"
+- Incomplete sessions → 400 "Session not completed"
+
+**Build verified:** npm run build passes (37 routes)
+
+---
 
 ### safecontent-98h: Add email capture opt-in to blog (Feb 10, 2026 - COMPLETE)
 
