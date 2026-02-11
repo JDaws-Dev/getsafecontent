@@ -7,10 +7,11 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-4vh complete** - Header navigation standardized across all sites
+**safecontent-age complete** - Footer design unified across all sites
 
 As of Feb 10, 2026:
 - safecontent-auv (Brand Consistency Epic) - IN PROGRESS
+- safecontent-age (Unify footer design) - COMPLETE
 - safecontent-4vh (Standardize header navigation) - COMPLETE
 - safecontent-vlk (Unify color scheme) - COMPLETE with all subtasks
 - safecontent-uhb (SafeReads pricing UX) - COMPLETE
@@ -23,6 +24,35 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-age: Unify footer design across all Safe Family sites (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Unified all footers to use same dark navy background (`#1a1a2e`)
+- Converted all footers to centered row layout (matching Marketing site pattern)
+- Standardized structure: App links → Legal links → Contact → Copyright
+- Updated contact email to `jeremiah@getsafefamily.com` everywhere
+- Updated copyright to "© {year} Safe Family" everywhere
+- All sites now link to all 3 apps (SafeTunes, SafeTube, SafeReads)
+
+**Files modified:**
+- `apps/safereads/src/components/Footer.tsx` - Complete rewrite to match pattern
+- `apps/safetunes/src/pages/LandingPage.jsx` - Footer section rewritten
+- `apps/safetube/src/pages/LandingPage.jsx` - Footer section rewritten
+- Marketing site footer unchanged (already the canonical pattern)
+
+**Key decisions:**
+- Used Marketing site footer as canonical design
+- Removed 4-column grid layouts (SafeTunes, SafeReads) in favor of simple centered rows
+- Removed Support/Login links from SafeTube footer (those are in header now)
+- Kept Amazon affiliate disclosure in SafeReads footer (conditional)
+- Standardized text opacity: app links 70%, legal/contact 50%, copyright 40%
+
+**Build verified:** All 4 sites build + Convex dev --once pass
+
+---
 
 ### safecontent-4vh: Standardize header navigation across all sites (Feb 10, 2026 - COMPLETE)
 

@@ -1031,39 +1031,44 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-950 text-gray-400 py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col gap-6">
-            {/* Safe Family Links */}
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-sm">
-              <a href="https://getsafetunes.com" target="_blank" rel="noopener noreferrer" className="font-medium text-white/70 hover:text-white transition">
-                SafeTunes
-              </a>
+      <footer className="bg-[#1a1a2e] text-white py-10">
+        <div className="container mx-auto px-4 max-w-5xl">
+          {/* App Links */}
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
+            <a href="https://getsafetunes.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+              SafeTunes
+            </a>
+            <a href="https://getsafetube.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+              SafeTube
+            </a>
+            <a href="https://getsafereads.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+              SafeReads
+            </a>
+          </div>
+
+          {/* Legal Links */}
+          <div className="mt-6 flex flex-wrap justify-center gap-4 sm:gap-6">
+            <span className="flex items-center gap-4 sm:gap-6">
+              <Link to="/privacy" className="text-sm text-white/50 hover:text-white/70 transition-colors">Privacy</Link>
               <span className="text-white/30 hidden sm:inline">|</span>
-              <a href="https://getsafereads.com" target="_blank" rel="noopener noreferrer" className="font-medium text-white/70 hover:text-white transition">
-                SafeReads
-              </a>
-              <span className="text-white/30 hidden sm:inline">|</span>
-              <a href="https://getsafefamily.com" target="_blank" rel="noopener noreferrer" className="font-medium text-white/70 hover:text-white transition">
-                Get All 3 Apps
-              </a>
-            </div>
-            {/* Legal Links */}
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-sm">
-              <Link to="/privacy" className="hover:text-white transition">Privacy</Link>
-              <span className="text-white/30 hidden sm:inline">|</span>
-              <Link to="/terms" className="hover:text-white transition">Terms</Link>
-              <span className="text-white/30 hidden sm:inline">|</span>
-              <Link to="/support" className="hover:text-white transition">Support</Link>
-              <span className="text-white/30 hidden sm:inline">|</span>
-              <Link to="/login" className="hover:text-white transition">Parent Login</Link>
-              <span className="text-white/30 hidden sm:inline">|</span>
-              <Link to="/play" className="hover:text-white transition">Kid Login</Link>
-            </div>
-            {/* Copyright */}
-            <div className="text-center">
-              <p className="text-sm text-white/40">&copy; {new Date().getFullYear()} SafeTube. All rights reserved.</p>
-            </div>
+            </span>
+            <span className="flex items-center gap-4 sm:gap-6">
+              <Link to="/terms" className="text-sm text-white/50 hover:text-white/70 transition-colors">Terms</Link>
+            </span>
+          </div>
+
+          {/* Contact */}
+          <div className="mt-6 text-center">
+            <a href="mailto:jeremiah@getsafefamily.com" className="text-sm text-white/50 hover:text-white/70 transition-colors">
+              jeremiah@getsafefamily.com
+            </a>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-white/40">
+              © {new Date().getFullYear()} Safe Family
+            </p>
           </div>
         </div>
       </footer>

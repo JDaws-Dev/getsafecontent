@@ -813,61 +813,44 @@ function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 sm:py-12">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8">
-            <div>
-              <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Product</h4>
-              <ul className="space-y-1.5 sm:space-y-2 text-gray-400 text-xs sm:text-sm">
-                <li><a href="#pricing" className="hover:text-white transition">Pricing</a></li>
-                <li><a href="#faq" className="hover:text-white transition">FAQ</a></li>
-                <li><a href="#how-it-works" className="hover:text-white transition">How It Works</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Safe Family</h4>
-              <ul className="space-y-1.5 sm:space-y-2 text-gray-400 text-xs sm:text-sm">
-                <li>
-                  <a href="https://getsafetube.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">
-                    SafeTube
-                  </a>
-                </li>
-                <li>
-                  <a href="https://getsafereads.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">
-                    SafeReads
-                  </a>
-                </li>
-                <li>
-                  <a href="https://getsafefamily.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">
-                    Get All 3 Apps
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Contact</h4>
-              <ul className="space-y-1.5 sm:space-y-2 text-gray-400 text-xs sm:text-sm">
-                <li>
-                  <a href="mailto:jeremiah@getsafefamily.com" className="hover:text-white transition">
-                    jeremiah@getsafefamily.com
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div className="col-span-1 sm:col-span-2 md:col-span-1">
-              <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">SafeTunes</h4>
-              <p className="text-gray-400 text-xs sm:text-sm">
-                Built by a teacher, uncle, and soon-to-be stepdad who wanted better for the kids in his life.
-              </p>
-            </div>
+      <footer className="bg-[#1a1a2e] text-white py-10">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
+          {/* App Links */}
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
+            <a href="https://getsafetunes.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+              SafeTunes
+            </a>
+            <a href="https://getsafetube.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+              SafeTube
+            </a>
+            <a href="https://getsafereads.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+              SafeReads
+            </a>
           </div>
-          <div className="border-t border-gray-800 pt-6 sm:pt-8 text-center text-gray-400 text-xs sm:text-sm">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-              <Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link>
-              <span className="hidden sm:inline">•</span>
-              <Link to="/terms" className="hover:text-white transition">Terms of Service</Link>
-            </div>
-            <p>&copy; 2026 SafeTunes. All rights reserved.</p>
+
+          {/* Legal Links */}
+          <div className="mt-6 flex flex-wrap justify-center gap-4 sm:gap-6">
+            <span className="flex items-center gap-4 sm:gap-6">
+              <Link to="/privacy" className="text-sm text-white/50 hover:text-white/70 transition-colors">Privacy</Link>
+              <span className="text-white/30 hidden sm:inline">|</span>
+            </span>
+            <span className="flex items-center gap-4 sm:gap-6">
+              <Link to="/terms" className="text-sm text-white/50 hover:text-white/70 transition-colors">Terms</Link>
+            </span>
+          </div>
+
+          {/* Contact */}
+          <div className="mt-6 text-center">
+            <a href="mailto:jeremiah@getsafefamily.com" className="text-sm text-white/50 hover:text-white/70 transition-colors">
+              jeremiah@getsafefamily.com
+            </a>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-white/40">
+              © {new Date().getFullYear()} Safe Family
+            </p>
           </div>
         </div>
       </footer>
