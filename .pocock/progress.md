@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-6uh complete** - Typography standardized with Inter font
+**safecontent-98h complete** - Email capture opt-in added to blog
 
 As of Feb 10, 2026:
+- safecontent-98h (Email capture for blog) - COMPLETE
 - safecontent-auv (Brand Consistency Epic) - COMPLETE (all subtasks done)
 - safecontent-6uh (Standardize typography) - COMPLETE
 - safecontent-hl9 (Cross-promotion between apps) - COMPLETE
@@ -28,6 +29,38 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-98h: Add email capture opt-in to blog (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Created EmailCapture component with form for name + email
+- Created /api/newsletter/subscribe endpoint using Resend Contacts API
+- Added EmailCapture to blog post pages (between social share and SignupCTA)
+- Created free guide landing page at /guides/keeping-kids-safe-online
+
+**Files created:**
+- `sites/marketing/src/components/blog/EmailCapture.tsx` - Form component
+- `sites/marketing/src/app/api/newsletter/subscribe/route.ts` - Resend integration
+- `sites/marketing/src/app/guides/keeping-kids-safe-online/page.tsx` - Guide page
+
+**Files modified:**
+- `sites/marketing/src/app/blog/[slug]/page.tsx` - Added EmailCapture import + usage
+
+**Key decisions:**
+- Used Resend Contacts API (not separate Mailchimp/ConvertKit) - already using Resend for transactional
+- Requires RESEND_NEWSLETTER_AUDIENCE_ID env var to be set in Vercel
+- Welcome email includes link to guide + product CTAs
+- Form has success/error states with proper UX
+
+**Env var needed:**
+Create audience in Resend dashboard, then set:
+- `RESEND_NEWSLETTER_AUDIENCE_ID` in Vercel production
+
+**Build verified:** npm run build passes (36 routes)
+
+---
 
 ### safecontent-6uh: Standardize typography across all Safe Family sites (Feb 10, 2026 - COMPLETE)
 

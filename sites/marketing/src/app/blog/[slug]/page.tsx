@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import SocialShare from "@/components/blog/SocialShare";
 import SignupCTA from "@/components/blog/SignupCTA";
+import EmailCapture from "@/components/blog/EmailCapture";
 import { posts } from "#site/content";
 import { Calendar, ArrowLeft, User } from "lucide-react";
 import { MDXContent } from "@/components/blog/MDXContent";
@@ -231,8 +232,13 @@ export default async function PostPage({ params }: PostPageProps) {
             <SocialShare url={postUrl} title={post.title} />
           </div>
 
-          {/* Bottom CTA */}
+          {/* Email capture */}
           <div className="mt-12">
+            <EmailCapture />
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="mt-8">
             <SignupCTA
               product={
                 post.category === "General"
