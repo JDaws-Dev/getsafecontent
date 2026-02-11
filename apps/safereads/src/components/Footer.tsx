@@ -83,7 +83,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="https://getsafecontent.vercel.app"
+                  href="https://getsafefamily.com"
                   className="transition-colors hover:text-white"
                   target="_blank"
                   rel="noopener noreferrer"

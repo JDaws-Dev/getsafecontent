@@ -1037,7 +1037,7 @@ export default function LandingPage() {
                 SafeReads
               </a>
               <span className="text-white/30 hidden sm:inline">|</span>
-              <a href="https://getsafecontent.vercel.app" target="_blank" rel="noopener noreferrer" className="font-medium text-white/70 hover:text-white transition">
+              <a href="https://getsafefamily.com" target="_blank" rel="noopener noreferrer" className="font-medium text-white/70 hover:text-white transition">
                 Get All 3 Apps
               </a>
             </div>

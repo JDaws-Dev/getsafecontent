@@ -815,7 +815,7 @@ function LandingPage() {
                   </a>
                 </li>
                 <li>
-                  <a href="https://getsafecontent.vercel.app" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">
+                  <a href="https://getsafefamily.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">
                     Get All 3 Apps
                   </a>
                 </li>
