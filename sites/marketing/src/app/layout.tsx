@@ -85,6 +85,7 @@ export const metadata: Metadata = {
   },
   other: {
     "theme-color": "#4F46E5",
+    "p:domain_verify": "0c626a8d2f5246656e2e45a968e60c60",
   },
 };
 
