@@ -7,10 +7,11 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-4nu complete** - Pricing cards standardized across all sites
+**safecontent-my1 complete** - Logo styling and Safe Family branding unified
 
 As of Feb 10, 2026:
 - safecontent-auv (Brand Consistency Epic) - IN PROGRESS
+- safecontent-my1 (Unify logo styling and branding) - COMPLETE
 - safecontent-4nu (Standardize pricing cards) - COMPLETE
 - safecontent-age (Unify footer design) - COMPLETE
 - safecontent-4vh (Standardize header navigation) - COMPLETE
@@ -25,6 +26,42 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-my1: Unify logo styling and Safe Family branding (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Updated SafeReads navbar logo to use colored rounded box (amber/orange gradient matching brand)
+- Added "A Safe Family App" tagline to footer of all 3 apps (SafeTunes, SafeTube, SafeReads)
+- Created SVG favicon for SafeReads using consistent style (amber/orange gradient with book icon)
+- Updated SafeReads Next.js metadata to use new SVG favicon
+
+**Files modified:**
+- `apps/safereads/src/components/Navbar.tsx` - Updated logo to use gradient background box
+- `apps/safereads/src/components/Footer.tsx` - Added "A Safe Family App" tagline
+- `apps/safereads/src/app/layout.tsx` - Updated favicon metadata to use SVG
+- `apps/safetube/src/pages/LandingPage.jsx` - Added "A Safe Family App" tagline
+- `apps/safetunes/src/pages/LandingPage.jsx` - Added "A Safe Family App" tagline
+
+**Files created:**
+- `apps/safereads/public/favicon.svg` - New SVG favicon with amber/orange gradient
+
+**Logo pattern (now consistent across apps):**
+- SafeTunes: Purple/pink gradient rounded box with shield+music note icon
+- SafeTube: Red/orange gradient rounded box with play button icon
+- SafeReads: Amber/orange gradient rounded box with book icon
+- Marketing: Indigo/purple gradient rounded box with shield icon
+
+**Key decisions:**
+- Used rounded-xl for icon boxes (matches marketing site pattern)
+- Tagline links to getsafefamily.com for cross-promotion
+- SVG favicon uses same gradient as navbar logo for consistency
+- Kept existing favicon styles for SafeTunes/SafeTube (already consistent)
+
+**Build verified:** All 4 sites build + Convex dev --once pass
+
+---
 
 ### safecontent-4nu: Standardize pricing card design across all sites (Feb 10, 2026 - COMPLETE)
 

@@ -27,6 +27,10 @@ export const metadata: Metadata = {
   },
   description:
     "AI-powered book content reviews for parents. Search books, get objective content reviews to make informed decisions.",
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   alternates: {
     canonical: "/",
   },

@@ -16,7 +16,9 @@ export function Navbar() {
     <nav className="border-b border-parchment-200 bg-parchment-50">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <BookOpen className="h-6 w-6 text-parchment-700" />
+          <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+            <BookOpen className="h-5 w-5 text-white" />
+          </div>
           <span className="font-serif text-xl font-bold text-ink-900">
             SafeReads
           </span>

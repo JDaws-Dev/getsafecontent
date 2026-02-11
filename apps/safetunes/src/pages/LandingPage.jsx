@@ -838,8 +838,14 @@ function LandingPage() {
             </a>
           </div>
 
-          {/* Copyright */}
+          {/* Tagline + Copyright */}
           <div className="mt-6 text-center">
+            <a
+              href="https://getsafefamily.com"
+              className="inline-block text-xs text-white/50 hover:text-white/70 transition-colors mb-2"
+            >
+              A Safe Family App
+            </a>
             <p className="text-sm text-white/40">
               © {new Date().getFullYear()} Safe Family
             </p>
