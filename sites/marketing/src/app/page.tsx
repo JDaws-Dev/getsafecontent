@@ -6,6 +6,7 @@ import ProblemSolutionSection from "@/components/landing/ProblemSolutionSection"
 import AppCards from "@/components/landing/AppCards";
 import DemoSection from "@/components/demo/DemoSection";
 import Testimonials from "@/components/landing/Testimonials";
+import BlogTeaser from "@/components/landing/BlogTeaser";
 import FAQSection from "@/components/landing/FAQSection";
 import PricingSection from "@/components/landing/PricingSection";
 
@@ -30,10 +31,13 @@ export default function Home() {
         {/* 5. Social Proof - Testimonials */}
         <Testimonials />
 
-        {/* 6. FAQ - Address objections */}
+        {/* 6. Blog Teaser - Build trust & SEO */}
+        <BlogTeaser />
+
+        {/* 7. FAQ - Address objections */}
         <FAQSection />
 
-        {/* 7. Pricing - Bundle comparison + checkout */}
+        {/* 8. Pricing - Bundle comparison + checkout */}
         <PricingSection />
       </main>
       <Footer />
