@@ -85,13 +85,14 @@ curl "https://exuberant-puffin-838.convex.site/adminDashboard?key=KEY&format=jso
 |-----|---------|-------|
 | SafeTunes | $4.99 | 7 days |
 | SafeTube | $4.99 | 7 days |
-| SafeReads | $2.99 | 7 days |
+| SafeReads | $4.99 | 7 days |
 
 ### Bundle (Safe Family)
 | Plan | Price |
 |------|-------|
-| Monthly | $9.99/mo |
-| Yearly | $99/year |
+| 2 Apps | $7.99/mo |
+| 3 Apps Monthly | $9.99/mo |
+| 3 Apps Yearly | $99/year |
 
 **Stripe IDs:**
 - Product: `prod_TvRXoGfAONo3nA`

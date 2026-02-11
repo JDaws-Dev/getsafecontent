@@ -26,8 +26,10 @@ const categoryColors: Record<string, string> = {
 
 export default function BlogPage() {
   // Sort posts by date (newest first) and filter published only
+  // Also filter out future-dated posts (scheduled publishing)
+  const now = new Date();
   const publishedPosts = posts
-    .filter((post) => post.published)
+    .filter((post) => post.published && new Date(post.date) <= now)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const featuredPost = publishedPosts.find((post) => post.featured);

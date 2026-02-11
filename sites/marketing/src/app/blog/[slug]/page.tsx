@@ -14,7 +14,10 @@ interface PostPageProps {
 }
 
 function getPostBySlug(slug: string) {
-  return posts.find((post) => post.slug === slug && post.published);
+  const now = new Date();
+  return posts.find(
+    (post) => post.slug === slug && post.published && new Date(post.date) <= now
+  );
 }
 
 export async function generateStaticParams() {
@@ -126,11 +129,15 @@ export default async function PostPage({ params }: PostPageProps) {
     },
   };
 
-  // Get related posts (same category, excluding current)
+  // Get related posts (same category, excluding current, only past dates)
+  const now = new Date();
   const relatedPosts = posts
     .filter(
       (p) =>
-        p.published && p.category === post.category && p.slug !== post.slug
+        p.published &&
+        p.category === post.category &&
+        p.slug !== post.slug &&
+        new Date(p.date) <= now
     )
     .slice(0, 3);
 
