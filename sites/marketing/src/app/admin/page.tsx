@@ -2,6 +2,7 @@ import { fetchAllUsers, unifyUsers, calculateStats, groupUsers, calculateRevenue
 import { StatsCards } from "@/components/admin/StatsCards";
 import { RecentSignups } from "@/components/admin/RecentSignups";
 import { RevenueCard } from "@/components/admin/RevenueCard";
+import { NewsletterCard } from "@/components/admin/NewsletterCard";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +38,10 @@ export default async function AdminPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RecentSignups users={users} />
+        <NewsletterCard />
+      </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100">
           <div className="px-5 py-4 border-b border-gray-100">

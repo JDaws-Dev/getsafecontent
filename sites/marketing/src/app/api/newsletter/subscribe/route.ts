@@ -127,7 +127,7 @@ function getWelcomeEmailHtml(firstName: string | null): string {
       <h2 style="color: white; margin: 0 0 12px 0; font-size: 20px;">10 Ways to Keep Your Kids Safe Online</h2>
       <p style="color: rgba(255,255,255,0.9); margin: 0 0 16px 0; font-size: 14px;">Practical tips every parent needs in 2026</p>
       <a href="https://getsafefamily.com/guides/keeping-kids-safe-online" style="display: inline-block; background: white; color: #6366f1; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-        Download the Guide →
+        Read the Guide →
       </a>
     </div>
 
