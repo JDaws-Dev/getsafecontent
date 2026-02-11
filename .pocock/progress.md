@@ -7,10 +7,11 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-hl9 complete** - Cross-promotion banners added to all 3 apps
+**safecontent-6uh complete** - Typography standardized with Inter font
 
 As of Feb 10, 2026:
-- safecontent-auv (Brand Consistency Epic) - IN PROGRESS (1 subtask remaining: 6uh typography)
+- safecontent-auv (Brand Consistency Epic) - COMPLETE (all subtasks done)
+- safecontent-6uh (Standardize typography) - COMPLETE
 - safecontent-hl9 (Cross-promotion between apps) - COMPLETE
 - safecontent-my1 (Unify logo styling and branding) - COMPLETE
 - safecontent-4nu (Standardize pricing cards) - COMPLETE
@@ -27,6 +28,45 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-6uh: Standardize typography across all Safe Family sites (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Standardized all sites to use Inter as the primary font family
+- SafeTunes: Added Inter via Google Fonts CDN + CSS font-family declaration
+- SafeTube: Added Inter via Google Fonts CDN + CSS font-family declaration
+- Marketing + SafeReads already used Inter via next/font
+
+**Files modified:**
+- `apps/safetunes/index.html` - Added Google Fonts preconnect + Inter stylesheet
+- `apps/safetunes/src/index.css` - Added font-family declaration for body
+- `apps/safetube/index.html` - Added Google Fonts preconnect + Inter stylesheet
+- `apps/safetube/src/index.css` - Updated font-family declaration for body
+
+**Typography audit findings:**
+| Site | Before | After |
+|------|--------|-------|
+| Marketing | Inter (next/font) | Inter (no change) |
+| SafeReads | Inter + Libre Baskerville | Inter + Libre Baskerville (no change) |
+| SafeTunes | System stack | Inter |
+| SafeTube | System stack (-apple-system...) | Inter |
+
+**Heading scale (largely consistent):**
+- H1 hero: `text-3xl sm:text-4xl lg:text-5xl` or `text-4xl sm:text-5xl lg:text-6xl`
+- H2 sections: `text-2xl sm:text-3xl` or `text-3xl sm:text-4xl`
+- SafeReads uses `font-serif` on headings for book-like brand feel (kept intentionally)
+
+**Key decisions:**
+- Used Google Fonts CDN for Vite apps (simpler than bundling)
+- Added `preconnect` hints for performance
+- Kept SafeReads serif accent - intentional brand differentiation
+- Heading scales are close enough; standardizing further would change visual hierarchy unnecessarily
+
+**Build verified:** All 4 sites build + Convex dev --once pass
+
+---
 
 ### safecontent-hl9: Add cross-promotion between Safe Family apps (Feb 10, 2026 - COMPLETE)
 
