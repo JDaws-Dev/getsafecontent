@@ -80,6 +80,9 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
   },
   manifest: "/manifest.json",
+  verification: {
+    google: "m0SyxtsEhTIrJ7KGMXJjThIC1MTRLeEgvHP-YNx1AhE",
+  },
   other: {
     "theme-color": "#4F46E5",
   },
