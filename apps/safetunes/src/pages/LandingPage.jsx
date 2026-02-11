@@ -804,6 +804,63 @@ function LandingPage() {
         </div>
       </section>
 
+      {/* Safe Family Bundle Cross-Promotion */}
+      <section className="py-10 bg-gradient-to-r from-brand-peach-start via-[#F5A962] to-brand-peach-end">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <p className="text-sm font-medium text-white/90 mb-2">Save with the Safe Family Bundle</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">
+              Get all 3 apps for $9.99/month
+            </h3>
+            <p className="text-white/80 text-sm mb-6 max-w-xl mx-auto">
+              Protect your family across music, videos, and books — all in one subscription.
+            </p>
+
+            {/* Other apps */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+              {/* SafeTube */}
+              <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
+                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-white">SafeTube</p>
+                  <p className="text-xs text-white/70">Kid-safe YouTube</p>
+                </div>
+              </div>
+
+              {/* SafeReads */}
+              <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-white">SafeReads</p>
+                  <p className="text-xs text-white/70">AI book screening</p>
+                </div>
+              </div>
+            </div>
+
+            <a
+              href="https://getsafefamily.com/signup"
+              className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-gray-100 px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg"
+            >
+              <span>Get the Bundle</span>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </a>
+            <p className="text-xs text-white/70 mt-3">
+              <span className="line-through">$14.97/mo</span> → $9.99/mo · Save 33%
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-[#1a1a2e] text-white py-10">
         <div className="container mx-auto px-4 sm:px-6 max-w-5xl">

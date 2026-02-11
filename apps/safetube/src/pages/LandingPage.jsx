@@ -1015,31 +1015,59 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SafeTunes Cross-Promotion */}
-      <section className="py-10 bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600">
+      {/* Safe Family Bundle Cross-Promotion */}
+      <section className="py-10 bg-gradient-to-r from-[#F5A962] via-[#F5A962] to-[#E88B6A]">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                  <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
+          <div className="max-w-4xl mx-auto text-center">
+            <p className="text-sm font-medium text-white/90 mb-2">Save with the Safe Family Bundle</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">
+              Get all 3 apps for $9.99/month
+            </h3>
+            <p className="text-white/80 text-sm mb-6 max-w-xl mx-auto">
+              Protect your family across music, videos, and books — all in one subscription.
+            </p>
+
+            {/* Other apps */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+              {/* SafeTunes */}
+              <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
                     <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
                   </svg>
                 </div>
-                <div className="text-white">
-                  <p className="text-sm font-medium text-white/80">Also from our team</p>
-                  <p className="text-lg font-bold">Need to control Apple Music too?</p>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-white">SafeTunes</p>
+                  <p className="text-xs text-white/70">Kid-safe Apple Music</p>
                 </div>
               </div>
-              <a
-                href="https://getsafetunes.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-white text-purple-600 hover:bg-gray-100 px-6 py-3 rounded-xl font-bold text-sm transition whitespace-nowrap shadow-lg"
-              >
-                Try SafeTunes →
-              </a>
+
+              {/* SafeReads */}
+              <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-white">SafeReads</p>
+                  <p className="text-xs text-white/70">AI book screening</p>
+                </div>
+              </div>
             </div>
+
+            <a
+              href="https://getsafefamily.com/signup"
+              className="inline-flex items-center gap-2 bg-white text-[#1a1a2e] hover:bg-gray-100 px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg"
+            >
+              <span>Get the Bundle</span>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </a>
+            <p className="text-xs text-white/70 mt-3">
+              <span className="line-through">$14.97/mo</span> → $9.99/mo · Save 33%
+            </p>
           </div>
         </div>
       </section>

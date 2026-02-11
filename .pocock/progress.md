@@ -7,10 +7,11 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-my1 complete** - Logo styling and Safe Family branding unified
+**safecontent-hl9 complete** - Cross-promotion banners added to all 3 apps
 
 As of Feb 10, 2026:
-- safecontent-auv (Brand Consistency Epic) - IN PROGRESS
+- safecontent-auv (Brand Consistency Epic) - IN PROGRESS (1 subtask remaining: 6uh typography)
+- safecontent-hl9 (Cross-promotion between apps) - COMPLETE
 - safecontent-my1 (Unify logo styling and branding) - COMPLETE
 - safecontent-4nu (Standardize pricing cards) - COMPLETE
 - safecontent-age (Unify footer design) - COMPLETE
@@ -26,6 +27,40 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-hl9: Add cross-promotion between Safe Family apps (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Added unified bundle cross-promo banner to all 3 apps (SafeTunes, SafeTube, SafeReads)
+- Replaced SafeTube's old single-app cross-promo with new bundle-focused design
+- All banners promote: "Get all 3 apps for $9.99/month"
+- All banners show the other 2 apps with icons and brief descriptions
+- All banners link to getsafefamily.com/signup
+
+**Files modified:**
+- `apps/safetunes/src/pages/LandingPage.jsx` - Added bundle cross-promo section before footer
+- `apps/safetube/src/pages/LandingPage.jsx` - Replaced single-app promo with bundle promo
+- `apps/safereads/src/app/page.tsx` - Added bundle cross-promo section before Footer
+
+**Design pattern (consistent across all apps):**
+- Peach gradient background (brand colors: #F5A962 → #E88B6A)
+- Headline: "Get all 3 apps for $9.99/month"
+- Subtext: "Protect your family across music, videos, and books"
+- Two app cards showing the OTHER two apps (not current app)
+- CTA: "Get the Bundle" button linking to getsafefamily.com/signup
+- Savings text: "$14.97/mo → $9.99/mo · Save 33%"
+
+**Key decisions:**
+- Used peach gradient (not purple) for brand consistency
+- Each app shows only the OTHER two apps (not itself)
+- All CTAs go to central signup at getsafefamily.com
+- Replaced SafeTube's old purple "Try SafeTunes" promo with bundle design
+
+**Build verified:** All 3 apps build + Convex dev --once pass
+
+---
 
 ### safecontent-my1: Unify logo styling and Safe Family branding (Feb 10, 2026 - COMPLETE)
 
