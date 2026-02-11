@@ -81,6 +81,38 @@ cd ~/safecontent/sites/marketing && npm run build
 
 ---
 
+## Visual Verification (For UI Tasks)
+
+For tasks involving UI/visual changes, use Playwright MCP to verify the changes:
+
+```bash
+# Playwright MCP tools available:
+# - browser_navigate: Navigate to a URL
+# - browser_screenshot: Take a screenshot
+# - browser_snapshot: Get page accessibility snapshot
+# - browser_click: Click an element
+# - browser_type: Type text
+```
+
+**Visual verification workflow:**
+
+1. Navigate to the relevant page(s)
+2. Take screenshots to verify changes look correct
+3. Compare desktop and mobile viewports when relevant
+4. Document visual verification in acceptance criteria
+
+**Example for verifying landing page changes:**
+
+```
+Use Playwright MCP:
+1. browser_navigate to https://getsafetunes.com
+2. browser_screenshot to capture desktop view
+3. browser_navigate to https://getsafetube.com
+4. browser_screenshot to compare consistency
+```
+
+---
+
 ## Progress & Learnings (CRITICAL)
 
 Update `progress.md` after each task. This is how you leave context for yourself in the next iteration.
