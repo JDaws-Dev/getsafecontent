@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Shield, Music, PlaySquare, Book } from "lucide-react";
 
 const apps = [
@@ -34,12 +35,8 @@ export default function Header() {
           {/* Logo/Wordmark + App Links */}
           <div className="flex items-center gap-4 sm:gap-6">
             {/* Safe Family Logo/Wordmark */}
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
+            <Link
+              href="/"
               className="flex items-center gap-2 group"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
@@ -48,7 +45,7 @@ export default function Header() {
               <span className="font-semibold text-navy">
                 Safe <span className="bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">Family</span>
               </span>
-            </a>
+            </Link>
 
             {/* Divider */}
             <div className="hidden md:block h-6 w-px bg-navy/20" />
@@ -70,12 +67,12 @@ export default function Header() {
                 </span>
               ))}
               <span className="text-navy/30 mx-2">|</span>
-              <a
+              <Link
                 href="/blog"
                 className="text-sm font-medium text-navy/70 hover:text-navy transition-colors"
               >
                 Blog
-              </a>
+              </Link>
             </div>
           </div>
 
