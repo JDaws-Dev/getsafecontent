@@ -7,6 +7,7 @@ const apps = [
 ];
 
 const legalLinks = [
+  { name: "Blog", href: "/blog" },
   { name: "Privacy", href: "/privacy" },
   { name: "Terms", href: "/terms" },
   { name: "Refund Policy", href: "/refund" },

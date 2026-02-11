@@ -69,6 +69,13 @@ export default function Header() {
                   )}
                 </span>
               ))}
+              <span className="text-navy/30 mx-2">|</span>
+              <a
+                href="/blog"
+                className="text-sm font-medium text-navy/70 hover:text-navy transition-colors"
+              >
+                Blog
+              </a>
             </div>
           </div>
 
