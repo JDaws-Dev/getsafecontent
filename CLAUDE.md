@@ -8,6 +8,7 @@
 | SafeTube | getsafetube.com | `rightful-rabbit-333` | React + Vite |
 | SafeReads | getsafereads.com | `exuberant-puffin-838` | Next.js |
 | Marketing | getsafefamily.com | N/A (Vercel) | Next.js |
+| Blog | getsafefamily.com/blog | N/A (Vercel) | MDX + Velite |
 
 ---
 
@@ -225,6 +226,26 @@ CONVEX_DEPLOYMENT=prod:exuberant-puffin-838 npx convex env set ADMIN_KEY "$NEW_K
 ### "How do I cancel?"
 - Direct to Settings → Manage Subscription in any app
 - Or: Stripe customer portal
+
+---
+
+## Blog
+
+**URL**: getsafefamily.com/blog
+
+### Content System
+- **Velite** for MDX content management
+- Posts in `sites/marketing/content/blog/*.mdx`
+- Scheduled publishing: future-dated posts auto-appear on their date
+
+### Adding a Blog Post
+1. Create `sites/marketing/content/blog/your-slug.mdx`
+2. Add frontmatter (title, slug, description, date, published, image, author, category, tags)
+3. Write content in MDX (can use `<SignupCTA product="SafeTunes" />`)
+4. Push to main - auto-deploys via Vercel
+
+### Categories
+- SafeTunes, SafeTube, SafeReads, General
 
 ---
 
