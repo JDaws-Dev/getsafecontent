@@ -11,6 +11,47 @@ if (!ADMIN_KEY) {
   console.warn("ADMIN_API_KEY not set - bundle provisioning will fail");
 }
 
+// Retry configuration
+const MAX_RETRIES = 3;
+const INITIAL_DELAY_MS = 1000; // 1 second
+
+// Helper to sleep for a given duration
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Helper to retry an async operation with exponential backoff
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  operationName: string,
+  maxRetries: number = MAX_RETRIES
+): Promise<{ success: true; result: T } | { success: false; error: string; attempts: number }> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await operation();
+      return { success: true, result };
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      console.warn(`${operationName} attempt ${attempt}/${maxRetries} failed:`, lastError.message);
+
+      if (attempt < maxRetries) {
+        // Exponential backoff: 1s, 2s, 4s
+        const delay = INITIAL_DELAY_MS * Math.pow(2, attempt - 1);
+        console.log(`Retrying ${operationName} in ${delay}ms...`);
+        await sleep(delay);
+      }
+    }
+  }
+
+  return {
+    success: false,
+    error: lastError?.message || "Unknown error",
+    attempts: maxRetries
+  };
+}
+
 // Valid app names
 type AppName = "safetunes" | "safetube" | "safereads";
 const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
@@ -34,41 +75,75 @@ function parseAppsFromMetadata(metadata: Stripe.Metadata | null): AppName[] {
   return apps.length > 0 ? apps : ALL_APPS;
 }
 
-// Helper to grant access to specific apps
+// Result type for individual app provisioning
+type AppProvisionResult = {
+  app: AppName;
+  success: boolean;
+  error?: string;
+  attempts?: number;
+};
+
+// Helper to grant access to a single app (used with retry wrapper)
+async function grantSingleAppAccess(
+  email: string,
+  app: AppName
+): Promise<void> {
+  if (!ADMIN_KEY) {
+    throw new Error("ADMIN_API_KEY not configured");
+  }
+
+  const encodedEmail = encodeURIComponent(email);
+  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const endpoint = APP_ENDPOINTS[app];
+  let url: string;
+
+  if (app === "safetube") {
+    // SafeTube uses setSubscriptionStatus with lifetime
+    url = `${endpoint}/setSubscriptionStatus?email=${encodedEmail}&status=lifetime&key=${encodedKey}`;
+  } else {
+    // SafeTunes and SafeReads use grantLifetime
+    url = `${endpoint}/grantLifetime?email=${encodedEmail}&key=${encodedKey}`;
+  }
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`HTTP ${response.status} - ${body}`);
+  }
+}
+
+// Helper to grant access to specific apps with retry logic
 async function grantAppAccess(
   email: string,
   apps: AppName[]
-): Promise<{ success: boolean; errors: string[] }> {
+): Promise<{ success: boolean; errors: string[]; failedApps: AppProvisionResult[] }> {
   if (!ADMIN_KEY) {
-    return { success: false, errors: ["ADMIN_API_KEY not configured"] };
+    return {
+      success: false,
+      errors: ["ADMIN_API_KEY not configured"],
+      failedApps: apps.map(app => ({ app, success: false, error: "ADMIN_API_KEY not configured" }))
+    };
   }
 
   const errors: string[] = [];
-  const encodedEmail = encodeURIComponent(email);
-  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const failedApps: AppProvisionResult[] = [];
 
-  // Grant access to each selected app in parallel
-  const grantPromises = apps.map(async (app) => {
-    const endpoint = APP_ENDPOINTS[app];
-    let url: string;
+  // Grant access to each selected app in parallel with retries
+  const grantPromises = apps.map(async (app): Promise<AppProvisionResult> => {
+    const result = await withRetry(
+      () => grantSingleAppAccess(email, app),
+      `grant ${app} access for ${email}`
+    );
 
-    if (app === "safetube") {
-      // SafeTube uses setSubscriptionStatus with lifetime
-      url = `${endpoint}/setSubscriptionStatus?email=${encodedEmail}&status=lifetime&key=${encodedKey}`;
-    } else {
-      // SafeTunes and SafeReads use grantLifetime
-      url = `${endpoint}/grantLifetime?email=${encodedEmail}&key=${encodedKey}`;
-    }
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        const body = await response.text().catch(() => "");
-        return { app, success: false, error: `HTTP ${response.status} - ${body}` };
-      }
+    if (result.success) {
       return { app, success: true };
-    } catch (err) {
-      return { app, success: false, error: String(err) };
+    } else {
+      return {
+        app,
+        success: false,
+        error: result.error,
+        attempts: result.attempts
+      };
     }
   });
 
@@ -76,16 +151,18 @@ async function grantAppAccess(
 
   for (const result of results) {
     if (!result.success) {
-      errors.push(`${result.app}: ${result.error}`);
+      errors.push(`${result.app}: ${result.error} (after ${result.attempts} attempts)`);
+      failedApps.push(result);
     }
   }
 
   console.log(`App access grant for ${email} (apps: ${apps.join(",")}):`, {
     success: errors.length === 0,
     errors,
+    failedApps: failedApps.map(f => f.app),
   });
 
-  return { success: errors.length === 0, errors };
+  return { success: errors.length === 0, errors, failedApps };
 }
 
 // Helper to revoke access from specific apps
@@ -254,6 +331,103 @@ async function sendBundleSignupNotification(
   }
 }
 
+// Helper to send URGENT alert email for failed provisioning
+async function sendProvisioningFailureAlert(
+  email: string,
+  customerName: string | null,
+  amountPaid: number,
+  failedApps: AppProvisionResult[],
+  stripeSessionId: string
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) {
+    console.error("RESEND_API_KEY not set - cannot send failure alert!");
+    return;
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  const failedAppNames = failedApps.map((f) => {
+    const name = f.app === "safetunes" ? "SafeTunes" : f.app === "safetube" ? "SafeTube" : "SafeReads";
+    return `${name} (${f.error}, ${f.attempts} attempts)`;
+  });
+
+  const adminUrl = `https://getsafefamily.com/admin/failed-provisions?email=${encodeURIComponent(email)}&apps=${failedApps.map(f => f.app).join(",")}`;
+
+  const emailContent = `
+    <h1 style="color: #dc2626;">🚨 URGENT: Provisioning Failed!</h1>
+
+    <p style="font-size: 18px; color: #dc2626;"><strong>A customer paid but did NOT get access to their apps.</strong></p>
+
+    <h2>Customer Details:</h2>
+    <ul>
+      <li><strong>Name:</strong> ${customerName || "Not provided"}</li>
+      <li><strong>Email:</strong> ${email}</li>
+      <li><strong>Amount Paid:</strong> $${(amountPaid / 100).toFixed(2)}</li>
+      <li><strong>Stripe Session:</strong> ${stripeSessionId}</li>
+      <li><strong>Date:</strong> ${new Date().toLocaleString()}</li>
+    </ul>
+
+    <h2>Failed Apps:</h2>
+    <ul>
+      ${failedAppNames.map((name) => `<li style="color: #dc2626;">${name}</li>`).join("")}
+    </ul>
+
+    <h2>Action Required:</h2>
+    <p>The webhook tried ${MAX_RETRIES} times with exponential backoff but all attempts failed.</p>
+    <p>Please manually provision access for this customer.</p>
+
+    <div style="margin: 24px 0;">
+      <a href="${adminUrl}" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-right: 12px;">Fix Now →</a>
+      <a href="https://dashboard.stripe.com/search?query=${encodeURIComponent(email)}" style="background: #635BFF; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">View in Stripe →</a>
+    </div>
+
+    <h3>Manual Fix Commands:</h3>
+    <pre style="background: #f3f4f6; padding: 12px; border-radius: 8px; overflow-x: auto;">
+# Get and encode admin key
+KEY=$(CONVEX_DEPLOYMENT=prod:rightful-rabbit-333 npx convex env list 2>/dev/null | grep ADMIN_KEY | cut -d= -f2)
+ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$KEY'))")
+
+# Grant access to failed apps
+${failedApps.map(f => {
+  if (f.app === "safetunes") {
+    return `curl "https://formal-chihuahua-623.convex.site/grantLifetime?email=${encodeURIComponent(email)}&key=$ENCODED"`;
+  } else if (f.app === "safetube") {
+    return `curl "https://rightful-rabbit-333.convex.site/setSubscriptionStatus?email=${encodeURIComponent(email)}&status=lifetime&key=$ENCODED"`;
+  } else {
+    return `curl "https://exuberant-puffin-838.convex.site/grantLifetime?email=${encodeURIComponent(email)}&key=$ENCODED"`;
+  }
+}).join("\n")}
+    </pre>
+
+    <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
+
+    <p style="color: #6b7280; font-size: 14px;">This is an automated alert from the Safe Family webhook. The customer has been charged but does not have access.</p>
+  `;
+
+  try {
+    const result = await resend.emails.send({
+      from: "Safe Family Alerts <alerts@getsafefamily.com>",
+      to: process.env.ADMIN_EMAIL || "jeremiah@getsafefamily.com",
+      subject: `🚨 URGENT: Provisioning FAILED for ${customerName || email}`,
+      html: emailContent,
+    });
+
+    console.log(`Provisioning failure alert sent for ${email}:`, result);
+  } catch (error) {
+    console.error("CRITICAL: Failed to send provisioning failure alert:", error);
+    // This is very bad - customer paid, didn't get access, AND we couldn't alert admin
+    // Log everything we can
+    console.error("FAILED PROVISION DATA:", {
+      email,
+      customerName,
+      amountPaid,
+      failedApps,
+      stripeSessionId,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
@@ -302,19 +476,28 @@ export async function POST(req: Request) {
         );
 
         if (isBundle && email) {
-          // Grant access to selected apps only
+          // Grant access to selected apps only (with retry logic)
           const result = await grantAppAccess(email, apps);
+          const amountTotal = session.amount_total || 0;
+          const customerName = session.customer_details?.name || null;
+
           if (!result.success) {
-            console.error(`Failed to provision apps for ${email}:`, result.errors);
-            // Note: We don't return an error here because the payment was successful
-            // Failed provisioning should be handled via manual intervention or retry
+            console.error(`Failed to provision apps for ${email} after ${MAX_RETRIES} retries:`, result.errors);
+
+            // Send urgent failure alert to admin
+            await sendProvisioningFailureAlert(
+              email,
+              customerName,
+              amountTotal,
+              result.failedApps,
+              session.id
+            );
           }
 
-          // Send admin notification email
-          const amountTotal = session.amount_total || 0;
+          // Send admin notification email (whether success or partial success)
           await sendBundleSignupNotification(
             email,
-            session.customer_details?.name || null,
+            customerName,
             amountTotal,
             apps
           );

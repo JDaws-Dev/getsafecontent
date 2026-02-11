@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-v6z complete** - Secured Stripe portal endpoint
+**safecontent-anp complete** - Webhook retry/recovery for failed app provisioning
 
 As of Feb 11, 2026:
+- safecontent-anp (Webhook retry/recovery) - COMPLETE
 - safecontent-v6z (Stripe portal customerId validation) - COMPLETE
 - safecontent-98h (Email capture for blog) - COMPLETE
 - safecontent-auv (Brand Consistency Epic) - COMPLETE (all subtasks done)
@@ -30,6 +31,58 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-anp: Add webhook retry/recovery for failed app provisioning (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** When Stripe webhook processes a payment but app provisioning fails:
+- Payment is processed, user doesn't get access
+- Error is logged but no retry/alert
+- Customer pays but can't use the product
+
+**Solution implemented:**
+
+1. **Retry logic with exponential backoff**
+   - 3 retries per app (1s, 2s, 4s delays)
+   - Each app provisioned independently in parallel
+   - Partial success tracked (some apps may succeed while others fail)
+
+2. **Alert email on final failure**
+   - Sends URGENT email to admin with customer details
+   - Includes failed apps and error messages
+   - Contains manual fix commands (curl commands for each app)
+   - Links to admin fix page and Stripe dashboard
+
+3. **Admin retry endpoint** (`/api/admin/retry-provision`)
+   - POST: Grant lifetime access to specified apps with retry logic
+   - GET: Check user status across all 3 apps
+   - Session-based auth (requires admin login)
+
+4. **Admin UI page** (`/admin/failed-provisions`)
+   - Enter customer email to check status
+   - See which apps user has access to
+   - Select apps to provision
+   - One-click retry with visual feedback
+   - Can be deep-linked from alert email with pre-filled data
+
+**Files created:**
+- `sites/marketing/src/app/api/admin/retry-provision/route.ts` - Admin retry API
+- `sites/marketing/src/app/admin/failed-provisions/page.tsx` - Admin UI
+
+**Files modified:**
+- `sites/marketing/src/app/api/stripe/webhook/route.ts` - Added retry logic, alert email
+- `sites/marketing/src/app/admin/page.tsx` - Added link to failed-provisions
+
+**Key decisions:**
+- Used session-based auth for admin endpoints (not API key from client)
+- Alert email includes manual curl commands as fallback
+- Provisioning grants "lifetime" status (matching existing bundle behavior)
+- Suspense wrapper for useSearchParams (Next.js 16 requirement)
+
+**Build verified:** npm run build passes (38 routes)
+
+---
 
 ### safecontent-v6z: Validate Stripe portal customerId from session (Feb 11, 2026 - COMPLETE)
 
