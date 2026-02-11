@@ -238,7 +238,7 @@ export default function SettingsPage() {
             <div className="flex items-center gap-2">
               <Crown className="h-5 w-5 text-amber-500" />
               <span className="text-sm font-semibold text-ink-900">
-                SafeReads Pro
+                SafeReads
               </span>
               <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
                 Premium
@@ -359,7 +359,7 @@ export default function SettingsPage() {
               <div className="mb-3 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-parchment-700" />
                 <span className="font-semibold text-ink-900">
-                  Upgrade to SafeReads Pro
+                  Subscribe to SafeReads
                 </span>
               </div>
               <p className="mb-3 text-lg font-semibold text-ink-900">

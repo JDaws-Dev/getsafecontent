@@ -60,7 +60,7 @@ export async function POST(req: Request) {
             await resend.emails.send({
               from: "SafeReads <hello@getsafereads.com>",
               to: customer.email,
-              subject: "Welcome to SafeReads Pro!",
+              subject: "Welcome to SafeReads!",
               html: getWelcomeEmailHtml(customer.name || "there"),
             });
           }
@@ -136,7 +136,7 @@ function getWelcomeEmailHtml(name: string): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to SafeReads Pro</title>
+  <title>Welcome to SafeReads</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #faf8f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
   <table role="presentation" style="width: 100%; border-collapse: collapse;">
@@ -154,7 +154,7 @@ function getWelcomeEmailHtml(name: string): string {
           <tr>
             <td style="background-color: #ffffff; border-radius: 12px; padding: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
               <h1 style="margin: 0 0 16px 0; font-size: 24px; font-weight: bold; color: #1a1a1a; text-align: center;">
-                Welcome to SafeReads Pro!
+                Welcome to SafeReads!
               </h1>
 
               <p style="margin: 0 0 24px 0; font-size: 16px; line-height: 24px; color: #4a4a4a; text-align: center;">

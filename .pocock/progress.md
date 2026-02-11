@@ -7,14 +7,12 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-vlk fully complete** - All CTAs now use brand peach
+**safecontent-uhb complete** - SafeReads pricing UX simplified
 
 As of Feb 10, 2026:
 - safecontent-auv (Brand Consistency Epic) - IN PROGRESS
 - safecontent-vlk (Unify color scheme) - COMPLETE with all subtasks
-  - vlk.1 (SafeTunes CTAs) - CLOSED
-  - vlk.2 (SafeTube CTAs) - CLOSED
-  - vlk.3 (SafeReads CTAs) - CLOSED
+- safecontent-uhb (SafeReads pricing UX) - COMPLETE
 
 Run `bd ready` to check for new issues.
 
@@ -24,6 +22,34 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-uhb: Revise SafeReads pricing UX - remove confusing Pro/free tier concept (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Removed all "SafeReads Pro" terminology from user-facing UI
+- Simplified landing page pricing from two-tier (Trial + Pro) to single tier
+- New messaging: "7-day free trial, then $4.99/mo"
+- Updated upgrade prompts, settings page, verdict section
+- Updated Stripe webhook welcome email
+
+**Files modified:**
+- `apps/safereads/src/app/page.tsx` - Single pricing card, removed Pro/Trial split
+- `apps/safereads/src/components/VerdictSection.tsx` - "Subscribe to continue reviewing books"
+- `apps/safereads/src/components/UpgradePrompt.tsx` - "Continue with SafeReads"
+- `apps/safereads/src/components/SubscriptionSuccessModal.tsx` - "Welcome to SafeReads!"
+- `apps/safereads/src/app/dashboard/settings/page.tsx` - Removed Pro branding
+- `apps/safereads/src/app/api/webhooks/stripe/route.ts` - Updated email subject/title
+
+**Key decisions:**
+- Admin dashboard labels kept as "Pro" (internal terminology is fine)
+- Simplified value prop: free trial → paid subscription, no implied free tier
+- Single centered pricing card instead of side-by-side comparison
+
+**Build verified:** npm run build + npx convex dev --once pass
+
+---
 
 ### safecontent-vlk.1: SafeTunes - Change CTA buttons from purple to peach gradient (Feb 10, 2026 - COMPLETE)
 

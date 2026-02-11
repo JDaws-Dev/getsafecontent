@@ -126,7 +126,7 @@ export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
             Your 7-day trial has expired
           </p>
           <p className="mt-1 text-sm text-ink-500">
-            Upgrade to SafeReads Pro for unlimited book reviews.
+            Subscribe to continue reviewing books.
           </p>
           <button
             onClick={() => setShowUpgrade(true)}

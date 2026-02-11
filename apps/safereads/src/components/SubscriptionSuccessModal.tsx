@@ -32,7 +32,7 @@ export function SubscriptionSuccessModal({ onClose }: SubscriptionSuccessModalPr
         </div>
 
         <h2 className="mt-6 text-center font-serif text-2xl font-bold text-ink-900">
-          Welcome to SafeReads Pro!
+          Welcome to SafeReads!
         </h2>
 
         <p className="mt-3 text-center text-ink-600">
@@ -63,7 +63,7 @@ export function SubscriptionSuccessModal({ onClose }: SubscriptionSuccessModalPr
 
         <button
           onClick={onClose}
-          className="mt-8 w-full rounded-lg bg-parchment-700 py-3 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+          className="btn-brand mt-8 w-full rounded-lg py-3 text-sm"
         >
           Start Reviewing Books
         </button>

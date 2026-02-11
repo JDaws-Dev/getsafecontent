@@ -11,8 +11,6 @@ import {
   Users,
   Heart,
   Camera,
-  Sparkles,
-  Infinity,
   Check,
   Lock,
   ShieldCheck,
@@ -312,78 +310,49 @@ export default function Home() {
             Simple, honest pricing
           </h2>
           <p className="mt-3 text-center text-ink-500">
-            Try before you buy. Upgrade when you&apos;re ready.
+            Try free for 7 days. No credit card required.
           </p>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 sm:gap-8 mx-auto max-w-3xl">
-            {/* Trial tier */}
-            <div className="rounded-xl border border-parchment-200 bg-white p-6">
-              <h3 className="font-serif text-lg font-bold text-ink-900">Free Trial</h3>
-              <p className="mt-1 text-3xl font-bold text-ink-900">
-                7 days
-                <span className="text-sm font-normal text-ink-500"> free</span>
-              </p>
-              <ul className="mt-5 space-y-3 text-sm text-ink-600">
-                <li className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-verdict-safe" />
-                  Try the full experience
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-verdict-safe" />
-                  Full content breakdowns
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-verdict-safe" />
-                  Barcode &amp; cover scanning
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-verdict-safe" />
-                  Kids &amp; wishlists
-                </li>
-              </ul>
-              <Link
-                href="/signup"
-                className="mt-6 block w-full rounded-lg border border-parchment-300 bg-white px-4 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-parchment-50 text-center"
-              >
-                Get Started
-              </Link>
-            </div>
-
-            {/* Pro tier */}
-            <div className="relative rounded-xl border-2 border-parchment-600 bg-white p-6">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-parchment-700 px-3 py-0.5 text-xs font-semibold text-parchment-50">
-                  <Sparkles className="h-3 w-3" />
-                  Most Popular
-                </span>
+          <div className="mt-10 mx-auto max-w-md">
+            {/* Single pricing card */}
+            <div className="rounded-xl border-2 border-parchment-600 bg-white p-8">
+              <div className="text-center">
+                <p className="text-sm font-medium text-parchment-700 mb-2">
+                  7-day free trial, then
+                </p>
+                <p className="text-4xl font-bold text-ink-900">
+                  $4.99
+                  <span className="text-lg font-normal text-ink-500">/month</span>
+                </p>
               </div>
-              <h3 className="font-serif text-lg font-bold text-ink-900">Pro</h3>
-              <p className="mt-1 text-3xl font-bold text-ink-900">
-                $4.99
-                <span className="text-sm font-normal text-ink-500">/month</span>
-              </p>
-              <ul className="mt-5 space-y-3 text-sm text-ink-600">
-                <li className="flex items-start gap-2">
-                  <Infinity className="mt-0.5 h-4 w-4 shrink-0 text-parchment-700" />
-                  Unlimited book reviews
+
+              <ul className="mt-8 space-y-4 text-sm text-ink-600">
+                <li className="flex items-start gap-3">
+                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-verdict-safe" />
+                  <span>Unlimited book reviews</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-verdict-safe" />
-                  Priority support
+                <li className="flex items-start gap-3">
+                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-verdict-safe" />
+                  <span>Full AI content breakdowns</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-verdict-safe" />
-                  All features unlocked
+                <li className="flex items-start gap-3">
+                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-verdict-safe" />
+                  <span>Barcode &amp; cover scanning</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-verdict-safe" />
-                  Cancel anytime
+                <li className="flex items-start gap-3">
+                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-verdict-safe" />
+                  <span>Kids profiles &amp; wishlists</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-verdict-safe" />
+                  <span>Cancel anytime</span>
                 </li>
               </ul>
+
               <Link
                 href="/signup"
-                className="btn-brand mt-6 block w-full rounded-lg text-sm text-center"
+                className="btn-brand mt-8 block w-full rounded-lg text-center"
               >
-                Start Free, Upgrade Later
+                Start Your Free Trial
               </Link>
             </div>
           </div>

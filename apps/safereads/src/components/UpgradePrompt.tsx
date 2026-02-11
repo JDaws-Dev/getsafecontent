@@ -75,7 +75,7 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
         <div className="mb-4 flex items-center gap-2">
           <Sparkles className="h-6 w-6 text-parchment-700" />
           <h3 className="font-serif text-xl font-bold text-ink-900">
-            Upgrade to SafeReads Pro
+            Continue with SafeReads
           </h3>
         </div>
 
