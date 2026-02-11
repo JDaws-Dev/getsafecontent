@@ -133,7 +133,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
                 <Link
                   href="/signup"
-                  className="w-full sm:w-auto rounded-lg bg-parchment-700 px-8 py-4 text-lg font-semibold text-parchment-50 transition-colors hover:bg-parchment-800 text-center shadow-lg hover:shadow-xl"
+                  className="btn-brand w-full sm:w-auto rounded-lg text-lg text-center"
                 >
                   Get Started — It&apos;s Free
                 </Link>
@@ -381,7 +381,7 @@ export default function Home() {
               </ul>
               <Link
                 href="/signup"
-                className="mt-6 block w-full rounded-lg bg-parchment-700 px-4 py-2.5 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800 text-center"
+                className="btn-brand mt-6 block w-full rounded-lg text-sm text-center"
               >
                 Start Free, Upgrade Later
               </Link>
@@ -429,7 +429,7 @@ export default function Home() {
           </p>
           <Link
             href="/signup"
-            className="mt-6 inline-block rounded-lg bg-parchment-700 px-8 py-3 text-base font-semibold text-parchment-50 transition-colors hover:bg-parchment-800"
+            className="btn-brand mt-6 inline-block rounded-lg text-base"
           >
             Get Started Free
           </Link>

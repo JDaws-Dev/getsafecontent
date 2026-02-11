@@ -108,7 +108,7 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
           <button
             onClick={handleUpgrade}
             disabled={loading}
-            className="w-full rounded-lg bg-parchment-700 px-4 py-2.5 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn-brand w-full rounded-lg text-sm disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "Redirecting to checkout…" : "Upgrade Now"}
           </button>
@@ -136,7 +136,7 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
                 <button
                   onClick={handleRedeemCoupon}
                   disabled={!couponCode.trim() || couponLoading || couponResult?.success}
-                  className="rounded-md bg-parchment-700 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-parchment-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="btn-brand rounded-md px-4 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {couponLoading ? "…" : "Apply"}
                 </button>

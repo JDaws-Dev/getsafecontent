@@ -189,7 +189,7 @@ export default function ComparePage() {
               </Link>
               <Link
                 to="/signup"
-                className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold transition text-xs sm:text-sm whitespace-nowrap shadow-sm"
+                className="btn-brand rounded-lg text-xs sm:text-sm whitespace-nowrap"
               >
                 Get Started
               </Link>

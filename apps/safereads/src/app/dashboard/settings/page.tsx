@@ -211,7 +211,7 @@ export default function SettingsPage() {
           href="https://getsafefamily.com/account"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-parchment-700 px-4 py-3 font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+          className="btn-brand flex w-full items-center justify-center gap-2 rounded-lg"
         >
           <span>Manage Safe Family Account</span>
           <ExternalLink className="h-4 w-4" />
@@ -385,7 +385,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleUpgrade}
                 disabled={checkoutLoading}
-                className="w-full rounded-lg bg-parchment-700 px-4 py-2.5 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-brand w-full rounded-lg text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {checkoutLoading
                   ? "Redirecting to checkout\u2026"

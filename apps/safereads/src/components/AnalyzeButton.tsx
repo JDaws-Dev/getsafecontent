@@ -13,7 +13,7 @@ export function AnalyzeButton({ onClick, loading, disabled }: AnalyzeButtonProps
     <button
       onClick={onClick}
       disabled={loading || disabled}
-      className="inline-flex items-center gap-2 rounded-lg bg-parchment-700 px-4 py-2 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800 disabled:cursor-not-allowed disabled:opacity-50"
+      className="btn-brand inline-flex items-center gap-2 rounded-lg text-sm disabled:cursor-not-allowed disabled:opacity-50"
     >
       {loading ? (
         <>
