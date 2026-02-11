@@ -566,61 +566,41 @@ function LandingPage() {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-lg mx-auto">
             <div className="text-center mb-6 sm:mb-8">
-              <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-1.5 rounded-full text-xs font-semibold mb-3">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 88.994 96.651">
-                  <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
-                </svg>
-                Works with Apple Music
-              </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Less Than a Coffee. The Value of Sleeping at Night.
+                Simple Pricing
               </h2>
               <p className="text-base sm:text-lg text-gray-600 px-2">
-                Less than Netflix. Works with your existing Apple Music subscription. Total peace of mind.
+                One plan. Everything included. Cancel anytime.
               </p>
             </div>
 
             <div className="bg-white rounded-2xl shadow-xl border-2 border-purple-600 overflow-hidden">
               <div className="p-6 sm:p-8">
                 <div className="text-center mb-6">
+                  <p className="text-sm font-medium text-gray-600 mb-2">
+                    7-day free trial, then
+                  </p>
                   <div className="flex items-center justify-center mb-2">
                     <span className="text-4xl sm:text-5xl font-bold text-gray-900">$4.99</span>
                     <span className="text-gray-600 ml-2 text-lg sm:text-xl">/month</span>
                   </div>
-                  <p className="text-sm sm:text-base text-gray-600">or $49/year (save $11)</p>
                 </div>
 
                 <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-sm sm:text-base text-gray-700">Unlimited children</span>
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-sm sm:text-base text-gray-700">Unlimited approved albums</span>
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-sm sm:text-base text-gray-700">Manage from any device</span>
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-sm sm:text-base text-gray-700">7-day money-back guarantee</span>
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-sm sm:text-base text-gray-700">Cancel anytime</span>
-                  </li>
+                  {[
+                    'Unlimited children',
+                    'Unlimited approved albums',
+                    'Manage from any device',
+                    'No credit card to start',
+                    'Cancel anytime'
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center">
+                      <svg className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm sm:text-base text-gray-700">{item}</span>
+                    </li>
+                  ))}
                 </ul>
 
                 <Link
@@ -631,6 +611,18 @@ function LandingPage() {
                 </Link>
               </div>
             </div>
+
+            {/* Money-back guarantee */}
+            <div className="mt-6 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl flex items-center justify-center gap-2">
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span className="text-sm font-medium">30-day money-back guarantee — no questions asked</span>
+            </div>
+
+            <p className="text-center text-gray-500 text-sm mt-4">
+              Works with your existing Apple Music subscription.
+            </p>
           </div>
         </div>
       </section>

@@ -303,62 +303,58 @@ export default function Home() {
       {/* Pricing */}
       <section
         id="pricing"
-        className="border-y border-parchment-200 bg-parchment-100/50 py-16 sm:py-20"
+        className="bg-parchment-100/50 py-16 sm:py-20 scroll-mt-20"
       >
-        <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-center font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
-            Simple, honest pricing
-          </h2>
-          <p className="mt-3 text-center text-ink-500">
-            Try free for 7 days. No credit card required.
-          </p>
-          <div className="mt-10 mx-auto max-w-md">
-            {/* Single pricing card */}
-            <div className="rounded-xl border-2 border-parchment-600 bg-white p-8">
-              <div className="text-center">
-                <p className="text-sm font-medium text-parchment-700 mb-2">
+        <div className="mx-auto max-w-lg px-4">
+          <div className="text-center mb-8">
+            <h2 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl md:text-4xl">
+              Simple Pricing
+            </h2>
+            <p className="mt-3 text-base sm:text-lg text-ink-500">
+              One plan. Everything included. Cancel anytime.
+            </p>
+          </div>
+
+          {/* Single pricing card */}
+          <div className="rounded-2xl shadow-xl border-2 border-parchment-600 bg-white overflow-hidden">
+            <div className="p-6 sm:p-8">
+              <div className="text-center mb-6">
+                <p className="text-sm font-medium text-ink-500 mb-2">
                   7-day free trial, then
                 </p>
-                <p className="text-4xl font-bold text-ink-900">
-                  $4.99
-                  <span className="text-lg font-normal text-ink-500">/month</span>
-                </p>
+                <div className="flex items-center justify-center mb-2">
+                  <span className="text-4xl sm:text-5xl font-bold text-ink-900">$4.99</span>
+                  <span className="text-ink-500 ml-2 text-lg sm:text-xl">/month</span>
+                </div>
               </div>
 
-              <ul className="mt-8 space-y-4 text-sm text-ink-600">
-                <li className="flex items-start gap-3">
-                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-verdict-safe" />
-                  <span>Unlimited book reviews</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-verdict-safe" />
-                  <span>Full AI content breakdowns</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-verdict-safe" />
-                  <span>Barcode &amp; cover scanning</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-verdict-safe" />
-                  <span>Kids profiles &amp; wishlists</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-verdict-safe" />
-                  <span>Cancel anytime</span>
-                </li>
+              <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+                {[
+                  'Unlimited book reviews',
+                  'Full AI content breakdowns',
+                  'Barcode & cover scanning',
+                  'Kids profiles & wishlists',
+                  'No credit card to start',
+                  'Cancel anytime'
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center">
+                    <Check className="w-5 h-5 text-emerald-500 mr-3 flex-shrink-0" />
+                    <span className="text-sm sm:text-base text-ink-600">{item}</span>
+                  </li>
+                ))}
               </ul>
 
               <Link
                 href="/signup"
-                className="btn-brand mt-8 block w-full rounded-lg text-center"
+                className="btn-brand block w-full rounded-lg text-center text-base sm:text-lg"
               >
-                Start Your Free Trial
+                Start 7-Day Free Trial
               </Link>
             </div>
           </div>
 
           {/* Money-back guarantee */}
-          <div className="mt-8 mx-auto max-w-md bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl flex items-center justify-center gap-2">
+          <div className="mt-6 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl flex items-center justify-center gap-2">
             <Shield className="h-5 w-5 flex-shrink-0" />
             <span className="text-sm font-medium">30-day money-back guarantee — no questions asked</span>
           </div>

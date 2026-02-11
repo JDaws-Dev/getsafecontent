@@ -7,10 +7,11 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-age complete** - Footer design unified across all sites
+**safecontent-4nu complete** - Pricing cards standardized across all sites
 
 As of Feb 10, 2026:
 - safecontent-auv (Brand Consistency Epic) - IN PROGRESS
+- safecontent-4nu (Standardize pricing cards) - COMPLETE
 - safecontent-age (Unify footer design) - COMPLETE
 - safecontent-4vh (Standardize header navigation) - COMPLETE
 - safecontent-vlk (Unify color scheme) - COMPLETE with all subtasks
@@ -24,6 +25,35 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-4nu: Standardize pricing card design across all sites (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Unified all pricing cards to use white background with app-accent border
+- Standardized price display: "7-day free trial, then" + "$4.99/month"
+- Changed checkmark color from mixed (green-500, verdict-safe) to emerald-500 everywhere
+- Added money-back guarantee badge to all apps (was missing from SafeTunes)
+- Standardized feature list using map() pattern instead of repeated JSX
+- Removed gradient background from SafeTube card (was red/orange → now white)
+- Removed "Works with Apple Music" badge from SafeTunes pricing (moved to other sections)
+- Unified CTA text: "Start 7-Day Free Trial"
+
+**Files modified:**
+- `apps/safetunes/src/pages/LandingPage.jsx` - Pricing section rewritten
+- `apps/safetube/src/pages/LandingPage.jsx` - Pricing section rewritten
+- `apps/safereads/src/app/page.tsx` - Pricing section rewritten
+
+**Key decisions:**
+- Marketing site pricing not changed (bundle pricing has different structure)
+- Individual app cards use app-accent for border (purple/red/parchment)
+- All use emerald for checkmarks and money-back badge (brand trust color)
+- Kept app-specific feature lists (albums for SafeTunes, channels for SafeTube, book reviews for SafeReads)
+
+**Build verified:** All 4 sites build + Convex dev --once pass
+
+---
 
 ### safecontent-age: Unify footer design across all Safe Family sites (Feb 10, 2026 - COMPLETE)
 
