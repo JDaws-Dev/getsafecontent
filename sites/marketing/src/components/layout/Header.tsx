@@ -79,10 +79,9 @@ export default function Header() {
           {/* CTA Button */}
           <a
             href="#pricing"
-            className="btn-peach inline-flex items-center justify-center px-4 sm:px-5 py-2 text-sm font-medium"
+            className="btn-peach inline-flex items-center justify-center px-4 sm:px-5 py-2 text-sm font-medium whitespace-nowrap"
           >
-            <span className="hidden sm:inline">Start Free Trial</span>
-            <span className="sm:hidden">Try Free</span>
+            Start Free Trial
           </a>
         </div>
       </nav>

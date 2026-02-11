@@ -77,6 +77,13 @@ export default function LandingPage() {
             </Link>
 
             <div className="flex items-center space-x-2 sm:space-x-4">
+              <a
+                href="https://getsafefamily.com"
+                className="hidden sm:block text-gray-400 hover:text-gray-600 font-medium text-xs sm:text-sm"
+              >
+                Safe Family
+              </a>
+              <span className="hidden sm:block text-gray-300">|</span>
               <Link to="/login" className="text-gray-600 hover:text-gray-900 font-medium text-xs sm:text-sm">
                 Parent Login
               </Link>
@@ -87,7 +94,7 @@ export default function LandingPage() {
                 to="/signup"
                 className="btn-brand rounded-lg text-xs sm:text-sm whitespace-nowrap"
               >
-                Get Started
+                Start Free Trial
               </Link>
             </div>
           </div>

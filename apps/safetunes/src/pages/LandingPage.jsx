@@ -85,14 +85,24 @@ function LandingPage() {
 
             {/* Desktop Auth Buttons - Mobile-optimized with min 48px tap targets */}
             <div className="hidden sm:flex items-center space-x-4">
-              <Link to="/login" className="text-gray-700 hover:text-gray-900 font-medium min-h-[48px] px-4 flex items-center">
-                Login
+              <a
+                href="https://getsafefamily.com"
+                className="text-gray-500 hover:text-gray-700 font-medium text-sm min-h-[48px] px-2 flex items-center"
+              >
+                Safe Family
+              </a>
+              <span className="text-gray-300">|</span>
+              <Link to="/login" className="text-gray-700 hover:text-gray-900 font-medium min-h-[48px] px-2 flex items-center">
+                Parent Login
+              </Link>
+              <Link to="/play" className="text-gray-700 hover:text-gray-900 font-medium min-h-[48px] px-2 flex items-center">
+                Kid Login
               </Link>
               <Link
                 to="/signup"
                 className="btn-brand min-h-[48px] rounded-lg flex items-center"
               >
-                Start 7-Day Free Trial
+                Start Free Trial
               </Link>
             </div>
 
@@ -143,19 +153,32 @@ function LandingPage() {
                 Why This Exists
               </a>
               <div className="border-t border-gray-200 pt-3 space-y-2">
+                <a
+                  href="https://getsafefamily.com"
+                  className="block text-center text-gray-500 hover:text-gray-700 font-medium py-3 min-h-[48px] flex items-center justify-center text-sm"
+                >
+                  Safe Family ↗
+                </a>
                 <Link
                   to="/login"
                   className="block text-center text-gray-700 hover:text-gray-900 font-medium py-3 min-h-[48px] flex items-center justify-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Login
+                  Parent Login
+                </Link>
+                <Link
+                  to="/play"
+                  className="block text-center text-gray-700 hover:text-gray-900 font-medium py-3 min-h-[48px] flex items-center justify-center"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Kid Login
                 </Link>
                 <Link
                   to="/signup"
                   className="btn-brand block text-center min-h-[48px] rounded-lg flex items-center justify-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Start 7-Day Free Trial
+                  Start Free Trial
                 </Link>
               </div>
             </div>

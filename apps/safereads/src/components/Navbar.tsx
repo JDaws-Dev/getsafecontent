@@ -10,7 +10,7 @@ import { api } from "../../convex/_generated/api";
 
 export function Navbar() {
   const { isAuthenticated, isLoading } = useConvexAuth();
-  const { signIn, signOut } = useAuthActions();
+  const { signOut } = useAuthActions();
 
   return (
     <nav className="border-b border-parchment-200 bg-parchment-50">
@@ -25,7 +25,29 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           {isLoading ? (
             <div className="h-8 w-8 animate-pulse rounded-full bg-parchment-200" />
-          ) : isAuthenticated ? (
+          ) : !isAuthenticated ? (
+            <div className="flex items-center gap-2 sm:gap-4">
+              <a
+                href="https://getsafefamily.com"
+                className="hidden sm:block text-sm font-medium text-ink-400 hover:text-ink-600 transition-colors"
+              >
+                Safe Family
+              </a>
+              <span className="hidden sm:block text-ink-200">|</span>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-ink-600 hover:text-ink-900 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/signup"
+                className="btn-brand rounded-lg text-sm"
+              >
+                Start Free Trial
+              </Link>
+            </div>
+          ) : (
             <>
               <div className="hidden items-center gap-4 sm:flex">
                 <Link
@@ -55,13 +77,6 @@ export function Navbar() {
               </div>
               <UserMenu onSignOut={() => void signOut()} />
             </>
-          ) : (
-            <button
-              onClick={() => void signIn("google")}
-              className="btn-brand rounded-lg text-sm"
-            >
-              Sign In
-            </button>
           )}
         </div>
       </div>

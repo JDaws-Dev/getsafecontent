@@ -7,10 +7,11 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-uhb complete** - SafeReads pricing UX simplified
+**safecontent-4vh complete** - Header navigation standardized across all sites
 
 As of Feb 10, 2026:
 - safecontent-auv (Brand Consistency Epic) - IN PROGRESS
+- safecontent-4vh (Standardize header navigation) - COMPLETE
 - safecontent-vlk (Unify color scheme) - COMPLETE with all subtasks
 - safecontent-uhb (SafeReads pricing UX) - COMPLETE
 
@@ -22,6 +23,33 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-4vh: Standardize header navigation across all sites (Feb 10, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Standardized CTA button text to "Start Free Trial" across all sites
+- Added Safe Family link (getsafefamily.com) to all 3 app headers
+- SafeTunes: Changed "Login" to "Parent Login" + "Kid Login", added Safe Family link
+- SafeTube: Changed "Get Started" to "Start Free Trial", added Safe Family link
+- SafeReads: Added separate "Sign In" link + "Start Free Trial" CTA, added Safe Family link
+- Marketing: Unified mobile/desktop CTA text (was "Try Free" on mobile, now "Start Free Trial")
+
+**Files modified:**
+- `apps/safetunes/src/pages/LandingPage.jsx` - Header + mobile menu updates
+- `apps/safetube/src/pages/LandingPage.jsx` - Header updates
+- `apps/safereads/src/components/Navbar.tsx` - Logged-out state restructure
+- `sites/marketing/src/components/layout/Header.tsx` - Unified CTA text
+
+**Key decisions:**
+- SafeReads doesn't have kid login concept, so just has "Sign In" + "Start Free Trial"
+- Safe Family link shown on desktop, hidden on mobile for space (except SafeTunes mobile menu)
+- Pipe separator (|) used between Safe Family link and login links
+
+**Build verified:** All 4 sites build + Convex dev --once pass
+
+---
 
 ### safecontent-uhb: Revise SafeReads pricing UX - remove confusing Pro/free tier concept (Feb 10, 2026 - COMPLETE)
 
