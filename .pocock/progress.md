@@ -7,15 +7,15 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**WORKING ON:** safecontent-ce3 - Create /terms and /privacy pages on marketing site
+**WORKING ON:** safecontent-71k.2 - Set up Google OAuth credentials in Vercel
 
 As of Feb 12, 2026:
 - safecontent-ce3 (Create /terms and /privacy pages on marketing site) - COMPLETE
 - safecontent-71k (Implement Google OAuth across all apps) - IN PROGRESS
   - safecontent-71k.1 (Enable Google OAuth on marketing signup page) - COMPLETE
-  - safecontent-71k.2 (Set up Google OAuth credentials in Vercel) - PENDING (requires manual setup)
+  - safecontent-71k.2 (Set up Google OAuth credentials in Vercel) - **REQUIRES MANUAL SETUP** (see docs/GOOGLE-OAUTH-SETUP.md)
   - safecontent-71k.3 (Handle OAuth users in webhook provisioning) - COMPLETE
-  - safecontent-71k.4 (Test Google OAuth end-to-end flow) - PENDING
+  - safecontent-71k.4 (Test Google OAuth end-to-end flow) - PENDING (blocked by 71k.2)
 - safecontent-i5w.15 (Google OAuth support) - DEFERRED TO V2 (complexity vs value)
 - safecontent-i5w.16 (Session-based SSO) - DEFERRED TO V2 (complexity vs value)
 - safecontent-i5w.14 (Write integration tests for unified auth flow) - COMPLETE
