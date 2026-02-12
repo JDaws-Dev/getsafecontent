@@ -3,6 +3,8 @@ import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import GettingStarted from './GettingStarted';
 import bcrypt from 'bcryptjs';
+import { useTheme } from '../../contexts/ThemeContext';
+import { ThemeSelector } from '../common/ThemeToggle';
 
 // Stripe Price ID - SafeTube Premium $4.99/month
 const STRIPE_PRICE_ID = import.meta.env.VITE_STRIPE_PRICE_ID || 'price_1Spp7oKgkIT46sg7oJIKGfMG';
@@ -257,6 +259,16 @@ export default function Settings({ userData, onLogout }) {
           }`}
         >
           Support
+        </button>
+        <button
+          onClick={() => setActiveSection('appearance')}
+          className={`px-4 py-2 font-medium text-sm rounded-t-lg transition ${
+            activeSection === 'appearance'
+              ? 'bg-white text-red-600 border border-gray-200 border-b-white -mb-px'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Appearance
         </button>
       </div>
 
@@ -693,6 +705,49 @@ export default function Settings({ userData, onLogout }) {
                 </svg>
                 <span className="font-medium">Terms of Service</span>
               </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* APPEARANCE SECTION */}
+      {activeSection === 'appearance' && (
+        <div className="space-y-6">
+          {/* Theme Selection Card */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-red-500 to-orange-500">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                Appearance
+              </h2>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Theme</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Choose how SafeTube looks on your device
+                  </p>
+                  <ThemeSelector />
+                </div>
+              </div>
+
+              {/* System Theme Info */}
+              <div className="mt-6 p-4 bg-orange-50 rounded-xl border border-orange-100">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-orange-900">System Theme</p>
+                    <p className="text-xs text-orange-700 mt-1">
+                      When set to "System", SafeTube will automatically switch between light and dark mode based on your device settings.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

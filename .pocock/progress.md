@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Feb 12, 2026:
+- safecontent-41m.3 (Add dark mode to SafeTube) - COMPLETE
 - safecontent-41m.2 (Add dark mode to SafeTunes) - COMPLETE
 - safecontent-41m.1 (Add dark mode to marketing site) - COMPLETE
 - safecontent-q94 (Complete SafeTunes onboarding test coverage) - COMPLETE
@@ -92,6 +93,63 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-41m.3: Add dark mode to SafeTube (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Dark mode with Settings toggle
+
+**What was done:**
+
+1. **Created ThemeContext.jsx:**
+   - ThemeProvider with light/dark/system theme support
+   - useTheme hook for consuming theme state
+   - localStorage persistence (`safetube-theme` key)
+   - System preference detection via `prefers-color-scheme`
+
+2. **Created ThemeToggle.jsx:**
+   - ThemeToggle component for cycling through themes
+   - ThemeSelector component with radio-button-style selection for Settings
+   - Red/orange color scheme to match SafeTube branding
+
+3. **Updated tailwind.config.js:**
+   - Added `darkMode: 'class'` for class-based dark mode
+
+4. **Major index.css overhaul:**
+   - SafeTube was previously dark-only by default
+   - Added CSS variables for light/dark modes
+   - Override rules for common Tailwind classes in both modes
+   - Red/orange accent adjustments for dark backgrounds
+   - Fixed body styles to support both light and dark
+
+5. **Wrapped App.jsx with ThemeProvider:**
+   - ThemeProvider wraps the entire app at the top level
+
+6. **Added Appearance tab to Settings.jsx:**
+   - New "Appearance" tab in the tab bar
+   - Appearance settings page with ThemeSelector
+   - Info box explaining system theme behavior
+   - Uses SafeTube's red/orange gradient branding
+
+**Files created:**
+- `apps/safetube/src/contexts/ThemeContext.jsx`
+- `apps/safetube/src/components/common/ThemeToggle.jsx`
+
+**Files modified:**
+- `apps/safetube/tailwind.config.js` - Added darkMode: 'class'
+- `apps/safetube/src/index.css` - Complete dark mode CSS overhaul
+- `apps/safetube/src/App.jsx` - ThemeProvider wrapper + import
+- `apps/safetube/src/components/admin/Settings.jsx` - Appearance tab + section
+
+**Key decisions:**
+- Used class-based dark mode (matches SafeTunes/marketing approach)
+- SafeTube was previously dark-only, now supports light mode too
+- CSS override approach minimizes changes to existing components
+- Three theme options: Light/Dark/System (consistent across all apps)
+- Theme toggle in Settings via tab (matches SafeTube's existing tab UI)
+
+**Build verified:** npm run build + npx convex dev --once both pass
+
+---
 
 ### safecontent-41m.2: Add dark mode to SafeTunes (Feb 12, 2026 - COMPLETE)
 
