@@ -28,7 +28,8 @@ export default defineSchema({
         v.literal("lifetime"),
         v.literal("canceled"),
         v.literal("past_due"),
-        v.literal("incomplete")
+        v.literal("incomplete"),
+        v.literal("inactive") // User has credentials but isn't entitled to this app
       )
     ),
     subscriptionCurrentPeriodEnd: v.optional(v.number()),

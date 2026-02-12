@@ -4975,3 +4975,65 @@ When users sign up with promo codes (DAWSFRIEND, DEWITT) on the marketing site, 
 - Deploy marketing site changes to Vercel
 - Test end-to-end with a promo code signup
 
+
+---
+
+## safecontent-i5w.10 - Add 'inactive' subscription status UI to apps
+
+**Status**: COMPLETE  
+**Date**: Feb 12, 2026
+
+### What Was Done
+
+Added UpgradePrompt UI components to all three apps for handling users who have Safe Family credentials but aren't entitled to the specific app (subscriptionStatus = "inactive").
+
+### Files Created
+
+**SafeTunes**:
+- `apps/safetunes/src/components/UpgradePrompt.jsx` - Purple-themed upgrade prompt
+
+**SafeTube**:
+- `apps/safetube/src/components/UpgradePrompt.jsx` - Red/orange-themed upgrade prompt
+
+**SafeReads**:
+- `apps/safereads/src/components/InactiveUserPrompt.tsx` - Parchment-themed upgrade prompt
+
+### Files Modified
+
+**SafeTunes**:
+- `apps/safetunes/src/pages/AdminPage.jsx` - Added inactive status handling with UpgradePrompt
+
+**SafeTube**:
+- `apps/safetube/src/pages/AdminDashboard.jsx` - Added inactive status handling with UpgradePrompt
+
+**SafeReads**:
+- `apps/safereads/src/app/dashboard/layout.tsx` - Added inactive status handling
+- `apps/safereads/convex/schema.ts` - Added "inactive" to subscriptionStatus union
+
+### How It Works
+
+1. When a user logs in with "inactive" status:
+   - They see a friendly welcome message acknowledging their Safe Family account
+   - Shows features they would get by upgrading
+   - Provides "Upgrade Now" button linking to marketing site signup
+   - "Use Different Account" button to logout and try another account
+
+2. Each app has its own branded version matching the app's color scheme:
+   - SafeTunes: Purple/pink gradient
+   - SafeTube: Red/orange gradient  
+   - SafeReads: Parchment brown theme
+
+### Acceptance Criteria Met
+- [x] SafeTunes shows upgrade prompt for inactive users
+- [x] SafeTube shows upgrade prompt for inactive users
+- [x] SafeReads shows upgrade prompt for inactive users
+- [x] Upgrade button links to marketing site
+- [x] User can logout and use different account
+- [x] Design matches app branding
+- [x] Mobile responsive (inherits from existing styles)
+
+### Build Verification
+- SafeTunes: ✅ Built in 3.69s
+- SafeTube: ✅ Built in 1.28s
+- SafeReads: ✅ Built successfully
+

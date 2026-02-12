@@ -11,6 +11,7 @@ import ContentLibrary from '../components/admin/ContentLibrary';
 import VideoRequests from '../components/admin/VideoRequests';
 import Settings from '../components/admin/Settings';
 import GettingStarted from '../components/admin/GettingStarted';
+import UpgradePrompt from '../components/UpgradePrompt';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -145,6 +146,17 @@ export default function AdminDashboard() {
   if (userData.onboardingCompleted === false && userData.subscriptionStatus === "trial") {
     navigate('/onboarding');
     return null;
+  }
+
+  // Show UpgradePrompt for inactive users (have credentials but not entitled to SafeTube)
+  if (userData.subscriptionStatus === 'inactive') {
+    return <UpgradePrompt user={userData} onLogout={handleLogout} />;
+  }
+
+  // Also show UpgradePrompt for unknown/invalid status (safety net)
+  const validStatuses = ['active', 'trial', 'lifetime'];
+  if (!validStatuses.includes(userData.subscriptionStatus) && !userData.isTrialExpired) {
+    return <UpgradePrompt user={userData} onLogout={handleLogout} />;
   }
 
   // Show trial expired screen

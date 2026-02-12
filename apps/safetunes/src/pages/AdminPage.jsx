@@ -5,6 +5,7 @@ import { useConvexAuth } from 'convex/react';
 import { useAuthActions } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import AdminDashboard from '../components/admin/AdminDashboard';
+import UpgradePrompt from '../components/UpgradePrompt';
 
 function AdminPage() {
   const { isAuthenticated, isLoading: isPending } = useConvexAuth();
@@ -64,16 +65,18 @@ function AdminPage() {
       return;
     }
 
-    // If logged in but haven't completed onboarding, redirect to onboarding
-    if (currentUser && !currentUser.onboardingCompleted) {
+    // Note: 'inactive' status users are handled in the render below, not redirected
+    // They have valid credentials but aren't entitled to SafeTunes
+
+    // If logged in but haven't completed onboarding (and have valid subscription), redirect to onboarding
+    const validActiveStatuses = ['active', 'trial', 'lifetime'];
+    if (currentUser && !currentUser.onboardingCompleted && validActiveStatuses.includes(currentUser.subscriptionStatus)) {
       navigate('/onboarding');
       return;
     }
 
-    // Check subscription status - only allow active, trial, and lifetime users
+    // Check subscription status - only redirect for expired/cancelled, not inactive
     if (currentUser && currentUser.email) {
-      const validStatuses = ['active', 'trial', 'lifetime'];
-
       // For trial users, check if trial has expired
       if (currentUser.subscriptionStatus === 'trial') {
         const trialEndDate = (currentUser.createdAt || Date.now()) + (7 * 24 * 60 * 60 * 1000);
@@ -88,11 +91,13 @@ function AdminPage() {
         }
       }
 
-      // Block users with invalid subscription status
-      if (!validStatuses.includes(currentUser.subscriptionStatus)) {
+      // Block users with cancelled or past_due status - redirect to upgrade
+      // Note: 'inactive' users stay here and see UpgradePrompt component
+      const needsUpgradeStatuses = ['cancelled', 'canceled', 'past_due', 'expired'];
+      if (needsUpgradeStatuses.includes(currentUser.subscriptionStatus)) {
         logAccessDenied({
           email: currentUser.email,
-          reason: `Invalid subscription status: ${currentUser.subscriptionStatus}`,
+          reason: `Subscription status: ${currentUser.subscriptionStatus}`,
           subscriptionStatus: currentUser.subscriptionStatus,
         });
         navigate('/upgrade?subscription_required=true');
@@ -119,6 +124,17 @@ function AdminPage() {
     const isNativeApp = /SafeTunesApp/.test(navigator.userAgent) || window.isInSafeTunesApp;
     navigate(isNativeApp ? '/app' : '/login');
   };
+
+  // Show UpgradePrompt for inactive users (have credentials but not entitled to SafeTunes)
+  if (currentUser.subscriptionStatus === 'inactive') {
+    return <UpgradePrompt user={currentUser} onLogout={handleLogout} />;
+  }
+
+  // Also show for unknown/missing status (safety net)
+  const validStatuses = ['active', 'trial', 'lifetime'];
+  if (!validStatuses.includes(currentUser.subscriptionStatus)) {
+    return <UpgradePrompt user={currentUser} onLogout={handleLogout} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
