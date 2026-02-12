@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.3 complete** - SafeTube Account Creation & Onboarding Tested
+**safecontent-cl1.4 complete** - SafeReads Account Creation & Onboarding Tested
 
 As of Feb 12, 2026:
+- safecontent-cl1.4 (SafeReads Account Creation & Onboarding) - COMPLETE
 - safecontent-cl1.3 (SafeTube Account Creation & Onboarding) - COMPLETE
 - safecontent-cl1.2 (SafeTunes Account Creation & Onboarding) - COMPLETE
 - safecontent-cl1.13 (UI/UX Audit & Consistency Report) - COMPLETE
@@ -48,6 +49,56 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.4: Test SafeReads Account Creation & Onboarding (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Tested signup redirect to central getsafefamily.com/signup?app=safereads
+- Tested login page (email/password + Google OAuth)
+- Tested /forgot-password page (6-digit OTP flow - WORKS)
+- Tested Terms and Privacy pages (both exist and are comprehensive)
+- Tested error handling for invalid login credentials
+- Tested mobile responsiveness on landing and login pages
+- Reviewed onboarding flow code (3-step wizard)
+- Reviewed kid profile creation (name + optional age)
+
+**UI/UX Rating: 8.5/10**
+
+**What works well:**
+1. Signup correctly redirects to central marketing site with SafeReads pre-selected
+2. Login page is clean with Google OAuth, email/password options
+3. Landing page is excellent - clear value prop, features, testimonials, pricing
+4. Forgot password flow works (6-digit OTP via email)
+5. Error handling for invalid login shows clear message ("Login failed. Please try again.")
+6. Terms and Privacy pages are comprehensive and well-written
+7. Onboarding flow is simple: Welcome → Add Kids (optional) → Done
+8. Kid profiles have name (required) and age (optional, 0-18)
+
+**Minor issues (P3):**
+1. Mobile header has "Sign In" text positioned awkwardly near logo
+2. Contact email in FAQ still shows jedaws@gmail.com (should be jeremiah@getsafefamily.com)
+
+**Screenshots captured:**
+- safereads-landing-page.png - Landing page desktop
+- safereads-signup-redirect.png - Redirect to central signup with SafeReads selected
+- safereads-login-page.png - Login page with Google + email/password
+- safereads-forgot-password.png - Password reset page (OTP flow)
+- safereads-login-error.png - Error state for invalid credentials
+- safereads-landing-mobile.png - Mobile landing page
+- safereads-login-mobile.png - Mobile login page
+
+**Key findings:**
+- All account creation flows work correctly
+- Signup redirects to central site as designed
+- Login works with both Google OAuth and email/password
+- Forgot password flow is functional (unlike SafeTube which was missing)
+- Onboarding is straightforward 3-step wizard
+- Kid profiles are simple (name + optional age)
+- No P0/P1 issues found
+
+---
 
 ### safecontent-cl1.3: Test SafeTube Account Creation & Onboarding (Feb 12, 2026 - COMPLETE)
 
