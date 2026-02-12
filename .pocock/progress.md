@@ -7,9 +7,11 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-l3x complete** - Add audit logging for admin actions
+**safecontent-cl1.14.1 complete** - P0 BUG: /forgot-password page returns 404
 
 As of Feb 11, 2026:
+- safecontent-cl1.14.1 (P0: /forgot-password 404) - COMPLETE
+- safecontent-cl1.1 (Marketing Site Signup Audit) - COMPLETE
 - safecontent-l3x (Audit logging for admin actions) - COMPLETE
 - safecontent-y2p (Webhook timeout/circuit breaker) - COMPLETE
 - safecontent-4hn (Sentry error tracking) - COMPLETE
@@ -37,6 +39,89 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.14.1: P0 BUG: /forgot-password page returns 404 (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Root cause:** The `/forgot-password` and `/reset-password` pages existed locally but were never committed to git. They were untracked files.
+
+**What was done:**
+- Verified pages existed locally and worked in local build
+- Production returned 404 because code was never deployed
+- Added both pages to git and committed
+- Pushed to trigger Vercel deployment
+
+**Files added:**
+- `sites/marketing/src/app/forgot-password/page.tsx` - Request password reset OTP
+- `sites/marketing/src/app/reset-password/page.tsx` - Enter OTP and new password
+
+**Flow:**
+1. User clicks "Forgot password?" on login page → /forgot-password
+2. User enters email, OTP sent via Resend (ResendOTPPasswordReset.ts)
+3. User redirected to /reset-password
+4. User enters 6-digit OTP + new password
+5. Password reset complete, redirected to login
+
+**Key learning:** Always run `git status` to verify files are tracked before closing an issue!
+
+---
+
+### safecontent-cl1.1: Test SafeFamily Marketing Site Signup (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Audit Summary:**
+
+Tested the full signup experience on getsafefamily.com including:
+- Homepage → Signup flow
+- Form validation (password strength, mismatch detection)
+- App selection UI (1, 2, 3 app pricing)
+- Mobile responsive design
+- Login page
+
+**UI/UX Rating: 8/10**
+
+**What works well:**
+1. **Homepage** - Beautiful hero, clear value prop, trust badges, testimonials
+2. **Signup page** - Two-column layout, dynamic app selection, price updates instantly
+3. **Password validation** - Real-time strength meter with checklist
+4. **Password mismatch** - Clear red error message
+5. **Mobile responsive** - Stacks properly, all content accessible
+6. **App selection** - Checkboxes toggle nicely, pricing updates (1 app=$4.99, 2 apps=$7.99, 3 apps=$9.99)
+7. **Trust signals** - "No credit card", "Cancel anytime", "30-day money-back guarantee"
+8. **Promo code** - Hidden by default, expands on click
+
+**P0 BUGS FOUND:**
+1. **Checkout API cryptic error on existing email** - When user submits with an email that already exists, API returns 500 with empty body. Frontend shows "Failed to execute 'json' on 'Response': Unexpected end of JSON input" instead of friendly "Account already exists" message. Root cause: signup/page.tsx line 101-103 doesn't handle empty response body.
+
+2. **`/forgot-password` returns 404** - Users cannot reset their password on marketing site. Critical blocker for account recovery.
+
+**Minor issues (P2):**
+- Terms link points to getsafetunes.com/terms (should be getsafefamily.com/terms)
+- Privacy link points to getsafetunes.com/privacy (should be getsafefamily.com/privacy)
+
+**Recommendations:**
+1. **P0**: Fix error handling in signup/page.tsx to show friendly error messages
+2. **P1**: Create /forgot-password page with Convex Auth password reset
+3. **P2**: Create /terms and /privacy pages on marketing site (or fix links)
+4. **P2**: Either implement Google OAuth or hide the button
+
+**Screenshots captured:**
+- audit-marketing-homepage.png - Homepage desktop
+- audit-signup-page.png - Signup page desktop
+- audit-signup-weak-password.png - Password validation weak
+- audit-signup-strong-password.png - Password validation strong
+- audit-signup-password-mismatch.png - Password mismatch error
+- audit-signup-mobile.png - Mobile full page
+- audit-homepage-mobile.png - Homepage mobile
+- audit-signup-2-apps.png - 2-app pricing ($7.99)
+- audit-signup-1-app.png - 1-app pricing ($4.99)
+- audit-signup-promo-code.png - Promo code field
+- audit-login-page.png - Login page
+- audit-forgot-password-404.png - 404 error on forgot password
+
+---
 
 ### safecontent-l3x: Add audit logging for admin actions (Feb 11, 2026 - COMPLETE)
 
