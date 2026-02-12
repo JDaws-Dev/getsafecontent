@@ -116,8 +116,8 @@ function SignupContent() {
 
         console.log("[SignupPage] Promo signup success:", result);
 
-        // Redirect to success page
-        router.push("/success?promo=true");
+        // Redirect to success page (use window.location for reliable redirect)
+        window.location.href = "/success?promo=true";
       } catch (err) {
         console.error("[SignupPage] Promo signup error:", err);
         setError(
