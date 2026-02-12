@@ -7,9 +7,11 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**Password sync infrastructure complete** - Users can change password in one app and it syncs to all apps
+**BACKLOG CLEAR** - All issues closed, V1 unified auth complete
 
 As of Feb 12, 2026:
+- safecontent-i5w.15 (Google OAuth support) - DEFERRED TO V2 (complexity vs value)
+- safecontent-i5w.16 (Session-based SSO) - DEFERRED TO V2 (complexity vs value)
 - safecontent-i5w.14 (Write integration tests for unified auth flow) - COMPLETE
 - safecontent-i5w.8 (Implement password sync across apps) - COMPLETE
 - safecontent-44m (Fix promo signup to enable login on all apps) - COMPLETE
@@ -62,6 +64,34 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### Backlog Clear - V2 Features Deferred (Feb 12, 2026)
+
+**Status:** Complete - All V1 issues closed
+
+**What was done:**
+
+Closed the remaining two P3 features as V2 deferrals per their design document recommendations:
+
+1. **safecontent-i5w.15: Google OAuth support**
+   - Deferred because: OAuth token management, refresh handling, account linking edge cases
+   - Design doc said: "Consider: Defer this and require password for central signup initially"
+   - Current workaround: Password reset flow available for OAuth users
+
+2. **safecontent-i5w.16: Session-based SSO**
+   - Deferred because: Cross-domain cookie restrictions, security implications, complexity
+   - Design doc said: "Defer to V2 - current separate logins are acceptable"
+   - Current UX: Users log in once per app with unified password (acceptable)
+
+**Key decision:**
+V1 unified auth is complete with password-based authentication. Advanced features (OAuth sync, SSO) add significant complexity for marginal benefit. Users can:
+- Create account on marketing site
+- Login to each app with same email/password
+- Change password anywhere, syncs to all apps
+
+**Total issues closed:** 182+
+
+---
 
 ### safecontent-i5w.14: Write integration tests for unified auth flow (Feb 12, 2026 - COMPLETE)
 
