@@ -150,6 +150,12 @@ cd ~/safecontent/sites/marketing && vercel --prod
 - `ADMIN_API_KEY` - Same as Convex ADMIN_KEY
 - `NEXT_PUBLIC_URL` - `https://getsafefamily.com`
 - `GOOGLE_BOOKS_API_KEY` - For book demo
+- `RESEND_API_KEY` - For newsletter emails
+- `RESEND_NEWSLETTER_AUDIENCE_ID` - Resend audience for subscribers
+- `UPSTASH_REDIS_REST_URL` - Rate limiting & audit logs
+- `UPSTASH_REDIS_REST_TOKEN` - Upstash auth
+- `SENTRY_DSN` - Error tracking (server-side)
+- `NEXT_PUBLIC_SENTRY_DSN` - Error tracking (client-side)
 
 ### Convex Apps
 Each app has in Convex env vars:
@@ -229,6 +235,66 @@ CONVEX_DEPLOYMENT=prod:exuberant-puffin-838 npx convex env set ADMIN_KEY "$NEW_K
 
 ---
 
+## Security & Monitoring
+
+### Rate Limiting (Upstash Redis)
+Public APIs are rate-limited per IP:
+- `/api/checkout` - 10 requests/min
+- `/api/demo/*` - 30 requests/min (shared)
+- `/api/newsletter/subscribe` - 5 requests/min
+
+Returns `429 Too Many Requests` with `Retry-After` header when exceeded.
+
+### Error Tracking (Sentry)
+- Dashboard: https://safetunes.sentry.io/projects/safe-family-marketing/
+- Captures client-side and server-side errors
+- Alerts on payment/webhook failures
+
+### Audit Logging
+All admin actions logged to `/admin/audit-logs`:
+- Grant/revoke lifetime access
+- Delete user
+- Send emails
+- Retry failed provisions
+
+Logs include: timestamp, admin email, action, target, IP address.
+
+### Webhook Resilience
+- 5s timeout per app provisioning call
+- 3 retries with exponential backoff
+- Alert email on final failure
+- Partial success still grants access to working apps
+
+---
+
+## Admin Pages
+
+| URL | Purpose |
+|-----|---------|
+| `/admin` | Dashboard - users, revenue, stats |
+| `/admin/users` | User management, bulk actions |
+| `/admin/audit-logs` | Admin action history |
+
+---
+
+## Newsletter
+
+### Email Capture
+- Form on all blog posts
+- Lead magnet: "10 Ways to Keep Kids Safe Online"
+- Guide page: `/guides/keeping-kids-safe-online`
+
+### Resend Setup
+- Domain verified: `getsafefamily.com`
+- Audience ID in env var
+- Welcome email sent on subscribe
+
+### Subscribers
+- View in admin dashboard (NewsletterCard)
+- Manage in [Resend](https://resend.com/audiences)
+
+---
+
 ## Blog
 
 **URL**: getsafefamily.com/blog
@@ -249,10 +315,31 @@ CONVEX_DEPLOYMENT=prod:exuberant-puffin-838 npx convex env set ADMIN_KEY "$NEW_K
 
 ---
 
+## What's Next
+
+### Immediate
+- [ ] Register for FPEA Florida Homeschool Convention (May 21-23, 2026)
+  - See `docs/FPEA-2026-EXHIBITOR-GUIDE.md`
+  - URL: https://fpea.com/webforms/2026-exhibitor-registration
+  - Cost: $525-685 (Zone 3-1)
+
+### Marketing
+- [ ] Publish Substack article (saved in `docs/client-acquisition-research.md`)
+- [ ] Send outreach emails to Chris McKenna & Andrew Hogan
+- [ ] Apply to Southeast Homeschool Expo (Atlanta, Jul 24-25)
+- [ ] Apply to Suwanee Farmers Market (opens January)
+
+### Product
+- [ ] Add more blog posts (target: 2/week)
+- [ ] Create convention promo code (e.g., `FPEA2026`)
+- [ ] Design booth materials (banner, brochures)
+
+---
+
 ## Contact
 - Owner: Jeremiah Daws (jedaws@gmail.com)
 - Support: jeremiah@getsafefamily.com
 
 ---
 
-*Last updated: February 10, 2026*
+*Last updated: February 11, 2026*
