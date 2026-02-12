@@ -1,18 +1,22 @@
 import { NextResponse } from "next/server";
-import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
-import { fetchQuery, fetchMutation } from "convex/nextjs";
-import { api } from "../../../../convex/_generated/api";
 
 /**
  * Promo Signup API
  *
- * Handles the final step of promo code signup:
- * 1. User already signed up via Convex Auth (done client-side)
- * 2. User already applied lifetime code via mutation (done client-side)
- * 3. This endpoint provisions access across all individual apps
+ * Handles promo code signups that grant lifetime access.
  *
- * POST: Provision app access for the authenticated user
+ * The marketing site uses SafeReads' Convex deployment, but we don't have
+ * an applyLifetimeCode mutation there. Instead, this endpoint:
+ * 1. Validates the promo code directly
+ * 2. Provisions lifetime access to all 3 apps via admin endpoints
+ *
+ * Each app's admin endpoint will create the user if they don't exist.
+ *
+ * POST: Provision lifetime access for a new user with valid promo code
  */
+
+// Valid lifetime promo codes (must match signup page)
+const LIFETIME_CODES = ["DAWSFRIEND", "DEWITT"];
 
 // Admin key for authenticating with app admin endpoints
 const ADMIN_KEY = process.env.ADMIN_API_KEY;
@@ -89,49 +93,40 @@ async function provisionApp(
 
 export async function POST(req: Request) {
   try {
-    // Verify authentication
-    const token = await convexAuthNextjsToken();
-    if (!token) {
-      return NextResponse.json(
-        { error: "Not authenticated. Please sign up first." },
-        { status: 401 }
-      );
-    }
+    // Parse request body
+    const body = await req.json().catch(() => ({}));
+    const { email, promoCode } = body;
 
-    // Get current user
-    const user = await fetchQuery(
-      api.accounts.getCurrentUser,
-      {},
-      { token }
-    );
-
-    if (!user) {
+    // Validate required fields
+    if (!email || typeof email !== "string") {
       return NextResponse.json(
-        { error: "User not found. Please sign up first." },
-        { status: 404 }
-      );
-    }
-
-    // Verify user has lifetime status
-    if (user.subscriptionStatus !== "lifetime") {
-      return NextResponse.json(
-        { error: "User does not have lifetime access. Please apply a valid promo code first." },
+        { error: "Email is required" },
         { status: 400 }
       );
     }
 
-    const email = user.email;
-    if (!email) {
+    if (!promoCode || typeof promoCode !== "string") {
       return NextResponse.json(
-        { error: "User email not found" },
+        { error: "Promo code is required" },
         { status: 400 }
       );
     }
 
-    // Provision access to all apps in parallel
-    const appsToProvision: AppName[] = (user.entitledApps as AppName[]) || ALL_APPS;
+    // Validate promo code
+    const normalizedCode = promoCode.trim().toUpperCase();
+    if (!LIFETIME_CODES.includes(normalizedCode)) {
+      return NextResponse.json(
+        { error: "Invalid promo code" },
+        { status: 400 }
+      );
+    }
+
+    console.log(`[Promo Signup] Processing lifetime access for ${email} with code ${normalizedCode}`);
+
+    // Provision lifetime access to all apps in parallel
+    // The admin endpoints will create the user if they don't exist
     const results = await Promise.all(
-      appsToProvision.map(async (app: AppName) => {
+      ALL_APPS.map(async (app: AppName) => {
         const result = await provisionApp(email, app);
         return { app, ...result };
       })
@@ -140,7 +135,8 @@ export async function POST(req: Request) {
     const failures = results.filter((r) => !r.success);
     const successes = results.filter((r) => r.success);
 
-    console.log(`Promo provisioning for ${email}:`, {
+    console.log(`[Promo Signup] Provisioning for ${email}:`, {
+      code: normalizedCode,
       total: results.length,
       successes: successes.length,
       failures: failures.map((f) => `${f.app}: ${f.error}`),
@@ -170,7 +166,7 @@ export async function POST(req: Request) {
           : "Lifetime access granted to all apps!",
     });
   } catch (error) {
-    console.error("Promo signup error:", error);
+    console.error("[Promo Signup] Error:", error);
     return NextResponse.json(
       { error: "Failed to complete promo signup. Please try again." },
       { status: 500 }
