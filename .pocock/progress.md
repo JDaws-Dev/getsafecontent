@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.4 complete** - SafeReads Account Creation & Onboarding Tested
+**safecontent-cl1.5 complete** - Single-App Checkout Flow Tested
 
 As of Feb 12, 2026:
+- safecontent-cl1.5 (Single-App Checkout Flow) - COMPLETE
 - safecontent-cl1.4 (SafeReads Account Creation & Onboarding) - COMPLETE
 - safecontent-cl1.3 (SafeTube Account Creation & Onboarding) - COMPLETE
 - safecontent-cl1.2 (SafeTunes Account Creation & Onboarding) - COMPLETE
@@ -49,6 +50,69 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.5: Test Single-App Checkout Flow (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Tested SafeTunes single-app checkout ($4.99/mo) - WORKS
+- Tested SafeTube single-app checkout ($4.99/mo) - WORKS
+- Tested SafeReads single-app checkout ($4.99/mo) - **BROKEN (P1 BUG)**
+- Tested mobile signup page responsiveness - WORKS
+- Tested mobile Stripe checkout - WORKS
+- Tested existing email error handling - Stripe Link handles gracefully
+
+**UI/UX Rating: 8.5/10** (would be 9/10 if SafeReads worked)
+
+**P1 BUG FOUND: SafeReads Single-App Checkout Broken**
+
+Error: "Price not configured for safereads"
+
+Root cause: `sites/marketing/src/app/api/checkout/route.ts` line 13:
+```typescript
+SAFEREADS: process.env.SAFEREADS_PRICE_ID || "", // Set via env var
+```
+
+The `SAFEREADS_PRICE_ID` environment variable is NOT SET in Vercel. Need to:
+1. Create a SafeReads $4.99/mo price in Stripe dashboard
+2. Add `SAFEREADS_PRICE_ID=price_xxx` to Vercel env vars
+3. Redeploy marketing site
+
+**What works well:**
+1. SafeTunes single-app checkout flows smoothly to Stripe
+2. SafeTube single-app checkout flows smoothly to Stripe
+3. Price shown correctly: $4.99/mo with 7-day free trial
+4. Trial period shows "Then $4.99 per month starting February 18, 2026"
+5. App selection dynamically updates pricing
+6. Mobile signup page stacks properly and is usable
+7. Stripe checkout mobile experience is excellent
+8. Existing users handled gracefully by Stripe Link (verification screen)
+
+**What needs fixing:**
+1. **P1:** SafeReads price ID not configured - blocks single-app checkout
+2. **P2:** Terms/Privacy links still point to getsafetunes.com (known issue)
+
+**Screenshots captured:**
+- checkout-single-safetunes-page.png - Signup with SafeTunes selected
+- checkout-single-safetunes-filled.png - Form filled with password strength
+- checkout-single-safetunes-stripe.png - Stripe checkout page
+- checkout-single-safetube-page.png - Signup with SafeTube selected
+- checkout-single-safetube-stripe.png - Stripe checkout for SafeTube
+- checkout-single-safereads-page.png - Signup with SafeReads selected
+- checkout-single-safereads-error-alert.png - "Price not configured" error
+- checkout-mobile-signup.png - Full mobile signup page
+- checkout-mobile-stripe.png - Stripe checkout on mobile
+- checkout-existing-user-stripe-link.png - Stripe Link verification for existing email
+
+**Key findings:**
+- 2/3 single-app checkouts work (SafeTunes, SafeTube)
+- 1/3 broken (SafeReads) due to missing env var
+- Mobile experience is excellent
+- Error handling for existing users is handled by Stripe Link
+- Need to create SafeReads Stripe price and set env var
+
+---
 
 ### safecontent-cl1.4: Test SafeReads Account Creation & Onboarding (Feb 12, 2026 - COMPLETE)
 
