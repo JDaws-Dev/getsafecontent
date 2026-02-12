@@ -426,15 +426,16 @@ async function generateUniqueFamilyCodeInternal(ctx: any): Promise<string> {
 export const provisionUserInternal = internalMutation({
   args: {
     email: v.string(),
-    passwordHash: v.string(), // Scrypt hash from central auth
+    passwordHash: v.union(v.string(), v.null()), // Scrypt hash from central auth (null for OAuth users)
     name: v.union(v.string(), v.null()),
     subscriptionStatus: v.string(),
     entitledToThisApp: v.boolean(),
     stripeCustomerId: v.union(v.string(), v.null()),
     subscriptionId: v.union(v.string(), v.null()),
+    isOAuthUser: v.optional(v.boolean()), // If true, skip authAccounts creation
   },
   handler: async (ctx, args) => {
-    console.log(`[provisionUser] Starting for ${args.email}`);
+    console.log(`[provisionUser] Starting for ${args.email} (OAuth: ${args.isOAuthUser ?? false})`);
 
     // 1. Check if user already exists
     const existingUser = await ctx.db
@@ -479,8 +480,23 @@ export const provisionUserInternal = internalMutation({
       console.log(`[provisionUser] Created new user: ${args.email} with familyCode: ${familyCode}`);
     }
 
-    // 2. Check if authAccounts entry exists for password provider
-    // Query authAccounts using the providerAndAccountId index
+    // 2. Handle auth account creation
+    // For OAuth users, skip authAccounts creation - they authenticate via Google
+    if (args.isOAuthUser) {
+      console.log(`[provisionUser] OAuth user - skipping authAccounts creation for: ${args.email}`);
+      return {
+        success: true,
+        userId: userId,
+        provisioned: wasCreated,
+        updated: !wasCreated,
+        authAccountCreated: false,
+        authAccountUpdated: false,
+        passwordConflict: false,
+        isOAuthUser: true,
+      };
+    }
+
+    // For password users, check if authAccounts entry exists
     const existingAuthAccount = await ctx.db
       .query("authAccounts")
       .withIndex("providerAndAccountId", (q) =>
@@ -490,6 +506,7 @@ export const provisionUserInternal = internalMutation({
 
     let authAccountCreated = false;
     let authAccountUpdated = false;
+    let passwordConflict = false;
 
     if (!existingAuthAccount) {
       // Create authAccounts entry for password authentication
@@ -498,19 +515,29 @@ export const provisionUserInternal = internalMutation({
         userId,
         provider: "password",
         providerAccountId: args.email.toLowerCase(),
-        secret: args.passwordHash, // The Scrypt hash from central
+        secret: args.passwordHash!, // The Scrypt hash from central
       });
       authAccountCreated = true;
 
       console.log(`[provisionUser] Created authAccount for: ${args.email}`);
     } else if (args.passwordHash !== existingAuthAccount.secret) {
-      // Update password hash if different (password was changed centrally)
-      await ctx.db.patch(existingAuthAccount._id, {
-        secret: args.passwordHash,
-      });
-      authAccountUpdated = true;
+      // PASSWORD CONFLICT HANDLING (Option B - Safety First)
+      // User exists in this app with a different password than the bundle signup.
+      // We KEEP the existing password to avoid surprising the user.
+      // They can still log in with their original password.
+      passwordConflict = true;
 
-      console.log(`[provisionUser] Updated password hash for: ${args.email}`);
+      console.warn(
+        `[provisionUser] PASSWORD CONFLICT for ${args.email}: ` +
+        `User has existing authAccount with different password hash. ` +
+        `Keeping existing password. User should use their original app password to log in.`
+      );
+
+      // Note: We intentionally do NOT update the password hash here.
+      // The user can:
+      // 1. Log in with their original password for this app
+      // 2. Use "Forgot Password" to reset if needed
+      // 3. Change password in Settings after logging in
     } else {
       console.log(`[provisionUser] authAccount already exists with same hash for: ${args.email}`);
     }
@@ -522,6 +549,7 @@ export const provisionUserInternal = internalMutation({
       updated: !wasCreated,
       authAccountCreated,
       authAccountUpdated,
+      passwordConflict,
     };
   },
 });
@@ -550,6 +578,117 @@ export const checkAuthAccountExists = internalQuery({
       userId: authAccount.userId,
       provider: authAccount.provider,
       hasSecret: !!authAccount.secret,
+    };
+  },
+});
+
+// ============================================================================
+// PASSWORD CHANGE - User-facing mutation
+// ============================================================================
+
+/**
+ * Change user's password.
+ * Called from Settings page when user wants to change their password.
+ *
+ * Note: This updates only the local app's authAccounts table.
+ * The passwordSync action (if enabled) will sync to other apps.
+ */
+export const changePassword = mutation({
+  args: {
+    userId: v.id("users"),
+    currentPasswordHash: v.string(),
+    newPasswordHash: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get the user to verify they exist
+    const user = await ctx.db.get(args.userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Find the authAccount for this user
+    const authAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("userIdAndProvider", (q) =>
+        q.eq("userId", args.userId).eq("provider", "password")
+      )
+      .first();
+
+    if (!authAccount) {
+      throw new Error("No password authentication found for this account. You may have signed up with Google.");
+    }
+
+    // Verify current password matches
+    if (authAccount.secret !== args.currentPasswordHash) {
+      throw new Error("Current password is incorrect");
+    }
+
+    // Update to new password
+    await ctx.db.patch(authAccount._id, {
+      secret: args.newPasswordHash,
+    });
+
+    console.log(`[changePassword] Password updated for user: ${user.email}`);
+
+    return { success: true };
+  },
+});
+
+// ============================================================================
+// PASSWORD SYNC - Update password hash from central sync
+// ============================================================================
+
+/**
+ * Update a user's password hash in the authAccounts table.
+ * Called by the marketing site /api/auth/sync-password endpoint.
+ *
+ * This allows password changes to propagate across all apps.
+ */
+export const updatePasswordInternal = internalMutation({
+  args: {
+    email: v.string(),
+    passwordHash: v.string(), // Scrypt hash from central auth
+  },
+  handler: async (ctx, args) => {
+    console.log(`[updatePasswordInternal] Starting for ${args.email}`);
+
+    // Find the authAccount for this email
+    const authAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", args.email.toLowerCase())
+      )
+      .first();
+
+    if (!authAccount) {
+      console.log(`[updatePasswordInternal] No authAccount found for: ${args.email}`);
+      return {
+        updated: false,
+        reason: "no_auth_account",
+        email: args.email,
+      };
+    }
+
+    // Check if password is already the same
+    if (authAccount.secret === args.passwordHash) {
+      console.log(`[updatePasswordInternal] Password already matches for: ${args.email}`);
+      return {
+        updated: false,
+        reason: "already_matches",
+        email: args.email,
+      };
+    }
+
+    // Update the password hash
+    await ctx.db.patch(authAccount._id, {
+      secret: args.passwordHash,
+    });
+
+    console.log(`[updatePasswordInternal] Password updated for: ${args.email}`);
+
+    return {
+      updated: true,
+      email: args.email,
     };
   },
 });

@@ -12,6 +12,7 @@
   "dependencies": {
     "@auth/core": "^0.37.4",
     "@convex-dev/auth": "^0.0.82",
+    "bcryptjs": "^3.0.3",
     "convex": "^1.31.0",
     "lucide-react": "^0.554.0",
     "react": "^19.2.0",

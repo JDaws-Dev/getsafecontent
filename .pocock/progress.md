@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**WORKING ON:** safecontent-71k.2 - Set up Google OAuth credentials in Vercel
+**WORKING ON:** None - ready for next issue
 
 As of Feb 12, 2026:
+- safecontent-lye (Add password change to SafeTube settings) - COMPLETE
 - safecontent-ce3 (Create /terms and /privacy pages on marketing site) - COMPLETE
 - safecontent-71k (Implement Google OAuth across all apps) - IN PROGRESS
   - safecontent-71k.1 (Enable Google OAuth on marketing signup page) - COMPLETE
@@ -70,6 +71,52 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-lye: Add password change to SafeTube settings (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Password change functionality added to SafeTube Settings
+
+**What was done:**
+
+1. **Added changePassword mutation to SafeTube Convex:**
+   - Created `changePassword` mutation in `apps/safetube/convex/users.ts`
+   - Validates userId exists and fetches user
+   - Looks up authAccount via `userIdAndProvider` index
+   - Verifies current password hash matches
+   - Updates to new password hash
+   - Handles edge case for Google OAuth users (error message)
+
+2. **Added password change UI to SafeTube Settings.jsx:**
+   - Added bcryptjs dependency for password hashing
+   - Added state variables (showChangePassword, passwordForm, passwordError, passwordSuccess, passwordLoading)
+   - Added `handlePasswordChange` function with validation (required fields, min 8 chars, passwords match, different from current)
+   - Added Security section in Account tab (after Account Information, before Safe Family Account)
+   - Form has current password, new password, confirm password fields
+   - Shows error/success states
+   - Cancel button clears form
+
+3. **Created E2E test file:**
+   - `sites/marketing/e2e/safetube-password-change.spec.ts`
+   - Tests forgot-password and reset-password pages load correctly
+   - Documents expected behavior for authenticated settings tests (skipped - requires auth)
+
+**Files created:**
+- `sites/marketing/e2e/safetube-password-change.spec.ts`
+
+**Files modified:**
+- `apps/safetube/convex/users.ts` - Added changePassword mutation
+- `apps/safetube/src/components/admin/Settings.jsx` - Added Security section with password change form
+- `apps/safetube/package.json` - Added bcryptjs dependency
+
+**Key decisions:**
+- Used same pattern as SafeTunes for consistency
+- Used bcryptjs for client-side hashing (same as SafeTunes)
+- Security section placed after Account Information (logical grouping)
+- Used red/orange gradient buttons to match SafeTube branding
+
+**Build verified:** npm run build + npx convex dev --once both pass
+
+---
 
 ### safecontent-ce3: Create /terms and /privacy pages on marketing site (Feb 12, 2026 - COMPLETE)
 
