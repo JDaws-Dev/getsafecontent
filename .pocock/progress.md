@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-oc8 complete** - SafeTube Forgot Password Page Fixed
+**safecontent-cl1.9 complete** - Promo Code Flows Tested (P0 BUG FOUND)
 
 As of Feb 12, 2026:
+- safecontent-cl1.9 (Promo Code Flows) - COMPLETE (P0 BUG: codes don't actually grant lifetime)
 - safecontent-oc8 (P0: SafeTube /forgot-password 404) - COMPLETE
 - safecontent-cl1.8 (3-App Bundle Yearly Checkout) - COMPLETE
 - safecontent-cl1.7 (3-App Bundle Monthly Checkout) - COMPLETE
@@ -54,6 +55,77 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.9: Test Promo Code Flows (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - **P0 BUG FOUND**
+
+**What was tested:**
+1. DAWSFRIEND code validation - UI validates correctly
+2. DEWITT code validation - UI validates correctly
+3. Invalid code handling - Shows error correctly
+4. Promo code discoverability - "Have a promo code?" link works
+5. Form submission with valid code - **BROKEN**
+6. Mobile responsiveness - Good
+
+**P0 BUG: Promo codes don't actually grant lifetime access**
+
+The promo code functionality is PURELY COSMETIC. When a user:
+1. Enters DAWSFRIEND or DEWITT (valid lifetime codes)
+2. UI shows "Get Lifetime Access" and "Lifetime access unlocked!"
+3. Green button changes to "Get Lifetime Access"
+4. User clicks submit
+5. **BUG: Redirects to Stripe checkout anyway!**
+6. User is asked for payment details
+7. Would be charged $9.99/mo after 7-day trial
+
+**Root cause:**
+- `AccountForm.tsx` validates codes client-side (lines 82-84, 58-59)
+- `signup/page.tsx` passes `couponCode` to `/api/checkout` (line 96)
+- `/api/checkout/route.ts` **ignores the couponCode entirely** - creates normal Stripe session
+- The Convex `createAccount` mutation in `accounts.ts` HAS proper coupon handling (lines 68-108)
+- But signup flow never calls this mutation - goes straight to Stripe
+
+**What SHOULD happen:**
+When valid lifetime code is entered, form should:
+1. Call Convex `createAccount` mutation directly (not Stripe)
+2. Convex validates code against `couponCodes` table
+3. Creates user with `subscriptionStatus: "lifetime"`
+4. Redirects to success/onboarding (skip Stripe entirely)
+
+**UI/UX Rating: 4/10** (due to broken functionality)
+
+**What works well (UI only):**
+- Promo code field is discoverable ("Have a promo code?" link)
+- Real-time validation with green/red feedback
+- Clear "Lifetime access unlocked!" confirmation
+- Button text changes appropriately
+- Mobile responsive design is good
+
+**What's broken:**
+- **Core functionality completely broken** - codes don't work
+- User is deceived into thinking they'll get free access
+- Would still be charged after trial
+
+**Screenshots captured:**
+- promo-code-signup-default.png - Default signup page
+- promo-code-field-expanded.png - Promo code field visible
+- promo-code-dawsfriend-valid.png - DAWSFRIEND validation (UI looks correct)
+- promo-code-dewitt-valid.png - DEWITT validation (UI looks correct)
+- promo-code-invalid.png - Invalid code error message
+- promo-code-form-filled.png - Form filled with valid code
+- promo-code-bug-stripe-redirect.png - **BUG: Redirected to Stripe payment**
+- promo-code-mobile-top.png - Mobile view top
+- promo-code-mobile-valid.png - Mobile with valid code
+
+**Recommendations:**
+1. **P0 FIX REQUIRED:** Modify signup flow to detect lifetime codes and bypass Stripe
+2. Create new endpoint `/api/promo-signup` that calls Convex `createAccount` directly
+3. Or modify `/api/checkout` to check for lifetime codes and redirect appropriately
+4. Add server-side validation (don't trust client-side code list)
+5. After fix, verify no recurring billing is set up for lifetime users
+
+---
 
 ### safecontent-oc8: P0 BUG: SafeTube /forgot-password page missing (Feb 12, 2026 - COMPLETE)
 

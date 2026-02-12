@@ -23,6 +23,7 @@ import type * as http from "../http.js";
 import type * as kidPlaylists from "../kidPlaylists.js";
 import type * as kidProfiles from "../kidProfiles.js";
 import type * as setSubscriptionStatus from "../setSubscriptionStatus.js";
+import type * as setupOnboarding from "../setupOnboarding.js";
 import type * as stripe from "../stripe.js";
 import type * as stripeActions from "../stripeActions.js";
 import type * as subscriptionEvents from "../subscriptionEvents.js";
@@ -56,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   kidPlaylists: typeof kidPlaylists;
   kidProfiles: typeof kidProfiles;
   setSubscriptionStatus: typeof setSubscriptionStatus;
+  setupOnboarding: typeof setupOnboarding;
   stripe: typeof stripe;
   stripeActions: typeof stripeActions;
   subscriptionEvents: typeof subscriptionEvents;
