@@ -13,7 +13,7 @@ function InstallationGuide() {
             No app store required. Install SafeTunes directly to your child's device like a native app.
           </p>
           <p className="text-sm text-purple-600 font-semibold mt-4">
-            ✨ Native iOS app coming Q1 2026
+            ✨ Native iOS app coming soon
           </p>
         </div>
 
@@ -133,7 +133,7 @@ function InstallationGuide() {
               </div>
             </div>
             <p className="text-purple-600 font-semibold mt-4">
-              Native iOS app launching Q1 2026 for those who prefer it!
+              Native iOS app launching soon for those who prefer it!
             </p>
           </div>
         </div>

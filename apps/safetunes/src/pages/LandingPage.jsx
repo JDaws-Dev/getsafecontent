@@ -688,7 +688,7 @@ function LandingPage() {
                   What devices does SafeTunes work on?
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  SafeTunes works on any device with a web browser—iPhone, iPad, Android phones and tablets, Chromebooks, Windows PCs, and Macs. Parents manage everything from their phone or computer. Kids can play their approved music from any device. A native iOS app is coming in Q1 2026 for an even better experience.
+                  SafeTunes works on any device with a web browser—iPhone, iPad, Android phones and tablets, Chromebooks, Windows PCs, and Macs. Parents manage everything from their phone or computer. Kids can play their approved music from any device. A native iOS app is coming soon for an even better experience.
                 </p>
               </div>
 
@@ -749,10 +749,10 @@ function LandingPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-base sm:text-lg mb-2">Native iOS App Coming Q1 2026</h3>
+                  <h3 className="font-bold text-gray-900 text-base sm:text-lg mb-2">Native iOS App Coming Soon</h3>
                   <p className="text-sm sm:text-base text-gray-700">
                     SafeTunes works perfectly in any browser right now—iPhone, iPad, Chromebook, Android, you name it.
-                    We're building a native iOS app for an even better experience, launching early 2026.
+                    We're building a native iOS app for an even better experience, launching soon.
                   </p>
                 </div>
               </div>

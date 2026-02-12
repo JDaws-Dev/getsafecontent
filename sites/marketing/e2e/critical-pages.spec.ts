@@ -135,6 +135,20 @@ test.describe("SafeTunes Pages", () => {
     await expect(page.locator("h1, h2").first()).toBeVisible();
   });
 
+  test("landing page has no stale date references", async ({ page }) => {
+    await page.goto(URLS.safetunes);
+    await page.waitForLoadState("networkidle");
+
+    // Should NOT have outdated Q1 2026 references (we're past Q1 2026)
+    await expect(page.locator("body")).not.toContainText("Q1 2026");
+    await expect(page.locator("body")).not.toContainText("Q2 2025");
+    await expect(page.locator("body")).not.toContainText("Q3 2025");
+    await expect(page.locator("body")).not.toContainText("Q4 2025");
+
+    // Should have updated "coming soon" phrasing instead
+    await expect(page.getByText(/coming soon/i).first()).toBeVisible();
+  });
+
   test("login page loads correctly", async ({ page }) => {
     await page.goto(`${URLS.safetunes}/login`);
     await expect(page.locator("body")).not.toContainText("Something went wrong");

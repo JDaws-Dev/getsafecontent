@@ -10,6 +10,7 @@ This file maintains context between autonomous iterations.
 **WORKING ON:** None - ready for next issue
 
 As of Feb 12, 2026:
+- safecontent-0nx (Update iOS app timeline messaging) - COMPLETE
 - safecontent-eio (SafeTube: Blocked search notifications for parents) - COMPLETE
 - safecontent-lye (Add password change to SafeTube settings) - COMPLETE
 - safecontent-ce3 (Create /terms and /privacy pages on marketing site) - COMPLETE
@@ -72,6 +73,38 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-0nx: Update iOS app timeline messaging (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Removed outdated "Q1 2026" references from SafeTunes landing page
+
+**What was done:**
+
+1. **Updated LandingPage.jsx:**
+   - FAQ answer: "A native iOS app is coming in Q1 2026" → "coming soon"
+   - iOS section heading: "Native iOS App Coming Q1 2026" → "Coming Soon"
+   - iOS section body: "launching early 2026" → "launching soon"
+
+2. **Updated InstallationGuide.jsx:**
+   - Header subtitle: "Native iOS app coming Q1 2026" → "coming soon"
+   - Why web app section: "Native iOS app launching Q1 2026" → "launching soon"
+
+3. **Added E2E test in critical-pages.spec.ts:**
+   - Test verifies no stale quarter+year references (Q1-Q4 2025-2026)
+   - Test verifies "coming soon" text is present
+   - Prevents future regression
+
+**Files modified:**
+- `apps/safetunes/src/pages/LandingPage.jsx` - 3 text updates
+- `apps/safetunes/src/components/landing/InstallationGuide.jsx` - 2 text updates
+- `sites/marketing/e2e/critical-pages.spec.ts` - Added stale date test
+
+**Key discovery:**
+Live production site already shows "Coming Soon" - the fix may have been deployed previously or the content was already updated in prod. This change ensures the source code matches production and prevents future stale dates.
+
+**Build verified:** SafeTunes npm run build + convex dev --once, Marketing npm run build - all pass
+
+---
 
 ### safecontent-eio: SafeTube blocked search notifications for parents (Feb 12, 2026 - COMPLETE)
 
