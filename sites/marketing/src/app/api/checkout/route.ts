@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { capturePaymentError } from "@/lib/sentry";
 import Stripe from "stripe";
 
 // Price IDs for different plans
@@ -34,6 +35,9 @@ export async function POST(req: Request) {
   if ("status" in rateLimitResult) {
     return rateLimitResult; // 429 response
   }
+
+  // Track apps for error reporting
+  let errorContextApps: AppName[] | undefined;
 
   try {
     const { email, priceId, apps, selectedApps, isYearly } = await req.json();
@@ -89,6 +93,9 @@ export async function POST(req: Request) {
 
     const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
 
+    // Store apps for error context
+    errorContextApps = finalApps;
+
     // Store apps as comma-separated string in metadata (sorted for consistency)
     const appsMetadata = finalApps.sort().join(",");
     const isBundle = finalApps.length > 1;
@@ -132,6 +139,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("Checkout error:", error);
+    capturePaymentError(error, {
+      eventType: "checkout.create_session_failed",
+      apps: errorContextApps,
+    });
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Checkout failed" },
       { status: 500 }

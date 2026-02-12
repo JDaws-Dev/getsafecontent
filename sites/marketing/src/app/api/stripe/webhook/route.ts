@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import Stripe from "stripe";
 import { Resend } from "resend";
+import { captureWebhookError, captureProvisioningFailure } from "@/lib/sentry";
 
 // Admin key for authenticating with app admin endpoints
 // Must be set in Vercel env vars - same key used across all Convex deployments
@@ -457,6 +458,9 @@ export async function POST(req: Request) {
     );
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
+    captureWebhookError(err, {
+      eventType: "signature_verification_failed",
+    });
     return NextResponse.json(
       { error: "Webhook signature verification failed" },
       { status: 400 }
@@ -483,6 +487,16 @@ export async function POST(req: Request) {
 
           if (!result.success) {
             console.error(`Failed to provision apps for ${email} after ${MAX_RETRIES} retries:`, result.errors);
+
+            // Capture in Sentry as critical error
+            captureProvisioningFailure({
+              email,
+              apps,
+              failedApps: result.failedApps.map(f => f.app),
+              errors: result.errors,
+              sessionId: session.id,
+              amount: amountTotal,
+            });
 
             // Send urgent failure alert to admin
             await sendProvisioningFailureAlert(
@@ -588,6 +602,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Webhook handler error:", error);
+    captureWebhookError(error, {
+      eventType: event.type,
+      eventId: event.id,
+    });
     return NextResponse.json(
       { error: "Webhook handler failed" },
       { status: 500 }

@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-57e complete** - Persist onboarding data to apps
+**safecontent-4hn complete** - Add Sentry error tracking
 
 As of Feb 11, 2026:
+- safecontent-4hn (Sentry error tracking) - COMPLETE
 - safecontent-57e (Persist onboarding data to apps) - COMPLETE
 - safecontent-jje (Subscription ownership validation) - COMPLETE
 - safecontent-3pc (Rate limiting) - COMPLETE
@@ -34,6 +35,73 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-4hn: Add error tracking (Sentry) for production monitoring (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** Errors only logged to console. No way to see production errors, get alerts, or debug customer issues.
+
+**Solution implemented:**
+
+1. **Sentry SDK installed and configured**
+   - @sentry/nextjs package added
+   - sentry.client.config.ts - client-side config with PII scrubbing, noise filtering
+   - sentry.server.config.ts - server-side config with header scrubbing
+   - sentry.edge.config.ts - edge runtime config
+   - instrumentation.ts - Next.js instrumentation hook for server/edge init
+
+2. **next.config.ts updated**
+   - Wrapped with withSentryConfig
+   - Source map upload configured (deleted after upload for security)
+
+3. **Error boundaries added**
+   - global-error.tsx - catches fatal client errors
+   - error.tsx - route-level error boundary with retry button
+
+4. **Critical routes instrumented**
+   - /api/stripe/webhook - captures signature failures, handler errors, provisioning failures
+   - /api/checkout - captures checkout session creation failures
+
+5. **Custom Sentry utilities** (`src/lib/sentry.ts`)
+   - capturePaymentError() - for checkout/payment issues
+   - captureWebhookError() - for webhook processing failures
+   - captureProvisioningFailure() - FATAL level for "customer paid but didn't get access"
+   - captureApiError() - general API error with context
+
+**Files created:**
+- `sites/marketing/sentry.client.config.ts`
+- `sites/marketing/sentry.server.config.ts`
+- `sites/marketing/sentry.edge.config.ts`
+- `sites/marketing/src/instrumentation.ts`
+- `sites/marketing/src/lib/sentry.ts`
+- `sites/marketing/src/app/global-error.tsx`
+- `sites/marketing/src/app/error.tsx`
+
+**Files modified:**
+- `sites/marketing/next.config.ts` - withSentryConfig wrapper
+- `sites/marketing/src/app/layout.tsx` - client config import
+- `sites/marketing/src/app/api/stripe/webhook/route.ts` - Sentry captures
+- `sites/marketing/src/app/api/checkout/route.ts` - Sentry captures
+- `sites/marketing/package.json` - @sentry/nextjs dependency
+
+**Environment variables needed:**
+- `SENTRY_DSN` - server-side DSN (set in Vercel)
+- `NEXT_PUBLIC_SENTRY_DSN` - client-side DSN (set in Vercel)
+- `SENTRY_ORG` - Sentry organization slug
+- `SENTRY_PROJECT` - Sentry project slug
+- `SENTRY_AUTH_TOKEN` - for source map upload (CI only)
+
+**Key decisions:**
+- 10% sample rate for performance monitoring (free tier: 5K errors/mo)
+- PII scrubbing: email addresses replaced with [REDACTED] or hashed
+- Provisioning failures logged at FATAL level for immediate alerting
+- Sentry disabled in development (NODE_ENV check)
+- Source maps uploaded then deleted (security)
+
+**Build verified:** npm run build passes (40 routes)
+
+---
 
 ### safecontent-57e: Persist onboarding data to apps (Feb 11, 2026 - COMPLETE)
 

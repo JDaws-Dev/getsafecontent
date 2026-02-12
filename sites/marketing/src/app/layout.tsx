@@ -4,6 +4,9 @@ import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import "./globals.css";
 
+// Initialize Sentry on the client side
+import "../../sentry.client.config";
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
