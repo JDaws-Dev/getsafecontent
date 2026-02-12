@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { grantLifetimeAll } from "@/lib/admin-api";
+import { logAdminAction } from "@/lib/audit-log";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -28,6 +29,15 @@ export async function POST(request: Request) {
     }
 
     const result = await grantLifetimeAll(email, apps);
+
+    // Log the action
+    await logAdminAction({
+      adminEmail: session.user.email,
+      action: "grant_lifetime",
+      targetEmail: email,
+      details: { apps, success: result.success, results: result.results },
+      request,
+    });
 
     if (!result.success) {
       const failures = result.results.filter(r => !r.success);

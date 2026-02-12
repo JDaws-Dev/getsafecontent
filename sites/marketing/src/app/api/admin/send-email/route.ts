@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { logAdminAction } from "@/lib/audit-log";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -288,6 +289,21 @@ export async function POST(req: Request) {
         results,
       });
     }
+
+    // Log the action
+    await logAdminAction({
+      adminEmail: session.user.email,
+      action: "send_email",
+      targetEmail: recipients[0] || null,
+      details: {
+        template,
+        to: recipients,
+        subject: emailSubject,
+        recipientCount: recipients.length,
+        successCount: results.filter((r) => r.success).length,
+      },
+      request: req,
+    });
 
     return NextResponse.json({
       success: true,

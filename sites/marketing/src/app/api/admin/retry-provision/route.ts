@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { logAdminAction } from "@/lib/audit-log";
 
 // Admin key for authenticating with Convex apps
 const ADMIN_KEY = process.env.ADMIN_API_KEY || "";
@@ -150,6 +151,19 @@ export async function POST(req: Request) {
   console.log(`Retry provision for ${email} complete:`, {
     successes: successes.map((s) => s.app),
     failures: failures.map((f) => `${f.app}: ${f.error}`),
+  });
+
+  // Log the action
+  await logAdminAction({
+    adminEmail: session.user.email,
+    action: "retry_provision",
+    targetEmail: email,
+    details: {
+      apps: validApps,
+      successes: successes.map((s) => s.app),
+      failures: failures.map((f) => ({ app: f.app, error: f.error })),
+    },
+    request: req,
   });
 
   if (failures.length === 0) {

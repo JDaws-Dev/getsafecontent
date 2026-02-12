@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { deleteUserAll } from "@/lib/admin-api";
+import { logAdminAction } from "@/lib/audit-log";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -28,6 +29,15 @@ export async function POST(request: Request) {
     }
 
     const result = await deleteUserAll(email, apps);
+
+    // Log the action
+    await logAdminAction({
+      adminEmail: session.user.email,
+      action: "delete_user",
+      targetEmail: email,
+      details: { apps, success: result.success, results: result.results },
+      request,
+    });
 
     if (!result.success) {
       const failures = result.results.filter(r => !r.success);

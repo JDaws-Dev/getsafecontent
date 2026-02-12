@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-y2p complete** - Add timeout/circuit breaker to webhook
+**safecontent-l3x complete** - Add audit logging for admin actions
 
 As of Feb 11, 2026:
+- safecontent-l3x (Audit logging for admin actions) - COMPLETE
 - safecontent-y2p (Webhook timeout/circuit breaker) - COMPLETE
 - safecontent-4hn (Sentry error tracking) - COMPLETE
 - safecontent-57e (Persist onboarding data to apps) - COMPLETE
@@ -36,6 +37,65 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-l3x: Add audit logging for admin actions (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** Admin actions (delete user, grant lifetime, send emails) had no audit trail. If something went wrong or account was compromised, there was no way to trace who did what.
+
+**Solution implemented:**
+
+1. **Audit log library** (`src/lib/audit-log.ts`)
+   - Uses Upstash Redis (same as rate limiting)
+   - Stores logs in sorted set by timestamp
+   - Keeps last 1000 entries (auto-trimmed)
+   - Graceful degradation if Redis unavailable
+
+2. **Actions logged:**
+   - `grant_lifetime` - Grant lifetime access to apps
+   - `delete_user` - Delete user from apps
+   - `send_email` - Send templated emails
+   - `retry_provision` - Retry failed provisioning
+
+3. **Log entry includes:**
+   - Timestamp
+   - Admin email
+   - Action type
+   - Target email
+   - Details (apps, success/failure, etc.)
+   - IP address
+   - User agent
+
+4. **Admin UI** (`/admin/audit-logs`)
+   - Filter by action type
+   - Search by target email
+   - Pagination (25 per page)
+   - Mobile-responsive design
+   - Color-coded action badges
+
+**Files created:**
+- `sites/marketing/src/lib/audit-log.ts`
+- `sites/marketing/src/app/api/admin/audit-logs/route.ts`
+- `sites/marketing/src/app/admin/audit-logs/page.tsx`
+
+**Files modified:**
+- `sites/marketing/src/app/api/admin/grant-lifetime-all/route.ts`
+- `sites/marketing/src/app/api/admin/delete-user-all/route.ts`
+- `sites/marketing/src/app/api/admin/send-email/route.ts`
+- `sites/marketing/src/app/api/admin/retry-provision/route.ts`
+- `sites/marketing/src/app/admin/page.tsx` (added link)
+
+**Key decisions:**
+- Used Upstash Redis (already set up for rate limiting)
+- Sorted set for efficient time-range queries
+- 1000 entry limit prevents unbounded growth
+- Logs both successes and failures
+- Console fallback for debugging
+
+**Build verified:** npm run build passes (41 routes)
+
+---
 
 ### safecontent-y2p: Add timeout/circuit breaker to webhook app provisioning (Feb 11, 2026 - COMPLETE)
 
