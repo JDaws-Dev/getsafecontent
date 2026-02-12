@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**WORKING ON:** safecontent-71k - Implement Google OAuth across all apps
+**WORKING ON:** safecontent-ce3 - Create /terms and /privacy pages on marketing site
 
 As of Feb 12, 2026:
+- safecontent-ce3 (Create /terms and /privacy pages on marketing site) - COMPLETE
 - safecontent-71k (Implement Google OAuth across all apps) - IN PROGRESS
   - safecontent-71k.1 (Enable Google OAuth on marketing signup page) - COMPLETE
   - safecontent-71k.2 (Set up Google OAuth credentials in Vercel) - PENDING (requires manual setup)
@@ -69,6 +70,45 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-ce3: Create /terms and /privacy pages on marketing site (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Pages exist, links updated, E2E tests added
+
+**What was done:**
+
+1. **Discovered pages already exist:**
+   - `/terms` page exists at `sites/marketing/src/app/terms/page.tsx` with comprehensive content
+   - `/privacy` page exists at `sites/marketing/src/app/privacy/page.tsx` with comprehensive content
+   - Both cover all 3 apps (SafeTunes, SafeTube, SafeReads) from bundle perspective
+
+2. **Updated signup page links:**
+   - Changed `href="https://getsafetunes.com/terms"` to `href="/terms"` in AccountForm.tsx
+   - Changed `href="https://getsafetunes.com/privacy"` to `href="/privacy"` in AccountForm.tsx
+   - Removed `target="_blank"` and `rel="noopener noreferrer"` (internal nav)
+
+3. **Updated account page links:**
+   - Changed `href="https://getsafetunes.com/privacy"` to `href="/privacy"` in account/page.tsx
+   - Changed `href="https://getsafetunes.com/terms"` to `href="/terms"` in account/page.tsx
+   - Changed `ExternalLink` icon to `ChevronRight` (indicates internal link)
+
+4. **Added E2E tests:**
+   - Added `/terms` page test (loads, has content, mentions all 3 apps)
+   - Added `/privacy` page test (loads, has content, mentions all 3 apps)
+   - Added test verifying signup Terms link navigates to `/terms`
+   - Added test verifying signup Privacy link navigates to `/privacy`
+
+**Files modified:**
+- `sites/marketing/src/components/signup/AccountForm.tsx` - Updated Terms/Privacy links
+- `sites/marketing/src/app/account/page.tsx` - Updated Legal section links + import
+- `sites/marketing/e2e/critical-pages.spec.ts` - Added 4 new tests
+
+**Key discovery:**
+The terms/privacy pages were created during an earlier session but the signup page links were never updated. This was a simple fix - just updating the hrefs.
+
+**Build verified:** npm run build passes (49 routes)
+
+---
 
 ### safecontent-71k.3: Handle OAuth users in webhook provisioning (Feb 12, 2026 - COMPLETE)
 

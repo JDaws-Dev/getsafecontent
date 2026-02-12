@@ -612,18 +612,14 @@ export default function AccountForm({
         <p className="text-xs text-gray-500 text-center">
           By signing up, you agree to our{" "}
           <a
-            href="https://getsafetunes.com/terms"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/terms"
             className="text-peach-start hover:text-peach-end"
           >
             Terms
           </a>{" "}
           and{" "}
           <a
-            href="https://getsafetunes.com/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/privacy"
             className="text-peach-start hover:text-peach-end"
           >
             Privacy Policy

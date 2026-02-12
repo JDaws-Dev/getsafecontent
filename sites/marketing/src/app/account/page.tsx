@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -15,6 +15,7 @@ import {
   Check,
   X,
   ExternalLink,
+  ChevronRight,
   Music,
   Play,
   BookOpen,
@@ -53,13 +54,31 @@ const APP_INFO: Record<AppId, { name: string; domain: string; icon: React.ReactN
   },
 };
 
+// Wrapper component for Suspense boundary (required for useSearchParams)
 export default function AccountPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    }>
+      <AccountPageContent />
+    </Suspense>
+  );
+}
+
+function AccountPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
   const { signOut } = useAuthActions();
 
   // Get current authenticated user
   const currentUser = useQuery(api.accounts.getCurrentUser);
+
+  // Check for upgrade request from query params
+  const upgradeApp = searchParams.get("upgrade") as AppId | null;
+  const isValidUpgradeApp = upgradeApp && Object.keys(APP_INFO).includes(upgradeApp);
 
   // Mutations
   const updateAccount = useMutation(api.accounts.updateAccount);
@@ -266,6 +285,41 @@ export default function AccountPage() {
       <main className="container mx-auto px-4 sm:px-6 py-8 pb-16">
         <div className="max-w-2xl mx-auto space-y-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-navy">Account Settings</h1>
+
+          {/* Upgrade Banner - shown when user comes from an app they don't have access to */}
+          {isValidUpgradeApp && upgradeApp && !entitledApps.includes(upgradeApp) && (
+            <section className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-6 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${APP_INFO[upgradeApp].gradient} flex items-center justify-center flex-shrink-0`}>
+                  {APP_INFO[upgradeApp].icon}
+                </div>
+                <div className="flex-1">
+                  <h2 className="font-semibold text-navy text-lg mb-1">
+                    Add {APP_INFO[upgradeApp].name} to Your Plan
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Your current subscription doesn't include {APP_INFO[upgradeApp].name}.
+                    Upgrade your plan to get access to all Safe Family apps.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <Link
+                      href="/#pricing"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Upgrade Plan
+                    </Link>
+                    <button
+                      onClick={() => router.replace("/account")}
+                      className="px-4 py-2 text-gray-600 hover:text-gray-800 transition"
+                    >
+                      Maybe Later
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* Account Information */}
           <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -571,9 +625,7 @@ export default function AccountPage() {
             <h2 className="font-semibold text-navy mb-4">Legal</h2>
             <div className="space-y-1">
               <a
-                href="https://getsafetunes.com/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/privacy"
                 className="flex items-center gap-3 rounded-lg p-3 -mx-3 transition-colors hover:bg-gray-50"
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
@@ -582,12 +634,10 @@ export default function AccountPage() {
                 <span className="flex-1 text-sm font-medium text-navy">
                   Privacy Policy
                 </span>
-                <ExternalLink className="h-4 w-4 text-gray-400" />
+                <ChevronRight className="h-4 w-4 text-gray-400" />
               </a>
               <a
-                href="https://getsafetunes.com/terms"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/terms"
                 className="flex items-center gap-3 rounded-lg p-3 -mx-3 transition-colors hover:bg-gray-50"
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
