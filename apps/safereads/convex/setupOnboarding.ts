@@ -16,7 +16,7 @@ const HARDCODED_ADMIN_KEY = "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=";
  * - kidName: Child's name (required)
  * - age: Child's age (optional)
  */
-export default httpAction(async (ctx, request) => {
+export default httpAction(async (ctx, request): Promise<Response> => {
   try {
     const url = new URL(request.url);
     const email = url.searchParams.get("email");

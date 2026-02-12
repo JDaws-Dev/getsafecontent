@@ -5,12 +5,12 @@ import { NextResponse } from "next/server";
  *
  * Handles promo code signups that grant lifetime access.
  *
- * The marketing site uses SafeReads' Convex deployment, but we don't have
- * an applyLifetimeCode mutation there. Instead, this endpoint:
- * 1. Validates the promo code directly
- * 2. Provisions lifetime access to all 3 apps via admin endpoints
+ * UNIFIED AUTH FLOW:
+ * 1. Get user's passwordHash from centralUsers (via /getCentralUser)
+ * 2. Call /provisionUser on each app with the hash
  *
- * Each app's admin endpoint will create the user if they don't exist.
+ * This creates BOTH user records AND authAccounts entries,
+ * allowing users to login immediately with their password.
  *
  * POST: Provision lifetime access for a new user with valid promo code
  */
@@ -24,6 +24,9 @@ const ADMIN_KEY = process.env.ADMIN_API_KEY;
 if (!ADMIN_KEY) {
   console.warn("ADMIN_API_KEY not set - promo provisioning will fail");
 }
+
+// SafeReads endpoint (where centralUsers lives)
+const SAFEREADS_ENDPOINT = "https://exuberant-puffin-838.convex.site";
 
 // App admin endpoint URLs
 type AppName = "safetunes" | "safetube" | "safereads";
@@ -41,43 +44,95 @@ const PROVISION_TIMEOUT_MS = 5000;
 // Helper to fetch with timeout
 async function fetchWithTimeout(
   url: string,
+  options?: RequestInit,
   timeoutMs: number = PROVISION_TIMEOUT_MS
 ): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(url, { signal: controller.signal });
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
     return response;
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-// Helper to provision access to a single app
+// Get central user data including passwordHash
+async function getCentralUser(
+  email: string
+): Promise<{
+  exists: boolean;
+  passwordHash?: string;
+  name?: string;
+  error?: string;
+}> {
+  if (!ADMIN_KEY) {
+    return { exists: false, error: "ADMIN_API_KEY not configured" };
+  }
+
+  const encodedEmail = encodeURIComponent(email.toLowerCase());
+  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const url = `${SAFEREADS_ENDPOINT}/getCentralUser?email=${encodedEmail}&key=${encodedKey}`;
+
+  try {
+    const response = await fetchWithTimeout(url);
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      return { exists: false, error: `HTTP ${response.status} - ${body}` };
+    }
+    const data = await response.json();
+    return {
+      exists: data.exists,
+      passwordHash: data.passwordHash,
+      name: data.name,
+    };
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      return { exists: false, error: `Timeout after ${PROVISION_TIMEOUT_MS}ms` };
+    }
+    return {
+      exists: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+// Helper to provision access to a single app via /provisionUser
 async function provisionApp(
   email: string,
+  passwordHash: string,
+  name: string | undefined,
   app: AppName
 ): Promise<{ success: boolean; error?: string }> {
   if (!ADMIN_KEY) {
     return { success: false, error: "ADMIN_API_KEY not configured" };
   }
 
-  const encodedEmail = encodeURIComponent(email);
   const encodedKey = encodeURIComponent(ADMIN_KEY);
   const endpoint = APP_ENDPOINTS[app];
-  let url: string;
-
-  if (app === "safetube") {
-    // SafeTube uses setSubscriptionStatus
-    url = `${endpoint}/setSubscriptionStatus?email=${encodedEmail}&status=lifetime&key=${encodedKey}`;
-  } else {
-    // SafeTunes and SafeReads use grantLifetime
-    url = `${endpoint}/grantLifetime?email=${encodedEmail}&key=${encodedKey}`;
-  }
+  const url = `${endpoint}/provisionUser?key=${encodedKey}`;
 
   try {
-    const response = await fetchWithTimeout(url, PROVISION_TIMEOUT_MS);
+    const response = await fetchWithTimeout(
+      url,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.toLowerCase(),
+          passwordHash,
+          name: name || null,
+          subscriptionStatus: "lifetime",
+          entitledToThisApp: true,
+        }),
+      },
+      PROVISION_TIMEOUT_MS
+    );
+
     if (!response.ok) {
       const body = await response.text().catch(() => "");
       return { success: false, error: `HTTP ${response.status} - ${body}` };
@@ -87,7 +142,10 @@ async function provisionApp(
     if (err instanceof Error && err.name === "AbortError") {
       return { success: false, error: `Timeout after ${PROVISION_TIMEOUT_MS}ms` };
     }
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" };
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
   }
 }
 
@@ -123,11 +181,41 @@ export async function POST(req: Request) {
 
     console.log(`[Promo Signup] Processing lifetime access for ${email} with code ${normalizedCode}`);
 
-    // Provision lifetime access to all apps in parallel
-    // The admin endpoints will create the user if they don't exist
+    // Step 1: Get the central user to retrieve their passwordHash
+    // The user should have been created via /api/auth/signup before this call
+    const centralUser = await getCentralUser(email);
+
+    if (!centralUser.exists) {
+      console.error(`[Promo Signup] Central user not found for ${email}:`, centralUser.error);
+      return NextResponse.json(
+        {
+          error: "Account not found. Please sign up first.",
+          details: centralUser.error,
+        },
+        { status: 404 }
+      );
+    }
+
+    if (!centralUser.passwordHash) {
+      console.error(`[Promo Signup] No passwordHash for ${email}`);
+      return NextResponse.json(
+        { error: "Account setup incomplete. Please contact support." },
+        { status: 500 }
+      );
+    }
+
+    console.log(`[Promo Signup] Found central user with passwordHash for ${email}`);
+
+    // Step 2: Provision lifetime access to all apps with the passwordHash
+    // This creates both user records AND authAccounts for login
     const results = await Promise.all(
       ALL_APPS.map(async (app: AppName) => {
-        const result = await provisionApp(email, app);
+        const result = await provisionApp(
+          email,
+          centralUser.passwordHash!,
+          centralUser.name,
+          app
+        );
         return { app, ...result };
       })
     );

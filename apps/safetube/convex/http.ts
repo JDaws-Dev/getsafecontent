@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server";
 import adminDashboard from "./adminDashboard";
 import stripeWebhook from "./stripe";
 import setSubscriptionStatus from "./setSubscriptionStatus";
+import provisionUser from "./provisionUser";
 import deleteUser from "./deleteUser";
 import setupOnboarding from "./setupOnboarding";
 import { extensionAddVideo, extensionGetKids } from "./extensionApi";
@@ -35,6 +36,13 @@ http.route({
   path: "/setSubscriptionStatus",
   method: "GET",
   handler: setSubscriptionStatus,
+});
+
+// Provision user with auth credentials (for unified auth from marketing site)
+http.route({
+  path: "/provisionUser",
+  method: "POST",
+  handler: provisionUser,
 });
 
 // Delete user (admin endpoint)

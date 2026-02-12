@@ -22,6 +22,7 @@ import type * as grantLifetime from "../grantLifetime.js";
 import type * as http from "../http.js";
 import type * as kidPlaylists from "../kidPlaylists.js";
 import type * as kidProfiles from "../kidProfiles.js";
+import type * as provisionUser from "../provisionUser.js";
 import type * as setSubscriptionStatus from "../setSubscriptionStatus.js";
 import type * as setupOnboarding from "../setupOnboarding.js";
 import type * as stripe from "../stripe.js";
@@ -56,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   kidPlaylists: typeof kidPlaylists;
   kidProfiles: typeof kidProfiles;
+  provisionUser: typeof provisionUser;
   setSubscriptionStatus: typeof setSubscriptionStatus;
   setupOnboarding: typeof setupOnboarding;
   stripe: typeof stripe;

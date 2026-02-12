@@ -1,6 +1,22 @@
 import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 
+// Type for user data from getAllUsersWithStats query
+type UserWithStats = {
+  _id: string;
+  email?: string;
+  name?: string;
+  subscriptionStatus?: string;
+  createdAt?: number;
+  analysisCount?: number;
+  kidCount?: number;
+  stripeCustomerId?: string;
+  subscriptionCurrentPeriodEnd?: number;
+  trialExpiresAt?: number;
+  redeemedCoupon?: string;
+  onboardingComplete?: boolean;
+};
+
 // CORS headers for cross-origin API access from marketing site
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -61,7 +77,7 @@ export default httpAction(async (ctx, request): Promise<Response> => {
     }
 
     // Fetch all users with stats
-    const users = await ctx.runQuery(api.admin.getAllUsersWithStats);
+    const users = (await ctx.runQuery(api.admin.getAllUsersWithStats)) as UserWithStats[];
 
     // Sort by createdAt descending (newest first)
     users.sort((a, b) => {

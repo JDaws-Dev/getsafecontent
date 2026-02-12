@@ -4880,3 +4880,53 @@ Key decisions:
 - Phase 0 must complete before any development work
 - Admin dashboard blocked by endpoint tasks (needs them to function)
 - SafeReads trial conversion is P1 (consistency across apps)
+
+---
+
+### safecontent-44m: Fix promo signup to enable login on all apps (Feb 12, 2026)
+
+**Status:** In Progress
+
+**Problem:**
+When users sign up with promo codes (DAWSFRIEND, DEWITT) on the marketing site, they cannot login to the individual apps because the promo signup flow only created user records but NOT authAccounts entries.
+
+**What was done:**
+1. **Deployed /provisionUser endpoints to all three apps:**
+   - SafeTunes: `formal-chihuahua-623.convex.site/provisionUser`
+   - SafeTube: `rightful-rabbit-333.convex.site/provisionUser`
+   - SafeReads: `exuberant-puffin-838.convex.site/provisionUser`
+
+2. **Updated promo-signup flow to use unified auth:**
+   - Modified `/api/promo-signup` to get central user's passwordHash via `/getCentralUser`
+   - Now calls `/provisionUser` with the hash (creates both user + authAccounts)
+   - Users can now login immediately after promo signup
+
+3. **Fixed TypeScript errors in SafeReads:**
+   - `adminDashboard.ts` - Added type annotations for user sorting
+   - `provisionUser.ts` - Added return type annotation
+   - `setSubscriptionStatus.ts` - Added return type annotation, fixed duplicate property
+   - `subscriptions.ts` - Fixed status type mapping
+
+**Key technical details:**
+- Password hashing uses Scrypt (from lucia package, same as Convex Auth)
+- Central user created via `/api/auth/signup` stores passwordHash in centralUsers table
+- `/provisionUser` creates authAccounts entry with the same hash for each app
+- This allows users to login with the SAME password on all apps
+
+**Files changed:**
+- `sites/marketing/src/app/api/promo-signup/route.ts` (modified - uses /provisionUser)
+- `apps/safetunes/convex/provisionUser.ts` (new)
+- `apps/safetunes/convex/http.ts` (modified - registered /provisionUser)
+- `apps/safetube/convex/provisionUser.ts` (new)
+- `apps/safetube/convex/http.ts` (modified - registered /provisionUser)
+- `apps/safetube/convex/users.ts` (modified - provisionUserInternal mutation)
+- `apps/safereads/convex/provisionUser.ts` (new)
+- `apps/safereads/convex/provisionUserInternal.ts` (new)
+- `apps/safereads/convex/http.ts` (modified - registered /provisionUser)
+- `apps/safereads/convex/adminDashboard.ts` (modified - type fixes)
+- `apps/safereads/convex/subscriptions.ts` (modified - type fixes)
+
+**Remaining:**
+- Deploy marketing site changes to Vercel
+- Test end-to-end with a promo code signup
+

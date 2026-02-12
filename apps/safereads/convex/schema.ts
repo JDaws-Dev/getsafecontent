@@ -175,4 +175,34 @@ export default defineSchema({
     .index("by_book", ["bookId"])
     .index("by_user", ["userId"])
     .index("by_user_and_analysis", ["userId", "analysisId"]),
+
+  // ========================================================================
+  // Central Users Table (for Safe Family marketing site)
+  // ========================================================================
+  // This table stores user credentials centrally before provisioning to apps.
+  // Users authenticate once on the marketing site, and their credentials are
+  // synced to individual apps (SafeTunes, SafeTube, SafeReads).
+  //
+  // IMPORTANT: passwordHash uses Scrypt format (from lucia package) to match
+  // what Convex Auth Password provider expects.
+  // ========================================================================
+  centralUsers: defineTable({
+    email: v.string(),
+    passwordHash: v.string(), // Scrypt format from lucia
+    name: v.optional(v.string()),
+    createdAt: v.number(), // Unix timestamp
+    lastLoginAt: v.optional(v.number()), // Unix timestamp of last login
+    entitledApps: v.array(v.string()), // ["safetunes", "safetube", "safereads"]
+    stripeCustomerId: v.optional(v.string()),
+    subscriptionId: v.optional(v.string()),
+    subscriptionStatus: v.union(
+      v.literal("trial"),
+      v.literal("active"),
+      v.literal("lifetime"),
+      v.literal("cancelled"),
+      v.literal("expired")
+    ),
+  })
+    .index("by_email", ["email"])
+    .index("by_stripe_customer_id", ["stripeCustomerId"]),
 });

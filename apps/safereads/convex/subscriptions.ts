@@ -243,3 +243,43 @@ export const grantLifetimeInternal = internalMutation({
     return { success: true, email: args.email, created: false };
   },
 });
+
+/**
+ * Internal mutation to set subscription status by email.
+ * Called from HTTP admin endpoint.
+ * Creates user if they don't exist (pre-provisioning for bundle purchases).
+ */
+export const setSubscriptionStatusByEmailInternal = internalMutation({
+  args: { email: v.string(), status: v.string() },
+  handler: async (ctx, args) => {
+    let user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .first();
+
+    // Map status to valid subscription status type
+    type SubscriptionStatus = "trial" | "active" | "lifetime" | "canceled" | "past_due" | "incomplete";
+    const validStatuses: SubscriptionStatus[] = ["trial", "active", "lifetime", "canceled", "past_due", "incomplete"];
+    const mappedStatus: SubscriptionStatus = validStatuses.includes(args.status as SubscriptionStatus)
+      ? (args.status as SubscriptionStatus)
+      : "active";
+
+    if (!user) {
+      // Create new user with the specified status
+      const userId = await ctx.db.insert("users", {
+        email: args.email,
+        subscriptionStatus: mappedStatus,
+        analysisCount: 0,
+      });
+      console.log(`[setSubscriptionStatus] Created new user with status ${args.status}: ${args.email}`);
+      return { success: true, email: args.email, created: true, userId };
+    }
+
+    await ctx.db.patch(user._id, {
+      subscriptionStatus: mappedStatus,
+    });
+
+    console.log(`[setSubscriptionStatus] Updated ${args.email} to ${args.status}`);
+    return { success: true, email: args.email, created: false, userId: user._id };
+  },
+});
