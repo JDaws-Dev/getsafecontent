@@ -30,16 +30,21 @@ type AppName = "safetunes" | "safetube" | "safereads";
 const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
 
 export async function POST(req: Request) {
-  // Rate limit: 10 requests per minute per IP
-  const rateLimitResult = await checkRateLimit("checkout", req);
-  if ("status" in rateLimitResult) {
-    return rateLimitResult; // 429 response
-  }
-
   // Track apps for error reporting
   let errorContextApps: AppName[] | undefined;
 
   try {
+    // Rate limit: 10 requests per minute per IP
+    // Wrapped in try-catch to prevent rate limit errors from crashing the route
+    try {
+      const rateLimitResult = await checkRateLimit("checkout", req);
+      if ("status" in rateLimitResult) {
+        return rateLimitResult; // 429 response
+      }
+    } catch (rateLimitError) {
+      // Log but don't fail the request if rate limiting fails
+      console.error("Rate limit check failed:", rateLimitError);
+    }
     const { email, priceId, apps, selectedApps, isYearly } = await req.json();
 
     // Support both 'apps' and 'selectedApps' field names
