@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.13 complete** - UI/UX Audit & Consistency Report
+**safecontent-cl1.2 complete** - SafeTunes Account Creation & Onboarding Tested
 
 As of Feb 12, 2026:
+- safecontent-cl1.2 (SafeTunes Account Creation & Onboarding) - COMPLETE
 - safecontent-cl1.13 (UI/UX Audit & Consistency Report) - COMPLETE
 - safecontent-cl1.10 (Onboarding Data Persistence) - COMPLETE
 - safecontent-cl1.12 (Cross-App Subscription Sync) - COMPLETE
@@ -46,6 +47,49 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.2: Test SafeTunes Account Creation & Onboarding (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Tested signup page redirect to central getsafefamily.com/signup?app=safetunes
+- Tested login page (email/password + Google OAuth)
+- Tested forgot password flow (sends 6-digit code)
+- Tested child login with family code (error handling for invalid codes)
+- Tested mobile responsiveness on all pages
+
+**UI/UX Rating: 8.5/10**
+
+**What works well:**
+1. Signup correctly redirects to central marketing site with SafeTunes pre-selected
+2. Login page is clean with Google OAuth, email/password, and kid login options
+3. Forgot password flow works (6-digit OTP via email)
+4. Child login with family code is intuitive and kid-friendly
+5. Error handling is user-friendly ("Invalid Family Code" with recovery option)
+6. Mobile experience is excellent - all pages responsive
+
+**Minor issues (P3):**
+1. Family code input truncates to 6 chars silently (shows "INVALI" for "INVALID")
+2. Cookie consent banner overlaps on some pages
+
+**Screenshots captured:**
+- safetunes-signup-redirect.png - Redirect to central signup
+- safetunes-login-page.png - Login page
+- safetunes-forgot-password.png - Password reset page
+- safetunes-child-login.png - Family code entry
+- safetunes-invalid-family-code.png - Error state
+- safetunes-login-mobile.png - Mobile login
+- safetunes-landing-mobile.png - Mobile landing page
+
+**Key findings:**
+- All account creation flows work correctly
+- Signup redirects to central site as designed
+- Login and password reset are functional
+- Child login with family code works smoothly
+- No P0/P1 issues found
+
+---
 
 ### safecontent-cl1.13: UI/UX Audit & Consistency Report (Feb 12, 2026 - COMPLETE)
 
