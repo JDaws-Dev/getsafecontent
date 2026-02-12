@@ -4,6 +4,7 @@ import { ConvexReactClient } from 'convex/react';
 import { ConvexAuthProvider } from '@convex-dev/auth/react';
 import { ErrorBoundary } from '@sentry/react';
 import { ToastProvider } from './contexts/ToastContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { FacebookPixel } from './components/analytics/FacebookPixel';
 import { GoogleAds } from './components/analytics/GoogleAds';
 import { CookieConsent } from './components/legal/CookieConsent';
@@ -110,9 +111,10 @@ function App() {
       fallback={ErrorFallback}
       showDialog={false}
     >
-      <ConvexAuthProvider client={convex}>
-        <ToastProvider>
-          <Router>
+      <ThemeProvider>
+        <ConvexAuthProvider client={convex}>
+          <ToastProvider>
+            <Router>
             <FacebookPixel />
             <GoogleAds />
             <CookieConsent />
@@ -144,10 +146,11 @@ function App() {
                 <Route path="/found-bad-music" element={<FoundBadMusicPage />} />
                 <Route path="/delete-account" element={<DeleteAccountPage />} />
               </Routes>
-            </Suspense>
-          </Router>
-        </ToastProvider>
-      </ConvexAuthProvider>
+              </Suspense>
+            </Router>
+          </ToastProvider>
+        </ConvexAuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

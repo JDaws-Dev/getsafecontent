@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Feb 12, 2026:
+- safecontent-41m.2 (Add dark mode to SafeTunes) - COMPLETE
 - safecontent-41m.1 (Add dark mode to marketing site) - COMPLETE
 - safecontent-q94 (Complete SafeTunes onboarding test coverage) - COMPLETE
 - safecontent-0nx (Update iOS app timeline messaging) - COMPLETE
@@ -91,6 +92,59 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-41m.2: Add dark mode to SafeTunes (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Dark mode with Settings toggle
+
+**What was done:**
+
+1. **Created ThemeContext.jsx:**
+   - ThemeProvider with light/dark/system theme support
+   - useTheme hook for consuming theme state
+   - localStorage persistence (`safetunes-theme` key)
+   - System preference detection via `prefers-color-scheme`
+
+2. **Created ThemeToggle.jsx:**
+   - ThemeToggle component for cycling through themes
+   - ThemeSelector component with radio-button-style selection for Settings
+
+3. **Updated tailwind.config.js:**
+   - Added `darkMode: 'class'` for class-based dark mode
+
+4. **Added dark mode CSS to index.css:**
+   - CSS variables for light/dark modes (--bg-primary, --text-primary, etc.)
+   - Override rules for common Tailwind classes in dark mode
+   - Purple accent adjustments for dark backgrounds
+   - Danger/success/warning color adjustments
+
+5. **Wrapped App.jsx with ThemeProvider:**
+   - ThemeProvider wraps the entire app at the top level
+
+6. **Added Appearance section to Settings.jsx:**
+   - New "Appearance" menu item with moon icon
+   - Appearance settings page with ThemeSelector
+   - Info box explaining system theme behavior
+
+**Files created:**
+- `apps/safetunes/src/contexts/ThemeContext.jsx`
+- `apps/safetunes/src/components/common/ThemeToggle.jsx`
+
+**Files modified:**
+- `apps/safetunes/tailwind.config.js` - Added darkMode: 'class'
+- `apps/safetunes/src/index.css` - Dark mode CSS variables + overrides
+- `apps/safetunes/src/App.jsx` - ThemeProvider wrapper + import
+- `apps/safetunes/src/components/admin/Settings.jsx` - Appearance menu + section
+
+**Key decisions:**
+- Used class-based dark mode (matches marketing site approach)
+- CSS override approach minimizes changes to existing components
+- Three theme options: Light/Dark/System (consistent with marketing site)
+- Theme toggle in Settings rather than header (cleaner for app UI)
+
+**Build verified:** npm run build + npx convex dev --once both pass
+
+---
 
 ### safecontent-41m.1: Add dark mode to marketing site (Feb 12, 2026 - COMPLETE)
 
