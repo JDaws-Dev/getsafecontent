@@ -7,9 +7,14 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**BACKLOG CLEAR** - All issues closed, V1 unified auth complete
+**WORKING ON:** safecontent-71k - Implement Google OAuth across all apps
 
 As of Feb 12, 2026:
+- safecontent-71k (Implement Google OAuth across all apps) - IN PROGRESS
+  - safecontent-71k.1 (Enable Google OAuth on marketing signup page) - COMPLETE
+  - safecontent-71k.2 (Set up Google OAuth credentials in Vercel) - PENDING (requires manual setup)
+  - safecontent-71k.3 (Handle OAuth users in webhook provisioning) - PENDING
+  - safecontent-71k.4 (Test Google OAuth end-to-end flow) - PENDING
 - safecontent-i5w.15 (Google OAuth support) - DEFERRED TO V2 (complexity vs value)
 - safecontent-i5w.16 (Session-based SSO) - DEFERRED TO V2 (complexity vs value)
 - safecontent-i5w.14 (Write integration tests for unified auth flow) - COMPLETE
@@ -64,6 +69,49 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-71k.1: Enable Google OAuth on marketing signup page (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Code implemented, awaits Google OAuth credentials
+
+**What was done:**
+
+1. **Added Convex Auth hooks to signup page:**
+   - Added `useConvexAuth` and `useAuthActions` imports
+   - Added `signIn` function from Convex Auth
+
+2. **Implemented OAuth state persistence:**
+   - Created localStorage-based state persistence (`safefamily_signup_state`)
+   - Saves app selection + billing preference before OAuth redirect
+   - Restores state after OAuth callback (30-minute expiry)
+
+3. **Replaced stub handler with real OAuth:**
+   - `handleGoogleSignIn` now calls `signIn("google", { redirectTo: "/signup" })`
+   - After Google auth, user returns to /signup page
+   - useEffect detects authenticated state + saved state → auto-proceeds to checkout
+
+4. **Updated checkout API for OAuth users:**
+   - Added `convexAuthNextjsToken` to get authenticated user
+   - If no email in body, fetches email from session (for OAuth users)
+   - OAuth users proceed to Stripe checkout with their Google email
+
+**Files modified:**
+- `sites/marketing/src/app/signup/page.tsx` - OAuth hooks + state persistence + callback handler
+- `sites/marketing/src/app/api/checkout/route.ts` - Fetch email from session for OAuth users
+
+**Key decisions:**
+- State saved to localStorage rather than URL params (simpler, more reliable)
+- Redirect back to /signup after OAuth (not directly to checkout) for proper state restoration
+- 30-minute state expiry prevents stale state from affecting future visits
+- Promo codes not supported with OAuth (users must use email/password for promo codes)
+
+**What's still needed:**
+- Google OAuth credentials must be configured in Vercel + Convex env vars
+- Need to test with real credentials once configured
+
+**Build verified:** npm run build passes (49 routes)
+
+---
 
 ### Backlog Clear - V2 Features Deferred (Feb 12, 2026)
 

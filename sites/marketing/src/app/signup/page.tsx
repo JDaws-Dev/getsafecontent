@@ -4,6 +4,8 @@ import { useState, useCallback, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Shield } from "lucide-react";
+import { useConvexAuth } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import AppSelector, { type AppId, type PricingInfo } from "@/components/signup/AppSelector";
 import AccountForm, { type AccountFormData, type AppSelection } from "@/components/signup/AccountForm";
 
@@ -49,10 +51,70 @@ function SignupLoading() {
   );
 }
 
+// LocalStorage key for persisting signup state across OAuth redirect
+const SIGNUP_STATE_KEY = "safefamily_signup_state";
+
+// Save signup state to localStorage before OAuth redirect
+function saveSignupState(state: {
+  selectedApps: AppId[];
+  isYearly: boolean;
+  couponCode?: string;
+}) {
+  try {
+    localStorage.setItem(SIGNUP_STATE_KEY, JSON.stringify({
+      ...state,
+      timestamp: Date.now(),
+    }));
+  } catch (e) {
+    console.warn("[SignupPage] Failed to save signup state:", e);
+  }
+}
+
+// Load signup state from localStorage after OAuth redirect
+function loadSignupState(): {
+  selectedApps: AppId[];
+  isYearly: boolean;
+  couponCode?: string;
+} | null {
+  try {
+    const stored = localStorage.getItem(SIGNUP_STATE_KEY);
+    if (!stored) return null;
+
+    const state = JSON.parse(stored);
+    // Only use state if it's less than 30 minutes old
+    if (Date.now() - state.timestamp > 30 * 60 * 1000) {
+      localStorage.removeItem(SIGNUP_STATE_KEY);
+      return null;
+    }
+
+    return {
+      selectedApps: state.selectedApps,
+      isYearly: state.isYearly,
+      couponCode: state.couponCode,
+    };
+  } catch (e) {
+    console.warn("[SignupPage] Failed to load signup state:", e);
+    return null;
+  }
+}
+
+// Clear signup state from localStorage
+function clearSignupState() {
+  try {
+    localStorage.removeItem(SIGNUP_STATE_KEY);
+  } catch (e) {
+    console.warn("[SignupPage] Failed to clear signup state:", e);
+  }
+}
+
 // Inner component that uses useSearchParams
 function SignupContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  // Convex Auth hooks for Google OAuth
+  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
+  const { signIn } = useAuthActions();
 
   // Get initial app selection from query params
   const initialApp = searchParams.get("app") as AppId | null;
@@ -97,6 +159,82 @@ function SignupContent() {
         setUnifiedAuthEnabled(false);
       });
   }, []);
+
+  // Track if we've already processed OAuth return to prevent double-submission
+  const [oauthProcessed, setOauthProcessed] = useState(false);
+
+  // Handle OAuth callback - when user returns authenticated after Google OAuth
+  useEffect(() => {
+    // Wait for auth state to settle
+    if (isAuthLoading || oauthProcessed) return;
+
+    // Check if user is authenticated AND we have saved signup state (indicating OAuth return)
+    if (isAuthenticated) {
+      const savedState = loadSignupState();
+
+      if (savedState) {
+        console.log("[SignupPage] OAuth return detected, proceeding to checkout with saved state:", savedState);
+        setOauthProcessed(true);
+
+        // Update local state with saved values (in case UI is shown briefly)
+        if (savedState.selectedApps.length > 0) {
+          setSelectedApps(savedState.selectedApps);
+        }
+        if (savedState.isYearly !== undefined) {
+          setIsYearly(savedState.isYearly);
+        }
+
+        // Clear the saved state
+        clearSignupState();
+
+        // Proceed directly to checkout
+        setIsLoading(true);
+        setError("");
+
+        // For OAuth users, we skip the central user creation (Convex Auth already created it)
+        // and go directly to Stripe checkout
+        fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            selectedApps: savedState.selectedApps,
+            isYearly: savedState.isYearly,
+            // Note: email will be retrieved from the authenticated session by the checkout API
+          }),
+        })
+          .then(async (response) => {
+            if (!response.ok) {
+              const text = await response.text();
+              let errorMessage = "Failed to create checkout session";
+              try {
+                if (text) {
+                  const errorData = JSON.parse(text);
+                  errorMessage = errorData.error || errorMessage;
+                }
+              } catch {
+                // Ignore parse errors
+              }
+              throw new Error(errorMessage);
+            }
+            return response.json();
+          })
+          .then(({ url }) => {
+            if (url) {
+              window.location.href = url;
+            } else {
+              throw new Error("No checkout URL returned");
+            }
+          })
+          .catch((err) => {
+            console.error("[SignupPage] OAuth checkout error:", err);
+            setError(
+              err instanceof Error ? err.message : "Failed to start checkout. Please try again."
+            );
+            setIsLoading(false);
+          });
+      }
+    }
+  }, [isAuthenticated, isAuthLoading, oauthProcessed]);
 
   // Handle app selection changes
   const handleAppSelectionChange = useCallback(
@@ -254,16 +392,26 @@ function SignupContent() {
     }
   };
 
-  // Handle Google sign-in
+  // Handle Google sign-in with Convex Auth
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setError("");
 
     try {
-      // TODO: In the future, this will call the central accounts API with Google auth
-      // For now, redirect to a placeholder or show a message
-      setError("Google sign-in is coming soon. Please use email/password for now.");
-      setIsLoading(false);
+      // Save current signup state to localStorage before OAuth redirect
+      // This preserves app selection and billing preference across the redirect
+      saveSignupState({
+        selectedApps,
+        isYearly,
+        // Note: promo codes not supported with Google OAuth (user must complete email flow)
+      });
+
+      console.log("[SignupPage] Starting Google OAuth, saved state:", { selectedApps, isYearly });
+
+      // Redirect to Google OAuth via Convex Auth
+      // After successful auth, user will be redirected back to /signup
+      // The useEffect below will detect the authenticated state and proceed to checkout
+      await signIn("google", { redirectTo: "/signup" });
     } catch (err) {
       console.error("[SignupPage] Google signin error:", err);
       setError("Google sign-in failed. Please try again.");

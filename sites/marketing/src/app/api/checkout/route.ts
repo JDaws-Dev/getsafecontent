@@ -3,6 +3,9 @@ import { getStripe } from "@/lib/stripe";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { capturePaymentError } from "@/lib/sentry";
 import Stripe from "stripe";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "../../../../convex/_generated/api";
 
 // Price IDs for different plans
 // PRICING: 1 app=$4.99/mo, 2 apps=$7.99/mo, 3 apps=$9.99/mo (monthly) or $99/year
@@ -45,7 +48,25 @@ export async function POST(req: Request) {
       // Log but don't fail the request if rate limiting fails
       console.error("Rate limit check failed:", rateLimitError);
     }
-    const { email, priceId, apps, selectedApps, isYearly } = await req.json();
+    const { email: bodyEmail, priceId, apps, selectedApps, isYearly } = await req.json();
+
+    // Get email from request body OR from authenticated session (for OAuth users)
+    let email = bodyEmail;
+    if (!email) {
+      try {
+        const token = await convexAuthNextjsToken();
+        if (token) {
+          const user = await fetchQuery(api.accounts.getCurrentUser, {}, { token });
+          if (user?.email) {
+            email = user.email;
+            console.log("[Checkout] Got email from authenticated session:", email);
+          }
+        }
+      } catch (authError) {
+        // Not authenticated, that's fine - email might be collected at Stripe checkout
+        console.log("[Checkout] No authenticated session, proceeding without email");
+      }
+    }
 
     // Support both 'apps' and 'selectedApps' field names
     const appsInput = apps || selectedApps;
