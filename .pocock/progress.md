@@ -10,6 +10,7 @@ This file maintains context between autonomous iterations.
 **WORKING ON:** None - ready for next issue
 
 As of Feb 12, 2026:
+- safecontent-eio (SafeTube: Blocked search notifications for parents) - COMPLETE
 - safecontent-lye (Add password change to SafeTube settings) - COMPLETE
 - safecontent-ce3 (Create /terms and /privacy pages on marketing site) - COMPLETE
 - safecontent-71k (Implement Google OAuth across all apps) - IN PROGRESS
@@ -71,6 +72,57 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-eio: SafeTube blocked search notifications for parents (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Parents now get notified when kids search for inappropriate content
+
+**What was done:**
+
+1. **Added blockedSearches table to Convex schema:**
+   - `userId` (parent), `kidProfileId`, `query`, `blockedKeyword`, `timestamp`
+   - Indexes: by_user, by_kid, by_user_recent
+
+2. **Created blockedSearches.ts Convex module:**
+   - `logBlockedSearch` mutation - called when content filter blocks a search
+   - `getBlockedSearches` query - gets all blocked searches for a user
+   - `getTodayBlockedCount` query - for dashboard alert badge
+   - `getRecentBlockedSearches` query - for notifications
+
+3. **Updated KidHome.jsx RequestsTab:**
+   - Added `logBlockedSearch` mutation hook
+   - Modified `handleSearch` to call mutation when validation fails
+   - Logs: query, blocked keyword, kid profile ID
+
+4. **Created BlockedSearches.jsx component:**
+   - Filter by kid profile
+   - Grouped by date (Today, Yesterday, etc.)
+   - Shows: kid name/avatar, search query, blocked keyword, timestamp
+   - Warning icon styling with red accents
+
+5. **Updated KidsDashboard.jsx:**
+   - Added "Blocked Searches" button to Quick Actions grid
+   - Shows red badge with count when there are blocked searches today
+   - New section handler for 'blocked' activeSection
+
+**Files created:**
+- `apps/safetube/convex/blockedSearches.ts`
+- `apps/safetube/src/components/admin/BlockedSearches.jsx`
+
+**Files modified:**
+- `apps/safetube/convex/schema.ts` - Added blockedSearches table
+- `apps/safetube/src/components/kid/KidHome.jsx` - Log blocked searches in RequestsTab
+- `apps/safetube/src/components/admin/KidsDashboard.jsx` - Added blocked searches section
+
+**Key decisions:**
+- Log the actual search query AND the specific blocked keyword (helps parents understand context)
+- Used red alert badge on dashboard to draw attention to blocked searches
+- Only logs when search is submitted (not on keystroke) to avoid spam
+- Grouped by date for easy browsing
+
+**Build verified:** npm run build + npx convex dev --once both pass
+
+---
 
 ### safecontent-lye: Add password change to SafeTube settings (Feb 12, 2026 - COMPLETE)
 

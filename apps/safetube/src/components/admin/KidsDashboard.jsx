@@ -4,6 +4,7 @@ import { api } from '../../../convex/_generated/api';
 import KidProfilesManager from './KidProfilesManager';
 import TimeLimits from './TimeLimits';
 import WatchHistory from './WatchHistory';
+import BlockedSearches from './BlockedSearches';
 
 // Get color class from color name
 function getColorClass(color) {
@@ -21,7 +22,7 @@ function getColorClass(color) {
 }
 
 export default function KidsDashboard({ userId, kidProfiles }) {
-  const [activeSection, setActiveSection] = useState('overview'); // 'overview', 'profiles', 'limits', 'history'
+  const [activeSection, setActiveSection] = useState('overview'); // 'overview', 'profiles', 'limits', 'history', 'blocked'
   const [selectedKidId, setSelectedKidId] = useState(null);
 
   // Get recent watch history for overview
@@ -36,6 +37,12 @@ export default function KidsDashboard({ userId, kidProfiles }) {
     userId ? { userId } : 'skip'
   );
 
+  // Get blocked searches count for today (for alert badge)
+  const todayBlockedCount = useQuery(
+    api.blockedSearches.getTodayBlockedCount,
+    userId ? { userId } : 'skip'
+  );
+
   // Overview section with kid cards
   if (activeSection === 'overview') {
     return (
@@ -47,7 +54,7 @@ export default function KidsDashboard({ userId, kidProfiles }) {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
           <button
             onClick={() => setActiveSection('profiles')}
             className="bg-white hover:bg-gray-50 rounded-xl p-5 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-red-200"
@@ -84,6 +91,28 @@ export default function KidsDashboard({ userId, kidProfiles }) {
             </div>
             <h3 className="font-semibold text-gray-900 mb-1">Watch History</h3>
             <p className="text-gray-500 text-sm">See what your kids have watched</p>
+          </button>
+          <button
+            onClick={() => setActiveSection('blocked')}
+            className={`bg-white hover:bg-gray-50 rounded-xl p-5 text-left transition shadow-sm border hover:shadow-md relative ${
+              todayBlockedCount > 0 ? 'border-red-200 hover:border-red-300' : 'border-gray-100 hover:border-red-200'
+            }`}
+          >
+            {/* Alert badge for today's blocked searches */}
+            {todayBlockedCount > 0 && (
+              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                {todayBlockedCount > 99 ? '99+' : todayBlockedCount}
+              </div>
+            )}
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
+              todayBlockedCount > 0 ? 'bg-red-100' : 'bg-red-50'
+            }`}>
+              <svg className={`w-5 h-5 ${todayBlockedCount > 0 ? 'text-red-600' : 'text-red-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-1">Blocked Searches</h3>
+            <p className="text-gray-500 text-sm">View inappropriate search attempts</p>
           </button>
         </div>
 
@@ -305,6 +334,16 @@ export default function KidsDashboard({ userId, kidProfiles }) {
       <div>
         <BackButton label="Back to Kids Dashboard" />
         <WatchHistory userId={userId} kidProfiles={kidProfiles} defaultKidId={selectedKidId} />
+      </div>
+    );
+  }
+
+  // Blocked searches section
+  if (activeSection === 'blocked') {
+    return (
+      <div>
+        <BackButton label="Back to Kids Dashboard" />
+        <BlockedSearches userId={userId} kidProfiles={kidProfiles} defaultKidId={selectedKidId} />
       </div>
     );
   }

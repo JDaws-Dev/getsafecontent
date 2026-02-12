@@ -247,4 +247,16 @@ export default defineSchema({
   })
     .index("by_email", ["email"])
     .index("by_created", ["createdAt"]),
+
+  // Blocked search attempts - logged when kids search for inappropriate content
+  blockedSearches: defineTable({
+    userId: v.id("users"), // Parent user
+    kidProfileId: v.id("kidProfiles"),
+    query: v.string(), // The search query that was blocked
+    blockedKeyword: v.string(), // The specific keyword that triggered the block
+    timestamp: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_kid", ["kidProfileId"])
+    .index("by_user_recent", ["userId", "timestamp"]),
 });

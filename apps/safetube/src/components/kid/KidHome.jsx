@@ -2578,6 +2578,7 @@ function RequestsTab({ requests, profileId, userId }) {
   // Request mutations
   const createVideoRequest = useMutation(api.videoRequests.createRequest);
   const createChannelRequest = useMutation(api.channelRequests.createRequest);
+  const logBlockedSearch = useMutation(api.blockedSearches.logBlockedSearch);
 
   // Get channel requests for this kid
   const channelRequests = useQuery(
@@ -2618,6 +2619,18 @@ function RequestsTab({ requests, profileId, userId }) {
       setSearchError(validation.message);
       setVideoResults([]);
       setChannelResults([]);
+      // Log the blocked search to notify parents
+      if (profileId && validation.blockedKeyword) {
+        try {
+          await logBlockedSearch({
+            kidProfileId: profileId,
+            query: searchQuery.trim(),
+            blockedKeyword: validation.blockedKeyword,
+          });
+        } catch (err) {
+          console.error('Failed to log blocked search:', err);
+        }
+      }
       return;
     }
 
