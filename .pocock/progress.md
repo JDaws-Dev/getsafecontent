@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.14.2 complete** - P0 BUG: Cryptic error on signup with existing email
+**safecontent-cl1.14 complete** - Implement Critical Fixes from Audit (parent task closed)
 
 As of Feb 11, 2026:
+- safecontent-cl1.14 (Implement Critical Fixes from Audit) - COMPLETE (parent task)
 - safecontent-cl1.14.2 (P0: Cryptic error on existing email) - COMPLETE
 - safecontent-cl1.14.1 (P0: /forgot-password 404) - COMPLETE
 - safecontent-cl1.1 (Marketing Site Signup Audit) - COMPLETE
@@ -40,6 +41,27 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.14: Implement Critical Fixes from Audit (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete (parent task closed)
+
+**What was done:**
+- Closed parent issue safecontent-cl1.14 after verifying both P0 subtasks complete
+- Verified /forgot-password and /reset-password return 200 in production
+- All P0 issues from the marketing site signup audit are now fixed
+
+**Files already fixed (in subtasks):**
+- `sites/marketing/src/app/forgot-password/page.tsx` (new)
+- `sites/marketing/src/app/reset-password/page.tsx` (new)
+- `sites/marketing/src/app/signup/page.tsx` (error handling)
+- `sites/marketing/src/app/api/checkout/route.ts` (user-friendly errors)
+
+**P1/P2 items NOT addressed (lower priority):**
+- P1: Google sign-in shows placeholder
+- P2: Terms/Privacy links point to getsafetunes.com
+
+---
 
 ### safecontent-cl1.14.2: P0 BUG: Cryptic error on signup with existing email (Feb 11, 2026 - COMPLETE)
 
