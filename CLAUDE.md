@@ -7,8 +7,8 @@
 | SafeTunes | getsafetunes.com | `formal-chihuahua-623` | React + Vite |
 | SafeTube | getsafetube.com | `rightful-rabbit-333` | React + Vite |
 | SafeReads | getsafereads.com | `exuberant-puffin-838` | Next.js |
-| Marketing | getsafefamily.com | N/A (Vercel) | Next.js |
-| Blog | getsafefamily.com/blog | N/A (Vercel) | MDX + Velite |
+| Marketing | getsafefamily.com | `adamant-crow-705` | Next.js |
+| Blog | getsafefamily.com/blog | N/A (shares Marketing) | MDX + Velite |
 
 ---
 
@@ -75,6 +75,25 @@ curl "https://exuberant-puffin-838.convex.site/deleteUser?email=EMAIL&key=KEY"
 
 # Admin dashboard
 curl "https://exuberant-puffin-838.convex.site/adminDashboard?key=KEY&format=json"
+```
+
+### Marketing Central (`adamant-crow-705.convex.site`)
+The central account management system for all Safe Family users.
+```bash
+# Grant lifetime access (optionally specify apps)
+curl "https://adamant-crow-705.convex.site/grantLifetime?email=EMAIL&key=KEY&apps=safetunes,safetube,safereads"
+
+# Delete user
+curl "https://adamant-crow-705.convex.site/deleteUser?email=EMAIL&key=KEY"
+
+# Admin dashboard
+curl "https://adamant-crow-705.convex.site/adminDashboard?key=KEY&format=json"
+
+# Get account details
+curl "https://adamant-crow-705.convex.site/getAccount?email=EMAIL&key=KEY"
+
+# Verify app access
+curl "https://adamant-crow-705.convex.site/verifyAppAccess?email=EMAIL&app=safetunes&key=KEY"
 ```
 
 ---
@@ -156,6 +175,7 @@ cd ~/safecontent/sites/marketing && vercel --prod
 - `UPSTASH_REDIS_REST_TOKEN` - Upstash auth
 - `SENTRY_DSN` - Error tracking (server-side)
 - `NEXT_PUBLIC_SENTRY_DSN` - Error tracking (client-side)
+- `ENABLE_UNIFIED_AUTH` - Feature flag for unified auth (see below)
 
 ### Convex Apps
 Each app has in Convex env vars:
@@ -196,6 +216,49 @@ CONVEX_DEPLOYMENT=prod:exuberant-puffin-838 npx convex env set ADMIN_KEY "$NEW_K
 
 # Also update ADMIN_API_KEY in Vercel for marketing site
 ```
+
+---
+
+## Feature Flags
+
+Feature flags allow gradual rollout of new features without code changes.
+
+### ENABLE_UNIFIED_AUTH
+
+Controls the unified authentication system for new signups.
+
+| Value | Behavior |
+|-------|----------|
+| `true` | New flow: Signup creates centralUser first, webhook uses /provisionUser with password hash |
+| `false` (default) | Legacy flow: Direct to Stripe checkout, webhook uses /setSubscriptionStatus |
+
+**To enable:**
+```bash
+# Via Vercel CLI
+vercel env add ENABLE_UNIFIED_AUTH production
+# Enter value: true
+
+# Or via Vercel Dashboard
+# Settings → Environment Variables → Add ENABLE_UNIFIED_AUTH = true
+```
+
+**To disable (rollback):**
+```bash
+vercel env rm ENABLE_UNIFIED_AUTH production
+# Or set value to "false"
+```
+
+**Files involved:**
+- `sites/marketing/src/lib/feature-flags.ts` - Flag definitions
+- `sites/marketing/src/app/api/feature-flags/route.ts` - Client-side flag API
+- `sites/marketing/src/app/signup/page.tsx` - Signup flow logic
+- `sites/marketing/src/app/api/stripe/webhook/route.ts` - Webhook provisioning logic
+
+**Gradual rollout strategy:**
+1. Test with `ENABLE_UNIFIED_AUTH=true` in preview/staging
+2. Monitor Sentry for errors
+3. Enable in production when confident
+4. If issues occur, disable immediately (instant rollback)
 
 ---
 
