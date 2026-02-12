@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.16 complete** - All P0 audit issues verified and fixed
+**safecontent-cl1.11 complete** - Stripe Webhook → Convex Provisioning verified
 
 As of Feb 12, 2026:
+- safecontent-cl1.11 (Webhook → Convex Provisioning) - COMPLETE
 - safecontent-cl1.16 (P0: Verify existing users) - COMPLETE
 - safecontent-cl1.14 (Implement Critical Fixes from Audit) - COMPLETE (parent task)
 - safecontent-cl1.14.2 (P0: Cryptic error on existing email) - COMPLETE
@@ -42,6 +43,30 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.11: Verify Stripe Webhook → Convex Provisioning (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Code reviewed complete webhook flow from Stripe checkout → app provisioning
+- Verified retry logic (3 retries with exponential backoff: 1s, 2s, 4s)
+- Verified 5s timeout circuit breaker (fetchWithTimeout with AbortController)
+- Verified Sentry error capture (FATAL level for provisioning failures)
+- Verified audit logging to Upstash Redis
+- Tested endpoints return proper status codes (400/401)
+
+**Also fixed during cl1.16:**
+- jedaws@gmail.com SafeTube status was "unknown" → set to "lifetime"
+- jennydaws@gmail.com was missing from SafeReads → granted lifetime
+
+**Key files verified:**
+- `sites/marketing/src/app/api/stripe/webhook/route.ts` (643 lines)
+- `sites/marketing/src/lib/sentry.ts`
+- `sites/marketing/src/lib/audit-log.ts`
+- `sites/marketing/src/app/api/admin/retry-provision/route.ts`
+
+---
 
 ### safecontent-cl1.16: Verify Existing Users Unaffected (Feb 12, 2026 - COMPLETE)
 
