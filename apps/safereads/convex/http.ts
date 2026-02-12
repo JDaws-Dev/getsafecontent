@@ -3,6 +3,7 @@ import { auth } from "./auth";
 import grantLifetime from "./grantLifetime";
 import deleteUser from "./deleteUser";
 import adminDashboard from "./adminDashboard";
+import setupOnboarding from "./setupOnboarding";
 
 const http = httpRouter();
 
@@ -31,6 +32,13 @@ http.route({
   path: "/adminDashboard",
   method: "OPTIONS",
   handler: adminDashboard,
+});
+
+// Setup onboarding route (creates kid profile from marketing site onboarding)
+http.route({
+  path: "/setupOnboarding",
+  method: "GET",
+  handler: setupOnboarding,
 });
 
 auth.addHttpRoutes(http);

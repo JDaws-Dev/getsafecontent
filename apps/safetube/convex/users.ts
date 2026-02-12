@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { authComponent } from "./auth";
 import { api } from "./_generated/api";
 
@@ -330,6 +330,17 @@ export const updateSubscriptionByStripeId = mutation({
     }
 
     await ctx.db.patch(user._id, updates);
+  },
+});
+
+// Internal query to get user by email (used by HTTP endpoints)
+export const getUserByEmailInternal = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .first();
   },
 });
 

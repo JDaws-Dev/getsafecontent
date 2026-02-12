@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-jje complete** - Validate subscription ownership before updates
+**safecontent-57e complete** - Persist onboarding data to apps
 
 As of Feb 11, 2026:
+- safecontent-57e (Persist onboarding data to apps) - COMPLETE
 - safecontent-jje (Subscription ownership validation) - COMPLETE
 - safecontent-3pc (Rate limiting) - COMPLETE
 - safecontent-anp (Webhook retry/recovery) - COMPLETE
@@ -33,6 +34,64 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-57e: Persist onboarding data to apps (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** Onboarding form collected kid names and settings but:
+- Data stored in React state only, lost on refresh
+- Never sent to apps for actual profile creation
+- User had to re-enter everything in each app
+
+**Solution implemented:**
+
+1. **localStorage persistence**
+   - Onboarding data saved to localStorage on every change
+   - Restored from localStorage on page refresh
+   - Cleared after successful submission to apps
+
+2. **API endpoint** `/api/onboarding/setup`
+   - Forwards onboarding data to appropriate app's Convex endpoint
+   - Uses ADMIN_API_KEY for authentication
+   - Returns success/error status per app
+
+3. **HTTP endpoints in each app** `/setupOnboarding`
+   - SafeTunes: Creates kid profile with name, color, dailyLimitMinutes
+   - SafeTube: Creates kid profile with name, color (auto-assigns icon)
+   - SafeReads: Creates kid record with name, age
+
+4. **Completion screen with status**
+   - Shows real-time status per app (pending/sending/success/error)
+   - Graceful degradation - if setup fails, user can complete in-app
+
+**Files created:**
+- `sites/marketing/src/app/api/onboarding/setup/route.ts`
+- `apps/safetunes/convex/setupOnboarding.ts`
+- `apps/safetube/convex/setupOnboarding.ts`
+- `apps/safereads/convex/setupOnboarding.ts`
+
+**Files modified:**
+- `sites/marketing/src/app/onboarding/page.tsx` - State lifting, localStorage, API calls
+- `apps/safetunes/convex/users.ts` - Added getUserByEmailInternal
+- `apps/safetunes/convex/kidProfiles.ts` - Added createKidProfileInternal
+- `apps/safetunes/convex/http.ts` - Added /setupOnboarding route
+- `apps/safetube/convex/users.ts` - Added getUserByEmailInternal
+- `apps/safetube/convex/kidProfiles.ts` - Added createKidProfileInternal
+- `apps/safetube/convex/http.ts` - Added /setupOnboarding route
+- `apps/safereads/convex/users.ts` - Added getUserByEmailInternal
+- `apps/safereads/convex/kids.ts` - Added createKidInternal
+- `apps/safereads/convex/http.ts` - Added /setupOnboarding route
+
+**Key decisions:**
+- Used GET requests with query params for HTTP endpoints (matches existing admin endpoint pattern)
+- Parallel submission to all apps for speed
+- Graceful error handling - failures don't block user from using apps
+- Data only sent for apps where user completed setup (skipped apps not called)
+
+**Build verified:** All 4 sites build + Convex dev --once pass
+
+---
 
 ### safecontent-jje: Validate subscription ownership before allowing updates (Feb 11, 2026 - COMPLETE)
 

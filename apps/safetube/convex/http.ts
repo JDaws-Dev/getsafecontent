@@ -3,6 +3,7 @@ import adminDashboard from "./adminDashboard";
 import stripeWebhook from "./stripe";
 import setSubscriptionStatus from "./setSubscriptionStatus";
 import deleteUser from "./deleteUser";
+import setupOnboarding from "./setupOnboarding";
 import { extensionAddVideo, extensionGetKids } from "./extensionApi";
 import { auth } from "./auth";
 
@@ -41,6 +42,13 @@ http.route({
   path: "/deleteUser",
   method: "GET",
   handler: deleteUser,
+});
+
+// Setup onboarding route (creates kid profile from marketing site onboarding)
+http.route({
+  path: "/setupOnboarding",
+  method: "GET",
+  handler: setupOnboarding,
 });
 
 // Chrome extension API routes

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation, internalMutation } from "./_generated/server";
+import { query, mutation, internalMutation, internalQuery } from "./_generated/server";
 
 // Get user by email
 export const getUserByEmail = query({
@@ -306,6 +306,17 @@ export const setGlobalHideArtwork = mutation({
     });
 
     return { success: true };
+  },
+});
+
+// Internal query to get user by email (used by HTTP endpoints)
+export const getUserByEmailInternal = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .first();
   },
 });
 

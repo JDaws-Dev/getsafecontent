@@ -1,4 +1,4 @@
-import { mutation, query, action } from "./_generated/server";
+import { mutation, query, action, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -202,6 +202,19 @@ export const syncFromCentralAccess = mutation({
     });
 
     return { success: true };
+  },
+});
+
+/**
+ * Internal query to get user by email (used by HTTP endpoints).
+ */
+export const getUserByEmailInternal = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .first();
   },
 });
 

@@ -7,6 +7,7 @@ import checkUserMusic from "./checkUserMusic";
 import toggleArtwork from "./toggleArtwork";
 import deleteTestUsers from "./deleteTestUsers";
 import deleteUserHttpAction from "./deleteUserHttpAction";
+import setupOnboarding from "./setupOnboarding";
 import { auth } from "./auth";
 
 const http = httpRouter();
@@ -65,6 +66,13 @@ http.route({
   path: "/deleteUser",
   method: "GET",
   handler: deleteUserHttpAction,
+});
+
+// Setup onboarding route (creates kid profile from marketing site onboarding)
+http.route({
+  path: "/setupOnboarding",
+  method: "GET",
+  handler: setupOnboarding,
 });
 
 // Stripe webhook route

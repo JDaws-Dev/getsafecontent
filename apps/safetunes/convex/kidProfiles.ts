@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 
 // Get all kid profiles for a user
 export const getKidProfiles = query({
@@ -86,6 +86,26 @@ export const createKidProfile = mutation({
       favoriteGenres: args.favoriteGenres,
       favoriteArtists: args.favoriteArtists,
       musicPreferences: args.musicPreferences,
+      dailyTimeLimitMinutes: args.dailyLimitMinutes,
+      timeLimitEnabled: args.dailyLimitMinutes !== undefined && args.dailyLimitMinutes > 0,
+    });
+  },
+});
+
+// Internal mutation to create kid profile (used by HTTP endpoint for onboarding)
+export const createKidProfileInternal = internalMutation({
+  args: {
+    userId: v.id("users"),
+    name: v.string(),
+    color: v.optional(v.string()),
+    dailyLimitMinutes: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("kidProfiles", {
+      userId: args.userId,
+      name: args.name,
+      color: args.color || "purple",
+      createdAt: Date.now(),
       dailyTimeLimitMinutes: args.dailyLimitMinutes,
       timeLimitEnabled: args.dailyLimitMinutes !== undefined && args.dailyLimitMinutes > 0,
     });

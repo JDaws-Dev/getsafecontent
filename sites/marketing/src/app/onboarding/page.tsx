@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Shield, ChevronRight, Check, Music, Play, BookOpen, ArrowRight, SkipForward, Users, Clock } from "lucide-react";
+import { Shield, ChevronRight, Check, Music, Play, BookOpen, ArrowRight, SkipForward, Users, Clock, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 /**
  * Unified Onboarding Page
@@ -12,9 +12,39 @@ import { Shield, ChevronRight, Check, Music, Play, BookOpen, ArrowRight, SkipFor
  * Progress indicator shows 'Step 1 of 3: SafeTunes'.
  * Each app has its own onboarding steps.
  * User can skip and come back later.
+ *
+ * Data persistence:
+ * - Saved to localStorage on each change
+ * - Restored on page refresh
+ * - Sent to apps on completion via /api/onboarding/setup
  */
 
 type AppId = "safetunes" | "safetube" | "safereads";
+
+// Onboarding data structure for each app
+interface SafeTunesData {
+  kidName: string;
+  dailyLimit: number;
+}
+
+interface SafeTubeData {
+  kidName: string;
+  selectedColor: string;
+}
+
+interface SafeReadsData {
+  kidName: string;
+  kidAge: string;
+}
+
+interface OnboardingData {
+  safetunes?: SafeTunesData;
+  safetube?: SafeTubeData;
+  safereads?: SafeReadsData;
+  email?: string;
+}
+
+const STORAGE_KEY = "safe-family-onboarding";
 
 interface AppConfig {
   id: AppId;
@@ -125,12 +155,21 @@ function WelcomeStep({
 function SafeTunesStep({
   onComplete,
   onSkip,
+  initialData,
+  onDataChange,
 }: {
-  onComplete: () => void;
+  onComplete: (data: SafeTunesData) => void;
   onSkip: () => void;
+  initialData?: SafeTunesData;
+  onDataChange: (data: SafeTunesData) => void;
 }) {
-  const [kidName, setKidName] = useState("");
-  const [dailyLimit, setDailyLimit] = useState(60);
+  const [kidName, setKidName] = useState(initialData?.kidName || "");
+  const [dailyLimit, setDailyLimit] = useState(initialData?.dailyLimit ?? 60);
+
+  // Report data changes
+  useEffect(() => {
+    onDataChange({ kidName, dailyLimit });
+  }, [kidName, dailyLimit, onDataChange]);
 
   const DAILY_LIMITS = [
     { value: 30, label: "30 min" },
@@ -209,7 +248,7 @@ function SafeTunesStep({
           Set up later
         </button>
         <button
-          onClick={onComplete}
+          onClick={() => onComplete({ kidName, dailyLimit })}
           className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold transition flex items-center justify-center gap-2"
         >
           Continue
@@ -224,12 +263,21 @@ function SafeTunesStep({
 function SafeTubeStep({
   onComplete,
   onSkip,
+  initialData,
+  onDataChange,
 }: {
-  onComplete: () => void;
+  onComplete: (data: SafeTubeData) => void;
   onSkip: () => void;
+  initialData?: SafeTubeData;
+  onDataChange: (data: SafeTubeData) => void;
 }) {
-  const [kidName, setKidName] = useState("");
-  const [selectedColor, setSelectedColor] = useState("blue");
+  const [kidName, setKidName] = useState(initialData?.kidName || "");
+  const [selectedColor, setSelectedColor] = useState(initialData?.selectedColor || "blue");
+
+  // Report data changes
+  useEffect(() => {
+    onDataChange({ kidName, selectedColor });
+  }, [kidName, selectedColor, onDataChange]);
 
   const COLORS = [
     { name: "red", class: "bg-red-500" },
@@ -308,7 +356,7 @@ function SafeTubeStep({
           Set up later
         </button>
         <button
-          onClick={onComplete}
+          onClick={() => onComplete({ kidName, selectedColor })}
           className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-xl font-semibold transition flex items-center justify-center gap-2"
         >
           Continue
@@ -323,12 +371,21 @@ function SafeTubeStep({
 function SafeReadsStep({
   onComplete,
   onSkip,
+  initialData,
+  onDataChange,
 }: {
-  onComplete: () => void;
+  onComplete: (data: SafeReadsData) => void;
   onSkip: () => void;
+  initialData?: SafeReadsData;
+  onDataChange: (data: SafeReadsData) => void;
 }) {
-  const [kidName, setKidName] = useState("");
-  const [kidAge, setKidAge] = useState("");
+  const [kidName, setKidName] = useState(initialData?.kidName || "");
+  const [kidAge, setKidAge] = useState(initialData?.kidAge || "");
+
+  // Report data changes
+  useEffect(() => {
+    onDataChange({ kidName, kidAge });
+  }, [kidName, kidAge, onDataChange]);
 
   return (
     <div className="max-w-lg mx-auto">
@@ -396,7 +453,7 @@ function SafeReadsStep({
           Set up later
         </button>
         <button
-          onClick={onComplete}
+          onClick={() => onComplete({ kidName, kidAge })}
           className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl font-semibold transition flex items-center justify-center gap-2"
         >
           Continue
@@ -407,34 +464,67 @@ function SafeReadsStep({
   );
 }
 
+// Setup status for each app
+interface AppSetupStatus {
+  status: "pending" | "sending" | "success" | "error";
+  error?: string;
+}
+
 // Completion step
 function CompletionStep({
   selectedApps,
   completedApps,
+  setupStatus,
+  isSubmitting,
 }: {
   selectedApps: AppId[];
   completedApps: AppId[];
+  setupStatus: Record<AppId, AppSetupStatus>;
+  isSubmitting: boolean;
 }) {
+  const allSuccess = completedApps.every(
+    (appId) => setupStatus[appId]?.status === "success"
+  );
+  const anyError = completedApps.some(
+    (appId) => setupStatus[appId]?.status === "error"
+  );
+
   return (
     <div className="text-center max-w-lg mx-auto">
-      <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
-        <Check className="w-10 h-10 text-emerald-600" />
+      <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
+        isSubmitting ? "bg-indigo-100" : allSuccess ? "bg-emerald-100" : anyError ? "bg-amber-100" : "bg-emerald-100"
+      }`}>
+        {isSubmitting ? (
+          <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
+        ) : allSuccess ? (
+          <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+        ) : anyError ? (
+          <AlertCircle className="w-10 h-10 text-amber-600" />
+        ) : (
+          <Check className="w-10 h-10 text-emerald-600" />
+        )}
       </div>
 
       <h2 className="text-3xl font-bold text-navy mb-4">
-        You&apos;re all set!
+        {isSubmitting ? "Setting up your apps..." : allSuccess ? "You're all set!" : "Almost there!"}
       </h2>
       <p className="text-lg text-navy/70 mb-8">
-        Your Safe Family apps are ready to use. Sign in to each app with your email
-        to access your subscription.
+        {isSubmitting
+          ? "We're creating your kid profiles in each app. This only takes a moment."
+          : allSuccess
+          ? "Your kid profiles have been created! Sign in to each app to start using them."
+          : anyError
+          ? "Some apps couldn't be set up automatically. You can complete setup when you sign in."
+          : "Sign in to each app with your email to access your subscription."}
       </p>
 
-      {/* App links */}
+      {/* App links with setup status */}
       <div className="space-y-3 mb-8">
         {selectedApps.map((appId) => {
           const config = APP_CONFIGS[appId];
           const Icon = config.icon;
           const wasCompleted = completedApps.includes(appId);
+          const status = setupStatus[appId];
 
           return (
             <a
@@ -451,14 +541,36 @@ function CompletionStep({
                 <div className="text-left">
                   <p className="font-medium text-navy">{config.name}</p>
                   <p className="text-sm text-navy/60">
-                    {wasCompleted ? "Ready to use" : "Set up pending"}
+                    {!wasCompleted
+                      ? "Skipped - set up in app"
+                      : status?.status === "sending"
+                      ? "Creating profile..."
+                      : status?.status === "success"
+                      ? "Profile created!"
+                      : status?.status === "error"
+                      ? "Set up in app"
+                      : "Ready to use"}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {wasCompleted && (
-                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
+                {status?.status === "sending" && (
+                  <Loader2 className="w-4 h-4 text-indigo-600 animate-spin" />
+                )}
+                {status?.status === "success" && (
+                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
                     Set up
+                  </span>
+                )}
+                {status?.status === "error" && (
+                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
+                    Manual
+                  </span>
+                )}
+                {!wasCompleted && (
+                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                    Skipped
                   </span>
                 )}
                 <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
@@ -469,11 +581,20 @@ function CompletionStep({
       </div>
 
       {/* Note about incomplete apps */}
-      {completedApps.length < selectedApps.length && (
+      {anyError && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
           <p className="text-sm text-amber-800">
-            <strong>Reminder:</strong> Some apps still need setup. You can complete
-            the setup when you first log in to each app.
+            <strong>Note:</strong> Some profiles couldn&apos;t be created automatically.
+            Don&apos;t worry - you can add kids when you first sign in to each app.
+          </p>
+        </div>
+      )}
+
+      {completedApps.length < selectedApps.length && !anyError && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
+          <p className="text-sm text-blue-800">
+            <strong>Reminder:</strong> Some apps were skipped. You can complete
+            the setup when you first sign in to each app.
           </p>
         </div>
       )}
@@ -526,11 +647,11 @@ function ProgressIndicator({
 
 // Main onboarding content
 function OnboardingContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // Get apps from URL or default to all
   const appsParam = searchParams.get("apps");
+  const emailParam = searchParams.get("email");
   const selectedApps: AppId[] = appsParam
     ? (appsParam.split(",").filter((a): a is AppId =>
         ["safetunes", "safetube", "safereads"].includes(a)
@@ -540,6 +661,55 @@ function OnboardingContent() {
   // State
   const [currentStepIndex, setCurrentStepIndex] = useState(-1); // -1 = welcome
   const [completedApps, setCompletedApps] = useState<AppId[]>([]);
+  const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
+  const [setupStatus, setSetupStatus] = useState<Record<AppId, AppSetupStatus>>({
+    safetunes: { status: "pending" },
+    safetube: { status: "pending" },
+    safereads: { status: "pending" },
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as OnboardingData;
+        setOnboardingData(parsed);
+      }
+    } catch (e) {
+      console.error("Failed to load onboarding data from localStorage:", e);
+    }
+  }, []);
+
+  // Save email from URL param
+  useEffect(() => {
+    if (emailParam && !onboardingData.email) {
+      setOnboardingData((prev) => ({ ...prev, email: emailParam }));
+    }
+  }, [emailParam, onboardingData.email]);
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(onboardingData));
+    } catch (e) {
+      console.error("Failed to save onboarding data to localStorage:", e);
+    }
+  }, [onboardingData]);
+
+  // Memoized data change handlers to prevent infinite loops
+  const handleSafeTunesDataChange = useCallback((data: SafeTunesData) => {
+    setOnboardingData((prev) => ({ ...prev, safetunes: data }));
+  }, []);
+
+  const handleSafeTubeDataChange = useCallback((data: SafeTubeData) => {
+    setOnboardingData((prev) => ({ ...prev, safetube: data }));
+  }, []);
+
+  const handleSafeReadsDataChange = useCallback((data: SafeReadsData) => {
+    setOnboardingData((prev) => ({ ...prev, safereads: data }));
+  }, []);
 
   // Calculate total steps (welcome + each app + completion)
   const totalAppSteps = selectedApps.length;
@@ -549,20 +719,95 @@ function OnboardingContent() {
   const isComplete = currentStepIndex >= selectedApps.length;
   const currentApp = !isWelcome && !isComplete ? selectedApps[currentStepIndex] : null;
 
+  // Submit onboarding data to apps
+  const submitOnboardingData = useCallback(async (apps: AppId[], data: OnboardingData) => {
+    setIsSubmitting(true);
+
+    // Submit to each app in parallel
+    const promises = apps.map(async (appId) => {
+      setSetupStatus((prev) => ({
+        ...prev,
+        [appId]: { status: "sending" },
+      }));
+
+      try {
+        const response = await fetch("/api/onboarding/setup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            app: appId,
+            email: data.email || emailParam,
+            data: data[appId],
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Failed to setup app");
+        }
+
+        setSetupStatus((prev) => ({
+          ...prev,
+          [appId]: { status: "success" },
+        }));
+      } catch (error) {
+        console.error(`Failed to setup ${appId}:`, error);
+        setSetupStatus((prev) => ({
+          ...prev,
+          [appId]: {
+            status: "error",
+            error: error instanceof Error ? error.message : "Unknown error",
+          },
+        }));
+      }
+    });
+
+    await Promise.all(promises);
+    setIsSubmitting(false);
+
+    // Clear localStorage after successful submission
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {
+      console.error("Failed to clear localStorage:", e);
+    }
+  }, [emailParam]);
+
   // Handlers
   const handleStartOnboarding = () => {
     setCurrentStepIndex(0);
   };
 
-  const handleCompleteApp = () => {
+  const handleCompleteApp = (data: SafeTunesData | SafeTubeData | SafeReadsData) => {
     if (currentApp) {
+      // Save data for this app
+      setOnboardingData((prev) => ({ ...prev, [currentApp]: data }));
       setCompletedApps([...completedApps, currentApp]);
     }
-    setCurrentStepIndex(currentStepIndex + 1);
+
+    const nextIndex = currentStepIndex + 1;
+    setCurrentStepIndex(nextIndex);
+
+    // If this was the last app, submit data
+    if (nextIndex >= selectedApps.length) {
+      const updatedData = currentApp
+        ? { ...onboardingData, [currentApp]: data }
+        : onboardingData;
+      const appsToSetup = [...completedApps, ...(currentApp ? [currentApp] : [])];
+      if (appsToSetup.length > 0) {
+        submitOnboardingData(appsToSetup, updatedData);
+      }
+    }
   };
 
   const handleSkipApp = () => {
-    setCurrentStepIndex(currentStepIndex + 1);
+    const nextIndex = currentStepIndex + 1;
+    setCurrentStepIndex(nextIndex);
+
+    // If this was the last app, submit data for completed apps
+    if (nextIndex >= selectedApps.length && completedApps.length > 0) {
+      submitOnboardingData(completedApps, onboardingData);
+    }
   };
 
   // Get current app name for progress indicator
@@ -603,6 +848,8 @@ function OnboardingContent() {
           <SafeTunesStep
             onComplete={handleCompleteApp}
             onSkip={handleSkipApp}
+            initialData={onboardingData.safetunes}
+            onDataChange={handleSafeTunesDataChange}
           />
         )}
 
@@ -610,6 +857,8 @@ function OnboardingContent() {
           <SafeTubeStep
             onComplete={handleCompleteApp}
             onSkip={handleSkipApp}
+            initialData={onboardingData.safetube}
+            onDataChange={handleSafeTubeDataChange}
           />
         )}
 
@@ -617,6 +866,8 @@ function OnboardingContent() {
           <SafeReadsStep
             onComplete={handleCompleteApp}
             onSkip={handleSkipApp}
+            initialData={onboardingData.safereads}
+            onDataChange={handleSafeReadsDataChange}
           />
         )}
 
@@ -624,6 +875,8 @@ function OnboardingContent() {
           <CompletionStep
             selectedApps={selectedApps}
             completedApps={completedApps}
+            setupStatus={setupStatus}
+            isSubmitting={isSubmitting}
           />
         )}
       </main>

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 
 /**
  * List all kids for a user.
@@ -73,5 +73,23 @@ export const remove = mutation({
     }
 
     await ctx.db.delete(args.kidId);
+  },
+});
+
+/**
+ * Internal mutation to create a kid (used by HTTP endpoint for onboarding).
+ */
+export const createKidInternal = internalMutation({
+  args: {
+    userId: v.id("users"),
+    name: v.string(),
+    age: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("kids", {
+      userId: args.userId,
+      name: args.name,
+      age: args.age,
+    });
   },
 });

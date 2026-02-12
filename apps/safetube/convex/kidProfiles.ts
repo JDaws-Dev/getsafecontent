@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 
 // Default icons and colors
 const DEFAULT_ICONS = ['🦁', '🐻', '🐼', '🐨', '🐯', '🦊', '🐰', '🐸', '🦄', '🚀'];
@@ -84,6 +84,41 @@ export const createKidProfile = mutation({
       shortsEnabled: args.shortsEnabled ?? true, // default to true
       maxVideosPerChannel: args.maxVideosPerChannel ?? 5, // default to 5
       requestsEnabled: args.requestsEnabled ?? true, // default to true
+      createdAt: Date.now(),
+    });
+
+    return profileId;
+  },
+});
+
+// Internal mutation to create kid profile (used by HTTP endpoint for onboarding)
+export const createKidProfileInternal = internalMutation({
+  args: {
+    userId: v.id("users"),
+    name: v.string(),
+    color: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Get existing profiles to pick unique icon
+    const existing = await ctx.db
+      .query("kidProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+
+    const usedIcons = new Set(existing.map((p) => p.icon));
+
+    // Pick first unused icon or random
+    const icon = DEFAULT_ICONS.find((i) => !usedIcons.has(i)) || DEFAULT_ICONS[Math.floor(Math.random() * DEFAULT_ICONS.length)];
+    const color = args.color || "blue";
+
+    const profileId = await ctx.db.insert("kidProfiles", {
+      userId: args.userId,
+      name: args.name,
+      icon,
+      color,
+      shortsEnabled: true,
+      maxVideosPerChannel: 5,
+      requestsEnabled: true,
       createdAt: Date.now(),
     });
 
