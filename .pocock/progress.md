@@ -10,6 +10,7 @@ This file maintains context between autonomous iterations.
 **Password sync infrastructure complete** - Users can change password in one app and it syncs to all apps
 
 As of Feb 12, 2026:
+- safecontent-i5w.14 (Write integration tests for unified auth flow) - COMPLETE
 - safecontent-i5w.8 (Implement password sync across apps) - COMPLETE
 - safecontent-44m (Fix promo signup to enable login on all apps) - COMPLETE
 - safecontent-i5w.1 (Create centralUsers database table) - COMPLETE
@@ -61,6 +62,61 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-i5w.14: Write integration tests for unified auth flow (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Integration tests, E2E tests, and CI workflow added
+
+**What was done:**
+
+1. **Added new integration tests to `src/__tests__/unified-auth.integration.ts`:**
+   - Test 7.1: User without app entitlement shows inactive status
+   - Test 7.2: User with partial app entitlement (2 of 3 apps)
+   - Test 8.1: Retry provision endpoint grants access to failed apps
+   - Test 8.2: Manual provision via admin endpoint works
+   - Test 8.3: Audit log records provision actions
+
+2. **Added new E2E tests to `e2e/unified-auth-flow.spec.ts`:**
+   - Test 14: Non-entitled app shows upgrade prompt
+   - Test 15: Admin can check user status across apps
+   - Test 16: Admin failed provisions page loads
+   - Test 17: Admin audit logs page loads
+   - Test 18: Webhook retry implementation documented
+   - Test 19: Legacy flow fallback documented
+
+3. **Created GitHub Actions CI workflow (`.github/workflows/test-unified-auth.yml`):**
+   - Build verification job
+   - API integration tests job
+   - E2E tests job (manual trigger)
+   - Test summary job
+   - Artifact uploads for test results
+
+4. **Fixed TypeScript config (`tsconfig.json`):**
+   - Excluded `playwright.config.ts` and `e2e/` from build to avoid devDependency errors
+
+**Files created:**
+- `.github/workflows/test-unified-auth.yml` - CI workflow for tests
+
+**Files modified:**
+- `sites/marketing/src/__tests__/unified-auth.integration.ts` - Added inactive status + webhook recovery tests
+- `sites/marketing/e2e/unified-auth-flow.spec.ts` - Added inactive + webhook + admin page tests
+- `sites/marketing/tsconfig.json` - Excluded test files from build
+
+**Test commands:**
+```bash
+# Run API integration tests
+cd sites/marketing && npm run test:api
+
+# Run E2E tests
+cd sites/marketing && npm run test:e2e
+
+# Run all tests
+cd sites/marketing && npm run test:all
+```
+
+**Build verified:** npm run build passes (49 routes)
+
+---
 
 ### safecontent-i5w.8: Implement password sync across apps (Feb 12, 2026 - COMPLETE)
 
