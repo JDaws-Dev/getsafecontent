@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.8 complete** - 3-App Bundle Yearly Checkout Tested
+**safecontent-oc8 complete** - SafeTube Forgot Password Page Fixed
 
 As of Feb 12, 2026:
+- safecontent-oc8 (P0: SafeTube /forgot-password 404) - COMPLETE
 - safecontent-cl1.8 (3-App Bundle Yearly Checkout) - COMPLETE
 - safecontent-cl1.7 (3-App Bundle Monthly Checkout) - COMPLETE
 - safecontent-cl1.6 (2-App Bundle Checkout) - COMPLETE
@@ -53,6 +54,43 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-oc8: P0 BUG: SafeTube /forgot-password page missing (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** LoginPage.jsx links to /forgot-password but no page existed. Users clicking "Forgot password?" got redirected to homepage (404 fallback).
+
+**Solution:**
+1. Created ForgotPasswordPage.jsx - adapted from SafeTunes with red/orange SafeTube branding
+2. Created ResetPasswordPage.jsx - adapted from SafeTunes with red/orange SafeTube branding
+3. Added routes to App.jsx for both pages
+
+**Files created:**
+- `apps/safetube/src/pages/ForgotPasswordPage.jsx`
+- `apps/safetube/src/pages/ResetPasswordPage.jsx`
+
+**Files modified:**
+- `apps/safetube/src/App.jsx` - Added imports and routes
+
+**Key changes from SafeTunes version:**
+- Gradient: purple-50 → red-50 background
+- Focus ring: purple-600 → red-500
+- Buttons: purple-600/700 → red-500/600
+- Links: purple-600/700 → red-500/600
+- Logo: SafeTunes shield → SafeTube play button
+- localStorage key: safetunes_reset_email → safetube_reset_email
+
+**Flow:**
+1. User clicks "Forgot password?" on login → /forgot-password
+2. Enters email, OTP sent via ResendOTPPasswordReset
+3. Redirected to /reset-password
+4. Enter 6-digit OTP + new password
+5. Password reset, redirected to login
+
+**Build verified:** npm run build + npx convex dev --once pass
+
+---
 
 ### safecontent-cl1.8: Test 3-App Bundle Yearly ($99/year) (Feb 12, 2026 - COMPLETE)
 
