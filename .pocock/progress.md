@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-4hn complete** - Add Sentry error tracking
+**safecontent-y2p complete** - Add timeout/circuit breaker to webhook
 
 As of Feb 11, 2026:
+- safecontent-y2p (Webhook timeout/circuit breaker) - COMPLETE
 - safecontent-4hn (Sentry error tracking) - COMPLETE
 - safecontent-57e (Persist onboarding data to apps) - COMPLETE
 - safecontent-jje (Subscription ownership validation) - COMPLETE
@@ -35,6 +36,43 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-y2p: Add timeout/circuit breaker to webhook app provisioning (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** Webhook fetches to app admin endpoints had no timeout. If one app was slow/down, it could cause Stripe to timeout the entire webhook, failing all provisioning and triggering cascading retries.
+
+**Solution implemented:**
+
+1. **5-second timeout per app provision call**
+   - Created `fetchWithTimeout()` helper using AbortController
+   - PROVISION_TIMEOUT_MS = 5000
+   - Clearer error messages: "Timeout after 5000ms"
+
+2. **Apps already provisioned in parallel** (verified existing)
+   - `Promise.all()` on all app provision calls
+   - Each app succeeds/fails independently
+
+3. **Partial success handling** (verified existing)
+   - If SafeTunes succeeds but SafeTube times out, SafeTunes access is still granted
+   - Failures logged and alert sent only for failed apps
+
+4. **Timeout applied to revoke operations too**
+   - `revokeAppAccess()` also uses `fetchWithTimeout()`
+   - Same 5s timeout for cancellation/revocation flows
+
+**Files modified:**
+- `sites/marketing/src/app/api/stripe/webhook/route.ts` - Added timeout logic
+
+**Key decisions:**
+- 5 seconds chosen as balance: fast enough to avoid Stripe timeout (30s), long enough for normal Convex latency
+- Used AbortController (native) instead of external timeout library
+- Timeout errors clearly distinguished in logs: "Timeout after 5000ms"
+
+**Build verified:** npm run build passes (40 routes)
+
+---
 
 ### safecontent-4hn: Add error tracking (Sentry) for production monitoring (Feb 11, 2026 - COMPLETE)
 

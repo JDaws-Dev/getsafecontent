@@ -15,6 +15,7 @@ if (!ADMIN_KEY) {
 // Retry configuration
 const MAX_RETRIES = 3;
 const INITIAL_DELAY_MS = 1000; // 1 second
+const PROVISION_TIMEOUT_MS = 5000; // 5 second timeout per app provision call
 
 // Helper to sleep for a given duration
 function sleep(ms: number): Promise<void> {
@@ -84,6 +85,22 @@ type AppProvisionResult = {
   attempts?: number;
 };
 
+// Helper to fetch with timeout using AbortController
+async function fetchWithTimeout(
+  url: string,
+  timeoutMs: number = PROVISION_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 // Helper to grant access to a single app (used with retry wrapper)
 async function grantSingleAppAccess(
   email: string,
@@ -106,10 +123,18 @@ async function grantSingleAppAccess(
     url = `${endpoint}/grantLifetime?email=${encodedEmail}&key=${encodedKey}`;
   }
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(`HTTP ${response.status} - ${body}`);
+  try {
+    const response = await fetchWithTimeout(url, PROVISION_TIMEOUT_MS);
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      throw new Error(`HTTP ${response.status} - ${body}`);
+    }
+  } catch (err) {
+    // Provide clearer error messages for timeouts
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error(`Timeout after ${PROVISION_TIMEOUT_MS}ms`);
+    }
+    throw err;
   }
 }
 
@@ -179,7 +204,7 @@ async function revokeAppAccess(
   const encodedEmail = encodeURIComponent(email);
   const encodedKey = encodeURIComponent(ADMIN_KEY);
 
-  // Revoke access from each app in parallel
+  // Revoke access from each app in parallel (with timeout)
   const revokePromises = apps.map(async (app) => {
     const endpoint = APP_ENDPOINTS[app];
 
@@ -192,13 +217,16 @@ async function revokeAppAccess(
     const url = `${endpoint}/setSubscriptionStatus?email=${encodedEmail}&status=expired&key=${encodedKey}`;
 
     try {
-      const response = await fetch(url);
+      const response = await fetchWithTimeout(url, PROVISION_TIMEOUT_MS);
       if (!response.ok) {
         const body = await response.text().catch(() => "");
         return { app, success: false, error: `HTTP ${response.status} - ${body}` };
       }
       return { app, success: true };
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        return { app, success: false, error: `Timeout after ${PROVISION_TIMEOUT_MS}ms` };
+      }
       return { app, success: false, error: String(err) };
     }
   });
