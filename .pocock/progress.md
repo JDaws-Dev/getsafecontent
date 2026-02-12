@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.11 complete** - Stripe Webhook → Convex Provisioning verified
+**safecontent-cl1.12 complete** - Subscription status sync verified across all apps
 
 As of Feb 12, 2026:
+- safecontent-cl1.12 (Cross-App Subscription Sync) - COMPLETE
 - safecontent-cl1.11 (Webhook → Convex Provisioning) - COMPLETE
 - safecontent-cl1.16 (P0: Verify existing users) - COMPLETE
 - safecontent-cl1.14 (Implement Critical Fixes from Audit) - COMPLETE (parent task)
@@ -43,6 +44,26 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.12: Verify Subscription Status Sync Across Apps (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Compared subscription status across all 3 apps via admin dashboards
+- Found 0 mismatches across 32 unique users
+- 3 users exist in all apps (jedaws, metrotter, jennydaws) - all lifetime status
+
+**Cross-app sync mechanisms verified:**
+1. Webhook provisioning (grantAppAccess/syncAppAccess/revokeAppAccess)
+2. Central access verification (verifyCentralAccess with 5-min cache)
+3. Graceful fallback to local status if central unavailable
+
+**Recommendations:**
+- Consider periodic sync job for reconciliation
+- Add admin mismatch detection alert
+
+---
 
 ### safecontent-cl1.11: Verify Stripe Webhook → Convex Provisioning (Feb 12, 2026 - COMPLETE)
 
