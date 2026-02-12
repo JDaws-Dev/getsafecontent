@@ -118,27 +118,27 @@ export async function POST(req: Request) {
     const passwordHash = await hashPassword(password);
 
     // Create user via Convex HTTP endpoint
-    const createUrl = `${CONVEX_ENDPOINT}/createUserWithPassword`;
+    // Uses /createCentralUser which creates a centralUsers entry with the passwordHash
+    const encodedKey = encodeURIComponent(ADMIN_KEY);
+    const createUrl = `${CONVEX_ENDPOINT}/createCentralUser?key=${encodedKey}`;
 
     const response = await fetch(createUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-key": ADMIN_KEY,
       },
       body: JSON.stringify({
         email: normalizedEmail,
         passwordHash,
         name: name?.trim() || undefined,
-        selectedApps: selectedApps || undefined,
-        couponCode: couponCode?.trim() || undefined,
+        subscriptionStatus: "trial",
       }),
     });
 
     const result = await response.json();
 
     // Handle user already exists
-    if (response.status === 409 || result.error === "USER_EXISTS") {
+    if (response.status === 409 || result.code === "USER_EXISTS") {
       return NextResponse.json(
         {
           success: false,
@@ -155,21 +155,18 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: result.error || result.message || "Failed to create account. Please try again.",
+          error: result.error || "Failed to create account. Please try again.",
         },
         { status: response.status >= 400 ? response.status : 400 }
       );
     }
 
-    console.log(`[signup] Created user: ${normalizedEmail} with status ${result.subscriptionStatus}`);
+    console.log(`[signup] Created central user: ${normalizedEmail}`);
 
     return NextResponse.json({
       success: true,
       email: normalizedEmail,
       userId: result.userId,
-      subscriptionStatus: result.subscriptionStatus,
-      entitledApps: result.entitledApps,
-      trialExpiresAt: result.trialExpiresAt,
     });
   } catch (error) {
     console.error("[signup] Unexpected error:", error);
