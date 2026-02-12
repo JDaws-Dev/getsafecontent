@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-3qg complete** - Promo Code Fix Implemented
+**safecontent-i5w.21 complete** - Convex Auth authAccounts Structure Verified
 
 As of Feb 12, 2026:
+- safecontent-i5w.21 (Verify Convex Auth authAccounts table structure) - COMPLETE
 - safecontent-3qg (P0: Promo codes don't grant lifetime) - COMPLETE
 - safecontent-cl1.15 (Account Settings Across All Apps) - COMPLETE (P0 BUGS: SafeTube forgot-password, marketing /account)
 - safecontent-cl1.9 (Promo Code Flows) - COMPLETE (P0 BUG: codes don't actually grant lifetime)
@@ -57,6 +58,101 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-i5w.21: Verify Convex Auth authAccounts Table Structure (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Architecture verified, direct insert confirmed working
+
+**Investigation Summary:**
+
+Analyzed Convex Auth v0.0.90 source code to verify we can write directly to authAccounts for unified auth provisioning.
+
+**authAccounts Schema (Verified):**
+```typescript
+authAccounts: defineTable({
+  userId: v.id("users"),            // Reference to users table
+  provider: v.string(),             // "password" or "google"
+  providerAccountId: v.string(),    // For password: email address (lowercase)
+  secret: v.optional(v.string()),   // Password hash (Scrypt, not bcrypt!)
+  emailVerified: v.optional(v.string()),
+  phoneVerified: v.optional(v.string()),
+})
+  .index("userIdAndProvider", ["userId", "provider"])
+  .index("providerAndAccountId", ["provider", "providerAccountId"])
+```
+
+**Key Findings:**
+
+1. **Password Hashing - IMPORTANT CORRECTION:**
+   - Uses **Scrypt** from `lucia` package (NOT bcrypt as architecture doc stated)
+   - `new Scrypt().hash(password)` for hashing
+   - `new Scrypt().verify(hash, password)` for verification
+   - Located in: `node_modules/@convex-dev/auth/src/providers/Password.ts` lines 232-237
+
+2. **Direct Insert Confirmed:**
+   - Line 198 in `users.ts` shows: `ctx.db.insert("authAccounts", {...})`
+   - No special magic - standard Convex db.insert
+   - Called from internal `createOrUpdateAccount` function
+
+3. **Exported Helper Functions:**
+   - `createAccount` from `@convex-dev/auth/server` can create users + auth accounts
+   - Works via internal `auth:store` mutation with type `createAccountFromCredentials`
+   - Requires provider to be configured in convexAuth()
+
+4. **Required Fields for Password Auth:**
+   - `userId` - ID from users table
+   - `provider` - Must be `"password"` (matches Password provider ID)
+   - `providerAccountId` - User's email in lowercase
+   - `secret` - Scrypt hash of password
+
+**For /provisionUser Implementation:**
+```typescript
+// In provisionUserInternal mutation:
+await ctx.db.insert("authAccounts", {
+  userId,
+  provider: "password",
+  providerAccountId: email.toLowerCase(),
+  secret: passwordHash, // Must be Scrypt hash from central auth!
+});
+```
+
+**Critical Requirements:**
+1. Central auth MUST use same Scrypt algorithm as apps
+2. Password hash format must match: appears to be argon-style
+3. Provider ID must be exactly `"password"` to match config
+
+**No Fallback Needed:**
+- Direct insert to authAccounts works perfectly
+- Convex Auth does same internally
+- No need to fork or extend Convex Auth
+
+**Architecture Doc Update Needed:**
+- Change "bcrypt" references to "Scrypt (lucia)"
+- Hash rounds not applicable - Scrypt uses different params
+
+**Convex Auth Versions:**
+| App | Version |
+|-----|---------|
+| SafeTunes | ^0.0.90 |
+| SafeTube | ^0.0.82 ⚠️ |
+| SafeReads | ^0.0.90 |
+| Marketing | ^0.0.90 |
+
+**Action Required:** Update SafeTube to 0.0.90 before implementing unified auth to ensure consistent behavior.
+
+**Test Mutation Created:**
+Added `provisionUserInternal` and `checkAuthAccountExists` to `apps/safetunes/convex/users.ts`:
+- `provisionUserInternal` - Creates/updates user + authAccounts entry
+- `checkAuthAccountExists` - Debug query to verify auth account exists
+- Build verified: npm run build + npx convex dev --once both pass
+
+**Files examined:**
+- `node_modules/@convex-dev/auth/src/server/implementation/types.ts` (authTables schema)
+- `node_modules/@convex-dev/auth/src/server/implementation/users.ts` (insert logic)
+- `node_modules/@convex-dev/auth/src/providers/Password.ts` (hashing)
+- `node_modules/@convex-dev/auth/src/server/implementation/mutations/createAccountFromCredentials.ts`
+
+---
 
 ### safecontent-3qg: P0 BUG: Promo codes don't grant lifetime access (Feb 12, 2026 - COMPLETE)
 
