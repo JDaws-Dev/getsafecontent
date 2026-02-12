@@ -30,6 +30,7 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
+  const isPromoSignup = searchParams.get("promo") === "true";
 
   const [loading, setLoading] = useState(true);
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
@@ -38,6 +39,13 @@ function SuccessContent() {
   // Fetch session details to get the selected apps
   useEffect(() => {
     async function fetchSession() {
+      // Promo signups always get all apps (lifetime access)
+      if (isPromoSignup) {
+        setLoading(false);
+        setSessionData({ apps: ["safetunes", "safetube", "safereads"] });
+        return;
+      }
+
       if (!sessionId) {
         // No session ID - show default success page
         setLoading(false);
@@ -64,7 +72,7 @@ function SuccessContent() {
     }
 
     fetchSession();
-  }, [sessionId]);
+  }, [sessionId, isPromoSignup]);
 
   // Auto-redirect to onboarding after a brief success message
   const [countdown, setCountdown] = useState(5);
@@ -162,8 +170,9 @@ function SuccessContent() {
           </h1>
 
           <p className="text-lg text-navy/70 mb-8">
-            Your subscription is now active. Let&apos;s set up your apps so your kids
-            can start using them safely.
+            {isPromoSignup
+              ? "Your lifetime access is now active! Let's set up your apps so your kids can start using them safely."
+              : "Your subscription is now active. Let's set up your apps so your kids can start using them safely."}
           </p>
 
           {/* Apps purchased */}
@@ -181,7 +190,9 @@ function SuccessContent() {
                       <Icon className="w-5 h-5 text-white" />
                     </div>
                     <span className="font-medium text-navy">{config.name}</span>
-                    <span className="ml-auto text-emerald-600 text-sm">Active</span>
+                    <span className="ml-auto text-emerald-600 text-sm">
+                      {isPromoSignup ? "Lifetime" : "Active"}
+                    </span>
                   </div>
                 );
               })}

@@ -976,3 +976,164 @@ export const grantLifetimeAccess = mutation({
     return { success: true, userId: user._id, created: false };
   },
 });
+
+/**
+ * Validate a coupon code
+ *
+ * Checks if a coupon code is valid and returns its details.
+ * Used by the signup page to validate codes before form submission.
+ */
+export const validateCouponCode = query({
+  args: {
+    code: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const code = args.code.trim().toUpperCase();
+
+    if (!code) {
+      return { valid: false, reason: "Code is required" };
+    }
+
+    // Check database first
+    const coupon = await ctx.db
+      .query("couponCodes")
+      .withIndex("by_code", (q) => q.eq("code", code))
+      .first();
+
+    if (coupon) {
+      const now = Date.now();
+
+      if (!coupon.active) {
+        return { valid: false, reason: "This code is no longer active" };
+      }
+
+      if (coupon.expiresAt && coupon.expiresAt < now) {
+        return { valid: false, reason: "This code has expired" };
+      }
+
+      if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
+        return { valid: false, reason: "This code has reached its usage limit" };
+      }
+
+      return {
+        valid: true,
+        type: coupon.type,
+        grantedApps: coupon.grantedApps ?? [...ALL_APPS],
+      };
+    }
+
+    // Fallback to hardcoded lifetime codes (for backwards compatibility)
+    const HARDCODED_LIFETIME_CODES = ["DAWSFRIEND", "DEWITT"];
+    if (HARDCODED_LIFETIME_CODES.includes(code)) {
+      return {
+        valid: true,
+        type: "lifetime" as const,
+        grantedApps: [...ALL_APPS],
+      };
+    }
+
+    return { valid: false, reason: "Invalid code" };
+  },
+});
+
+/**
+ * Apply a lifetime coupon code to the current user
+ *
+ * Called after user signs up with a valid lifetime code.
+ * Updates their status from trial to lifetime and grants access to all apps.
+ */
+export const applyLifetimeCode = mutation({
+  args: {
+    couponCode: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const code = args.couponCode.trim().toUpperCase();
+    const now = Date.now();
+
+    // Validate the coupon code
+    let isValidLifetimeCode = false;
+    let grantedApps: AppType[] = [...ALL_APPS];
+
+    // Check database first
+    const coupon = await ctx.db
+      .query("couponCodes")
+      .withIndex("by_code", (q) => q.eq("code", code))
+      .first();
+
+    if (coupon) {
+      if (!coupon.active) {
+        throw new Error("This code is no longer active");
+      }
+
+      if (coupon.expiresAt && coupon.expiresAt < now) {
+        throw new Error("This code has expired");
+      }
+
+      if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
+        throw new Error("This code has reached its usage limit");
+      }
+
+      if (coupon.type === "lifetime") {
+        isValidLifetimeCode = true;
+        grantedApps = (coupon.grantedApps ?? [...ALL_APPS]) as AppType[];
+
+        // Increment usage count
+        await ctx.db.patch(coupon._id, {
+          usageCount: coupon.usageCount + 1,
+        });
+      }
+    } else {
+      // Fallback to hardcoded lifetime codes
+      const HARDCODED_LIFETIME_CODES = ["DAWSFRIEND", "DEWITT"];
+      if (HARDCODED_LIFETIME_CODES.includes(code)) {
+        isValidLifetimeCode = true;
+        grantedApps = [...ALL_APPS] as AppType[];
+      }
+    }
+
+    if (!isValidLifetimeCode) {
+      throw new Error("Invalid or non-lifetime coupon code");
+    }
+
+    // Update user to lifetime status
+    await ctx.db.patch(userId, {
+      subscriptionStatus: "lifetime",
+      entitledApps: grantedApps,
+      couponCode: code,
+      couponRedeemedAt: now,
+      // Clear trial fields since they're now lifetime
+      trialStartedAt: undefined,
+      trialExpiresAt: undefined,
+    });
+
+    // Log the event
+    await ctx.db.insert("subscriptionEvents", {
+      userId,
+      email: user.email ?? "unknown",
+      eventType: "coupon.applied",
+      eventData: JSON.stringify({
+        code,
+        previousStatus: user.subscriptionStatus,
+        grantedApps,
+      }),
+      subscriptionStatus: "lifetime",
+      timestamp: now,
+    });
+
+    return {
+      success: true,
+      subscriptionStatus: "lifetime",
+      entitledApps: grantedApps,
+    };
+  },
+});

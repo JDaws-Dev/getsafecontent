@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.15 complete** - Account Settings Tested (P0 BUGS FOUND)
+**safecontent-3qg complete** - Promo Code Fix Implemented
 
 As of Feb 12, 2026:
+- safecontent-3qg (P0: Promo codes don't grant lifetime) - COMPLETE
 - safecontent-cl1.15 (Account Settings Across All Apps) - COMPLETE (P0 BUGS: SafeTube forgot-password, marketing /account)
 - safecontent-cl1.9 (Promo Code Flows) - COMPLETE (P0 BUG: codes don't actually grant lifetime)
 - safecontent-oc8 (P0: SafeTube /forgot-password 404) - COMPLETE
@@ -56,6 +57,69 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-3qg: P0 BUG: Promo codes don't grant lifetime access (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** When users entered valid lifetime promo codes (DAWSFRIEND, DEWITT):
+1. UI showed "Lifetime access unlocked!" ✓
+2. Button changed to "Get Lifetime Access" ✓
+3. But submitting redirected to Stripe checkout anyway!
+4. User would be charged $9.99/mo after trial
+
+**Root cause:**
+- `AccountForm.tsx` validated codes client-side only
+- `signup/page.tsx` passed couponCode to `/api/checkout`
+- `/api/checkout/route.ts` IGNORED the couponCode completely
+- Created normal Stripe session instead
+
+**Solution implemented:**
+
+1. **New Convex mutations** in `accounts.ts`:
+   - `validateCouponCode` - Query to validate codes (checks DB + hardcoded fallback)
+   - `applyLifetimeCode` - Mutation to upgrade authenticated user to lifetime status
+
+2. **New API endpoint** `/api/promo-signup/route.ts`:
+   - Provisions lifetime access across all 3 apps
+   - Uses same admin endpoints as webhook (grantLifetime/setSubscriptionStatus)
+
+3. **Modified `signup/page.tsx`**:
+   - Detects lifetime codes before submission
+   - Uses Convex Auth password signup instead of Stripe checkout
+   - After auth, applies lifetime code via mutation
+   - Provisions apps via `/api/promo-signup`
+   - Redirects to `/success?promo=true`
+
+4. **Modified `success/page.tsx`**:
+   - Handles `?promo=true` query param
+   - Shows "Lifetime access" instead of "Active"
+   - Shows lifetime-specific messaging
+
+**Flow now:**
+1. User enters DAWSFRIEND/DEWITT promo code
+2. Clicks "Get Lifetime Access"
+3. Convex Auth creates user (triggers trial by default)
+4. `applyLifetimeCode` mutation upgrades to lifetime
+5. `/api/promo-signup` provisions apps via admin endpoints
+6. Redirect to success page (skips Stripe entirely!)
+
+**Files created:**
+- `sites/marketing/src/app/api/promo-signup/route.ts`
+
+**Files modified:**
+- `sites/marketing/convex/accounts.ts` - Added validateCouponCode, applyLifetimeCode
+- `sites/marketing/src/app/signup/page.tsx` - Added promo code detection + Convex Auth flow
+- `sites/marketing/src/app/success/page.tsx` - Handle promo=true query param
+
+**Key decisions:**
+- Hardcoded codes (DAWSFRIEND, DEWITT) as fallback if not in Convex couponCodes table
+- Used same provisioning pattern as webhook (HTTP to admin endpoints)
+- Promo users get all 3 apps (lifetime applies to all)
+
+**Build verified:** npm run build passes (45 routes)
+
+---
 
 ### safecontent-cl1.15: Test Account Settings Across All Apps (Feb 12, 2026 - COMPLETE)
 

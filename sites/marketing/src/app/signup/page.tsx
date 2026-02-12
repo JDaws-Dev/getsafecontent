@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useCallback, Suspense, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Shield } from "lucide-react";
+import { useConvexAuth } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import AppSelector, { type AppId, type PricingInfo } from "@/components/signup/AppSelector";
 import AccountForm, { type AccountFormData, type AppSelection } from "@/components/signup/AccountForm";
 
@@ -12,7 +16,19 @@ import AccountForm, { type AccountFormData, type AppSelection } from "@/componen
  *
  * Combines AppSelector and AccountForm into a two-step signup flow.
  * Accepts ?app=safetunes (or safetube, safereads) query param to pre-select app.
+ *
+ * PROMO CODE FLOW:
+ * - Regular signup: form -> /api/checkout -> Stripe -> webhook provisions
+ * - Lifetime code: form -> Convex Auth signup -> apply code mutation -> provision apps -> onboarding
  */
+
+// Hardcoded lifetime codes (must match AccountForm and Convex validation)
+const LIFETIME_CODES = ["DAWSFRIEND", "DEWITT"];
+
+// Check if a code is a valid lifetime code (client-side check)
+function isLifetimeCode(code: string): boolean {
+  return LIFETIME_CODES.includes(code.trim().toUpperCase());
+}
 
 // Loading fallback for Suspense
 function SignupLoading() {
@@ -31,6 +47,10 @@ function SignupLoading() {
 // Inner component that uses useSearchParams
 function SignupContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  const { signIn } = useAuthActions();
+  const applyLifetimeCode = useMutation(api.accounts.applyLifetimeCode);
 
   // Get initial app selection from query params
   const initialApp = searchParams.get("app") as AppId | null;
@@ -58,6 +78,49 @@ function SignupContent() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Track pending promo code application (for after auth completes)
+  const [pendingPromoCode, setPendingPromoCode] = useState<string | null>(null);
+
+  // Handle promo code application after authentication
+  useEffect(() => {
+    async function handlePromoCodeApplication() {
+      if (isAuthenticated && pendingPromoCode && !authLoading) {
+        try {
+          // Step 1: Apply lifetime code to user
+          console.log("[SignupPage] Applying promo code:", pendingPromoCode);
+          await applyLifetimeCode({ couponCode: pendingPromoCode });
+
+          // Step 2: Provision apps via API
+          console.log("[SignupPage] Provisioning apps...");
+          const response = await fetch("/api/promo-signup", {
+            method: "POST",
+          });
+
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            console.warn("[SignupPage] Provisioning partial/failed:", data);
+            // Continue anyway - user has lifetime access, apps may need manual provisioning
+          }
+
+          // Step 3: Clear pending code and redirect to success
+          setPendingPromoCode(null);
+          router.push("/success?promo=true");
+        } catch (err) {
+          console.error("[SignupPage] Promo code application error:", err);
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to apply promo code. Please contact support."
+          );
+          setPendingPromoCode(null);
+          setIsLoading(false);
+        }
+      }
+    }
+
+    handlePromoCodeApplication();
+  }, [isAuthenticated, pendingPromoCode, authLoading, applyLifetimeCode, router]);
+
   // Handle app selection changes
   const handleAppSelectionChange = useCallback(
     (apps: AppId[], pricing: PricingInfo, yearly: boolean) => {
@@ -80,11 +143,52 @@ function SignupContent() {
     setIsLoading(true);
     setError("");
 
-    try {
-      // TODO: In the future, this will call the central accounts API (1gy.2)
-      // For now, we'll create a Stripe checkout session with the selected apps
-      // and redirect to payment. The webhook will handle account creation.
+    // Check if this is a lifetime promo code signup
+    if (data.couponCode && isLifetimeCode(data.couponCode)) {
+      try {
+        console.log("[SignupPage] Detected lifetime code, using promo signup flow");
 
+        // Store the promo code to apply after auth
+        setPendingPromoCode(data.couponCode.trim().toUpperCase());
+
+        // Sign up with Convex Auth
+        await signIn("password", {
+          email: data.email,
+          password: data.password,
+          name: data.name,
+          flow: "signUp",
+        });
+
+        // Auth will trigger the useEffect above to apply the promo code
+        // Keep loading state while waiting for auth callback
+      } catch (err) {
+        console.error("[SignupPage] Promo signup error:", err);
+        setPendingPromoCode(null);
+
+        // Handle specific auth errors
+        const errorMessage = err instanceof Error ? err.message : "";
+        if (
+          errorMessage.includes("already") ||
+          errorMessage.includes("exists") ||
+          errorMessage.includes("registered")
+        ) {
+          setError(
+            "An account with this email already exists. Please sign in instead, or use a different email."
+          );
+        } else if (errorMessage.includes("password")) {
+          setError("Password does not meet requirements. Please use at least 8 characters.");
+        } else {
+          setError(
+            err instanceof Error ? err.message : "Failed to create account. Please try again."
+          );
+        }
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Regular Stripe checkout flow
+    try {
       // Build the checkout request with selected apps
       const response = await fetch("/api/checkout", {
         method: "POST",
