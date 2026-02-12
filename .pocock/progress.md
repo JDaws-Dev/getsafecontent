@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-44m complete** - Promo signup fix
+**Password sync infrastructure complete** - Users can change password in one app and it syncs to all apps
 
 As of Feb 12, 2026:
+- safecontent-i5w.8 (Implement password sync across apps) - COMPLETE
 - safecontent-44m (Fix promo signup to enable login on all apps) - COMPLETE
 - safecontent-i5w.1 (Create centralUsers database table) - COMPLETE
 - safecontent-i5w.21 (Verify Convex Auth authAccounts table structure) - COMPLETE
@@ -60,6 +61,103 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-i5w.8: Implement password sync across apps (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - All infrastructure already in place, added audit logging
+
+**Discovery:**
+When investigating this issue, I found that all the password sync infrastructure was already implemented:
+
+1. **Central endpoint exists:** `/api/auth/sync-password` on marketing site
+2. **App endpoints exist:** `/updatePassword` on all 3 apps (SafeTunes, SafeTube, SafeReads)
+3. **Central user update exists:** `/updateCentralPassword` on SafeReads → `centralUsers.updateCentralUser`
+4. **App sync actions exist:** `syncPasswordToOtherApps` action in all 3 apps
+5. **Helper queries exist:** `passwordSyncQueries.getPasswordHash` in all 3 apps
+
+**What was added:**
+- Added `password_sync` audit action type to audit-log.ts
+- Added audit logging to `/api/auth/sync-password` endpoint
+- Added `password_sync` label and color to admin audit-logs page
+
+**Files modified:**
+- `sites/marketing/src/lib/audit-log.ts` - Added password_sync action type
+- `sites/marketing/src/app/api/auth/sync-password/route.ts` - Added audit logging
+- `sites/marketing/src/app/admin/audit-logs/page.tsx` - Added UI for password_sync
+
+**How password sync works:**
+1. User changes password in SafeTunes (for example)
+2. SafeTunes updates local authAccounts.secret with new hash
+3. SafeTunes calls `syncPasswordToOtherApps` action
+4. Action calls central `/api/auth/sync-password` endpoint
+5. Central endpoint updates centralUsers.passwordHash (via SafeReads)
+6. Central endpoint calls `/updatePassword` on SafeTube and SafeReads
+7. All apps now have the new password hash
+8. Audit log records the sync event
+
+**Key architecture:**
+- SafeReads hosts the centralUsers table
+- Each app has passwordSync.ts (action) and passwordSyncQueries.ts (internal query)
+- Marketing site /api/auth/sync-password is the orchestrator
+- Uses same admin key across all apps
+- 5-10 second timeouts for resilience
+
+**Build verified:** All 4 sites build + Convex dev --once pass
+
+---
+
+### Rate limiting for /provisionUser endpoints (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Added in-memory rate limiting to all provisionUser endpoints
+
+**Problem:**
+The `/provisionUser` endpoints on all 3 apps needed rate limiting to prevent abuse. While these endpoints already require an admin key for authentication, rate limiting provides defense in depth against brute force attacks or compromised keys.
+
+**Solution implemented:**
+
+1. **Created `httpRateLimit.ts` utility for all 3 apps:**
+   - In-memory rate limiting using a Map
+   - 10 requests per minute per IP
+   - Automatic cleanup of expired entries
+   - Returns 429 Too Many Requests with Retry-After header when exceeded
+
+2. **Updated `/provisionUser` endpoints:**
+   - SafeTunes: `apps/safetunes/convex/provisionUser.ts`
+   - SafeTube: `apps/safetube/convex/provisionUser.ts`
+   - SafeReads: `apps/safereads/convex/provisionUser.ts`
+
+**Files created:**
+- `apps/safetunes/convex/httpRateLimit.ts`
+- `apps/safetube/convex/httpRateLimit.ts`
+- `apps/safereads/convex/httpRateLimit.ts`
+
+**Files modified:**
+- `apps/safetunes/convex/provisionUser.ts` - Added rate limiting check
+- `apps/safetube/convex/provisionUser.ts` - Added rate limiting check
+- `apps/safereads/convex/provisionUser.ts` - Added rate limiting check
+
+**Technical details:**
+- Uses `x-forwarded-for` header to get client IP (Convex proxies requests)
+- Rate limit key includes endpoint name: `provisionUser:${clientIp}`
+- Sliding window: after 10 requests in 60 seconds, returns 429 until window resets
+- Console warning logged when rate limit triggered for monitoring
+
+**Key decisions:**
+- Used in-memory rate limiting (per-worker) rather than distributed (Redis)
+  - This is defense-in-depth on endpoints that already require authentication
+  - Per-worker limiting still provides significant protection
+  - Avoids adding external dependencies to Convex
+- CORS OPTIONS requests are exempt (preflight should not be rate limited)
+
+**Deployment required:**
+```bash
+# Deploy to each app
+cd ~/safecontent/apps/safetunes && CONVEX_DEPLOYMENT=prod:formal-chihuahua-623 npx convex deploy
+cd ~/safecontent/apps/safetube && CONVEX_DEPLOYMENT=prod:rightful-rabbit-333 npx convex deploy
+cd ~/safecontent/apps/safereads && CONVEX_DEPLOYMENT=prod:exuberant-puffin-838 npx convex deploy
+```
+
+---
 
 ### safecontent-44m: Fix promo signup to enable login on all apps (Feb 12, 2026 - COMPLETE)
 

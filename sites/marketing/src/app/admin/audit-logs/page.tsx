@@ -11,6 +11,8 @@ const ACTION_LABELS: Record<AuditAction, string> = {
   send_email: "Send Email",
   view_user_data: "View User Data",
   retry_provision: "Retry Provision",
+  manual_provision: "Manual Provision",
+  password_sync: "Password Sync",
   login: "Login",
 };
 
@@ -21,6 +23,8 @@ const ACTION_COLORS: Record<AuditAction, string> = {
   send_email: "bg-blue-100 text-blue-800",
   view_user_data: "bg-gray-100 text-gray-800",
   retry_provision: "bg-purple-100 text-purple-800",
+  manual_provision: "bg-teal-100 text-teal-800",
+  password_sync: "bg-cyan-100 text-cyan-800",
   login: "bg-indigo-100 text-indigo-800",
 };
 

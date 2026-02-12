@@ -8,6 +8,8 @@ export type AuditAction =
   | "send_email"
   | "view_user_data"
   | "retry_provision"
+  | "manual_provision"
+  | "password_sync"
   | "login";
 
 export interface AuditLogEntry {
@@ -162,7 +164,15 @@ export function getActionDescription(entry: AuditLogEntry): string {
   switch (entry.action) {
     case "grant_lifetime":
       const apps = (entry.details.apps as string[])?.join(", ") || "unknown apps";
+      const status = entry.details.status as string | undefined;
+      if (entry.details.action === "manual_provision" && status) {
+        return `Set ${entry.targetEmail} to "${status}" on ${apps}`;
+      }
       return `Granted lifetime access to ${entry.targetEmail} on ${apps}`;
+    case "manual_provision":
+      const provApps = (entry.details.apps as string[])?.join(", ") || "unknown apps";
+      const provStatus = (entry.details.status as string) || "unknown";
+      return `Set ${entry.targetEmail} to "${provStatus}" on ${provApps}`;
     case "revoke_access":
       return `Revoked access for ${entry.targetEmail}`;
     case "delete_user":
@@ -179,6 +189,10 @@ export function getActionDescription(entry: AuditLogEntry): string {
     case "retry_provision":
       const provisionApps = (entry.details.apps as string[])?.join(", ") || "unknown apps";
       return `Retried provisioning for ${entry.targetEmail} on ${provisionApps}`;
+    case "password_sync":
+      const syncSource = entry.details.sourceApp || "unknown";
+      const syncApps = (entry.details.appsUpdated as { app: string; success: boolean }[])?.map(a => a.app).join(", ") || "unknown apps";
+      return `Password synced for ${entry.targetEmail} from ${syncSource} to ${syncApps}`;
     case "login":
       return "Admin logged in";
     default:
