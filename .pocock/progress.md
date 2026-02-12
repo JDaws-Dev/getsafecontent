@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-i5w.21 complete** - Convex Auth authAccounts Structure Verified
+**safecontent-i5w.1 complete** - Central Users Database Table
 
 As of Feb 12, 2026:
+- safecontent-i5w.1 (Create centralUsers database table) - COMPLETE
 - safecontent-i5w.21 (Verify Convex Auth authAccounts table structure) - COMPLETE
 - safecontent-3qg (P0: Promo codes don't grant lifetime) - COMPLETE
 - safecontent-cl1.15 (Account Settings Across All Apps) - COMPLETE (P0 BUGS: SafeTube forgot-password, marketing /account)
@@ -58,6 +59,46 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-i5w.1: Create centralUsers Database Table (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Table already exists, added TypeScript types
+
+**Investigation Summary:**
+
+The centralUsers database table was already implemented in the marketing site's Convex schema. This task verified the existing implementation and added TypeScript types.
+
+**Key Findings:**
+
+1. **Schema Already Exists:**
+   - `sites/marketing/convex/schema.ts` has the `users` table with all required fields
+   - Includes: email, name, subscriptionStatus, stripeCustomerId, entitledApps, etc.
+   - Password hashes stored in `authAccounts.secret` via Convex Auth's spread tables
+
+2. **CRUD Operations Already Implemented:**
+   - `sites/marketing/convex/accounts.ts` has full API
+   - createAccount, getAccountByEmail, getCurrentUser, updateAccount, deleteAccount
+   - verifyAppAccess, grantLifetimeAccess, updateSubscription, etc.
+
+3. **What Was Added:**
+   - TypeScript types in `sites/marketing/src/types/user.ts`
+   - CentralUser, AppName, SubscriptionStatus types
+   - ProvisionUserInput/Result for app provisioning
+   - CouponValidationResult, SubscriptionPreview, etc.
+
+**Files created:**
+- `sites/marketing/src/types/user.ts` - Complete type definitions
+
+**Files examined (already complete):**
+- `sites/marketing/convex/schema.ts` - Database schema
+- `sites/marketing/convex/accounts.ts` - CRUD mutations/queries
+
+**Environment Variables:**
+- `NEXT_PUBLIC_CONVEX_URL` - Convex deployment URL (already configured)
+
+**Build verified:** npm run build passes (45 routes)
+
+---
 
 ### safecontent-i5w.21: Verify Convex Auth authAccounts Table Structure (Feb 12, 2026 - COMPLETE)
 
