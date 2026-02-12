@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Shield, Music, PlaySquare, Book } from "lucide-react";
+import { ThemeToggle } from "../ThemeToggle";
 
 const apps = [
   { name: "SafeTunes", href: "https://getsafetunes.com", icon: Music, color: "text-purple-600" },
@@ -76,13 +77,16 @@ export default function Header() {
             </div>
           </div>
 
-          {/* CTA Button */}
-          <a
-            href="#pricing"
-            className="btn-peach inline-flex items-center justify-center px-4 sm:px-5 py-2 text-sm font-medium whitespace-nowrap"
-          >
-            Start Free Trial
-          </a>
+          {/* Theme Toggle + CTA Button */}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <a
+              href="#pricing"
+              className="btn-peach inline-flex items-center justify-center px-4 sm:px-5 py-2 text-sm font-medium whitespace-nowrap"
+            >
+              Start Free Trial
+            </a>
+          </div>
         </div>
       </nav>
     </header>

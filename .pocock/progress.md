@@ -10,6 +10,8 @@ This file maintains context between autonomous iterations.
 **WORKING ON:** None - ready for next issue
 
 As of Feb 12, 2026:
+- safecontent-41m.1 (Add dark mode to marketing site) - COMPLETE
+- safecontent-q94 (Complete SafeTunes onboarding test coverage) - COMPLETE
 - safecontent-0nx (Update iOS app timeline messaging) - COMPLETE
 - safecontent-eio (SafeTube: Blocked search notifications for parents) - COMPLETE
 - safecontent-lye (Add password change to SafeTube settings) - COMPLETE
@@ -73,6 +75,112 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-41m.1: Add dark mode to marketing site (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Dark mode implemented with toggle in header
+
+**What was done:**
+
+1. **Added dark mode CSS variables to globals.css:**
+   - Light mode variables in `:root` (existing)
+   - Dark mode variables in `.dark` class
+   - New variables: `--card-bg`, `--card-border`, `--text-primary/secondary/muted`
+   - Adjusted app brand colors for dark backgrounds
+
+2. **Created ThemeProvider component:**
+   - `src/components/ThemeProvider.tsx`
+   - Manages theme state (light/dark/system)
+   - Detects system preference via `prefers-color-scheme`
+   - Persists to localStorage (`safefamily-theme`)
+   - Prevents flash of wrong theme on load
+   - Exposes `useTheme()` hook
+
+3. **Created ThemeToggle component:**
+   - `src/components/ThemeToggle.tsx`
+   - Cycles through light → dark → system
+   - Shows Sun/Moon/Monitor icons
+   - Added to Header component
+
+4. **CSS overrides for hardcoded Tailwind classes:**
+   - `.dark .bg-white` → uses `--card-bg`
+   - `.dark .bg-slate-*` → semi-transparent white
+   - `.dark .bg-emerald-*` → adjusted emerald tones
+   - `.dark .text-slate/emerald-*` → readable on dark
+
+**Files created:**
+- `sites/marketing/src/components/ThemeProvider.tsx`
+- `sites/marketing/src/components/ThemeToggle.tsx`
+
+**Files modified:**
+- `sites/marketing/src/app/globals.css` - Dark mode CSS variables + overrides
+- `sites/marketing/src/app/layout.tsx` - ThemeProvider wrapper
+- `sites/marketing/src/components/layout/Header.tsx` - ThemeToggle import + usage
+
+**Key decisions:**
+- Used class-based dark mode (`.dark` on `<html>`) for manual toggle support
+- CSS variable approach minimizes changes to individual components
+- Added override rules for hardcoded Tailwind classes (`bg-white`, etc.)
+- Three-way toggle (light/dark/system) follows modern UX patterns
+
+**Build verified:** npm run build passes (62 routes)
+
+**Visual verification:**
+- Light mode: Cream background, navy text, original styling preserved
+- Dark mode: Dark navy background, light text, card backgrounds adapt
+- Toggle cycles correctly through all 3 modes
+- Pricing card readable in both modes
+
+---
+
+### safecontent-q94: Complete SafeTunes onboarding test coverage (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Both acceptance criteria verified via browser testing
+
+**What was tested:**
+
+1. **Music approval workflow (VERIFIED):**
+   - Kid logs in with family code (HBFJN2) → works
+   - Kid searches for music (Taylor Swift) → 40 results returned
+   - Content filtering blocks explicit content → logs visible in console
+   - Kid requests album (Lover) with optional note → works
+   - Parent sees request with badge notification → works
+   - Parent reviews album with AI safety scan + track list → works
+   - Parent approves album (18 songs) → "Lover approved ✓" toast
+   - Album appears in kid's library with "New" badge → works
+   - Full end-to-end request/approve cycle functional
+
+2. **Settings persist across sessions (VERIFIED):**
+   - Changed daily listening limit from 1h to 2h in parent Settings
+   - "Profile updated successfully!" toast shown
+   - Refreshed page completely (navigated away and back)
+   - Settings → Family Management shows "TestKid 2h limit" (persisted!)
+   - Kid player header shows "2h left" (reflects updated limit)
+   - Settings stored in Convex database, not just localStorage
+
+**Screenshots captured:**
+- safetunes-requests-empty.png - Parent Requests view (empty state)
+- safetunes-kid-player-home.png - Kid player home screen
+- safetunes-kid-search-results.png - Taylor Swift search results
+- safetunes-kid-request-modal.png - Request album modal with note
+- safetunes-kid-request-pending.png - Album shows pending clock icon
+- safetunes-parent-request-received.png - Parent sees request with badge
+- safetunes-parent-approval-panel.png - Album review with AI scan + tracks
+- safetunes-parent-approved.png - "All Caught Up" after approval
+- safetunes-kid-library-approved.png - Album in kid's library
+- safetunes-settings-persisted.png - Settings show 2h limit after refresh
+- safetunes-kid-settings-persisted.png - Kid player shows 2h remaining
+
+**Key observations:**
+- Music approval workflow is polished and intuitive
+- AI safety scan provides "Review Recommended" warnings
+- Request notes help parents understand context
+- Settings persist correctly in Convex database
+- Real-time sync between parent and kid views
+
+**No bugs found** - Both features working as expected
+
+---
 
 ### safecontent-0nx: Update iOS app timeline messaging (Feb 12, 2026 - COMPLETE)
 

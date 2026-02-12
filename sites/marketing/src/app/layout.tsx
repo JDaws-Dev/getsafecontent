@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 // Initialize Sentry on the client side
@@ -103,9 +104,11 @@ export default function RootLayout({
         <body
           className={`${inter.variable} ${geistMono.variable} antialiased`}
         >
-          <ConvexClientProvider>
-            {children}
-          </ConvexClientProvider>
+          <ThemeProvider>
+            <ConvexClientProvider>
+              {children}
+            </ConvexClientProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ConvexAuthNextjsServerProvider>
