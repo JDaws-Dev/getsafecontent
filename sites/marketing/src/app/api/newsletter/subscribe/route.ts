@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 // Lazily initialize Resend to avoid build-time errors when env var is missing
 let resend: Resend | null = null;
@@ -15,6 +16,12 @@ function getResend() {
 const NEWSLETTER_AUDIENCE_ID = process.env.RESEND_NEWSLETTER_AUDIENCE_ID;
 
 export async function POST(req: Request) {
+  // Rate limit: 5 requests per minute per IP
+  const rateLimitResult = await checkRateLimit("newsletter", req);
+  if ("status" in rateLimitResult) {
+    return rateLimitResult; // 429 response
+  }
+
   try {
     const { email, firstName } = await req.json();
 

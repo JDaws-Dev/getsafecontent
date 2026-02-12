@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
+import { checkRateLimit } from "@/lib/ratelimit";
 import Stripe from "stripe";
 
 // Price IDs for different plans
@@ -28,6 +29,12 @@ type AppName = "safetunes" | "safetube" | "safereads";
 const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
 
 export async function POST(req: Request) {
+  // Rate limit: 10 requests per minute per IP
+  const rateLimitResult = await checkRateLimit("checkout", req);
+  if ("status" in rateLimitResult) {
+    return rateLimitResult; // 429 response
+  }
+
   try {
     const { email, priceId, apps, selectedApps, isYearly } = await req.json();
 

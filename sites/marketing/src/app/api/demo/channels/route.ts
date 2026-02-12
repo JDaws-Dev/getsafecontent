@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 // YouTube Data API v3 - requires API key
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 
 export async function GET(request: NextRequest) {
+  // Rate limit: 30 requests per minute per IP
+  const rateLimitResult = await checkRateLimit("demo", request);
+  if ("status" in rateLimitResult) {
+    return rateLimitResult; // 429 response
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get("q");
 

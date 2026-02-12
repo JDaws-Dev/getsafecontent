@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { demoBooks, searchDemoBooks } from "@/data/demoBooks";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 // Google Books API - uses API key for higher quota limits
 // Falls back to pre-cached demo data if API fails or is rate-limited
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
 
 export async function GET(request: NextRequest) {
+  // Rate limit: 30 requests per minute per IP
+  const rateLimitResult = await checkRateLimit("demo", request);
+  if ("status" in rateLimitResult) {
+    return rateLimitResult; // 429 response
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get("q");
 

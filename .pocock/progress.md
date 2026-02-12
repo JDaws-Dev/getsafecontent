@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-anp complete** - Webhook retry/recovery for failed app provisioning
+**safecontent-3pc complete** - Rate limiting for public API endpoints
 
 As of Feb 11, 2026:
+- safecontent-3pc (Rate limiting) - COMPLETE
 - safecontent-anp (Webhook retry/recovery) - COMPLETE
 - safecontent-v6z (Stripe portal customerId validation) - COMPLETE
 - safecontent-98h (Email capture for blog) - COMPLETE
@@ -31,6 +32,58 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-3pc: Add rate limiting to public API endpoints (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** Public endpoints had no rate limiting, allowing attackers to:
+- Exhaust Stripe API quota via /api/checkout
+- Drain external API quotas (iTunes, Google Books, YouTube) via /api/demo/*
+- DoS the newsletter signup endpoint
+
+**Solution implemented:**
+
+1. **Upstash Redis-based rate limiting**
+   - Uses @upstash/ratelimit + @upstash/redis packages
+   - Sliding window algorithm for smooth rate limiting
+   - Graceful degradation: works without Redis configured
+
+2. **Rate limits per endpoint type:**
+   - `/api/checkout`: 10 requests/minute per IP
+   - `/api/demo/*`: 30 requests/minute per IP (shared across songs/books/channels)
+   - `/api/newsletter/subscribe`: 5 requests/minute per IP
+
+3. **Response headers for debugging:**
+   - `X-RateLimit-Limit`: Max requests in window
+   - `X-RateLimit-Remaining`: Requests left
+   - `X-RateLimit-Reset`: Reset timestamp
+   - `Retry-After`: Seconds until reset (on 429)
+
+**Files created:**
+- `sites/marketing/src/lib/ratelimit.ts` - Rate limiting utility with lazy init
+
+**Files modified:**
+- `sites/marketing/src/app/api/checkout/route.ts` - Added rate limiting
+- `sites/marketing/src/app/api/demo/songs/route.ts` - Added rate limiting
+- `sites/marketing/src/app/api/demo/books/route.ts` - Added rate limiting
+- `sites/marketing/src/app/api/demo/channels/route.ts` - Added rate limiting
+- `sites/marketing/src/app/api/newsletter/subscribe/route.ts` - Added rate limiting
+- `sites/marketing/package.json` - Added @upstash/ratelimit, @upstash/redis deps
+
+**Environment variables needed:**
+- `UPSTASH_REDIS_REST_URL` - Upstash Redis REST URL
+- `UPSTASH_REDIS_REST_TOKEN` - Upstash Redis REST token
+
+**Key decisions:**
+- Used Upstash (serverless Redis) for distributed rate limiting across Vercel functions
+- Graceful degradation: if env vars not set, rate limiting is skipped (app still works)
+- Shared "demo" limiter across all demo endpoints to prevent quota exhaustion
+- Used IP-based limiting (x-forwarded-for header from Vercel)
+
+**Build verified:** npm run build passes (39 routes)
+
+---
 
 ### safecontent-anp: Add webhook retry/recovery for failed app provisioning (Feb 11, 2026 - COMPLETE)
 

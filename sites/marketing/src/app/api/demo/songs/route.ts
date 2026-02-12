@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 // iTunes Search API - no key required
 export async function GET(request: NextRequest) {
+  // Rate limit: 30 requests per minute per IP
+  const rateLimitResult = await checkRateLimit("demo", request);
+  if ("status" in rateLimitResult) {
+    return rateLimitResult; // 429 response
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get("q");
 
