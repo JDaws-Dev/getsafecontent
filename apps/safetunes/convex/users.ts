@@ -321,46 +321,233 @@ export const getUserByEmailInternal = internalQuery({
 });
 
 // Internal mutation to grant lifetime subscription by email (used by HTTP endpoint)
+// Creates user if they don't exist (for promo code signups from marketing site)
 export const grantLifetimeByEmailInternal = internalMutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
-    const user = await ctx.db
+    let user = await ctx.db
       .query("users")
       .withIndex("email", (q) => q.eq("email", args.email))
       .first();
 
     if (!user) {
-      throw new Error(`User not found: ${args.email}`);
+      // Create new user with lifetime status
+      const userId = await ctx.db.insert("users", {
+        email: args.email,
+        subscriptionStatus: "lifetime",
+        createdAt: Date.now(),
+      });
+      console.log(`[grantLifetime] Created new user with lifetime: ${args.email}`);
+      return { userId, email: args.email, status: "lifetime", created: true };
     }
 
+    // Update existing user
     await ctx.db.patch(user._id, {
       subscriptionStatus: "lifetime",
     });
+    console.log(`[grantLifetime] Updated existing user to lifetime: ${args.email}`);
 
-    return { userId: user._id, email: args.email, status: "lifetime" };
+    return { userId: user._id, email: args.email, status: "lifetime", created: false };
   },
 });
 
 // Internal mutation to set subscription status by email (used by HTTP endpoint)
+// Creates user if they don't exist (for bundle purchases from marketing site)
 export const setSubscriptionStatusByEmailInternal = internalMutation({
   args: {
     email: v.string(),
     status: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await ctx.db
+    let user = await ctx.db
       .query("users")
       .withIndex("email", (q) => q.eq("email", args.email))
       .first();
 
     if (!user) {
-      throw new Error(`User not found: ${args.email}`);
+      // Create new user with the specified status
+      const userId = await ctx.db.insert("users", {
+        email: args.email,
+        subscriptionStatus: args.status,
+        createdAt: Date.now(),
+      });
+      console.log(`[setSubscriptionStatus] Created new user with status ${args.status}: ${args.email}`);
+      return { userId, email: args.email, status: args.status, created: true };
     }
 
     await ctx.db.patch(user._id, {
       subscriptionStatus: args.status,
     });
+    console.log(`[setSubscriptionStatus] Updated ${args.email} to ${args.status}`);
 
-    return { userId: user._id, email: args.email, status: args.status };
+    return { userId: user._id, email: args.email, status: args.status, created: false };
+  },
+});
+
+// ============================================================================
+// UNIFIED AUTH PROVISIONING - Write to authAccounts for central auth
+// ============================================================================
+
+// Helper to generate unique family code
+async function generateUniqueFamilyCodeInternal(ctx: any): Promise<string> {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let attempts = 0;
+
+  while (attempts < 10) {
+    let code = "";
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_family_code", (q: any) => q.eq("familyCode", code))
+      .first();
+
+    if (!existing) {
+      return code;
+    }
+    attempts++;
+  }
+
+  throw new Error("Failed to generate unique family code");
+}
+
+/**
+ * Provision a user with authentication credentials from central auth.
+ * This creates BOTH the users table entry AND the authAccounts entry,
+ * allowing users to login with their central password.
+ *
+ * IMPORTANT: The passwordHash must be a Scrypt hash (from Lucia) matching
+ * what Convex Auth Password provider uses.
+ */
+export const provisionUserInternal = internalMutation({
+  args: {
+    email: v.string(),
+    passwordHash: v.string(), // Scrypt hash from central auth
+    name: v.union(v.string(), v.null()),
+    subscriptionStatus: v.string(),
+    entitledToThisApp: v.boolean(),
+    stripeCustomerId: v.union(v.string(), v.null()),
+    subscriptionId: v.union(v.string(), v.null()),
+  },
+  handler: async (ctx, args) => {
+    console.log(`[provisionUser] Starting for ${args.email}`);
+
+    // 1. Check if user already exists
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .first();
+
+    let userId;
+    let wasCreated = false;
+
+    if (existingUser) {
+      userId = existingUser._id;
+
+      // Update subscription status
+      await ctx.db.patch(userId, {
+        subscriptionStatus: args.entitledToThisApp
+          ? args.subscriptionStatus
+          : "inactive",
+        stripeCustomerId: args.stripeCustomerId ?? existingUser.stripeCustomerId,
+        subscriptionId: args.subscriptionId ?? existingUser.subscriptionId,
+        name: args.name ?? existingUser.name,
+      });
+
+      console.log(`[provisionUser] Updated existing user: ${args.email}`);
+    } else {
+      // Create new user with family code
+      const familyCode = await generateUniqueFamilyCodeInternal(ctx);
+
+      userId = await ctx.db.insert("users", {
+        email: args.email,
+        name: args.name ?? undefined,
+        subscriptionStatus: args.entitledToThisApp
+          ? args.subscriptionStatus
+          : "inactive",
+        familyCode,
+        createdAt: Date.now(),
+        stripeCustomerId: args.stripeCustomerId ?? undefined,
+        subscriptionId: args.subscriptionId ?? undefined,
+      });
+      wasCreated = true;
+
+      console.log(`[provisionUser] Created new user: ${args.email} with familyCode: ${familyCode}`);
+    }
+
+    // 2. Check if authAccounts entry exists for password provider
+    // Query authAccounts using the providerAndAccountId index
+    const existingAuthAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", args.email.toLowerCase())
+      )
+      .first();
+
+    let authAccountCreated = false;
+    let authAccountUpdated = false;
+
+    if (!existingAuthAccount) {
+      // Create authAccounts entry for password authentication
+      // This is the KEY step that allows login to work
+      await ctx.db.insert("authAccounts", {
+        userId,
+        provider: "password",
+        providerAccountId: args.email.toLowerCase(),
+        secret: args.passwordHash, // The Scrypt hash from central
+      });
+      authAccountCreated = true;
+
+      console.log(`[provisionUser] Created authAccount for: ${args.email}`);
+    } else if (args.passwordHash !== existingAuthAccount.secret) {
+      // Update password hash if different (password was changed centrally)
+      await ctx.db.patch(existingAuthAccount._id, {
+        secret: args.passwordHash,
+      });
+      authAccountUpdated = true;
+
+      console.log(`[provisionUser] Updated password hash for: ${args.email}`);
+    } else {
+      console.log(`[provisionUser] authAccount already exists with same hash for: ${args.email}`);
+    }
+
+    return {
+      success: true,
+      userId: userId,
+      provisioned: wasCreated,
+      updated: !wasCreated,
+      authAccountCreated,
+      authAccountUpdated,
+    };
+  },
+});
+
+/**
+ * Query to check if a user has an authAccounts entry (for debugging).
+ */
+export const checkAuthAccountExists = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const authAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", args.email.toLowerCase())
+      )
+      .first();
+
+    if (!authAccount) {
+      return { exists: false, email: args.email };
+    }
+
+    // Don't return the actual secret, just confirm it exists
+    return {
+      exists: true,
+      email: args.email,
+      userId: authAccount.userId,
+      provider: authAccount.provider,
+      hasSecret: !!authAccount.secret,
+    };
   },
 });
