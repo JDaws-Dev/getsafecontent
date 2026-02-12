@@ -4,6 +4,7 @@ import { fetchQuery, fetchMutation } from "convex/nextjs";
 import { api } from "../../../../../convex/_generated/api";
 import { getStripe } from "@/lib/stripe";
 import Stripe from "stripe";
+import { syncAppAccess, type AppName } from "@/lib/provisioning";
 
 /**
  * Update Subscription Apps API
@@ -14,6 +15,10 @@ import Stripe from "stripe";
  * Allows users to add or remove apps from their subscription.
  * - Adding 3rd app switches to bundle pricing ($9.99/mo)
  * - Removing from bundle switches to individual/2-app pricing
+ *
+ * When apps are added/removed:
+ * - Added apps: User is provisioned to those apps via /provisionUser endpoint
+ * - Removed apps: User's status is set to inactive on those apps
  *
  * Stripe handles prorations automatically.
  */
@@ -38,8 +43,7 @@ const APP_TO_PRICE: Record<string, string> = {
   safereads: PRICE_IDS.SAFEREADS,
 };
 
-// Valid app names
-type AppName = "safetunes" | "safetube" | "safereads";
+// Valid app names (AppName type imported from provisioning)
 const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
 
 // Get the appropriate price ID for a given set of apps
@@ -86,6 +90,14 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "User not found" },
         { status: 404 }
+      );
+    }
+
+    // Validate user has email (required for provisioning)
+    if (!user.email) {
+      return NextResponse.json(
+        { error: "User email not found" },
+        { status: 400 }
       );
     }
 
@@ -146,6 +158,14 @@ export async function POST(req: Request) {
       );
     }
 
+    // Get the previous apps from metadata (for provisioning sync)
+    const previousAppsString = subscription.metadata?.apps;
+    const previousApps: AppName[] = previousAppsString
+      ? (previousAppsString.split(",").filter((app) =>
+          VALID_APPS.includes(app as AppName)
+        ) as AppName[])
+      : VALID_APPS; // Legacy subscriptions without metadata get all apps
+
     // Get the current subscription item ID
     const currentItem = subscription.items.data[0];
     if (!currentItem) {
@@ -180,7 +200,22 @@ export async function POST(req: Request) {
         { token }
       );
 
-      console.log(`[subscription/update-apps] Apps updated (no price change) for user ${user.email}: ${validatedApps.join(",")}`);
+      // Provision/deprovision apps on individual app backends
+      const provisionResult = await syncAppAccess(
+        user.email,
+        validatedApps,
+        previousApps,
+        {
+          stripeCustomerId: user.stripeCustomerId || null,
+          subscriptionId: user.stripeSubscriptionId || null,
+        }
+      );
+
+      console.log(`[subscription/update-apps] Apps updated (no price change) for user ${user.email}: ${validatedApps.join(",")}`, {
+        granted: provisionResult.granted,
+        revoked: provisionResult.revoked,
+        provisionErrors: provisionResult.errors,
+      });
 
       return NextResponse.json({
         success: true,
@@ -188,6 +223,11 @@ export async function POST(req: Request) {
         newApps: validatedApps,
         priceChanged: false,
         message: "Apps updated without price change",
+        provisioning: {
+          granted: provisionResult.granted,
+          revoked: provisionResult.revoked,
+          errors: provisionResult.errors.length > 0 ? provisionResult.errors : undefined,
+        },
       });
     }
 
@@ -233,7 +273,22 @@ export async function POST(req: Request) {
       { token }
     );
 
-    console.log(`[subscription/update-apps] Subscription updated for user ${user.email}: ${validatedApps.join(",")} (price changed to ${newPriceId})`);
+    // Provision/deprovision apps on individual app backends
+    const provisionResult = await syncAppAccess(
+      user.email,
+      validatedApps,
+      previousApps,
+      {
+        stripeCustomerId: user.stripeCustomerId || null,
+        subscriptionId: user.stripeSubscriptionId || null,
+      }
+    );
+
+    console.log(`[subscription/update-apps] Subscription updated for user ${user.email}: ${validatedApps.join(",")} (price changed to ${newPriceId})`, {
+      granted: provisionResult.granted,
+      revoked: provisionResult.revoked,
+      provisionErrors: provisionResult.errors,
+    });
 
     return NextResponse.json({
       success: true,
@@ -243,6 +298,11 @@ export async function POST(req: Request) {
       priceChanged: true,
       monthlyCost,
       message: `Subscription updated to ${validatedApps.length} app(s)`,
+      provisioning: {
+        granted: provisionResult.granted,
+        revoked: provisionResult.revoked,
+        errors: provisionResult.errors.length > 0 ? provisionResult.errors : undefined,
+      },
     });
   } catch (error) {
     console.error("Subscription update error:", error);

@@ -2,9 +2,20 @@ import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
+/**
+ * SafeReads + Central Accounts Schema
+ *
+ * This schema serves both:
+ * 1. SafeReads app (book analysis, kids, wishlists)
+ * 2. Safe Family marketing site (central accounts, subscriptions)
+ *
+ * The marketing site shares this Convex deployment (exuberant-puffin-838).
+ */
+
 export default defineSchema({
   ...authTables,
   // Extended users table (overrides authTables.users with custom fields)
+  // Serves both SafeReads app AND central Safe Family accounts
   users: defineTable({
     // Convex Auth fields
     name: v.optional(v.string()),
@@ -29,7 +40,8 @@ export default defineSchema({
         v.literal("canceled"),
         v.literal("past_due"),
         v.literal("incomplete"),
-        v.literal("inactive") // User has credentials but isn't entitled to this app
+        v.literal("inactive"), // User has credentials but isn't entitled to this app
+        v.literal("expired")
       )
     ),
     subscriptionCurrentPeriodEnd: v.optional(v.number()),
@@ -39,18 +51,78 @@ export default defineSchema({
     redeemedCoupon: v.optional(v.string()), // Coupon code that was redeemed
     // Central accounts sync
     centralAccessCacheExpiry: v.optional(v.number()), // When central access cache expires (for 5-min caching)
+
+    // === Central accounts fields (for marketing site /account page) ===
+    trialStartedAt: v.optional(v.number()), // Unix timestamp when trial started
+    subscriptionEndsAt: v.optional(v.number()), // When current period ends
+    billingInterval: v.optional(v.union(v.literal("monthly"), v.literal("yearly"))),
+
+    // Entitlements - which apps the user has access to
+    entitledApps: v.optional(
+      v.array(
+        v.union(
+          v.literal("safetunes"),
+          v.literal("safetube"),
+          v.literal("safereads")
+        )
+      )
+    ),
+
+    // Onboarding tracking per app
+    onboardingCompleted: v.optional(
+      v.object({
+        safetunes: v.optional(v.boolean()),
+        safetube: v.optional(v.boolean()),
+        safereads: v.optional(v.boolean()),
+      })
+    ),
+
+    // Promo code tracking
+    couponCode: v.optional(v.string()), // Coupon code used at signup
+    couponRedeemedAt: v.optional(v.number()), // When coupon was redeemed
+
+    // Account metadata
+    createdAt: v.optional(v.number()), // When account was created
+    lastLoginAt: v.optional(v.number()), // Last login timestamp
+    timezone: v.optional(v.string()), // IANA timezone for notifications
+
+    // Grandfather clause fields
+    grandfathered: v.optional(v.boolean()),
+    grandfatheredRate: v.optional(v.number()),
+    grandfatheredFrom: v.optional(
+      v.union(
+        v.literal("safetunes"),
+        v.literal("safetube"),
+        v.literal("safereads")
+      )
+    ),
+    migratedAt: v.optional(v.number()),
   })
     .index("email", ["email"])
     .index("phone", ["phone"])
-    .index("by_stripe_customer_id", ["stripeCustomerId"]),
+    .index("by_stripe_customer_id", ["stripeCustomerId"])
+    .index("by_stripe_subscription_id", ["stripeSubscriptionId"])
+    .index("by_subscription_status", ["subscriptionStatus"]),
 
   couponCodes: defineTable({
-    code: v.string(), // The coupon code (e.g., "DAWSFRIEND")
-    type: v.union(v.literal("lifetime"), v.literal("trial")),
+    code: v.string(), // The coupon code (e.g., "DAWSFRIEND", "DEWITT")
+    type: v.union(v.literal("lifetime"), v.literal("trial"), v.literal("trial_extension")),
+    grantedApps: v.optional(
+      v.array(
+        v.union(
+          v.literal("safetunes"),
+          v.literal("safetube"),
+          v.literal("safereads")
+        )
+      )
+    ), // Which apps this code grants access to (null = all apps)
+    trialDays: v.optional(v.number()), // For trial_extension type, how many days to add
     usageLimit: v.optional(v.number()), // null = unlimited
     usageCount: v.number(),
     active: v.boolean(),
     description: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    expiresAt: v.optional(v.number()), // When code expires (null = never)
   }).index("by_code", ["code"]),
 
   profiles: defineTable({
@@ -206,4 +278,69 @@ export default defineSchema({
   })
     .index("by_email", ["email"])
     .index("by_stripe_customer_id", ["stripeCustomerId"]),
+
+  // ========================================================================
+  // Subscription Events Table (audit trail for marketing site)
+  // ========================================================================
+  subscriptionEvents: defineTable({
+    userId: v.optional(v.id("users")), // User affected (null if user not found yet)
+    email: v.string(), // Email for tracking (in case user not yet created)
+    eventType: v.string(), // Event type (see below)
+    /**
+     * Event types:
+     * - "checkout.started" - User started checkout
+     * - "checkout.completed" - Stripe checkout session completed
+     * - "subscription.created" - Subscription was created
+     * - "subscription.updated" - Subscription was updated
+     * - "subscription.canceled" - User canceled subscription
+     * - "subscription.apps_changed" - User changed app selection
+     * - "payment.succeeded" - Payment was successful
+     * - "payment.failed" - Payment failed
+     * - "trial.started" - Trial started
+     * - "trial.expired" - Trial expired without conversion
+     * - "coupon.applied" - Coupon code was applied
+     * - "entitlement.granted" - App access was granted
+     * - "entitlement.revoked" - App access was revoked
+     * - "account.deleted" - User deleted their account
+     * - "subscription.update_failed" - Update failed
+     */
+    eventData: v.optional(v.string()), // JSON stringified event data
+    subscriptionStatus: v.optional(v.string()), // Status after this event
+    stripeSubscriptionId: v.optional(v.string()),
+    stripeCustomerId: v.optional(v.string()),
+    stripeEventId: v.optional(v.string()), // Stripe event ID for deduplication
+    errorMessage: v.optional(v.string()), // Error message if event failed
+    ipAddress: v.optional(v.string()), // For security audit
+    userAgent: v.optional(v.string()), // Browser/device info
+    timestamp: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_email", ["email"])
+    .index("by_type", ["eventType"])
+    .index("by_timestamp", ["timestamp"])
+    .index("by_email_and_timestamp", ["email", "timestamp"])
+    .index("by_stripe_event_id", ["stripeEventId"]),
+
+  // ========================================================================
+  // App Sync Status Table (tracks sync state for marketing site)
+  // ========================================================================
+  appSyncStatus: defineTable({
+    userId: v.id("users"),
+    app: v.union(
+      v.literal("safetunes"),
+      v.literal("safetube"),
+      v.literal("safereads")
+    ),
+    lastSyncedAt: v.number(), // When we last synced to this app
+    syncStatus: v.union(
+      v.literal("synced"),
+      v.literal("pending"),
+      v.literal("failed")
+    ),
+    lastError: v.optional(v.string()), // Error message if sync failed
+    appUserId: v.optional(v.string()), // User ID in the app's database
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_app", ["userId", "app"])
+    .index("by_sync_status", ["syncStatus"]),
 });
