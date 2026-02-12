@@ -13,7 +13,7 @@ As of Feb 12, 2026:
 - safecontent-71k (Implement Google OAuth across all apps) - IN PROGRESS
   - safecontent-71k.1 (Enable Google OAuth on marketing signup page) - COMPLETE
   - safecontent-71k.2 (Set up Google OAuth credentials in Vercel) - PENDING (requires manual setup)
-  - safecontent-71k.3 (Handle OAuth users in webhook provisioning) - PENDING
+  - safecontent-71k.3 (Handle OAuth users in webhook provisioning) - COMPLETE
   - safecontent-71k.4 (Test Google OAuth end-to-end flow) - PENDING
 - safecontent-i5w.15 (Google OAuth support) - DEFERRED TO V2 (complexity vs value)
 - safecontent-i5w.16 (Session-based SSO) - DEFERRED TO V2 (complexity vs value)
@@ -69,6 +69,46 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-71k.3: Handle OAuth users in webhook provisioning (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - All apps now support OAuth user provisioning
+
+**What was done:**
+
+1. **Verified existing infrastructure already handled OAuth users:**
+   - Webhook (`sites/marketing/src/app/api/stripe/webhook/route.ts`) already detects OAuth users via `authProvider === "google"`
+   - SafeTunes `/provisionUser` already accepts `isOAuthUser` flag
+   - SafeTube `/provisionUser` already accepts `isOAuthUser` flag
+   - `getCentralUser` endpoint already returns `authProvider` field
+
+2. **Fixed SafeReads provisionUserInternal (was missing OAuth support):**
+   - Updated `apps/safereads/convex/provisionUserInternal.ts`:
+     - Changed `passwordHash` arg from `v.string()` to `v.union(v.string(), v.null())`
+     - Added `isOAuthUser` optional boolean arg
+     - Added early return for OAuth users that skips authAccounts creation
+   - Updated `apps/safereads/convex/provisionUser.ts` HTTP endpoint to pass `isOAuthUser` flag
+
+**Files modified:**
+- `apps/safereads/convex/provisionUserInternal.ts` - Added OAuth user support
+- `apps/safereads/convex/provisionUser.ts` - Pass isOAuthUser flag to internal mutation
+
+**How OAuth provisioning works:**
+1. User signs up via Google OAuth on marketing site
+2. User completes Stripe checkout
+3. Webhook calls `getCentralUser` → returns `{ authProvider: "google", passwordHash: null }`
+4. Webhook calls `provisionUserToApp()` with `isOAuthUser: true`
+5. Each app's `/provisionUser` endpoint:
+   - Creates user record with subscription status
+   - Skips authAccounts creation (OAuth users login via Google directly)
+6. User can now login to each app using Google OAuth
+
+**Key insight:**
+OAuth users don't need a passwordHash in authAccounts - they authenticate via Google directly. The apps just need the user record with subscription status.
+
+**Build verified:** All 4 sites build + Convex dev --once pass
+
+---
 
 ### safecontent-71k.1: Enable Google OAuth on marketing signup page (Feb 12, 2026 - COMPLETE)
 
