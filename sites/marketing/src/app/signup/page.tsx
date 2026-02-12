@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, Suspense } from "react";
+import { useState, useCallback, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Shield } from "lucide-react";
@@ -13,9 +13,18 @@ import AccountForm, { type AccountFormData, type AppSelection } from "@/componen
  * Combines AppSelector and AccountForm into a two-step signup flow.
  * Accepts ?app=safetunes (or safetube, safereads) query param to pre-select app.
  *
- * PROMO CODE FLOW:
- * - Regular signup: form -> /api/checkout -> Stripe -> webhook provisions
- * - Lifetime code: form -> Convex Auth signup -> apply code mutation -> provision apps -> onboarding
+ * FLOW (depends on ENABLE_UNIFIED_AUTH feature flag):
+ *
+ * When UNIFIED AUTH is ENABLED:
+ * 1. User submits email + password + name
+ * 2. We call /api/auth/signup to create centralUser with password hash
+ * 3a. Lifetime code: call /api/promo-signup to provision all apps -> success page
+ * 3b. Regular: redirect to Stripe checkout -> webhook provisions apps via /provisionUser
+ *
+ * When UNIFIED AUTH is DISABLED (default/legacy):
+ * 1. User submits email + password + name
+ * 2a. Lifetime code: call /api/promo-signup -> success page
+ * 2b. Regular: redirect directly to Stripe checkout -> webhook uses /setSubscriptionStatus
  */
 
 // Hardcoded lifetime codes (must match AccountForm and Convex validation)
@@ -71,6 +80,24 @@ function SignupContent() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Feature flags state
+  const [unifiedAuthEnabled, setUnifiedAuthEnabled] = useState(false);
+
+  // Fetch feature flags on mount
+  useEffect(() => {
+    fetch("/api/feature-flags")
+      .then((res) => res.json())
+      .then((data) => {
+        setUnifiedAuthEnabled(data.flags?.UNIFIED_AUTH === true);
+        console.log("[SignupPage] Feature flags loaded:", data.flags);
+      })
+      .catch((err) => {
+        console.warn("[SignupPage] Failed to load feature flags, using defaults:", err);
+        // Default to false (legacy flow) if fetch fails
+        setUnifiedAuthEnabled(false);
+      });
+  }, []);
+
   // Handle app selection changes
   const handleAppSelectionChange = useCallback(
     (apps: AppId[], pricing: PricingInfo, yearly: boolean) => {
@@ -93,18 +120,65 @@ function SignupContent() {
     setIsLoading(true);
     setError("");
 
-    // Check if this is a lifetime promo code signup
-    if (data.couponCode && isLifetimeCode(data.couponCode)) {
-      try {
-        console.log("[SignupPage] Detected lifetime code, using promo signup flow");
+    // Determine if we need to create a central user account
+    // We MUST create a central user if:
+    // 1. Unified auth is enabled (for all signups), OR
+    // 2. User has a lifetime promo code (so they can login to apps)
+    const hasLifetimeCode = data.couponCode && isLifetimeCode(data.couponCode);
+    const needsCentralUser = unifiedAuthEnabled || hasLifetimeCode;
 
-        // Call promo-signup API directly (bypasses Convex Auth)
+    if (needsCentralUser) {
+      try {
+        const reason = hasLifetimeCode
+          ? "lifetime promo code (required for app login)"
+          : "unified auth enabled";
+        console.log(`[SignupPage] Creating central user account - ${reason}...`);
+
+        const signupResponse = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+            name: data.name,
+          }),
+        });
+
+        const signupResult = await signupResponse.json();
+
+        if (!signupResponse.ok) {
+          // Handle user already exists - they should sign in instead
+          if (signupResult.code === "USER_EXISTS" || signupResponse.status === 409) {
+            throw new Error("An account with this email already exists. Please sign in instead.");
+          }
+          throw new Error(signupResult.error || "Failed to create account");
+        }
+
+        console.log("[SignupPage] Central user created successfully:", signupResult.email);
+      } catch (err) {
+        console.error("[SignupPage] Account creation error:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to create account. Please try again."
+        );
+        setIsLoading(false);
+        return;
+      }
+    } else {
+      console.log("[SignupPage] Unified auth disabled - using legacy flow (direct to checkout)");
+    }
+
+    // Handle lifetime promo code flow
+    if (hasLifetimeCode) {
+      try {
+        console.log("[SignupPage] Detected lifetime code, provisioning lifetime access...");
+
+        // Call promo-signup API to provision lifetime access to all apps
         const response = await fetch("/api/promo-signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: data.email,
-            promoCode: data.couponCode.trim().toUpperCase(),
+            promoCode: data.couponCode!.trim().toUpperCase(),
           }),
         });
 
@@ -130,6 +204,8 @@ function SignupContent() {
 
     // Regular Stripe checkout flow
     try {
+      console.log("[SignupPage] Proceeding to checkout...");
+
       // Build the checkout request with selected apps
       const response = await fetch("/api/checkout", {
         method: "POST",

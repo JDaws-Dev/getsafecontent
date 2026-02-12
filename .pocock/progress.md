@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-i5w.1 complete** - Central Users Database Table
+**safecontent-44m complete** - Promo signup fix
 
 As of Feb 12, 2026:
+- safecontent-44m (Fix promo signup to enable login on all apps) - COMPLETE
 - safecontent-i5w.1 (Create centralUsers database table) - COMPLETE
 - safecontent-i5w.21 (Verify Convex Auth authAccounts table structure) - COMPLETE
 - safecontent-3qg (P0: Promo codes don't grant lifetime) - COMPLETE
@@ -59,6 +60,50 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-44m: Fix promo signup to enable login on all apps (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - Fixed promo code signup flow
+
+**Problem:**
+When users sign up with promo codes (DAWSFRIEND, DEWITT), they get lifetime access granted but cannot login to the apps because no password/auth credentials are set up.
+
+**Root Cause:**
+The promo signup flow called `/api/promo-signup` which tried to get the user's passwordHash from `centralUsers` table. But the passwordHash was only created when `UNIFIED_AUTH` feature flag was enabled. With the flag disabled (default), the central user was never created.
+
+**Fix:**
+Modified `sites/marketing/src/app/signup/page.tsx` to ALWAYS create a central user when there's a lifetime promo code, regardless of the `UNIFIED_AUTH` flag:
+
+```typescript
+const hasLifetimeCode = data.couponCode && isLifetimeCode(data.couponCode);
+const needsCentralUser = unifiedAuthEnabled || hasLifetimeCode;
+```
+
+**Flow now:**
+1. User enters email + password + promo code on signup page
+2. Signup page detects lifetime promo code
+3. **Always** calls `/api/auth/signup` to create central user with passwordHash
+4. Calls `/api/promo-signup` to provision apps
+5. `/api/promo-signup` gets passwordHash from centralUsers
+6. Provisions all 3 apps with passwordHash via `/provisionUser` endpoints
+7. User can now login to any app with their password!
+
+**Files modified:**
+- `sites/marketing/src/app/signup/page.tsx` - Added `hasLifetimeCode` check to create central user
+
+**Also created during this session:**
+- `sites/marketing/src/lib/password.ts` - Scrypt password hashing utilities
+- `sites/marketing/convex/signupInternal.ts` - Internal signup mutations (unused - marketing shares SafeReads' Convex)
+
+**Key Architecture Understanding:**
+- Marketing site and SafeReads share the SAME Convex deployment (`exuberant-puffin-838`)
+- Marketing site's `convex/` folder is NOT deployed separately
+- Central user data is in SafeReads' `centralUsers` table
+- Apps have `/provisionUser` endpoints that create both user + authAccounts entries
+
+**Build verified:** npm run build passes (47 routes)
+
+---
 
 ### safecontent-i5w.1: Create centralUsers Database Table (Feb 12, 2026 - COMPLETE)
 
