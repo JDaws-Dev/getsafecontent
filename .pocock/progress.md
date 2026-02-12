@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.2 complete** - SafeTunes Account Creation & Onboarding Tested
+**safecontent-cl1.3 complete** - SafeTube Account Creation & Onboarding Tested
 
 As of Feb 12, 2026:
+- safecontent-cl1.3 (SafeTube Account Creation & Onboarding) - COMPLETE
 - safecontent-cl1.2 (SafeTunes Account Creation & Onboarding) - COMPLETE
 - safecontent-cl1.13 (UI/UX Audit & Consistency Report) - COMPLETE
 - safecontent-cl1.10 (Onboarding Data Persistence) - COMPLETE
@@ -47,6 +48,56 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.3: Test SafeTube Account Creation & Onboarding (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Tested signup page redirect to central getsafefamily.com/signup?app=safetube
+- Tested login page (email/password + Google OAuth)
+- Tested /forgot-password (MISSING - P0 bug found)
+- Tested kid player login at /play (family code entry)
+- Tested error handling for invalid family codes
+- Tested mobile responsiveness on all pages
+
+**UI/UX Rating: 8.2/10**
+
+**What works well:**
+1. Signup correctly redirects to central marketing site with SafeTube pre-selected
+2. Login page is clean with Google OAuth, email/password, and kid player link
+3. Landing page is excellent - demo video, clear value prop, testimonials
+4. Kid player login is simple and kid-friendly
+5. Error handling for invalid family codes is clear ("Invalid family code")
+6. Mobile experience is excellent - all pages responsive
+
+**P0 BUG FOUND:**
+- `/forgot-password` page is missing - redirects to homepage
+- Created issue safecontent-oc8 to track fix
+- LoginPage.jsx links to /forgot-password but page doesn't exist
+- Need to create ForgotPasswordPage.jsx and ResetPasswordPage.jsx (copy from SafeTunes)
+
+**Minor issues (P3):**
+1. Family code input truncates to 6 chars silently (shows "INVALI" for "INVALID")
+
+**Screenshots captured:**
+- safetube-landing-page.png - Landing page desktop
+- safetube-signup-redirect.png - Redirect to central signup
+- safetube-login-page.png - Login page
+- safetube-forgot-password-missing.png - 404 redirect to homepage
+- safetube-kid-player-login.png - Family code entry
+- safetube-invalid-family-code.png - Error state
+- safetube-login-mobile.png - Mobile login
+- safetube-landing-mobile.png - Mobile landing page
+
+**Key findings:**
+- Signup redirect works correctly
+- Login page functional (Google OAuth + email/password)
+- Forgot password flow BROKEN (P0 bug)
+- Kid player login works smoothly
+- Mobile experience is excellent
+
+---
 
 ### safecontent-cl1.2: Test SafeTunes Account Creation & Onboarding (Feb 12, 2026 - COMPLETE)
 
