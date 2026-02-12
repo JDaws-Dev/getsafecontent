@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery, fetchMutation } from "convex/nextjs";
+import { api } from "../../../../../convex/_generated/api";
 import { getStripe } from "@/lib/stripe";
 import Stripe from "stripe";
 
 /**
  * Update Subscription Apps API
+ *
+ * SECURITY: Requires authentication. Verifies the subscription belongs to
+ * the authenticated user before allowing any modifications.
  *
  * Allows users to add or remove apps from their subscription.
  * - Adding 3rd app switches to bundle pricing ($9.99/mo)
@@ -65,15 +71,36 @@ function getPriceIdForApps(
 
 export async function POST(req: Request) {
   try {
-    const { subscriptionId, newApps, isYearly } = await req.json();
-
-    // Validate required fields
-    if (!subscriptionId) {
+    // 1. Authenticate the user via Convex Auth
+    const token = await convexAuthNextjsToken();
+    if (!token) {
       return NextResponse.json(
-        { error: "subscriptionId is required" },
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // 2. Get the current user from Convex
+    const user = await fetchQuery(api.accounts.getCurrentUser, {}, { token });
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // 3. Verify user has a Stripe subscription
+    if (!user.stripeSubscriptionId) {
+      return NextResponse.json(
+        { error: "No subscription found. Please subscribe first." },
         { status: 400 }
       );
     }
+
+    const { newApps, isYearly } = await req.json();
+
+    // Use the authenticated user's subscription ID - never trust client input
+    const subscriptionId = user.stripeSubscriptionId;
 
     // Validate apps array
     if (!newApps || !Array.isArray(newApps)) {
@@ -109,7 +136,7 @@ export async function POST(req: Request) {
 
     const stripe = getStripe();
 
-    // Retrieve current subscription
+    // Retrieve current subscription (using authenticated user's subscription)
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
     if (subscription.status !== "active" && subscription.status !== "trialing") {
@@ -141,6 +168,19 @@ export async function POST(req: Request) {
           },
         }
       );
+
+      // Update Convex with new apps and log the change
+      await fetchMutation(
+        api.accounts.confirmSubscriptionChange,
+        {
+          userId: user.id,
+          newApps: validatedApps,
+          priceChanged: false,
+        },
+        { token }
+      );
+
+      console.log(`[subscription/update-apps] Apps updated (no price change) for user ${user.email}: ${validatedApps.join(",")}`);
 
       return NextResponse.json({
         success: true,
@@ -181,6 +221,20 @@ export async function POST(req: Request) {
       monthlyCost = isYearly ? 99 / 12 : 9.99;
     }
 
+    // Update Convex with new apps and log the change
+    await fetchMutation(
+      api.accounts.confirmSubscriptionChange,
+      {
+        userId: user.id,
+        newApps: validatedApps,
+        newPriceId,
+        priceChanged: true,
+      },
+      { token }
+    );
+
+    console.log(`[subscription/update-apps] Subscription updated for user ${user.email}: ${validatedApps.join(",")} (price changed to ${newPriceId})`);
+
     return NextResponse.json({
       success: true,
       subscriptionId: updatedSubscription.id,
@@ -209,20 +263,37 @@ export async function POST(req: Request) {
 }
 
 // GET handler to check current subscription apps
-export async function GET(req: Request) {
+// SECURITY: Requires authentication and returns only the authenticated user's subscription
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url);
-    const subscriptionId = searchParams.get("subscriptionId");
-
-    if (!subscriptionId) {
+    // 1. Authenticate the user via Convex Auth
+    const token = await convexAuthNextjsToken();
+    if (!token) {
       return NextResponse.json(
-        { error: "subscriptionId is required" },
-        { status: 400 }
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    // 2. Get the current user from Convex
+    const user = await fetchQuery(api.accounts.getCurrentUser, {}, { token });
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // 3. Verify user has a Stripe subscription
+    if (!user.stripeSubscriptionId) {
+      return NextResponse.json(
+        { error: "No subscription found" },
+        { status: 404 }
       );
     }
 
     const stripe = getStripe();
-    const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId);
+    const subscriptionResponse = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
     // Cast to Stripe.Subscription since retrieve returns the subscription directly
     const subscription = subscriptionResponse as unknown as Stripe.Subscription;
 

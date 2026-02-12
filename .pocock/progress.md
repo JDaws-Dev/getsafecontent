@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-3pc complete** - Rate limiting for public API endpoints
+**safecontent-jje complete** - Validate subscription ownership before updates
 
 As of Feb 11, 2026:
+- safecontent-jje (Subscription ownership validation) - COMPLETE
 - safecontent-3pc (Rate limiting) - COMPLETE
 - safecontent-anp (Webhook retry/recovery) - COMPLETE
 - safecontent-v6z (Stripe portal customerId validation) - COMPLETE
@@ -32,6 +33,42 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-jje: Validate subscription ownership before allowing updates (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** `/api/subscription/update-apps` and `/api/subscription/preview` took subscriptionId from request with NO authentication. Attacker could:
+- Modify any subscription they knew the ID of
+- Downgrade other customers' plans
+- Upgrade own plan without paying
+- View other users' subscription details
+
+**Solution implemented:**
+
+1. **Authentication required**
+   - Both endpoints now require Convex Auth token
+   - Returns 401 Unauthorized if not logged in
+
+2. **Subscription ownership from authenticated user**
+   - Never trust subscriptionId from client request
+   - Get stripeSubscriptionId from authenticated user's Convex record
+   - Users can only modify/view their own subscription
+
+3. **Audit logging via Convex**
+   - Changes logged via `confirmSubscriptionChange` mutation
+   - Includes user email, apps changed, price changes
+   - Console logging for debugging
+
+**Files modified:**
+- `sites/marketing/src/app/api/subscription/update-apps/route.ts` - Added auth, ownership check, audit logging
+- `sites/marketing/src/app/api/subscription/preview/route.ts` - Added auth, ownership check
+
+**Pattern matched:** `api/stripe/portal/route.ts` already had secure implementation
+
+**Build verified:** npm run build passes (39 routes)
+
+---
 
 ### safecontent-3pc: Add rate limiting to public API endpoints (Feb 11, 2026 - COMPLETE)
 

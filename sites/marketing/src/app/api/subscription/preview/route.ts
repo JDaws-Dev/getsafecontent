@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+import { fetchQuery } from "convex/nextjs";
+import { api } from "../../../../../convex/_generated/api";
 import { getStripe } from "@/lib/stripe";
 import Stripe from "stripe";
 
 /**
  * Preview Subscription Change API
+ *
+ * SECURITY: Requires authentication. Only previews changes for the
+ * authenticated user's subscription.
  *
  * Shows what the price change would be before confirming.
  * Returns proration details and new monthly cost.
@@ -65,14 +71,36 @@ const APP_NAMES: Record<AppName, string> = {
 
 export async function POST(req: Request) {
   try {
-    const { subscriptionId, newApps, isYearly } = await req.json();
-
-    if (!subscriptionId) {
+    // 1. Authenticate the user via Convex Auth
+    const token = await convexAuthNextjsToken();
+    if (!token) {
       return NextResponse.json(
-        { error: "subscriptionId is required" },
-        { status: 400 }
+        { error: "Unauthorized" },
+        { status: 401 }
       );
     }
+
+    // 2. Get the current user from Convex
+    const user = await fetchQuery(api.accounts.getCurrentUser, {}, { token });
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // 3. Verify user has a Stripe subscription
+    if (!user.stripeSubscriptionId) {
+      return NextResponse.json(
+        { error: "No subscription found" },
+        { status: 404 }
+      );
+    }
+
+    const { newApps, isYearly } = await req.json();
+
+    // Use the authenticated user's subscription ID - never trust client input
+    const subscriptionId = user.stripeSubscriptionId;
 
     if (!newApps || !Array.isArray(newApps)) {
       return NextResponse.json(
@@ -94,7 +122,7 @@ export async function POST(req: Request) {
 
     const stripe = getStripe();
 
-    // Retrieve current subscription and cast to Stripe.Subscription type
+    // Retrieve current subscription (using authenticated user's subscription)
     const subscription = await stripe.subscriptions.retrieve(subscriptionId) as unknown as Stripe.Subscription;
 
     if (subscription.status !== "active" && subscription.status !== "trialing") {
