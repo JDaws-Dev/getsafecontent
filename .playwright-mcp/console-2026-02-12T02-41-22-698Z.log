@@ -1,0 +1,4 @@
+[    8333ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://getsafefamily.com/api/checkout:0
+[    8333ms] [ERROR] [SignupPage] Checkout error: SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at j (https://getsafefamily.com/_next/static/chunks/0a77047e226ca4ae.js?dpl=dpl_867w3tjNHqVarxiRd1epf5joCjZD:2:33846)
+    at async I (https://getsafefamily.com/_next/static/chunks/0a77047e226ca4ae.js?dpl=dpl_867w3tjNHqVarxiRd1epf5joCjZD:2:21470) @ https://getsafefamily.com/_next/static/chunks/0a77047e226ca4ae.js?dpl=dpl_867w3tjNHqVarxiRd1epf5joCjZD:1

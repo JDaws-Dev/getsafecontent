@@ -1,0 +1,4 @@
+[   14521ms] [ERROR] Failed to load resource: the server responded with a status of 500 () @ https://getsafefamily.com/api/checkout:0
+[   14521ms] [ERROR] [SignupPage] Checkout error: Error: Price not configured for safereads
+    at j (https://getsafefamily.com/_next/static/chunks/dc66954c6958bd4d.js?dpl=dpl_BFQr3czvqSC1P1wNkyPPPAdZvv6y:2:34018)
+    at async I (https://getsafefamily.com/_next/static/chunks/dc66954c6958bd4d.js?dpl=dpl_BFQr3czvqSC1P1wNkyPPPAdZvv6y:2:21470) @ https://getsafefamily.com/_next/static/chunks/dc66954c6958bd4d.js?dpl=dpl_BFQr3czvqSC1P1wNkyPPPAdZvv6y:1

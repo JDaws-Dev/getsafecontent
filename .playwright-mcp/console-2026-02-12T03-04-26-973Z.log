@@ -1,0 +1,5 @@
+[   28092ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://getsafereads.com/api/auth:0
+[   28093ms] [ERROR] [LoginPage] Login error: Error: [Request ID: 32353cf8ee994aa7] Server Error
+    at Object.<anonymous> (https://getsafereads.com/_next/static/chunks/87258efcfbc80bf4.js?dpl=dpl_BAyZq9XVtdyrsG7ZfdiBqorku4b6:1:957)
+    at async https://getsafereads.com/_next/static/chunks/5a880eec4c9e0d2b.js?dpl=dpl_BAyZq9XVtdyrsG7ZfdiBqorku4b6:1:14349
+    at async C (https://getsafereads.com/_next/static/chunks/4dab51f832d1c038.js?dpl=dpl_BAyZq9XVtdyrsG7ZfdiBqorku4b6:1:1275) @ https://getsafereads.com/_next/static/chunks/4dab51f832d1c038.js?dpl=dpl_BAyZq9XVtdyrsG7ZfdiBqorku4b6:0
