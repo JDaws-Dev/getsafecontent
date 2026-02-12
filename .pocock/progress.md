@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.12 complete** - Subscription status sync verified across all apps
+**safecontent-cl1.10 complete** - Onboarding data persistence verified
 
 As of Feb 12, 2026:
+- safecontent-cl1.10 (Onboarding Data Persistence) - COMPLETE
 - safecontent-cl1.12 (Cross-App Subscription Sync) - COMPLETE
 - safecontent-cl1.11 (Webhook → Convex Provisioning) - COMPLETE
 - safecontent-cl1.16 (P0: Verify existing users) - COMPLETE
@@ -44,6 +45,28 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.10: Audit Onboarding Data Persistence (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Reviewed onboarding flow from marketing site to all 3 apps
+- Verified localStorage persistence (saves on change, restores on mount)
+- Verified API endpoint /api/onboarding/setup forwards to app endpoints
+- Verified each app's setupOnboarding.ts saves to Convex
+
+**Data persistence verified:**
+1. Marketing site: localStorage backup with 'safefamily_onboarding' key
+2. SafeTunes: ctx.db.insert('kidProfiles', ...) via createKidProfileInternal
+3. SafeTube: ctx.db.insert('kidProfiles', ...) via createKidProfileInternal
+4. SafeReads: ctx.db.insert('kids', ...) via createKidInternal
+
+**Recommendations:**
+- Add retry logic to marketing setup endpoint
+- Consider server-side session storage for cross-device
+
+---
 
 ### safecontent-cl1.12: Verify Subscription Status Sync Across Apps (Feb 12, 2026 - COMPLETE)
 
