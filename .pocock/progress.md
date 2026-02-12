@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.9 complete** - Promo Code Flows Tested (P0 BUG FOUND)
+**safecontent-cl1.15 complete** - Account Settings Tested (P0 BUGS FOUND)
 
 As of Feb 12, 2026:
+- safecontent-cl1.15 (Account Settings Across All Apps) - COMPLETE (P0 BUGS: SafeTube forgot-password, marketing /account)
 - safecontent-cl1.9 (Promo Code Flows) - COMPLETE (P0 BUG: codes don't actually grant lifetime)
 - safecontent-oc8 (P0: SafeTube /forgot-password 404) - COMPLETE
 - safecontent-cl1.8 (3-App Bundle Yearly Checkout) - COMPLETE
@@ -55,6 +56,71 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.15: Test Account Settings Across All Apps (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete - **P0 BUGS FOUND**
+
+**What was tested:**
+1. SafeTunes Settings - Code review (full settings with family management, password change, subscription)
+2. SafeTube Settings - Code review + visual (tab-based settings, kids/account/support)
+3. SafeReads Settings - Code review + visual (account, subscription, danger zone, logout)
+4. Marketing Site Account - Visual testing (login, forgot-password)
+5. Mobile responsiveness - All login pages
+6. Forgot password flows - All apps
+
+**P0 BUGS FOUND:**
+
+1. **SafeTube /forgot-password returns 404 (redirects to homepage)**
+   - Routes ARE defined in App.jsx (lines 58-59)
+   - Page files EXIST (ForgotPasswordPage.jsx, ResetPasswordPage.jsx)
+   - Commit dbca317 added them on Feb 12
+   - **Root cause:** Pages not deployed to production - may need Vercel redeploy
+   - Users clicking "Forgot password?" on SafeTube login get redirected to homepage
+
+2. **Marketing Site /account page shows "Something went wrong" error**
+   - 500 error on page load
+   - TypeError in console: "Cannot read properties of undefined"
+   - **Root cause:** Likely Convex not properly configured or auth state issue
+   - Central account management is completely broken
+
+**Settings Features Comparison:**
+
+| Feature | SafeTunes | SafeTube | SafeReads | Marketing |
+|---------|-----------|----------|-----------|-----------|
+| Profile editing | ✅ Name, email | ✅ Name only | ❌ (email display only) | ❌ (broken) |
+| Password change | ✅ | ❌ (not found) | ❌ (Google OAuth only) | N/A |
+| Kid profile mgmt | ✅ Full CRUD | ✅ Full CRUD | ✅ Add/edit kids | N/A |
+| Subscription view | ✅ | ✅ | ✅ | ❌ (broken) |
+| Stripe portal | ✅ | ✅ | ✅ | ❌ (broken) |
+| Account deletion | ✅ DELETE confirm | ✅ DELETE confirm | ✅ DELETE confirm | ❌ (broken) |
+| Logout | ✅ | ✅ | ✅ | N/A |
+| Apple Music | ✅ | N/A | N/A | N/A |
+| Content controls | ✅ Hide artwork | N/A | N/A | N/A |
+
+**What works well:**
+1. SafeTunes has the most comprehensive settings (family mgmt, content controls, Apple Music)
+2. SafeTube has clean tab-based UI with kids/account/support separation
+3. SafeReads settings link to central Safe Family account for billing
+4. Mobile login pages are well-designed across all apps
+5. Forgot password works on SafeTunes, SafeReads, and Marketing site
+6. Consistent DELETE confirmation pattern for account deletion
+
+**UI/UX Rating: 7/10** (would be 9/10 without the P0 bugs)
+
+**Recommendations:**
+1. **P0 FIX:** Redeploy SafeTube to Vercel or investigate why routes aren't working
+2. **P0 FIX:** Debug marketing /account page - check Convex auth configuration
+3. **P1:** Add password change to SafeTube (currently no way for users to change password)
+4. **P2:** Standardize profile editing (SafeReads shows email but can't edit)
+5. **P2:** SafeTube settings could benefit from back navigation (currently uses tabs)
+
+**Screenshots captured:**
+- marketing-account-error.png - Shows "Something went wrong" error
+- safetunes-login-mobile.png - Mobile login works
+- safetube-login-mobile.png - Mobile login works
+
+---
 
 ### safecontent-cl1.9: Test Promo Code Flows (Feb 12, 2026 - COMPLETE)
 
