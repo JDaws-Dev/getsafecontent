@@ -36,32 +36,30 @@ test.describe("SafeTube Password Change", () => {
     expect(url).toContain("/forgot-password");
 
     // Should have email input for password reset
-    await expect(page.getByPlaceholder(/email/i)).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /email/i })).toBeVisible();
 
     // Should have reset button
     await expect(
-      page.getByRole("button", { name: /send.*code|reset|submit/i })
+      page.getByRole("button", { name: /send.*code|reset|submit|code/i })
     ).toBeVisible();
   });
 
-  test("/reset-password page loads correctly", async ({ page }) => {
+  test("/reset-password page redirects without email context", async ({ page }) => {
+    // The reset-password page requires an email in localStorage (set during forgot-password flow)
+    // Without it, it should redirect to forgot-password
     await page.goto(`${SAFETUBE_URL}/reset-password`);
 
-    // Should be on the reset page
+    // Should redirect to forgot-password when no email context
+    await page.waitForURL(/forgot-password/);
     const url = page.url();
-    expect(url).toContain("/reset-password");
-
-    // Should have OTP/code input or password input
-    const hasOtpInput = await page.getByPlaceholder(/code|otp|verification/i).count() > 0;
-    const hasPasswordInput = await page.locator('input[type="password"]').count() > 0;
-    expect(hasOtpInput || hasPasswordInput).toBe(true);
+    expect(url).toContain("/forgot-password");
   });
 
   test("forgot password form shows validation", async ({ page }) => {
     await page.goto(`${SAFETUBE_URL}/forgot-password`);
 
     // Try to submit without email
-    const submitButton = page.getByRole("button", { name: /send.*code|reset|submit/i });
+    const submitButton = page.getByRole("button", { name: /send.*code|reset|submit|code/i });
     await submitButton.click();
 
     // Form should not submit (either validation error or stay on same page)

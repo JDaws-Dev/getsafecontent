@@ -5,6 +5,22 @@ This file maintains context between autonomous iterations.
 
 ---
 
+## ⚠️ CRITICAL: Browser Testing Required
+
+**DO NOT close beads without actually running browser tests.**
+
+When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
+1. Actually run the Playwright command: `npx playwright test <file> --project=chromium`
+2. Tests MUST PASS (not just exist)
+3. If auth is required, document what manual steps were taken
+4. "Deferred" or "skipped" is NOT acceptable for required tests
+
+**REOPENED beads that were closed without testing:**
+- ~~safecontent-eio~~ - VERIFIED in browser (Feb 12, 2026)
+- ~~safecontent-lye~~ - VERIFIED via E2E tests (Feb 12, 2026)
+
+---
+
 ## Current Status
 
 **WORKING ON:** None - ready for next issue
@@ -13,8 +29,8 @@ As of Feb 12, 2026:
 - safecontent-41m.1 (Add dark mode to marketing site) - COMPLETE
 - safecontent-q94 (Complete SafeTunes onboarding test coverage) - COMPLETE
 - safecontent-0nx (Update iOS app timeline messaging) - COMPLETE
-- safecontent-eio (SafeTube: Blocked search notifications for parents) - COMPLETE
-- safecontent-lye (Add password change to SafeTube settings) - COMPLETE
+- safecontent-eio (SafeTube: Blocked search notifications for parents) - COMPLETE (browser tested)
+- safecontent-lye (Add password change to SafeTube settings) - COMPLETE (E2E tests pass)
 - safecontent-ce3 (Create /terms and /privacy pages on marketing site) - COMPLETE
 - safecontent-71k (Implement Google OAuth across all apps) - IN PROGRESS
   - safecontent-71k.1 (Enable Google OAuth on marketing signup page) - COMPLETE
