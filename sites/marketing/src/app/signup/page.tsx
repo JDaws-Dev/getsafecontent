@@ -99,8 +99,21 @@ function SignupContent() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create checkout session");
+        // Try to parse error response, handle empty body gracefully
+        let errorMessage = "Failed to create checkout session";
+        try {
+          const text = await response.text();
+          if (text) {
+            const errorData = JSON.parse(text);
+            errorMessage = errorData.error || errorMessage;
+          }
+        } catch {
+          // If parsing fails, use status-based message
+          if (response.status === 429) {
+            errorMessage = "Too many requests. Please wait a moment and try again.";
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const { url } = await response.json();

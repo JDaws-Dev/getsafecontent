@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.14.1 complete** - P0 BUG: /forgot-password page returns 404
+**safecontent-cl1.14.2 complete** - P0 BUG: Cryptic error on signup with existing email
 
 As of Feb 11, 2026:
+- safecontent-cl1.14.2 (P0: Cryptic error on existing email) - COMPLETE
 - safecontent-cl1.14.1 (P0: /forgot-password 404) - COMPLETE
 - safecontent-cl1.1 (Marketing Site Signup Audit) - COMPLETE
 - safecontent-l3x (Audit logging for admin actions) - COMPLETE
@@ -39,6 +40,32 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.14.2: P0 BUG: Cryptic error on signup with existing email (Feb 11, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**Problem:** Users signing up with an existing email saw technical error "Failed to execute 'json' on 'Response': Unexpected end of JSON input" instead of friendly message.
+
+**Root cause:** Two issues:
+1. signup/page.tsx line 101-103 called `response.json()` without handling empty response body
+2. checkout/route.ts returned generic error messages for all failures
+
+**What was done:**
+1. Fixed signup/page.tsx: Added try/catch around response.text() + JSON.parse() to handle empty body
+2. Fixed checkout/route.ts: Added user-friendly error detection for common scenarios:
+   - Existing email → "An account with this email already exists. Please sign in instead."
+   - Rate limit → "Too many requests. Please wait a moment and try again."
+   - Invalid email → "Please enter a valid email address."
+   - Network issues → "Connection error. Please check your internet and try again."
+
+**Files modified:**
+- `sites/marketing/src/app/signup/page.tsx` - Robust error parsing
+- `sites/marketing/src/app/api/checkout/route.ts` - User-friendly error messages
+
+**Build verified:** npm run build passes (44 routes)
+
+---
 
 ### safecontent-cl1.14.1: P0 BUG: /forgot-password page returns 404 (Feb 12, 2026 - COMPLETE)
 

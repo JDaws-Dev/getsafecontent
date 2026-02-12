@@ -139,13 +139,46 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("Checkout error:", error);
+
+    // Check for common Stripe errors and provide user-friendly messages
+    let userMessage = "Failed to create checkout session. Please try again.";
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+      const msg = error.message.toLowerCase();
+
+      // Customer already exists with an active subscription
+      if (msg.includes("customer") && msg.includes("already") ||
+          msg.includes("email already") ||
+          msg.includes("existing subscription")) {
+        userMessage = "An account with this email already exists. Please sign in instead.";
+        statusCode = 400;
+      }
+      // Rate limit from Stripe
+      else if (msg.includes("rate limit") || msg.includes("too many requests")) {
+        userMessage = "Too many requests. Please wait a moment and try again.";
+        statusCode = 429;
+      }
+      // Invalid email format
+      else if (msg.includes("invalid email") || msg.includes("email is not valid")) {
+        userMessage = "Please enter a valid email address.";
+        statusCode = 400;
+      }
+      // Connection/network issues
+      else if (msg.includes("network") || msg.includes("connection") || msg.includes("timeout")) {
+        userMessage = "Connection error. Please check your internet and try again.";
+        statusCode = 503;
+      }
+    }
+
     capturePaymentError(error, {
       eventType: "checkout.create_session_failed",
       apps: errorContextApps,
     });
+
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Checkout failed" },
-      { status: 500 }
+      { error: userMessage },
+      { status: statusCode }
     );
   }
 }
