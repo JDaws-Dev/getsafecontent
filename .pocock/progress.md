@@ -7,9 +7,10 @@ This file maintains context between autonomous iterations.
 
 ## Current Status
 
-**safecontent-cl1.7 complete** - 3-App Bundle Monthly Checkout Tested
+**safecontent-cl1.8 complete** - 3-App Bundle Yearly Checkout Tested
 
 As of Feb 12, 2026:
+- safecontent-cl1.8 (3-App Bundle Yearly Checkout) - COMPLETE
 - safecontent-cl1.7 (3-App Bundle Monthly Checkout) - COMPLETE
 - safecontent-cl1.6 (2-App Bundle Checkout) - COMPLETE
 - safecontent-cl1.5 (Single-App Checkout Flow) - COMPLETE
@@ -52,6 +53,50 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cl1.8: Test 3-App Bundle Yearly ($99/year) (Feb 12, 2026 - COMPLETE)
+
+**Status:** Complete
+
+**What was done:**
+- Tested yearly toggle on signup page - WORKS
+- Tested pricing display ($99/year, $8.25/mo billed annually) - WORKS
+- Tested "Save 17% with yearly billing" messaging - VISIBLE
+- Tested checkout flow to Stripe - WORKS
+- Tested mobile responsiveness - WORKS
+- Verified no free trial for yearly (charges immediately) - CORRECT
+
+**UI/UX Rating: 9.5/10**
+
+**What works well:**
+1. Monthly/Yearly toggle clearly visible and functional
+2. Price shown as "$99/year" with "$8.25/month billed annually" breakdown
+3. "Save 17% with yearly billing" message clearly communicates value
+4. Heading changes from "Start Your Free Trial" to "Get Started Now" (appropriate since no trial)
+5. Button changes from "Start Free Trial" to "Subscribe Now" (correct - yearly charges immediately)
+6. Trust badge changes to "30-day money-back guarantee" (removed "No credit card" since yearly charges upfront)
+7. Stripe checkout shows "SafeFamily Yearly Subscription" at $99.00/year
+8. Stripe confirms "$8.25 / month billed annually"
+9. Mobile layout works perfectly with yearly toggle
+10. All 3 apps stay selected when switching billing interval
+
+**No bugs found**
+
+**Screenshots captured:**
+- bundle-3app-yearly-default.png - Yearly billing selected on desktop
+- bundle-3app-yearly-form-filled.png - Form filled with strong password
+- bundle-3app-yearly-stripe-checkout.png - Stripe checkout page showing $99/year
+- bundle-3app-yearly-mobile-default.png - Full mobile page with monthly (before toggle)
+- bundle-3app-yearly-mobile-yearly.png - Full mobile page with yearly toggle
+
+**Key observations:**
+- Yearly billing correctly charges $99 upfront (no free trial)
+- checkout/route.ts line 127 correctly skips trial for yearly: `isYearly ? {} : { trial_period_days: 7 }`
+- Yearly price ID (price_1SzLJUKgkIT46sg7xsKo2A71) is properly configured
+- UI messaging appropriately changes when switching to yearly
+- 17% savings messaging is accurate: $119.88/yr at monthly rate vs $99/yr = ~17% savings
+
+---
 
 ### safecontent-cl1.7: Test 3-App Bundle Monthly ($9.99/mo) (Feb 12, 2026 - COMPLETE)
 
