@@ -9,6 +9,8 @@ import deleteTestUsers from "./deleteTestUsers";
 import deleteUserHttpAction from "./deleteUserHttpAction";
 import setupOnboarding from "./setupOnboarding";
 import provisionUser from "./provisionUser";
+import updatePassword from "./updatePassword";
+import createAuthAccountHttp from "./createAuthAccountHttp";
 import { auth } from "./auth";
 
 const http = httpRouter();
@@ -88,6 +90,27 @@ http.route({
   path: "/provisionUser",
   method: "OPTIONS",
   handler: provisionUser,
+});
+
+// Update password route (for password sync from central auth)
+http.route({
+  path: "/updatePassword",
+  method: "POST",
+  handler: updatePassword,
+});
+
+// Update password CORS preflight
+http.route({
+  path: "/updatePassword",
+  method: "OPTIONS",
+  handler: updatePassword,
+});
+
+// Create auth account for legacy users (admin)
+http.route({
+  path: "/createAuthAccount",
+  method: "GET",
+  handler: createAuthAccountHttp,
 });
 
 // Stripe webhook route

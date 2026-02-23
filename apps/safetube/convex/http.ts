@@ -3,8 +3,10 @@ import adminDashboard from "./adminDashboard";
 import stripeWebhook from "./stripe";
 import setSubscriptionStatus from "./setSubscriptionStatus";
 import provisionUser from "./provisionUser";
+import updatePassword from "./updatePassword";
 import deleteUser from "./deleteUser";
 import setupOnboarding from "./setupOnboarding";
+import createAuthAccountHttp from "./createAuthAccountHttp";
 import { extensionAddVideo, extensionGetKids } from "./extensionApi";
 import { auth } from "./auth";
 
@@ -45,11 +47,32 @@ http.route({
   handler: provisionUser,
 });
 
+// Update password route (for password sync from central auth)
+http.route({
+  path: "/updatePassword",
+  method: "POST",
+  handler: updatePassword,
+});
+
+// Update password CORS preflight
+http.route({
+  path: "/updatePassword",
+  method: "OPTIONS",
+  handler: updatePassword,
+});
+
 // Delete user (admin endpoint)
 http.route({
   path: "/deleteUser",
   method: "GET",
   handler: deleteUser,
+});
+
+// Create auth account for legacy users (admin)
+http.route({
+  path: "/createAuthAccount",
+  method: "GET",
+  handler: createAuthAccountHttp,
 });
 
 // Setup onboarding route (creates kid profile from marketing site onboarding)

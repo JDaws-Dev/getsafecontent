@@ -555,6 +555,52 @@ export const provisionUserInternal = internalMutation({
 });
 
 /**
+ * Insert authAccount directly (for migrating legacy users)
+ */
+export const debugInsertAuthAccount = mutation({
+  args: {
+    userId: v.id("users"),
+    email: v.string(),
+    passwordHash: v.string(),
+  },
+  handler: async (ctx, args) => {
+    console.log("[debugInsertAuthAccount] Starting insert for:", args.email);
+
+    // Check if already exists
+    const existing = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", args.email.toLowerCase())
+      )
+      .first();
+
+    if (existing) {
+      return {
+        success: false,
+        error: "AuthAccount already exists",
+        existingId: existing._id,
+      };
+    }
+
+    // Perform the insert
+    const authAccountId = await ctx.db.insert("authAccounts", {
+      userId: args.userId,
+      provider: "password",
+      providerAccountId: args.email.toLowerCase(),
+      secret: args.passwordHash,
+    });
+
+    console.log("[debugInsertAuthAccount] Insert successful:", authAccountId);
+    return {
+      success: true,
+      authAccountId,
+      userId: args.userId,
+      email: args.email,
+    };
+  },
+});
+
+/**
  * Query to check if a user has an authAccounts entry (for debugging).
  */
 export const checkAuthAccountExists = internalQuery({
