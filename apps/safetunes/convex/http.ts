@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import stripe from "./stripe";
 import adminDashboard from "./adminDashboard";
+import adminOrphans from "./adminOrphans";
 import grantLifetime from "./grantLifetime";
 import setSubscriptionStatus from "./setSubscriptionStatus";
 import checkUserMusic from "./checkUserMusic";
@@ -28,6 +29,19 @@ http.route({
   path: "/adminDashboard",
   method: "OPTIONS",
   handler: adminDashboard,
+});
+
+// Admin orphan detection endpoint
+http.route({
+  path: "/adminOrphans",
+  method: "GET",
+  handler: adminOrphans,
+});
+
+http.route({
+  path: "/adminOrphans",
+  method: "OPTIONS",
+  handler: adminOrphans,
 });
 
 // Grant lifetime subscription route

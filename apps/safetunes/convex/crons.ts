@@ -23,4 +23,15 @@ crons.daily(
   internal.emailNotifications.cleanupOldBatches
 );
 
+/**
+ * Check for orphaned records once per day
+ * Detects data integrity issues where child records reference non-existent parents
+ * Sends alert email to admin if orphans are found
+ */
+crons.daily(
+  "check-orphaned-records",
+  { hourUTC: 4, minuteUTC: 0 }, // Run at 4:00 AM UTC daily (1 hour after cleanup)
+  internal.orphanDetection.checkAndAlertOrphans
+);
+
 export default crons;

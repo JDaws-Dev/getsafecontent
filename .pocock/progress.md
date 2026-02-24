@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Feb 24, 2026:
+- safecontent-h45 (Add orphan detection system) - COMPLETE
 - safecontent-9ur (Add Stripe webhook failure monitoring) - COMPLETE
 - safecontent-4vz (Fix orphaned kid profiles) - COMPLETE (analyzed, all test data, cleanup functions created)
 - safecontent-djp (Merge BetterAuth users to centralUsers) - COMPLETE (18 users migrated, subscription statuses updated)
@@ -101,6 +102,55 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-h45: Add orphan detection system (Feb 24, 2026 - COMPLETE)
+
+**Status:** Complete - Daily orphan detection with email alerts and admin dashboard
+
+**What was done:**
+
+1. **Created orphan detection module:**
+   - `apps/safetunes/convex/orphanDetection.ts`
+   - `findOrphanedRecords` query - detects orphans across 8 tables
+   - `checkAndAlertOrphans` internal mutation - runs daily, sends email if orphans found
+   - `deleteOrphanedRecords` internal mutation - cleans up orphans with cascade
+
+2. **Created admin endpoint:**
+   - `apps/safetunes/convex/adminOrphans.ts` - HTTP action
+   - HTML view with summary and detailed records
+   - JSON view for scripting
+   - Added to `http.ts` routes
+
+3. **Added scheduled job:**
+   - `apps/safetunes/convex/crons.ts` - `check-orphaned-records` at 4:00 AM UTC daily
+
+4. **Added email alert:**
+   - `apps/safetunes/convex/emails.ts` - `sendOrphanAlertEmail` action
+   - Sends summary table and sample records to admin
+
+5. **Documented cleanup procedure:**
+   - Added "Data Integrity & Orphan Detection" section to CLAUDE.md
+   - Includes monitoring, viewing, and cleanup commands
+
+**Tables checked for orphans:**
+- kidProfiles (missing user)
+- approvedSongs/approvedAlbums (missing user)
+- playlists, albumRequests, songRequests (missing kid profile)
+- recentlyPlayed, blockedSearches (missing kid profile)
+
+**Key decision:** Delete cascades from kidProfiles to child records automatically
+
+**Files created:**
+- `apps/safetunes/convex/orphanDetection.ts`
+- `apps/safetunes/convex/adminOrphans.ts`
+
+**Files modified:**
+- `apps/safetunes/convex/crons.ts`
+- `apps/safetunes/convex/emails.ts`
+- `apps/safetunes/convex/http.ts`
+- `CLAUDE.md`
+
+---
 
 ### safecontent-9ur: Add Stripe webhook failure monitoring (Feb 24, 2026 - COMPLETE)
 

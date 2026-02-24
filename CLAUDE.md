@@ -94,7 +94,90 @@ curl "https://adamant-crow-705.convex.site/getAccount?email=EMAIL&key=KEY"
 
 # Verify app access
 curl "https://adamant-crow-705.convex.site/verifyAppAccess?email=EMAIL&app=safetunes&key=KEY"
+
+# Create authAccount for legacy user (SafeTunes/SafeTube only)
+curl "https://APP.convex.site/createAuthAccount?email=EMAIL&key=KEY"
 ```
+
+---
+
+## Data Integrity & Orphan Detection
+
+SafeTunes has an automated orphan detection system that checks for data integrity issues daily.
+
+### What Are Orphans?
+Orphaned records are child records that reference non-existent parent records:
+- `kidProfiles` with deleted parent users
+- `playlists`, `requests`, `recentlyPlayed` with deleted kid profiles
+- `approvedSongs`/`approvedAlbums` with deleted users
+
+### Monitoring
+- **Automated Check**: Runs daily at 4:00 AM UTC
+- **Email Alert**: Sent to admin if orphans detected
+- **Admin Endpoint**: View current orphans via web interface
+
+### View Orphaned Records
+```bash
+# HTML view (interactive)
+curl "https://formal-chihuahua-623.convex.site/adminOrphans?key=ADMIN_KEY"
+
+# JSON view (for scripting)
+curl "https://formal-chihuahua-623.convex.site/adminOrphans?key=ADMIN_KEY&format=json"
+```
+
+### Cleanup Procedure
+```bash
+# 1. View current orphans (dry run)
+cd ~/safecontent/apps/safetunes
+npx convex run orphanDetection:findOrphanedRecords
+
+# 2. Delete all orphans (cascades to child records)
+npx convex run orphanDetection:deleteOrphanedRecords
+```
+
+### Prevention
+- Always use `archiveAndDeleteKidProfile` mutation instead of raw deletes
+- User deletion should cascade to kid profiles via `deleteUserHttpAction`
+- The detection system alerts proactively so issues don't accumulate
+
+---
+
+## Auth Troubleshooting
+
+### Current Auth Architecture
+- **Each app has separate auth** - users must sign up per app
+- **Convex Auth** requires both `users` table entry AND `authAccounts` entry
+- Password reset ONLY works if user has an `authAccounts` entry
+
+### Common Auth Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `InvalidAccountId` | No `authAccounts` entry | Use `/createAuthAccount` endpoint |
+| `auth:signIn Server Error` | Missing `auth.config.js` | Add config file, redeploy |
+| `internal is not defined` | Missing import | Add `import { internal } from "./_generated/api"` |
+
+### Legacy User Migration
+Users created before Convex Auth integration need `authAccounts` entries:
+
+```bash
+# Check if user has authAccount
+npx convex run users:checkAuthAccountExists '{"email": "user@example.com"}'
+
+# Create authAccount for legacy user
+curl "https://APP.convex.site/createAuthAccount?email=EMAIL&key=ADMIN_KEY"
+
+# Or via mutation (get userId first)
+npx convex run users:debugInsertAuthAccount '{"userId": "ID", "email": "EMAIL", "passwordHash": "NEEDS_RESET"}'
+```
+
+After creating authAccount, user must use **Forgot Password** to set their password.
+
+### Key Auth Files
+- `convex/auth.ts` - Convex Auth configuration
+- `convex/auth.config.js` - Provider configuration (MUST be committed!)
+- `convex/users.ts` - User management + `debugInsertAuthAccount`
+- `convex/migrateAuthAccounts.ts` - Batch migration scripts (SafeTunes only)
 
 ---
 
@@ -130,9 +213,9 @@ curl "https://adamant-crow-705.convex.site/verifyAppAccess?email=EMAIL&app=safet
 ## User Management
 
 ### Key Users (Do Not Delete)
-- `jedaws@gmail.com` - Owner
-- `metrotter@gmail.com` - Michelle (lifetime all apps)
-- `jennydaws@gmail.com` - Jenny (lifetime all apps)
+- `jedaws@gmail.com` - Owner (all apps)
+- `metrotter@gmail.com` - Michelle (SafeTube only currently)
+- `jennydaws@gmail.com` - Jenny (lifetime)
 
 ### Test Patterns (Safe to Delete)
 - `*@artiosacademies.com`
@@ -273,6 +356,9 @@ vercel env rm ENABLE_UNIFIED_AUTH production
 - SafeTunes/SafeTube: Email/password auth
 - SafeReads: Google OAuth only
 - Check if user exists in admin dashboard
+- **If `InvalidAccountId` error**: User missing `authAccounts` entry
+  - Use `/createAuthAccount` endpoint to fix
+  - Then have user use Forgot Password
 
 ### Checkout Fails
 1. Check Vercel env vars are set
@@ -385,6 +471,13 @@ Logs include: timestamp, admin email, action, target, IP address.
   - See `docs/FPEA-2026-EXHIBITOR-GUIDE.md`
   - URL: https://fpea.com/webforms/2026-exhibitor-registration
   - Cost: $525-685 (Zone 3-1)
+
+### Product
+- [ ] **Unified Auth** - One login across all apps (highest priority)
+  - Central user database in Marketing site
+  - Apps verify access via central API
+  - Password sync across apps
+  - See `docs/UNIFIED-AUTH-ARCHITECTURE.md`
 
 ### Marketing
 - [ ] Publish Substack article (saved in `docs/client-acquisition-research.md`)
