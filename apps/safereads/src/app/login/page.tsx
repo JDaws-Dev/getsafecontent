@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useConvexAuth } from "convex/react";
+import { useConvexAuth, useAction } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { BookOpen } from "lucide-react";
 import { useHaptic } from "../../hooks/useHaptic";
+import { api } from "../../../convex/_generated/api";
+import { InactiveUserPrompt } from "../../components/InactiveUserPrompt";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +18,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Central auth integration
+  const verifyCentralAuth = useAction(api.centralAuth.verifyCentralCredentialsAndProvision);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
+  const [centralUser, setCentralUser] = useState<{
+    email: string;
+    name: string | null;
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -60,7 +70,42 @@ export default function LoginPage() {
     setError("");
 
     try {
-      // Sign in with Convex Auth (Password provider)
+      // Step 1: Verify against central auth first
+      // This checks credentials, entitlement, and provisions user locally if needed
+      const centralResult = await verifyCentralAuth({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      console.log("[LoginPage] Central auth result:", centralResult);
+
+      if (!centralResult.success) {
+        // Central auth returned an error
+        haptic.error();
+        if (centralResult.errorCode === "RATE_LIMITED") {
+          setError(centralResult.error);
+        } else {
+          setError("Invalid email or password. Please try again.");
+        }
+        emailInputRef.current?.focus();
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Check entitlement
+      if (!centralResult.entitled) {
+        // User exists but doesn't have SafeReads - show upgrade prompt
+        console.log("[LoginPage] User not entitled to SafeReads, showing upgrade prompt");
+        haptic.light();
+        setCentralUser(centralResult.user);
+        setShowUpgradePrompt(true);
+        setLoading(false);
+        return;
+      }
+
+      // Step 3: User is verified and entitled - complete Convex Auth login
+      // The central auth action already provisioned the user (created authAccounts entry)
+      // Now we just need to create the session via Convex Auth
       await signIn("password", {
         email: formData.email,
         password: formData.password,
@@ -121,6 +166,11 @@ export default function LoginPage() {
   // Don't render if authenticated (will redirect)
   if (isAuthenticated) {
     return <div className="min-h-screen" />;
+  }
+
+  // Show upgrade prompt if user is verified but not entitled to SafeReads
+  if (showUpgradePrompt && centralUser) {
+    return <InactiveUserPrompt user={centralUser} />;
   }
 
   return (

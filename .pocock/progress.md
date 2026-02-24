@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Feb 23, 2026:
+- safecontent-7jv.2 (App login integration with central auth) - COMPLETE
 - safecontent-7jv.1 (Central user database schema and API) - COMPLETE
 - safecontent-41m.3 (Add dark mode to SafeTube) - COMPLETE
 - safecontent-41m.2 (Add dark mode to SafeTunes) - COMPLETE
@@ -94,6 +95,65 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-7jv.2: App login integration with central auth (Feb 23, 2026 - COMPLETE)
+
+**Status:** Complete - All 3 apps now verify against central auth before login
+
+**What was done:**
+
+1. **Created centralAuth.ts for each app:**
+   - SafeTunes: `apps/safetunes/convex/centralAuth.ts`
+   - SafeTube: `apps/safetube/convex/centralAuth.ts`
+   - SafeReads: `apps/safereads/convex/centralAuth.ts`
+   - Each implements `verifyCentralCredentialsAndProvision` action
+
+2. **Updated LoginPage in each app:**
+   - SafeTunes: `apps/safetunes/src/pages/LoginPage.jsx`
+   - SafeTube: `apps/safetube/src/pages/LoginPage.jsx`
+   - SafeReads: `apps/safereads/src/app/login/page.tsx`
+   - Added central auth verification before Convex Auth signIn()
+
+3. **Login flow now:**
+   1. User enters email/password
+   2. App calls `verifyCentralCredentialsAndProvision` action
+   3. Action calls central `/verifyCentralCredentials` (or queries locally for SafeReads)
+   4. If valid + entitled → provisions user locally (creates authAccounts if needed) → returns success
+   5. If valid + NOT entitled → returns entitled=false → shows UpgradePrompt
+   6. If central unreachable → falls back to local auth (graceful degradation)
+   7. If invalid → returns error
+   8. After verification, app calls Convex Auth signIn() to create session
+
+4. **Special handling for SafeReads:**
+   - SafeReads hosts the centralUsers table, so it queries locally
+   - Uses Scrypt directly instead of HTTP call
+   - Same flow, just faster since no network hop
+
+5. **Upgrade prompt integration:**
+   - SafeTunes: Uses existing `UpgradePrompt` component
+   - SafeTube: Uses existing `UpgradePrompt` component
+   - SafeReads: Uses existing `InactiveUserPrompt` component
+   - All show upgrade URL to getsafefamily.com/account?upgrade=appname
+
+**Files created:**
+- `apps/safetunes/convex/centralAuth.ts`
+- `apps/safetube/convex/centralAuth.ts`
+- `apps/safereads/convex/centralAuth.ts`
+
+**Files modified:**
+- `apps/safetunes/src/pages/LoginPage.jsx`
+- `apps/safetube/src/pages/LoginPage.jsx`
+- `apps/safereads/src/app/login/page.tsx`
+
+**Key decisions:**
+- Used Convex actions (not HTTP endpoints) to keep ADMIN_KEY server-side only
+- 5-second timeout for central auth calls prevents slow logins
+- Graceful fallback to local auth if central is unreachable
+- Provisioning happens automatically on verified + entitled login
+
+**Build verified:** All 3 apps build + Convex dev --once pass
+
+---
 
 ### safecontent-7jv.1: Central user database schema and API (Feb 23, 2026 - COMPLETE)
 
