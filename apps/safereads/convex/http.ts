@@ -11,6 +11,8 @@ import createCentralUser from "./createCentralUser";
 import updatePassword from "./updatePassword";
 import updateCentralPassword from "./updateCentralPassword";
 import verifyCentralCredentials from "./verifyCentralCredentials";
+import migrateToCentralUsers from "./migrateToCentralUsers";
+import exportUsersForMigration from "./exportUsersForMigration";
 
 const http = httpRouter();
 
@@ -116,6 +118,20 @@ http.route({
   path: "/verifyCentralCredentials",
   method: "OPTIONS",
   handler: verifyCentralCredentials,
+});
+
+// Migration route (one-time use to migrate existing users to centralUsers)
+http.route({
+  path: "/migrateToCentralUsers",
+  method: "GET",
+  handler: migrateToCentralUsers,
+});
+
+// Export users for migration (one-time use)
+http.route({
+  path: "/exportUsersForMigration",
+  method: "GET",
+  handler: exportUsersForMigration,
 });
 
 auth.addHttpRoutes(http);

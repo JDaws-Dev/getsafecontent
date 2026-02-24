@@ -7,6 +7,7 @@ import updatePassword from "./updatePassword";
 import deleteUser from "./deleteUser";
 import setupOnboarding from "./setupOnboarding";
 import createAuthAccountHttp from "./createAuthAccountHttp";
+import exportUsersForMigration from "./exportUsersForMigration";
 import { extensionAddVideo, extensionGetKids } from "./extensionApi";
 import { auth } from "./auth";
 
@@ -105,6 +106,13 @@ http.route({
   path: "/extension/get-kids",
   method: "OPTIONS",
   handler: extensionGetKids,
+});
+
+// Export users for migration (one-time use)
+http.route({
+  path: "/exportUsersForMigration",
+  method: "GET",
+  handler: exportUsersForMigration,
 });
 
 // Convex Auth routes

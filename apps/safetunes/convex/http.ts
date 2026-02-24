@@ -11,6 +11,7 @@ import setupOnboarding from "./setupOnboarding";
 import provisionUser from "./provisionUser";
 import updatePassword from "./updatePassword";
 import createAuthAccountHttp from "./createAuthAccountHttp";
+import exportUsersForMigration from "./exportUsersForMigration";
 import { auth } from "./auth";
 
 const http = httpRouter();
@@ -118,6 +119,13 @@ http.route({
   path: "/stripe",
   method: "POST",
   handler: stripe,
+});
+
+// Export users for migration (one-time use)
+http.route({
+  path: "/exportUsersForMigration",
+  method: "GET",
+  handler: exportUsersForMigration,
 });
 
 // Convex Auth routes
