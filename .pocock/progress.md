@@ -23,10 +23,11 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 
 ## Current Status
 
-**WORKING ON:** safecontent-uhq (Automate daily Convex backups)
+**WORKING ON:** None - ready for next issue
 
 As of Feb 24, 2026:
-- safecontent-uhq (Automate daily Convex backups) - IN PROGRESS (workflow created, needs secrets)
+- safecontent-vfq (Clean up duplicate Stripe customers) - COMPLETE (script + docs, owner runs cleanup)
+- safecontent-uhq (Automate daily Convex backups) - COMPLETE (workflow created, owner needs to add secrets)
 - safecontent-h45 (Add orphan detection system) - COMPLETE
 - safecontent-9ur (Add Stripe webhook failure monitoring) - COMPLETE
 - safecontent-4vz (Fix orphaned kid profiles) - COMPLETE (analyzed, all test data, cleanup functions created)
@@ -104,9 +105,49 @@ Run `bd ready` to check for new issues.
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
 
-### safecontent-uhq: Automate daily Convex backups (Feb 24, 2026 - IN PROGRESS)
+### safecontent-vfq: Clean up duplicate Stripe customers (Feb 24, 2026 - COMPLETE)
 
-**Status:** Workflow created, needs secrets configured and manual test
+**Status:** Complete - Script + docs created, owner executes cleanup
+
+**What was done:**
+
+1. **Created cleanup script:**
+   - `scripts/stripe-cleanup.ts`
+   - Fetches all Stripe customers
+   - Groups by email to find duplicates
+   - Sorts by: active subscription → payment count → creation date
+   - Marks primary to keep, duplicates to archive
+   - `--dry-run` (default): Just lists duplicates
+   - `--archive`: Actually archives duplicates (skips active subscriptions)
+   - `--list-all`: Lists all customers with status
+
+2. **Created cleanup documentation:**
+   - `docs/STRIPE-DUPLICATE-CLEANUP.md`
+   - Three cleanup methods: Dashboard, Script, Manual API
+   - Known duplicates documented
+   - centralUsers update procedure
+   - Verification and rollback steps
+
+**Key decisions:**
+- Script skips customers with active subscriptions (requires manual review)
+- Used Stripe's archive/delete API (preserves data, removes from active list)
+- centralUsers updated via existing `/updateSubscription` endpoint
+
+**Owner action required:**
+1. Get STRIPE_SECRET_KEY from Vercel env vars
+2. Run script with `--dry-run` first
+3. Review output before running with `--archive`
+4. Update centralUsers if needed
+
+**Files created:**
+- `scripts/stripe-cleanup.ts`
+- `docs/STRIPE-DUPLICATE-CLEANUP.md`
+
+---
+
+### safecontent-uhq: Automate daily Convex backups (Feb 24, 2026 - COMPLETE)
+
+**Status:** Complete - Workflow created, owner needs to configure secrets
 
 **What was done:**
 
