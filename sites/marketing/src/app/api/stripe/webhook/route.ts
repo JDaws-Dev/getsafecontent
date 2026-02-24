@@ -3,6 +3,8 @@ import { getStripe } from "@/lib/stripe";
 import Stripe from "stripe";
 import { Resend } from "resend";
 import { captureWebhookError, captureProvisioningFailure } from "@/lib/sentry";
+import { isUnifiedAuthEnabled } from "@/lib/feature-flags";
+import { logWebhookEvent, type WebhookEventType, type WebhookStatus } from "@/lib/webhook-log";
 
 // Admin key for authenticating with app admin endpoints
 // Must be set in Vercel env vars - same key used across all Convex deployments
@@ -77,6 +79,48 @@ function parseAppsFromMetadata(metadata: Stripe.Metadata | null): AppName[] {
   return apps.length > 0 ? apps : ALL_APPS;
 }
 
+// Central user data structure from SafeReads
+// Now includes authProvider to distinguish password vs OAuth users
+interface CentralUserData {
+  exists: boolean;
+  email?: string;
+  passwordHash?: string | null; // null for OAuth users
+  name?: string;
+  entitledApps?: string[];
+  subscriptionStatus?: string;
+  stripeCustomerId?: string;
+  subscriptionId?: string;
+  authProvider?: "password" | "google" | "unknown"; // NEW: indicates how user signed up
+}
+
+/**
+ * Fetch central user data from SafeReads' centralUsers table.
+ * This is used to get the password hash for provisioning to apps.
+ */
+async function getCentralUser(email: string): Promise<CentralUserData | null> {
+  if (!ADMIN_KEY) {
+    console.warn("ADMIN_API_KEY not set - cannot fetch central user");
+    return null;
+  }
+
+  const encodedEmail = encodeURIComponent(email);
+  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const url = `${APP_ENDPOINTS.safereads}/getCentralUser?email=${encodedEmail}&key=${encodedKey}`;
+
+  try {
+    const response = await fetchWithTimeout(url, {}, PROVISION_TIMEOUT_MS);
+    if (!response.ok) {
+      console.warn(`Failed to fetch central user for ${email}: HTTP ${response.status}`);
+      return null;
+    }
+    const data = await response.json() as CentralUserData;
+    return data;
+  } catch (err) {
+    console.warn(`Error fetching central user for ${email}:`, err);
+    return null;
+  }
+}
+
 // Result type for individual app provisioning
 type AppProvisionResult = {
   app: AppName;
@@ -88,23 +132,92 @@ type AppProvisionResult = {
 // Helper to fetch with timeout using AbortController
 async function fetchWithTimeout(
   url: string,
+  options?: RequestInit,
   timeoutMs: number = PROVISION_TIMEOUT_MS
 ): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(url, { signal: controller.signal });
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
     return response;
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-// Helper to grant access to a single app (used with retry wrapper)
-async function grantSingleAppAccess(
+/**
+ * Provision a user to a single app using the new /provisionUser endpoint.
+ * This creates BOTH the users table entry AND the authAccounts entry,
+ * allowing users to login with their password.
+ *
+ * For OAuth users (isOAuthUser=true), passwordHash should be empty and
+ * the app will skip authAccounts creation (user logs in via Google OAuth).
+ */
+async function provisionUserToApp(
   email: string,
-  app: AppName
+  app: AppName,
+  passwordHash: string,
+  options: {
+    name?: string | null;
+    subscriptionStatus?: "trial" | "active" | "lifetime";
+    stripeCustomerId?: string | null;
+    subscriptionId?: string | null;
+    isOAuthUser?: boolean; // NEW: if true, skip authAccounts creation
+  } = {}
+): Promise<void> {
+  if (!ADMIN_KEY) {
+    throw new Error("ADMIN_API_KEY not configured");
+  }
+
+  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const endpoint = APP_ENDPOINTS[app];
+  const url = `${endpoint}/provisionUser?key=${encodedKey}`;
+
+  const body = {
+    email,
+    passwordHash: options.isOAuthUser ? null : passwordHash, // null for OAuth users
+    name: options.name || null,
+    subscriptionStatus: options.subscriptionStatus || "active",
+    entitledToThisApp: true,
+    stripeCustomerId: options.stripeCustomerId || null,
+    subscriptionId: options.subscriptionId || null,
+    isOAuthUser: options.isOAuthUser || false, // Pass flag to app
+  };
+
+  try {
+    const response = await fetchWithTimeout(
+      url,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      },
+      PROVISION_TIMEOUT_MS
+    );
+
+    if (!response.ok) {
+      const responseBody = await response.text().catch(() => "");
+      throw new Error(`HTTP ${response.status} - ${responseBody}`);
+    }
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error(`Timeout after ${PROVISION_TIMEOUT_MS}ms`);
+    }
+    throw err;
+  }
+}
+
+// Helper to grant access to a single app using the LEGACY setSubscriptionStatus endpoint.
+// Used as fallback when no central user with passwordHash exists.
+// status: "active" for paid users, "lifetime" for promo codes
+async function grantSingleAppAccessLegacy(
+  email: string,
+  app: AppName,
+  status: "active" | "lifetime" = "active"
 ): Promise<void> {
   if (!ADMIN_KEY) {
     throw new Error("ADMIN_API_KEY not configured");
@@ -113,18 +226,12 @@ async function grantSingleAppAccess(
   const encodedEmail = encodeURIComponent(email);
   const encodedKey = encodeURIComponent(ADMIN_KEY);
   const endpoint = APP_ENDPOINTS[app];
-  let url: string;
 
-  if (app === "safetube") {
-    // SafeTube uses setSubscriptionStatus with lifetime
-    url = `${endpoint}/setSubscriptionStatus?email=${encodedEmail}&status=lifetime&key=${encodedKey}`;
-  } else {
-    // SafeTunes and SafeReads use grantLifetime
-    url = `${endpoint}/grantLifetime?email=${encodedEmail}&key=${encodedKey}`;
-  }
+  // All apps use setSubscriptionStatus endpoint
+  const url = `${endpoint}/setSubscriptionStatus?email=${encodedEmail}&status=${status}&key=${encodedKey}`;
 
   try {
-    const response = await fetchWithTimeout(url, PROVISION_TIMEOUT_MS);
+    const response = await fetchWithTimeout(url, {}, PROVISION_TIMEOUT_MS);
     if (!response.ok) {
       const body = await response.text().catch(() => "");
       throw new Error(`HTTP ${response.status} - ${body}`);
@@ -138,26 +245,19 @@ async function grantSingleAppAccess(
   }
 }
 
-// Helper to grant access to specific apps with retry logic
-async function grantAppAccess(
+// Helper to grant access to multiple apps using the LEGACY setSubscriptionStatus endpoint.
+// This is the original flow that doesn't use password hash provisioning.
+async function grantAppAccessLegacy(
   email: string,
-  apps: AppName[]
-): Promise<{ success: boolean; errors: string[]; failedApps: AppProvisionResult[] }> {
-  if (!ADMIN_KEY) {
-    return {
-      success: false,
-      errors: ["ADMIN_API_KEY not configured"],
-      failedApps: apps.map(app => ({ app, success: false, error: "ADMIN_API_KEY not configured" }))
-    };
-  }
-
+  apps: AppName[],
+  status: "active" | "lifetime" = "active"
+): Promise<{ success: boolean; errors: string[]; failedApps: AppProvisionResult[]; usedNewFlow: false }> {
   const errors: string[] = [];
   const failedApps: AppProvisionResult[] = [];
 
-  // Grant access to each selected app in parallel with retries
   const grantPromises = apps.map(async (app): Promise<AppProvisionResult> => {
     const result = await withRetry(
-      () => grantSingleAppAccess(email, app),
+      () => grantSingleAppAccessLegacy(email, app, status),
       `grant ${app} access for ${email}`
     );
 
@@ -182,13 +282,120 @@ async function grantAppAccess(
     }
   }
 
-  console.log(`App access grant for ${email} (apps: ${apps.join(",")}):`, {
+  console.log(`App access grant (LEGACY FLOW) for ${email} (apps: ${apps.join(",")}):`, {
     success: errors.length === 0,
     errors,
     failedApps: failedApps.map(f => f.app),
   });
 
-  return { success: errors.length === 0, errors, failedApps };
+  return { success: errors.length === 0, errors, failedApps, usedNewFlow: false };
+}
+
+// Helper to grant access to specific apps with retry logic.
+// This uses the NEW provisioning flow that includes password hash when available,
+// but only if the ENABLE_UNIFIED_AUTH feature flag is enabled.
+// Falls back to legacy flow when:
+// - Feature flag is disabled
+// - User doesn't have a central account with password hash
+// status: "active" for paid users, "lifetime" for promo codes
+async function grantAppAccess(
+  email: string,
+  apps: AppName[],
+  status: "active" | "lifetime" = "active",
+  options?: {
+    stripeCustomerId?: string | null;
+    subscriptionId?: string | null;
+    customerName?: string | null;
+  }
+): Promise<{ success: boolean; errors: string[]; failedApps: AppProvisionResult[]; usedNewFlow: boolean }> {
+  if (!ADMIN_KEY) {
+    return {
+      success: false,
+      errors: ["ADMIN_API_KEY not configured"],
+      failedApps: apps.map(app => ({ app, success: false, error: "ADMIN_API_KEY not configured" })),
+      usedNewFlow: false,
+    };
+  }
+
+  const errors: string[] = [];
+  const failedApps: AppProvisionResult[] = [];
+
+  // Check feature flag first
+  const unifiedAuthEnabled = isUnifiedAuthEnabled();
+
+  // If unified auth is disabled, always use legacy flow
+  if (!unifiedAuthEnabled) {
+    console.log(`[grantAppAccess] UNIFIED_AUTH feature flag is DISABLED - using LEGACY flow for ${email}`);
+    return grantAppAccessLegacy(email, apps, status);
+  }
+
+  // Unified auth is enabled - try to fetch central user data
+  const centralUser = await getCentralUser(email);
+
+  // Determine if we can use the new provisioning flow:
+  // 1. Password users: have passwordHash - provision with hash for password login
+  // 2. OAuth users: authProvider is "google" - provision without hash (login via Google)
+  // 3. Unknown/no user: fall back to legacy flow
+  const hasPasswordHash = centralUser?.exists && centralUser?.passwordHash;
+  const isOAuthUser = centralUser?.exists && centralUser?.authProvider === "google";
+  const canUseNewFlow = hasPasswordHash || isOAuthUser;
+
+  if (canUseNewFlow) {
+    const flowType = hasPasswordHash ? "password" : "OAuth";
+    console.log(`[grantAppAccess] UNIFIED_AUTH enabled + user exists (${flowType}) - using NEW provisioning flow for ${email}`);
+
+    // Use the new provisioning flow
+    // For OAuth users, passwordHash will be null - apps should create user without authAccounts
+    const grantPromises = apps.map(async (app): Promise<AppProvisionResult> => {
+      const result = await withRetry(
+        () => provisionUserToApp(email, app, centralUser!.passwordHash || "", {
+          name: centralUser!.name || options?.customerName,
+          subscriptionStatus: status,
+          stripeCustomerId: options?.stripeCustomerId,
+          subscriptionId: options?.subscriptionId,
+          // Pass flag to indicate this is an OAuth user (no password auth needed)
+          isOAuthUser: isOAuthUser,
+        }),
+        `provision ${app} for ${email}`
+      );
+
+      if (result.success) {
+        return { app, success: true };
+      } else {
+        return {
+          app,
+          success: false,
+          error: result.error,
+          attempts: result.attempts
+        };
+      }
+    });
+
+    const results = await Promise.all(grantPromises);
+
+    for (const result of results) {
+      if (!result.success) {
+        errors.push(`${result.app}: ${result.error} (after ${result.attempts} attempts)`);
+        failedApps.push(result);
+      }
+    }
+
+    console.log(`App access grant (NEW FLOW - ${flowType}) for ${email} (apps: ${apps.join(",")}):`, {
+      success: errors.length === 0,
+      errors,
+      failedApps: failedApps.map(f => f.app),
+    });
+
+    return { success: errors.length === 0, errors, failedApps, usedNewFlow: true };
+  } else {
+    // Fall back to legacy flow (no user found even though unified auth is enabled)
+    // This happens for:
+    // 1. Users who signed up before unified auth was implemented
+    // 2. Users who went directly to Stripe checkout without creating a central account first
+    // 3. Race condition: webhook arrived before signup completed
+    console.log(`[grantAppAccess] UNIFIED_AUTH enabled but no user found - falling back to LEGACY flow for ${email}`);
+    return grantAppAccessLegacy(email, apps, status);
+  }
 }
 
 // Helper to revoke access from specific apps
@@ -217,7 +424,7 @@ async function revokeAppAccess(
     const url = `${endpoint}/setSubscriptionStatus?email=${encodedEmail}&status=expired&key=${encodedKey}`;
 
     try {
-      const response = await fetchWithTimeout(url, PROVISION_TIMEOUT_MS);
+      const response = await fetchWithTimeout(url, {}, PROVISION_TIMEOUT_MS);
       if (!response.ok) {
         const body = await response.text().catch(() => "");
         return { app, success: false, error: `HTTP ${response.status} - ${body}` };
@@ -458,6 +665,7 @@ ${failedApps.map(f => {
 }
 
 export async function POST(req: Request) {
+  const startTime = Date.now();
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
 
@@ -495,6 +703,29 @@ export async function POST(req: Request) {
     );
   }
 
+  // Track webhook processing context for logging
+  let webhookContext: {
+    eventType: WebhookEventType;
+    email: string | null;
+    customerName: string | null;
+    amountCents: number | null;
+    apps: string[];
+    failedApps: string[];
+    errors: string[];
+    status: WebhookStatus;
+    metadata: Record<string, unknown>;
+  } = {
+    eventType: (event.type as WebhookEventType) || "unknown",
+    email: null,
+    customerName: null,
+    amountCents: null,
+    apps: [],
+    failedApps: [],
+    errors: [],
+    status: "success",
+    metadata: {},
+  };
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -507,14 +738,41 @@ export async function POST(req: Request) {
           `Checkout completed: ${email}, bundle: ${isBundle}, apps: ${apps.join(",")}, subscription: ${session.subscription}`
         );
 
+        // Update webhook context
+        webhookContext.email = email;
+        webhookContext.apps = apps;
+        webhookContext.metadata = {
+          sessionId: session.id,
+          isBundle,
+          subscriptionId: session.subscription,
+        };
+
         if (isBundle && email) {
-          // Grant access to selected apps only (with retry logic)
-          const result = await grantAppAccess(email, apps);
+          // Extract Stripe metadata for provisioning
           const amountTotal = session.amount_total || 0;
           const customerName = session.customer_details?.name || null;
+          const stripeCustomerId = typeof session.customer === "string" ? session.customer : null;
+          const subscriptionId = typeof session.subscription === "string" ? session.subscription : null;
+
+          webhookContext.customerName = customerName;
+          webhookContext.amountCents = amountTotal;
+
+          // Grant access to selected apps only (with retry logic)
+          // This will use the NEW provisioning flow if a centralUser with passwordHash exists,
+          // or fall back to the LEGACY flow for users without central accounts.
+          const result = await grantAppAccess(email, apps, "active", {
+            stripeCustomerId,
+            subscriptionId,
+            customerName,
+          });
 
           if (!result.success) {
             console.error(`Failed to provision apps for ${email} after ${MAX_RETRIES} retries:`, result.errors);
+
+            // Update webhook context for logging
+            webhookContext.failedApps = result.failedApps.map(f => f.app);
+            webhookContext.errors = result.errors;
+            webhookContext.status = result.failedApps.length === apps.length ? "failure" : "partial_failure";
 
             // Capture in Sentry as critical error
             captureProvisioningFailure({
@@ -556,6 +814,14 @@ export async function POST(req: Request) {
           `Subscription updated: ${subscription.id}, status: ${subscription.status}, bundle: ${isBundle}, apps: ${newApps.join(",")}`
         );
 
+        // Update webhook context
+        webhookContext.apps = newApps;
+        webhookContext.metadata = {
+          subscriptionId: subscription.id,
+          subscriptionStatus: subscription.status,
+          isBundle,
+        };
+
         // Handle subscription status changes
         if (isBundle) {
           // Get customer email from Stripe
@@ -563,6 +829,9 @@ export async function POST(req: Request) {
             subscription.customer as string
           ) as Stripe.Customer;
           const email = customer.email;
+
+          webhookContext.email = email;
+          webhookContext.customerName = customer.name || null;
 
           if (email) {
             if (subscription.status === "active") {
@@ -575,14 +844,27 @@ export async function POST(req: Request) {
               if (previousAttributes?.metadata) {
                 // Apps metadata changed - sync access
                 const previousApps = parseAppsFromMetadata(previousAttributes.metadata);
-                await syncAppAccess(email, newApps, previousApps);
+                const result = await syncAppAccess(email, newApps, previousApps);
+                if (!result.success) {
+                  webhookContext.errors = result.errors;
+                  webhookContext.status = "partial_failure";
+                }
               } else {
                 // Just re-grant access if subscription becomes active again
-                await grantAppAccess(email, newApps);
+                const result = await grantAppAccess(email, newApps);
+                if (!result.success) {
+                  webhookContext.failedApps = result.failedApps.map(f => f.app);
+                  webhookContext.errors = result.errors;
+                  webhookContext.status = result.failedApps.length === newApps.length ? "failure" : "partial_failure";
+                }
               }
             } else if (subscription.status === "canceled" || subscription.status === "unpaid") {
               // Revoke access if subscription is canceled or unpaid
-              await revokeAppAccess(email, newApps);
+              const result = await revokeAppAccess(email, newApps);
+              if (!result.success) {
+                webhookContext.errors = result.errors;
+                webhookContext.status = "partial_failure";
+              }
             }
           }
         }
@@ -596,6 +878,13 @@ export async function POST(req: Request) {
 
         console.log(`Subscription deleted: ${subscription.id}, bundle: ${isBundle}, apps: ${apps.join(",")}`);
 
+        // Update webhook context
+        webhookContext.apps = apps;
+        webhookContext.metadata = {
+          subscriptionId: subscription.id,
+          isBundle,
+        };
+
         if (isBundle) {
           // Get customer email and revoke access
           const customer = await getStripe().customers.retrieve(
@@ -603,10 +892,15 @@ export async function POST(req: Request) {
           ) as Stripe.Customer;
           const email = customer.email;
 
+          webhookContext.email = email;
+          webhookContext.customerName = customer.name || null;
+
           if (email) {
             const result = await revokeAppAccess(email, apps);
             if (!result.success) {
               console.error(`Failed to revoke apps for ${email}:`, result.errors);
+              webhookContext.errors = result.errors;
+              webhookContext.status = "partial_failure";
             }
           }
         }
@@ -619,6 +913,14 @@ export async function POST(req: Request) {
 
         console.log(`Payment failed for ${email}, invoice: ${invoice.id}`);
 
+        // Update webhook context
+        webhookContext.email = email;
+        webhookContext.amountCents = invoice.amount_due;
+        webhookContext.metadata = {
+          invoiceId: invoice.id,
+          attemptCount: invoice.attempt_count,
+        };
+
         // TODO: Send notification email about failed payment
         break;
       }
@@ -627,6 +929,22 @@ export async function POST(req: Request) {
         console.log(`Unhandled event type: ${event.type}`);
     }
 
+    // Log webhook event to Upstash
+    const processingTimeMs = Date.now() - startTime;
+    await logWebhookEvent({
+      eventId: event.id,
+      eventType: webhookContext.eventType,
+      status: webhookContext.status,
+      email: webhookContext.email,
+      customerName: webhookContext.customerName,
+      amountCents: webhookContext.amountCents,
+      apps: webhookContext.apps,
+      failedApps: webhookContext.failedApps,
+      errors: webhookContext.errors,
+      metadata: webhookContext.metadata,
+      processingTimeMs,
+    });
+
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Webhook handler error:", error);
@@ -634,6 +952,23 @@ export async function POST(req: Request) {
       eventType: event.type,
       eventId: event.id,
     });
+
+    // Log the failure
+    const processingTimeMs = Date.now() - startTime;
+    await logWebhookEvent({
+      eventId: event.id,
+      eventType: (event.type as WebhookEventType) || "unknown",
+      status: "failure",
+      email: webhookContext.email,
+      customerName: webhookContext.customerName,
+      amountCents: webhookContext.amountCents,
+      apps: webhookContext.apps,
+      failedApps: webhookContext.apps, // All apps failed
+      errors: [error instanceof Error ? error.message : String(error)],
+      metadata: webhookContext.metadata,
+      processingTimeMs,
+    });
+
     return NextResponse.json(
       { error: "Webhook handler failed" },
       { status: 500 }

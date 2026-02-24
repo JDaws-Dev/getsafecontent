@@ -64,6 +64,21 @@ export default async function AdminPage() {
             </Link>
 
             <Link
+              href="/admin/provision-user"
+              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <span className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                🎁
+              </span>
+              <div>
+                <p className="font-medium text-gray-900">Provision User</p>
+                <p className="text-sm text-gray-500">
+                  Manually set subscription status
+                </p>
+              </div>
+            </Link>
+
+            <Link
               href="/admin/failed-provisions"
               className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
             >
@@ -74,6 +89,21 @@ export default async function AdminPage() {
                 <p className="font-medium text-gray-900">Fix Failed Provisions</p>
                 <p className="text-sm text-gray-500">
                   Retry provisioning for paid users
+                </p>
+              </div>
+            </Link>
+
+            <Link
+              href="/admin/webhook-logs"
+              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <span className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                🔔
+              </span>
+              <div>
+                <p className="font-medium text-gray-900">Webhook Logs</p>
+                <p className="text-sm text-gray-500">
+                  Monitor Stripe webhook processing
                 </p>
               </div>
             </Link>

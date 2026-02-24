@@ -26,7 +26,9 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Feb 24, 2026:
-- safecontent-djp (Merge BetterAuth users to centralUsers) - COMPLETE
+- safecontent-9ur (Add Stripe webhook failure monitoring) - COMPLETE
+- safecontent-4vz (Fix orphaned kid profiles) - COMPLETE (analyzed, all test data, cleanup functions created)
+- safecontent-djp (Merge BetterAuth users to centralUsers) - COMPLETE (18 users migrated, subscription statuses updated)
 - safecontent-7jv.6 (Upgrade prompts for users without app entitlement) - COMPLETE (already implemented)
 - safecontent-7jv.5 (Batch migrate existing users to central auth) - COMPLETE
 - safecontent-7jv.3 (Password sync across all apps) - COMPLETE
@@ -99,6 +101,58 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-9ur: Add Stripe webhook failure monitoring (Feb 24, 2026 - COMPLETE)
+
+**Status:** Complete - Webhook events now logged to Upstash with admin dashboard
+
+**What was done:**
+
+1. **Created webhook logging library:**
+   - `sites/marketing/src/lib/webhook-log.ts` - Logs all webhook events to Upstash Redis
+   - Stores eventId, eventType, status (success/partial_failure/failure), email, apps, errors, processing time
+   - Keeps last 500 webhook events with automatic cleanup
+   - `getWebhookStats()` returns 24h success/failure counts
+
+2. **Updated webhook route:**
+   - `sites/marketing/src/app/api/stripe/webhook/route.ts` - Now logs every webhook event
+   - Tracks webhook context throughout processing
+   - Logs both success and failure cases with detailed error info
+   - Includes processing time for performance monitoring
+
+3. **Created admin dashboard:**
+   - `sites/marketing/src/app/admin/webhook-logs/page.tsx` - Full webhook history view
+   - Stats cards showing 24h totals and success/failure breakdown
+   - Filters by status, event type, and email
+   - Color-coded failed apps in the table
+   - Recent errors section with quick visibility
+
+4. **Added API endpoint:**
+   - `sites/marketing/src/app/api/admin/webhook-logs/route.ts` - Fetch logs and stats
+
+5. **Updated admin dashboard:**
+   - Added "Webhook Logs" link to Quick Actions section
+
+**Key decisions:**
+- Used existing Upstash Redis (same as rate limiting and audit logs)
+- Logs ALL webhook events, not just failures - provides visibility into normal operations
+- Alert email already existed (`sendProvisioningFailureAlert`) - no change needed
+- Retry logic already existed (3 attempts with exponential backoff) - no change needed
+
+**Files created:**
+- `sites/marketing/src/lib/webhook-log.ts`
+- `sites/marketing/src/app/api/admin/webhook-logs/route.ts`
+- `sites/marketing/src/app/admin/webhook-logs/page.tsx`
+
+**Files modified:**
+- `sites/marketing/src/app/api/stripe/webhook/route.ts` - Added logging
+- `sites/marketing/src/app/admin/page.tsx` - Added link
+
+**Verification:**
+- Marketing site build passes
+- Admin dashboard accessible at `/admin/webhook-logs`
+
+---
 
 ### safecontent-djp: Merge BetterAuth users to centralUsers (Feb 24, 2026 - COMPLETE)
 
