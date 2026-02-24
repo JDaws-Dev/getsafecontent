@@ -1,0 +1,227 @@
+# Daily Convex Backup
+# Exports all production Convex deployments to Cloudflare R2
+#
+# Schedule: Daily at 3:00 AM UTC
+# Manual: workflow_dispatch
+#
+# Required Secrets:
+# - CONVEX_DEPLOY_KEY_SAFETUNES: Production deploy key for SafeTunes (prod:formal-chihuahua-623)
+# - CONVEX_DEPLOY_KEY_SAFETUBE: Production deploy key for SafeTube (prod:rightful-rabbit-333)
+# - CONVEX_DEPLOY_KEY_SAFEREADS: Production deploy key for SafeReads (prod:exuberant-puffin-838)
+# - CONVEX_DEPLOY_KEY_MARKETING: Production deploy key for Marketing (prod:adamant-crow-705)
+# - R2_ACCOUNT_ID: Cloudflare account ID
+# - R2_ACCESS_KEY_ID: R2 API access key
+# - R2_SECRET_ACCESS_KEY: R2 API secret key
+# - R2_BUCKET_NAME: R2 bucket name (e.g., safefamily-backups)
+# - RESEND_API_KEY: For failure email alerts
+#
+# Retention: Objects auto-deleted after 30 days via R2 lifecycle rules
+
+name: Daily Convex Backup
+
+on:
+  schedule:
+    # 3:00 AM UTC daily
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      include_storage:
+        description: 'Include file storage in export'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  backup:
+    name: Backup Convex Deployments
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Convex CLI
+        run: npm install -g convex
+
+      - name: Create backup directory
+        run: mkdir -p backups
+
+      - name: Get backup date
+        id: date
+        run: echo "DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      # Export SafeTunes
+      - name: Export SafeTunes
+        id: export_safetunes
+        run: |
+          echo "Exporting SafeTunes..."
+          if [ "${{ github.event.inputs.include_storage }}" = "true" ]; then
+            CONVEX_DEPLOY_KEY="${{ secrets.CONVEX_DEPLOY_KEY_SAFETUNES }}" \
+              npx convex export --path backups/safetunes-${{ steps.date.outputs.DATE }}.zip --include-file-storage
+          else
+            CONVEX_DEPLOY_KEY="${{ secrets.CONVEX_DEPLOY_KEY_SAFETUNES }}" \
+              npx convex export --path backups/safetunes-${{ steps.date.outputs.DATE }}.zip
+          fi
+          echo "SafeTunes export complete"
+        continue-on-error: true
+
+      # Export SafeTube
+      - name: Export SafeTube
+        id: export_safetube
+        run: |
+          echo "Exporting SafeTube..."
+          if [ "${{ github.event.inputs.include_storage }}" = "true" ]; then
+            CONVEX_DEPLOY_KEY="${{ secrets.CONVEX_DEPLOY_KEY_SAFETUBE }}" \
+              npx convex export --path backups/safetube-${{ steps.date.outputs.DATE }}.zip --include-file-storage
+          else
+            CONVEX_DEPLOY_KEY="${{ secrets.CONVEX_DEPLOY_KEY_SAFETUBE }}" \
+              npx convex export --path backups/safetube-${{ steps.date.outputs.DATE }}.zip
+          fi
+          echo "SafeTube export complete"
+        continue-on-error: true
+
+      # Export SafeReads
+      - name: Export SafeReads
+        id: export_safereads
+        run: |
+          echo "Exporting SafeReads..."
+          if [ "${{ github.event.inputs.include_storage }}" = "true" ]; then
+            CONVEX_DEPLOY_KEY="${{ secrets.CONVEX_DEPLOY_KEY_SAFEREADS }}" \
+              npx convex export --path backups/safereads-${{ steps.date.outputs.DATE }}.zip --include-file-storage
+          else
+            CONVEX_DEPLOY_KEY="${{ secrets.CONVEX_DEPLOY_KEY_SAFEREADS }}" \
+              npx convex export --path backups/safereads-${{ steps.date.outputs.DATE }}.zip
+          fi
+          echo "SafeReads export complete"
+        continue-on-error: true
+
+      # Export Marketing
+      - name: Export Marketing
+        id: export_marketing
+        run: |
+          echo "Exporting Marketing..."
+          CONVEX_DEPLOY_KEY="${{ secrets.CONVEX_DEPLOY_KEY_MARKETING }}" \
+            npx convex export --path backups/marketing-${{ steps.date.outputs.DATE }}.zip
+          echo "Marketing export complete"
+        continue-on-error: true
+
+      # Check export results
+      - name: Check export results
+        id: check_exports
+        run: |
+          FAILED=""
+          SUCCESS=""
+
+          if [ -f "backups/safetunes-${{ steps.date.outputs.DATE }}.zip" ]; then
+            SUCCESS="${SUCCESS}SafeTunes "
+            echo "safetunes_success=true" >> $GITHUB_OUTPUT
+          else
+            FAILED="${FAILED}SafeTunes "
+            echo "safetunes_success=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -f "backups/safetube-${{ steps.date.outputs.DATE }}.zip" ]; then
+            SUCCESS="${SUCCESS}SafeTube "
+            echo "safetube_success=true" >> $GITHUB_OUTPUT
+          else
+            FAILED="${FAILED}SafeTube "
+            echo "safetube_success=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -f "backups/safereads-${{ steps.date.outputs.DATE }}.zip" ]; then
+            SUCCESS="${SUCCESS}SafeReads "
+            echo "safereads_success=true" >> $GITHUB_OUTPUT
+          else
+            FAILED="${FAILED}SafeReads "
+            echo "safereads_success=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -f "backups/marketing-${{ steps.date.outputs.DATE }}.zip" ]; then
+            SUCCESS="${SUCCESS}Marketing "
+            echo "marketing_success=true" >> $GITHUB_OUTPUT
+          else
+            FAILED="${FAILED}Marketing "
+            echo "marketing_success=false" >> $GITHUB_OUTPUT
+          fi
+
+          echo "FAILED_APPS=${FAILED}" >> $GITHUB_OUTPUT
+          echo "SUCCESS_APPS=${SUCCESS}" >> $GITHUB_OUTPUT
+
+          # Count successful exports
+          SUCCESS_COUNT=$(ls -1 backups/*.zip 2>/dev/null | wc -l | tr -d ' ')
+          echo "success_count=${SUCCESS_COUNT}" >> $GITHUB_OUTPUT
+
+          if [ "${SUCCESS_COUNT}" -eq 0 ]; then
+            echo "All exports failed!"
+            echo "all_failed=true" >> $GITHUB_OUTPUT
+          else
+            echo "all_failed=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Upload to R2
+      - name: Upload to Cloudflare R2
+        if: steps.check_exports.outputs.success_count != '0'
+        uses: ryand56/r2-upload-action@latest
+        with:
+          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: ${{ secrets.R2_BUCKET_NAME }}
+          source-dir: backups
+          destination-dir: ${{ steps.date.outputs.DATE }}
+
+      # Send failure alert email
+      - name: Send failure alert
+        if: steps.check_exports.outputs.FAILED_APPS != ''
+        run: |
+          FAILED_APPS="${{ steps.check_exports.outputs.FAILED_APPS }}"
+          SUCCESS_APPS="${{ steps.check_exports.outputs.SUCCESS_APPS }}"
+          DATE="${{ steps.date.outputs.DATE }}"
+
+          # Send email via Resend API
+          curl -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer ${{ secrets.RESEND_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"from\": \"Safe Family Backups <noreply@getsafefamily.com>\",
+              \"to\": \"jedaws@gmail.com\",
+              \"subject\": \"[ALERT] Convex Backup Failed - ${DATE}\",
+              \"html\": \"<h2>Daily Convex Backup Alert</h2><p><strong>Date:</strong> ${DATE}</p><p><strong>Failed exports:</strong> ${FAILED_APPS}</p><p><strong>Successful exports:</strong> ${SUCCESS_APPS:-None}</p><p>Please check the <a href='https://github.com/JDaws-Dev/getsafecontent/actions'>GitHub Actions logs</a> for details.</p><p style='color: #666; font-size: 12px;'>This is an automated alert from the daily-backup workflow.</p>\"
+            }"
+
+      # Summary
+      - name: Generate summary
+        run: |
+          echo "## Daily Backup Summary - ${{ steps.date.outputs.DATE }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| App | Status | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|------|" >> $GITHUB_STEP_SUMMARY
+
+          for app in safetunes safetube safereads marketing; do
+            FILE="backups/${app}-${{ steps.date.outputs.DATE }}.zip"
+            if [ -f "$FILE" ]; then
+              SIZE=$(du -h "$FILE" | cut -f1)
+              echo "| ${app} | ✅ Success | ${SIZE} |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| ${app} | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Storage:** Cloudflare R2 / \`${{ secrets.R2_BUCKET_NAME }}/${{ steps.date.outputs.DATE }}/\`" >> $GITHUB_STEP_SUMMARY
+
+      # Fail the job if any exports failed
+      - name: Check for failures
+        if: steps.check_exports.outputs.FAILED_APPS != ''
+        run: |
+          echo "::error::Some backups failed: ${{ steps.check_exports.outputs.FAILED_APPS }}"
+          exit 1

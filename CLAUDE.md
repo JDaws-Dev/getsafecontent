@@ -142,6 +142,43 @@ npx convex run orphanDetection:deleteOrphanedRecords
 
 ---
 
+## Automated Backups
+
+Daily backups of all Convex production databases to Cloudflare R2.
+
+- **Schedule**: 3:00 AM UTC daily (GitHub Actions)
+- **Storage**: Cloudflare R2 bucket
+- **Retention**: 30 days (auto-deleted via R2 lifecycle rules)
+- **Alert**: Email on failure
+
+### Manual Backup
+```bash
+# Export a single app
+cd ~/safecontent/apps/safetunes
+CONVEX_DEPLOYMENT=prod:formal-chihuahua-623 npx convex export --path ~/Desktop/backup.zip
+
+# Include file storage
+CONVEX_DEPLOYMENT=prod:formal-chihuahua-623 npx convex export --path ~/Desktop/backup.zip --include-file-storage
+```
+
+### Restore from Backup
+```bash
+# Download from R2 (via wrangler or AWS CLI)
+wrangler r2 object get safefamily-backups/2026-02-24/safetunes-2026-02-24.zip --local ./restore.zip
+
+# Import to Convex (CAUTION: overwrites data!)
+unzip ./restore.zip -d ./restore
+npx convex import --path ./restore
+```
+
+### Setup
+See `docs/CONVEX-BACKUP-SETUP.md` for full configuration including:
+- GitHub secrets setup
+- Cloudflare R2 bucket creation
+- Lifecycle rules for 30-day retention
+
+---
+
 ## Auth Troubleshooting
 
 ### Current Auth Architecture

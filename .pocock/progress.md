@@ -23,9 +23,10 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 
 ## Current Status
 
-**WORKING ON:** None - ready for next issue
+**WORKING ON:** safecontent-uhq (Automate daily Convex backups)
 
 As of Feb 24, 2026:
+- safecontent-uhq (Automate daily Convex backups) - IN PROGRESS (workflow created, needs secrets)
 - safecontent-h45 (Add orphan detection system) - COMPLETE
 - safecontent-9ur (Add Stripe webhook failure monitoring) - COMPLETE
 - safecontent-4vz (Fix orphaned kid profiles) - COMPLETE (analyzed, all test data, cleanup functions created)
@@ -102,6 +103,55 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-uhq: Automate daily Convex backups (Feb 24, 2026 - IN PROGRESS)
+
+**Status:** Workflow created, needs secrets configured and manual test
+
+**What was done:**
+
+1. **Created GitHub Action workflow:**
+   - `.github/workflows/daily-backup.yml`
+   - Runs daily at 3:00 AM UTC
+   - Exports all 4 Convex deployments (SafeTunes, SafeTube, SafeReads, Marketing)
+   - Uploads to Cloudflare R2 with date-prefixed paths
+   - Sends email alert via Resend on failure
+   - Optional `include_storage` flag for full backup including files
+
+2. **Created setup documentation:**
+   - `docs/CONVEX-BACKUP-SETUP.md`
+   - Lists all required GitHub secrets
+   - R2 bucket setup instructions
+   - Lifecycle rules for 30-day retention
+   - Restore procedure
+
+3. **Updated CLAUDE.md:**
+   - Added "Automated Backups" section
+   - Manual backup commands
+   - Restore procedure
+   - Link to setup docs
+
+**Required secrets (owner must configure):**
+- `CONVEX_DEPLOY_KEY_SAFETUNES` - Get from Convex Dashboard
+- `CONVEX_DEPLOY_KEY_SAFETUBE`
+- `CONVEX_DEPLOY_KEY_SAFEREADS`
+- `CONVEX_DEPLOY_KEY_MARKETING`
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`
+- `RESEND_API_KEY` (already exists)
+
+**Files created:**
+- `.github/workflows/daily-backup.yml`
+- `docs/CONVEX-BACKUP-SETUP.md`
+
+**Files modified:**
+- `CLAUDE.md`
+
+**Next steps:**
+1. Owner creates R2 bucket with 30-day lifecycle rule
+2. Owner adds GitHub secrets (deploy keys + R2 credentials)
+3. Manual test via workflow_dispatch
+
+---
 
 ### safecontent-h45: Add orphan detection system (Feb 24, 2026 - COMPLETE)
 
