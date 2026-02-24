@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Feb 23, 2026:
+- safecontent-7jv.3 (Password sync across all apps) - COMPLETE
 - safecontent-7jv.2 (App login integration with central auth) - COMPLETE
 - safecontent-7jv.1 (Central user database schema and API) - COMPLETE
 - safecontent-41m.3 (Add dark mode to SafeTube) - COMPLETE
@@ -95,6 +96,62 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-7jv.3: Password sync across all apps (Feb 23, 2026 - COMPLETE)
+
+**Status:** Complete - Password changes now sync to central + all apps
+
+**What was done:**
+
+1. **Created `changePasswordAction.ts` for SafeTunes and SafeTube:**
+   - Node.js action that uses Scrypt (from lucia) to verify current password
+   - Hashes new password using Scrypt (matching Convex Auth)
+   - Updates `authAccounts.secret` directly (not legacy `users.passwordHash`)
+   - Syncs to central + other apps via `/api/auth/sync-password` endpoint
+
+2. **Updated Settings.jsx in SafeTunes and SafeTube:**
+   - Removed bcryptjs import (was using wrong hashing algorithm)
+   - Changed from `useMutation(api.users.changePassword)` to `useAction(api.changePasswordAction.changePassword)`
+   - Now sends plain passwords to server (server handles hashing + sync)
+
+3. **SafeReads password change:**
+   - Already uses central Safe Family account for management
+   - Reset password page already calls `syncPasswordToOtherApps`
+   - No Settings password change needed (by design)
+
+4. **Marketing site password reset:**
+   - Created `/api/auth/trigger-sync` endpoint to trigger sync from client
+   - Updated `reset-password/page.tsx` to call this endpoint after Convex Auth reset
+
+**Files created:**
+- `apps/safetunes/convex/changePasswordAction.ts`
+- `apps/safetube/convex/changePasswordAction.ts`
+- `sites/marketing/src/app/api/auth/trigger-sync/route.ts`
+
+**Files modified:**
+- `apps/safetunes/src/components/admin/Settings.jsx` - Use action, remove bcrypt
+- `apps/safetube/src/components/admin/Settings.jsx` - Use action, remove bcrypt
+- `sites/marketing/src/app/reset-password/page.tsx` - Call trigger-sync API
+
+**Key decisions:**
+- Used Scrypt (from lucia) to match Convex Auth hashing algorithm
+- Server-side password verification prevents sending hashes over network
+- Fire-and-forget sync pattern - password change succeeds even if sync fails
+- Marketing shares SafeReads Convex deployment, so needed API route instead of Convex action
+
+**Password sync flow:**
+1. User changes password in SafeTunes Settings
+2. `changePasswordAction` verifies current password against `authAccounts.secret`
+3. `changePasswordAction` hashes new password with Scrypt
+4. `changePasswordAction` updates `authAccounts.secret` locally
+5. `changePasswordAction` calls `/api/auth/sync-password` on Marketing
+6. Marketing endpoint updates `centralUsers.passwordHash` via SafeReads
+7. Marketing endpoint calls `/updatePassword` on SafeTube and SafeReads
+8. All apps now have the new password!
+
+**Build verified:** All 4 sites build + Convex dev --once pass
+
+---
 
 ### safecontent-7jv.2: App login integration with central auth (Feb 23, 2026 - COMPLETE)
 

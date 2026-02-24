@@ -4,7 +4,6 @@ import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import AppleMusicAuth from './AppleMusicAuth';
 import { COLORS } from '../../constants/avatars';
-import bcrypt from 'bcryptjs';
 import { useToast } from '../common/Toast';
 import BillingHistory from './BillingHistory';
 import { useIsNativeApp } from '../../hooks/useIsNativeApp';
@@ -46,7 +45,7 @@ function Settings({ user, onLogout, initialSection }) {
   const archivedProfiles = useQuery(api.kidProfiles.getArchivedProfiles, user ? { userId: user._id } : 'skip') || [];
   const createPortalSession = useAction(api.stripeActions.createPortalSession);
   const sendCancellationReason = useAction(api.emails.sendCancellationReasonEmail);
-  const changePasswordMutation = useMutation(api.users.changePassword);
+  const changePasswordAction = useAction(api.changePasswordAction.changePassword);
   const updateUserMutation = useMutation(api.users.updateUser);
   const deleteUserMutation = useMutation(api.deleteUser.deleteUserByEmail);
   const setGlobalHideArtwork = useMutation(api.users.setGlobalHideArtwork);
@@ -136,7 +135,7 @@ function Settings({ user, onLogout, initialSection }) {
     return color ? color.class : COLORS[0].class;
   };
 
-  // Password change handler
+  // Password change handler - uses Scrypt hashing on server and syncs to all apps
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     setPasswordError('');
@@ -165,14 +164,24 @@ function Settings({ user, onLogout, initialSection }) {
     setPasswordLoading(true);
 
     try {
-      const currentPasswordHash = await bcrypt.hash(passwordForm.currentPassword, 10);
-      const newPasswordHash = await bcrypt.hash(passwordForm.newPassword, 10);
+      // Get user email for the action
+      const email = fullUser?.email || user?.email;
+      if (!email) {
+        setPasswordError('Unable to get user email');
+        return;
+      }
 
-      await changePasswordMutation({
-        userId: user._id,
-        currentPasswordHash,
-        newPasswordHash,
+      // Call the server-side action that handles Scrypt hashing and sync
+      const result = await changePasswordAction({
+        email,
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
       });
+
+      if (!result.success) {
+        setPasswordError(result.error || 'Failed to update password');
+        return;
+      }
 
       setPasswordSuccess('Password updated successfully!');
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });

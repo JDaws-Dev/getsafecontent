@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import GettingStarted from './GettingStarted';
-import bcrypt from 'bcryptjs';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ThemeSelector } from '../common/ThemeToggle';
 
@@ -98,7 +97,7 @@ export default function Settings({ userData, onLogout }) {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
-  const changePasswordMutation = useMutation(api.users.changePassword);
+  const changePasswordAction = useAction(api.changePasswordAction.changePassword);
 
   // Get kid profiles
   const kidProfiles = useQuery(
@@ -171,7 +170,7 @@ export default function Settings({ userData, onLogout }) {
     }
   };
 
-  // Password change handler
+  // Password change handler - uses Scrypt hashing on server and syncs to all apps
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     setPasswordError('');
@@ -200,14 +199,24 @@ export default function Settings({ userData, onLogout }) {
     setPasswordLoading(true);
 
     try {
-      const currentPasswordHash = await bcrypt.hash(passwordForm.currentPassword, 10);
-      const newPasswordHash = await bcrypt.hash(passwordForm.newPassword, 10);
+      // Get user email for the action
+      const email = userData?.email;
+      if (!email) {
+        setPasswordError('Unable to get user email');
+        return;
+      }
 
-      await changePasswordMutation({
-        userId: userData._id,
-        currentPasswordHash,
-        newPasswordHash,
+      // Call the server-side action that handles Scrypt hashing and sync
+      const result = await changePasswordAction({
+        email,
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
       });
+
+      if (!result.success) {
+        setPasswordError(result.error || 'Failed to update password');
+        return;
+      }
 
       setPasswordSuccess('Password updated successfully!');
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });

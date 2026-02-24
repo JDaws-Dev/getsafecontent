@@ -106,6 +106,34 @@ export default function ResetPasswordPage() {
         flow: "reset-verification",
       });
 
+      // Sync password to other apps via API endpoint (fire and forget)
+      // This runs in the background after the password reset succeeds
+      fetch("/api/auth/trigger-sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success) {
+            console.log(
+              "[ResetPasswordPage] Password synced to other apps:",
+              result
+            );
+          } else {
+            console.warn(
+              "[ResetPasswordPage] Password sync failed (user may need to reset on other apps):",
+              result.error
+            );
+          }
+        })
+        .catch((err) => {
+          console.warn(
+            "[ResetPasswordPage] Password sync error (user may need to reset on other apps):",
+            err
+          );
+        });
+
       // Success!
       setSuccess(true);
       setLoading(false);
