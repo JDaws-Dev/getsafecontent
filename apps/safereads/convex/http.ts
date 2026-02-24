@@ -8,6 +8,9 @@ import setupOnboarding from "./setupOnboarding";
 import provisionUser from "./provisionUser";
 import getCentralUser from "./getCentralUser";
 import createCentralUser from "./createCentralUser";
+import updatePassword from "./updatePassword";
+import updateCentralPassword from "./updateCentralPassword";
+import verifyCentralCredentials from "./verifyCentralCredentials";
 
 const http = httpRouter();
 
@@ -71,6 +74,48 @@ http.route({
   path: "/createCentralUser",
   method: "POST",
   handler: createCentralUser,
+});
+
+// Update password route (for password sync from central auth)
+http.route({
+  path: "/updatePassword",
+  method: "POST",
+  handler: updatePassword,
+});
+
+// Update password CORS preflight
+http.route({
+  path: "/updatePassword",
+  method: "OPTIONS",
+  handler: updatePassword,
+});
+
+// Update central password route (for app -> central sync)
+http.route({
+  path: "/updateCentralPassword",
+  method: "POST",
+  handler: updateCentralPassword,
+});
+
+// Update central password CORS preflight
+http.route({
+  path: "/updateCentralPassword",
+  method: "OPTIONS",
+  handler: updateCentralPassword,
+});
+
+// Verify central credentials route (for apps to authenticate against central DB)
+http.route({
+  path: "/verifyCentralCredentials",
+  method: "POST",
+  handler: verifyCentralCredentials,
+});
+
+// Verify central credentials CORS preflight
+http.route({
+  path: "/verifyCentralCredentials",
+  method: "OPTIONS",
+  handler: verifyCentralCredentials,
 });
 
 auth.addHttpRoutes(http);
