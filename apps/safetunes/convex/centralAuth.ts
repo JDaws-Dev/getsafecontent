@@ -33,6 +33,7 @@ type CentralAuthResult =
       error: string;
       errorCode:
         | "INVALID_CREDENTIALS"
+        | "PASSWORD_RESET_REQUIRED"
         | "CENTRAL_UNREACHABLE"
         | "NOT_FOUND"
         | "RATE_LIMITED"
@@ -103,6 +104,16 @@ export const verifyCentralCredentialsAndProvision = action({
           success: false,
           error: "Too many login attempts. Please try again in a minute.",
           errorCode: "RATE_LIMITED",
+        };
+      }
+
+      // Handle password reset required (migrated users from BetterAuth)
+      if (response.status === 403 && data.code === "PASSWORD_RESET_REQUIRED") {
+        console.log(`[centralAuth] Password reset required for: ${email}`);
+        return {
+          success: false,
+          error: data.error || "Please reset your password. Click 'Forgot password?' to receive a reset link.",
+          errorCode: "PASSWORD_RESET_REQUIRED",
         };
       }
 

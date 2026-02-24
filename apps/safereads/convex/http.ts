@@ -13,6 +13,7 @@ import updateCentralPassword from "./updateCentralPassword";
 import verifyCentralCredentials from "./verifyCentralCredentials";
 import migrateToCentralUsers from "./migrateToCentralUsers";
 import exportUsersForMigration from "./exportUsersForMigration";
+import migrateBetterAuthUser from "./migrateBetterAuthUser";
 
 const http = httpRouter();
 
@@ -132,6 +133,13 @@ http.route({
   path: "/exportUsersForMigration",
   method: "GET",
   handler: exportUsersForMigration,
+});
+
+// Migrate BetterAuth user to centralUsers (one-time use)
+http.route({
+  path: "/migrateBetterAuthUser",
+  method: "GET",
+  handler: migrateBetterAuthUser,
 });
 
 auth.addHttpRoutes(http);

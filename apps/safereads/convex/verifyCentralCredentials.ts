@@ -158,6 +158,19 @@ export default httpAction(async (ctx, request): Promise<Response> => {
       );
     }
 
+    // Check if user needs password reset (migrated from BetterAuth or bcrypt)
+    if (user.passwordHash?.startsWith("NEEDS_PASSWORD_RESET:")) {
+      console.log(`[verifyCentralCredentials] User needs password reset: ${email}`);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Please reset your password. Click 'Forgot password?' to receive a reset link.",
+          code: "PASSWORD_RESET_REQUIRED",
+        }),
+        { status: 403, headers }
+      );
+    }
+
     // Verify password using Scrypt
     const isValidPassword = await scrypt.verify(user.passwordHash!, password);
 

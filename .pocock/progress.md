@@ -25,7 +25,9 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 
 **WORKING ON:** None - ready for next issue
 
-As of Feb 23, 2026:
+As of Feb 24, 2026:
+- safecontent-djp (Merge BetterAuth users to centralUsers) - COMPLETE
+- safecontent-7jv.6 (Upgrade prompts for users without app entitlement) - COMPLETE (already implemented)
 - safecontent-7jv.5 (Batch migrate existing users to central auth) - COMPLETE
 - safecontent-7jv.3 (Password sync across all apps) - COMPLETE
 - safecontent-7jv.2 (App login integration with central auth) - COMPLETE
@@ -97,6 +99,88 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-djp: Merge BetterAuth users to centralUsers (Feb 24, 2026 - COMPLETE)
+
+**Status:** Complete - BetterAuth users migrated to centralUsers with PASSWORD_RESET_REQUIRED handling
+
+**What was found:**
+
+1. **BetterAuth user data location:**
+   - SafeTunes: 29 users in `_components/betterAuth/user/documents.jsonl`
+   - SafeTube: 14 users in `_components/betterAuth/user/documents.jsonl`
+   - Password hashes in `_components/betterAuth/account/documents.jsonl`
+
+2. **All paying customers found:**
+   - benpurves@hotmail.com (paying $9.98)
+   - mailings@pobox.com (paying $9.98)
+   - chadwatsn@gmail.com (paying $9.98)
+   - jolene_bryan@yahoo.com (active)
+
+3. **Migration already complete:**
+   - Previous migration (safecontent-7jv.5) already created centralUsers entries
+   - All 21 real users exist in centralUsers with `passwordHash: "NEEDS_PASSWORD_RESET:migration"`
+   - Password hashes are incompatible (BetterAuth uses different format than Convex Auth scrypt)
+
+**What was done:**
+
+1. **Created `/migrateBetterAuthUser` endpoint:**
+   - `apps/safereads/convex/migrateBetterAuthUser.ts` - HTTP endpoint for migration
+   - Added route to `apps/safereads/convex/http.ts`
+
+2. **Created migration script:**
+   - `scripts/migrate-betterauth-users.ts` - TypeScript script to parse exports and migrate
+   - Handles user deduplication across apps
+   - Skips test users (artiosacademies.com, test.com, etc.)
+
+3. **Added PASSWORD_RESET_REQUIRED detection to login flows:**
+   - `apps/safereads/convex/verifyCentralCredentials.ts` - Returns 403 with code `PASSWORD_RESET_REQUIRED`
+   - `apps/safetunes/convex/centralAuth.ts` - Handles PASSWORD_RESET_REQUIRED error
+   - `apps/safetube/convex/centralAuth.ts` - Handles PASSWORD_RESET_REQUIRED error
+   - `apps/safereads/convex/centralAuth.ts` - Handles PASSWORD_RESET_REQUIRED error
+
+4. **Updated login pages to show helpful message:**
+   - `apps/safetunes/src/pages/LoginPage.jsx` - Shows "Please reset your password" with link
+   - `apps/safetube/src/pages/LoginPage.jsx` - Shows "Please reset your password" with link
+   - `apps/safereads/src/app/login/page.tsx` - Shows "Please reset your password" message
+
+**How users regain access:**
+
+1. User tries to login on SafeTunes/SafeTube/SafeReads
+2. System detects `NEEDS_PASSWORD_RESET:migration` hash
+3. User sees: "Please reset your password. Click 'Forgot password?' to receive a reset link."
+4. User clicks "Reset password" link → goes to /forgot-password
+5. User enters email → receives OTP via email
+6. User enters OTP + new password → Convex Auth creates new scrypt hash
+7. `syncPasswordToOtherApps` updates centralUsers with new hash
+8. User can now login on all apps with new password
+
+**Files created:**
+- `apps/safereads/convex/migrateBetterAuthUser.ts`
+- `scripts/migrate-betterauth-users.ts`
+
+**Files modified:**
+- `apps/safereads/convex/http.ts` - Added /migrateBetterAuthUser route
+- `apps/safereads/convex/verifyCentralCredentials.ts` - Added PASSWORD_RESET_REQUIRED detection
+- `apps/safereads/convex/centralAuth.ts` - Added PASSWORD_RESET_REQUIRED handling
+- `apps/safetunes/convex/centralAuth.ts` - Added PASSWORD_RESET_REQUIRED handling
+- `apps/safetube/convex/centralAuth.ts` - Added PASSWORD_RESET_REQUIRED handling
+- `apps/safetunes/src/pages/LoginPage.jsx` - Added password reset prompt
+- `apps/safetube/src/pages/LoginPage.jsx` - Added password reset prompt
+- `apps/safereads/src/app/login/page.tsx` - Added password reset prompt
+
+**Key decisions:**
+- Did NOT attempt to convert BetterAuth hashes - they're incompatible with scrypt
+- Instead, detect the placeholder hash and prompt user to reset password
+- Fire-and-forget password sync ensures centralUsers gets updated after reset
+- Users only need to reset once - new hash syncs to all apps
+
+**Verification:**
+- `/verifyCentralCredentials` endpoint tested - returns PASSWORD_RESET_REQUIRED for benpurves@hotmail.com
+- All 3 apps deployed to production with new code
+- Build verified for SafeTunes, SafeTube, SafeReads
+
+---
 
 ### safecontent-7jv.5: Batch migrate existing users to central auth (Feb 23, 2026 - COMPLETE)
 

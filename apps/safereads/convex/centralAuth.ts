@@ -28,6 +28,7 @@ type CentralAuthResult =
       error: string;
       errorCode:
         | "INVALID_CREDENTIALS"
+        | "PASSWORD_RESET_REQUIRED"
         | "CENTRAL_UNREACHABLE"
         | "NOT_FOUND"
         | "RATE_LIMITED"
@@ -89,6 +90,16 @@ export const verifyCentralCredentialsAndProvision = action({
             subscriptionStatus: localUser.subscriptionStatus || "trial",
             entitledApps: [THIS_APP],
           },
+        };
+      }
+
+      // Check if user needs password reset (migrated from BetterAuth or bcrypt)
+      if (centralUser.passwordHash?.startsWith("NEEDS_PASSWORD_RESET:")) {
+        console.log(`[centralAuth] Password reset required for: ${email}`);
+        return {
+          success: false,
+          error: "Please reset your password. Click 'Forgot password?' to receive a reset link.",
+          errorCode: "PASSWORD_RESET_REQUIRED",
         };
       }
 

@@ -78,6 +78,16 @@ export default function LoginPage() {
         haptic.error();
         if (centralResult.errorCode === 'RATE_LIMITED') {
           setError(centralResult.error);
+        } else if (centralResult.errorCode === 'PASSWORD_RESET_REQUIRED') {
+          // User was migrated from old auth system - they need to reset password
+          setError(
+            <span>
+              {centralResult.error}{' '}
+              <Link to="/forgot-password" className="underline font-semibold text-red-600">
+                Reset password
+              </Link>
+            </span>
+          );
         } else {
           setError('Invalid email or password. Please try again.');
         }
