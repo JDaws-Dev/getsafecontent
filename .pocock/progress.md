@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Feb 23, 2026:
+- safecontent-7jv.5 (Batch migrate existing users to central auth) - COMPLETE
 - safecontent-7jv.3 (Password sync across all apps) - COMPLETE
 - safecontent-7jv.2 (App login integration with central auth) - COMPLETE
 - safecontent-7jv.1 (Central user database schema and API) - COMPLETE
@@ -96,6 +97,59 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-7jv.5: Batch migrate existing users to central auth (Feb 23, 2026 - COMPLETE)
+
+**Status:** Complete - 32 real users migrated to centralUsers table
+
+**What was done:**
+
+1. **Fixed Convex env var access issue:**
+   - All 3 apps (SafeTunes, SafeTube, SafeReads) had stale env vars
+   - `process.env.ADMIN_KEY` was returning undefined in HTTP actions
+   - Fix: Remove and re-add the env var via `npx convex env remove` + `npx convex env set`
+   - Root cause: Unknown Convex platform issue with env var propagation
+
+2. **Updated migration script to handle bcrypt hashes:**
+   - Detect hash type: scrypt (valid), bcrypt (needs reset), none (OAuth/legacy)
+   - Create entries for ALL users (not just those with hashes)
+   - Mark bcrypt/no-hash users as `NEEDS_PASSWORD_RESET`
+   - Skip test users by default
+
+3. **Created migration helper mutations:**
+   - `migrateCentralUser.ts` - Creates entries with placeholder hashes
+   - `listCentralUsers.ts` - Debug query to verify migration
+
+4. **Executed migration:**
+   - Scanned 57 users across all 3 apps
+   - Created 32 real users in centralUsers
+   - Skipped 25 test users
+   - Hash breakdown: 11 bcrypt, 0 scrypt, 21 none
+   - 0 errors
+
+**Key users migrated:**
+- jedaws@gmail.com - entitled to safetunes, safetube, safereads (lifetime)
+- metrotter@gmail.com - entitled to safetunes, safetube, safereads (lifetime)
+- jennydaws@gmail.com - entitled to safetunes, safetube, safereads (lifetime)
+
+**Files created:**
+- `apps/safereads/convex/migrateCentralUser.ts`
+- `apps/safereads/convex/listCentralUsers.ts`
+
+**Files modified:**
+- `apps/safereads/convex/migrateToCentralUsers.ts` - Hash detection + skip test users
+- `apps/safetunes/convex/http.ts` - Removed debug endpoint
+
+**Important discovery:**
+Convex env vars can become "stale" and stop being accessible in HTTP actions. The fix is to remove and re-set them:
+```bash
+npx convex env remove ADMIN_KEY --deployment-name <deployment>
+npx convex env set ADMIN_KEY "value" --deployment-name <deployment>
+```
+
+**Build verified:** SafeReads npm run build + convex dev --once pass
+
+---
 
 ### safecontent-7jv.3: Password sync across all apps (Feb 23, 2026 - COMPLETE)
 
@@ -5890,4 +5944,41 @@ Added UpgradePrompt UI components to all three apps for handling users who have 
 - SafeTunes: ✅ Built in 3.69s
 - SafeTube: ✅ Built in 1.28s
 - SafeReads: ✅ Built successfully
+
+
+### safecontent-7jv.4 & 7jv.7: Unified signup & forgot password (Feb 23, 2026 - COMPLETE)
+
+**Status:** Already implemented - verified and closed
+
+**Findings:**
+- Unified signup flow already complete - all apps redirect to Marketing
+- Forgot password flow already complete with password sync
+
+**Key files already in place:**
+- `sites/marketing/src/app/signup/page.tsx` - Unified signup
+- `apps/*/src/pages/SignupPage.jsx` - Redirects to Marketing
+- `apps/*/src/pages/ForgotPasswordPage.jsx` - OTP flow
+- `apps/*/src/pages/ResetPasswordPage.jsx` - Password reset with sync
+
+---
+
+### safecontent-7jv.5: Batch migrate existing users (Feb 23, 2026 - IN PROGRESS)
+
+**Status:** Migration scripts created, deployed, but env var issue blocking execution
+
+**Created:**
+- `apps/safetunes/convex/exportUsersForMigration.ts` - Export users + password hashes
+- `apps/safetube/convex/exportUsersForMigration.ts` - Same for SafeTube
+- `apps/safereads/convex/exportUsersForMigration.ts` - Same for SafeReads (includes authProvider)
+- `apps/safereads/convex/migrateToCentralUsers.ts` - Aggregates + creates centralUsers
+
+**BLOCKED BY:** All admin HTTP endpoints returning Unauthorized
+- ADMIN_KEY env var set correctly on all apps
+- HTTP actions not reading env var value
+- Affects ALL admin endpoints (adminDashboard, setSubscriptionStatus, etc.)
+- Need to debug Convex env var access in HTTP actions
+
+**Commit:** 62dbbe7
+
+---
 
