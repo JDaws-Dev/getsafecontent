@@ -28,7 +28,6 @@ const CORS_HEADERS = {
 // to HTTP actions. Using a hardcoded key until Convex fixes this.
 // TODO: Remove this and use process.env.ADMIN_KEY when Convex fixes the issue.
 // See: https://github.com/get-convex/convex-backend/issues related to env vars
-const HARDCODED_ADMIN_KEY = "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=";
 
 // Admin-only HTTP endpoint - completely server-side
 // Supports both HTML (default) and JSON (format=json) responses
@@ -45,12 +44,12 @@ export default httpAction(async (ctx, request): Promise<Response> => {
     const format = url.searchParams.get("format"); // "json" for API access
 
     // Use hardcoded key as workaround for Convex env var bug
-    const ADMIN_SECRET = process.env.ADMIN_KEY || HARDCODED_ADMIN_KEY;
+    const ADMIN_SECRET = process.env.ADMIN_KEY!;
 
     if (!secretKey || secretKey !== ADMIN_SECRET) {
       if (format === "json") {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 403,
+          status: 401,
           headers: { "Content-Type": "application/json", ...CORS_HEADERS },
         });
       }
@@ -72,7 +71,7 @@ export default httpAction(async (ctx, request): Promise<Response> => {
     </div>
   </body>
 </html>`,
-        { status: 403, headers: { "Content-Type": "text/html" } }
+        { status: 401, headers: { "Content-Type": "text/html" } }
       );
     }
 

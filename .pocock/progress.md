@@ -26,6 +26,9 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Mar 1, 2026:
+- safecontent-59f (Standardize HTTP error status codes across apps) - COMPLETE
+  - Changed SafeReads admin key validation from 403 to 401 (matches SafeTunes/SafeTube)
+  - Fixed 4 files: deleteUser.ts, adminDashboard.ts, grantLifetime.ts, setupOnboarding.ts
 - safecontent-10i (Clean up SafeTunes legacy BetterAuth delete code) - COMPLETE
   - Deleted `convex/deleteUser.ts` - broken legacy file with BetterAuth references
   - Added `admin.deleteOwnAccount` mutation for authenticated self-service deletion
@@ -131,6 +134,32 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-59f: Standardize HTTP error status codes across apps (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - All SafeReads admin endpoints now use 401 for invalid admin key
+
+**Problem:**
+- SafeReads used 403 (Forbidden) for invalid/missing admin key
+- SafeTunes and SafeTube correctly use 401 (Unauthorized)
+- Semantic difference: 401 = auth failed, 403 = auth passed but not permitted
+
+**Solution:**
+Changed status code from 403 to 401 in 4 SafeReads files:
+1. `convex/deleteUser.ts` line 18
+2. `convex/adminDashboard.ts` lines 52 and 74
+3. `convex/grantLifetime.ts` line 18
+4. `convex/setupOnboarding.ts` line 31
+
+**Note:** Kept 403 in `verifyCentralCredentials.ts` line 170 - that's semantically correct (user IS authenticated but requires password reset).
+
+**Files changed:**
+- `apps/safereads/convex/deleteUser.ts`
+- `apps/safereads/convex/adminDashboard.ts`
+- `apps/safereads/convex/grantLifetime.ts`
+- `apps/safereads/convex/setupOnboarding.ts`
+
+---
 
 ### safecontent-10i: Clean up SafeTunes legacy BetterAuth delete code (Mar 1, 2026 - COMPLETE)
 
