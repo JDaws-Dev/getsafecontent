@@ -6722,3 +6722,40 @@ Created `sites/marketing/e2e/webhook-provisioning.spec.ts` with 10 tests:
 - Use --debug mode for full flow testing
 - ADMIN_API_KEY required for provisioning verification tests
 
+
+---
+
+## 2026-03-01: safecontent-51v - E2E Test: Subscription cancellation revokes access
+
+### Task
+Create E2E tests for subscription cancellation and access revocation.
+
+### What Was Done
+Created `sites/marketing/e2e/subscription-cancellation.spec.ts` with 12 tests:
+
+1. **Account Settings** (Tests 1-2): Settings has subscription management, account page has billing
+2. **Stripe Portal** (Tests 3-4): Access portal, cancel subscription
+3. **Webhook Handling** (Tests 5-6): Verify webhook received, user status updated
+4. **Access Revocation** (Tests 7-8): Expired user upgrade prompt, premium features locked
+5. **Resubscription** (Tests 9-10): Re-subscribing restores access, webhook verification
+6. **Edge Cases** (Tests 11-12): Trial cancellation, lifetime user protection
+
+### Key Decisions
+- Most tests require manual Stripe portal interaction
+- Tests document step-by-step verification process
+- Admin API used to verify status changes
+- Automated tests verify UI elements exist
+
+### Files Changed
+- `sites/marketing/e2e/subscription-cancellation.spec.ts` (new)
+
+### Test Results
+- Test 2 passes (account page redirects to login)
+- Most tests require credentials and manual Stripe interaction
+- Use --debug mode for full flow testing
+
+### Caveats
+- Stripe portal interaction cannot be automated
+- Subscription lifecycle depends on Stripe timing
+- Use Stripe test mode to manually trigger events
+
