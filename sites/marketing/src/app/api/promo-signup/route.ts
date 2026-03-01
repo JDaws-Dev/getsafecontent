@@ -25,8 +25,8 @@ if (!ADMIN_KEY) {
   console.warn("ADMIN_API_KEY not set - promo provisioning will fail");
 }
 
-// SafeReads endpoint (where centralUsers lives)
-const SAFEREADS_ENDPOINT = "https://exuberant-puffin-838.convex.site";
+// Marketing endpoint (the CENTRAL auth hub)
+const CENTRAL_AUTH_ENDPOINT = "https://adamant-crow-705.convex.site";
 
 // App admin endpoint URLs
 type AppName = "safetunes" | "safetube" | "safereads";
@@ -76,7 +76,7 @@ async function getCentralUser(
 
   const encodedEmail = encodeURIComponent(email.toLowerCase());
   const encodedKey = encodeURIComponent(ADMIN_KEY);
-  const url = `${SAFEREADS_ENDPOINT}/getCentralUser?email=${encodedEmail}&key=${encodedKey}`;
+  const url = `${CENTRAL_AUTH_ENDPOINT}/getCentralUser?email=${encodedEmail}&key=${encodedKey}`;
 
   try {
     const response = await fetchWithTimeout(url);

@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Mar 1, 2026:
+- safecontent-1zl (Create Marketing site signup page with unified auth) - COMPLETE (already implemented)
 - safecontent-ds0 (Implement password sync from apps to central) - COMPLETE
 - safecontent-ecg (Fix SafeReads centralAuth.ts - queries non-existent table) - COMPLETE
 
@@ -108,6 +109,52 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-1zl: Create Marketing site signup page with unified auth (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - Fixed critical architecture issue where signup was creating users in wrong database
+
+**Problem identified:**
+The signup page and API existed but were calling SafeReads' `/createCentralUser` endpoint (exuberant-puffin-838)
+which created entries in SafeReads' `centralUsers` table. However, Marketing (adamant-crow-705) is the true
+central auth hub - `/verifyCentralCredentials` reads from Marketing's `authAccounts` table. This meant
+users created via signup couldn't log into apps.
+
+**What was done:**
+
+1. **Fixed /api/auth/signup/route.ts:**
+   - Changed CONVEX_ENDPOINT from `exuberant-puffin-838` to `adamant-crow-705`
+   - Changed endpoint from `/createCentralUser` to `/createUserWithPassword`
+   - Uses x-admin-key header instead of query param
+
+2. **Fixed /api/promo-signup/route.ts:**
+   - Changed SAFEREADS_ENDPOINT to CENTRAL_AUTH_ENDPOINT (`adamant-crow-705`)
+
+3. **Fixed /lib/provisioning.ts:**
+   - Added CENTRAL_AUTH_ENDPOINT constant
+   - Updated getCentralUser() to use Marketing's endpoint
+
+4. **Added /getCentralUser endpoint to Marketing Convex:**
+   - `sites/marketing/convex/http.ts` - new endpoint to get user credentials
+   - Returns passwordHash for app provisioning
+
+**Key decisions:**
+- Marketing (`adamant-crow-705`) is the ONLY central auth hub
+- `/createUserWithPassword` creates both users table entry AND authAccounts
+- All credential lookups go to Marketing, not SafeReads
+
+**Files modified:**
+- `sites/marketing/src/app/api/auth/signup/route.ts` (fixed endpoint)
+- `sites/marketing/src/app/api/promo-signup/route.ts` (fixed endpoint)
+- `sites/marketing/src/lib/provisioning.ts` (fixed endpoint)
+- `sites/marketing/convex/http.ts` (added /getCentralUser)
+
+**Verification:**
+- Marketing build passes
+- Convex functions compile
+- Signup page visually verified at getsafefamily.com/signup
+
+---
 
 ### safecontent-ds0: Implement password sync from apps to central (Mar 1, 2026 - COMPLETE)
 

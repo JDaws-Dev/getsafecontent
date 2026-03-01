@@ -5,8 +5,8 @@ import { hashPassword, validatePasswordStrength } from "@/lib/password";
 // Admin key for authenticating with Convex endpoints
 const ADMIN_KEY = process.env.ADMIN_API_KEY;
 
-// Marketing site Convex HTTP endpoint (shared with SafeReads)
-const CONVEX_ENDPOINT = "https://exuberant-puffin-838.convex.site";
+// Marketing site Convex HTTP endpoint - This is the CENTRAL auth hub
+const CONVEX_ENDPOINT = "https://adamant-crow-705.convex.site";
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -118,20 +118,19 @@ export async function POST(req: Request) {
     const passwordHash = await hashPassword(password);
 
     // Create user via Convex HTTP endpoint
-    // Uses /createCentralUser which creates a centralUsers entry with the passwordHash
-    const encodedKey = encodeURIComponent(ADMIN_KEY);
-    const createUrl = `${CONVEX_ENDPOINT}/createCentralUser?key=${encodedKey}`;
-
-    const response = await fetch(createUrl, {
+    // Uses /createUserWithPassword which creates both users table entry AND authAccounts
+    // This ensures the user can log in via /verifyCentralCredentials
+    const response = await fetch(`${CONVEX_ENDPOINT}/createUserWithPassword`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-admin-key": ADMIN_KEY,
       },
       body: JSON.stringify({
         email: normalizedEmail,
         passwordHash,
         name: name?.trim() || undefined,
-        subscriptionStatus: "trial",
+        selectedApps: selectedApps || ["safetunes", "safetube", "safereads"],
       }),
     });
 

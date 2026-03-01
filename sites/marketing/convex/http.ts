@@ -1040,4 +1040,97 @@ http.route({
   }),
 });
 
+/**
+ * Get Central User Credentials Endpoint
+ *
+ * Returns user data including password hash for provisioning to apps.
+ * This is used by /api/promo-signup to get the user's credentials
+ * after they sign up with a lifetime promo code.
+ *
+ * GET /getCentralUser?email=user@example.com&key=API_KEY
+ */
+http.route({
+  path: "/getCentralUser",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    const email = url.searchParams.get("email");
+    const key = url.searchParams.get("key");
+
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key
+    const expectedKey = process.env.ADMIN_KEY;
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ exists: false, error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    if (!email) {
+      return new Response(
+        JSON.stringify({ exists: false, error: "Email is required" }),
+        { status: 400, headers }
+      );
+    }
+
+    try {
+      const { internal } = await import("./_generated/api");
+
+      const credentials = await ctx.runQuery(internal.signupInternal.getUserCredentials, {
+        email: email.toLowerCase().trim(),
+      });
+
+      if (!credentials.exists) {
+        return new Response(
+          JSON.stringify({ exists: false, email: email.toLowerCase() }),
+          { status: 200, headers }
+        );
+      }
+
+      // Return user data including password hash (needed for app provisioning)
+      return new Response(
+        JSON.stringify({
+          exists: true,
+          email: credentials.email,
+          name: credentials.name || null,
+          passwordHash: credentials.passwordHash || null,
+          hasPasswordAuth: credentials.hasPasswordAuth,
+          subscriptionStatus: credentials.subscriptionStatus,
+          entitledApps: credentials.entitledApps,
+          authProvider: credentials.hasPasswordAuth ? "password" : "oauth",
+        }),
+        { status: 200, headers }
+      );
+    } catch (error) {
+      console.error("[getCentralUser] Error:", error);
+      return new Response(
+        JSON.stringify({ exists: false, error: "Internal server error" }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/getCentralUser",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
 export default http;
