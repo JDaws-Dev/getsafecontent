@@ -6685,3 +6685,40 @@ Created `sites/marketing/e2e/google-oauth.spec.ts` with 15 tests:
 - Manual verification required for complete flow testing
 - OAuth state preservation verified through UI structure tests
 
+
+---
+
+## 2026-03-01: safecontent-dta - E2E Test: Subscription webhook provisioning
+
+### Task
+Create E2E tests for Stripe webhook provisioning of users to selected apps.
+
+### What Was Done
+Created `sites/marketing/e2e/webhook-provisioning.spec.ts` with 10 tests:
+
+1. **Signup Flow** (Tests 1-2): Single app and bundle signup reach Stripe checkout
+2. **Post-Checkout Verification** (Tests 3-4): Verify user provisioned, selective provisioning
+3. **App Login** (Tests 5-6): Login to provisioned app works, upgrade prompt for non-provisioned
+4. **Duplicate Prevention** (Test 7): No duplicate Stripe customers
+5. **Full Flow** (Test 8): Complete signup-checkout-verification flow
+6. **Promo Provisioning** (Tests 9-10): Promo code provisions without Stripe, promo user login
+
+### Key Decisions
+- Stripe checkout requires manual payment (test card input)
+- Automated tests verify flow reaches Stripe, promo flow works
+- Manual tests document step-by-step verification process
+- Admin API used to verify provisioning results
+
+### Files Changed
+- `sites/marketing/e2e/webhook-provisioning.spec.ts` (new)
+
+### Test Results
+- Test 9 passes (promo code flow - fully automated)
+- Tests 1-2 reach Stripe checkout (manual payment required)
+- Tests 3-8, 10 require credentials or manual verification
+
+### Caveats
+- Stripe payment requires manual interaction
+- Use --debug mode for full flow testing
+- ADMIN_API_KEY required for provisioning verification tests
+
