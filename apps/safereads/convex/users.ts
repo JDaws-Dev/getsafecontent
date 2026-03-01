@@ -33,6 +33,25 @@ export const currentUserId = query({
 });
 
 /**
+ * Public query to check if a user has an authAccounts entry.
+ * Used by forgot password page to show helpful message if user doesn't exist.
+ */
+export const checkAuthAccountExistsPublic = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const authAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", args.email.toLowerCase())
+      )
+      .first();
+
+    // Only return exists boolean - don't leak any other info
+    return { exists: !!authAccount, email: args.email };
+  },
+});
+
+/**
  * Mark onboarding as complete for the current user.
  */
 export const completeOnboarding = mutation({

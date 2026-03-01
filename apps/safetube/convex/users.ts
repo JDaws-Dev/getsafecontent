@@ -628,6 +628,25 @@ export const checkAuthAccountExists = internalQuery({
   },
 });
 
+/**
+ * Public query to check if a user has an authAccounts entry.
+ * Used by forgot password page to show helpful message if user doesn't exist.
+ */
+export const checkAuthAccountExistsPublic = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const authAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", args.email.toLowerCase())
+      )
+      .first();
+
+    // Only return exists boolean - don't leak any other info
+    return { exists: !!authAccount, email: args.email };
+  },
+});
+
 // ============================================================================
 // PASSWORD CHANGE - User-facing mutation
 // ============================================================================
@@ -736,5 +755,32 @@ export const updatePasswordInternal = internalMutation({
       updated: true,
       email: args.email,
     };
+  },
+});
+
+// ============================================================================
+// DIAGNOSTIC - List all authAccounts with hash info (for debugging)
+// ============================================================================
+
+export const listAllAuthAccounts = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const authAccounts = await ctx.db.query("authAccounts").collect();
+
+    // Get users to map IDs to emails
+    const users = await ctx.db.query("users").collect();
+    const userMap = new Map(users.map(u => [u._id, u.email]));
+
+    return authAccounts
+      .filter(a => a.provider === "password")
+      .map(a => ({
+        email: userMap.get(a.userId) || "unknown",
+        userId: a.userId,
+        provider: a.provider,
+        providerAccountId: a.providerAccountId,
+        secretPreview: a.secret ? (a.secret.length > 30 ? a.secret.substring(0, 30) + "..." : a.secret) : "NO_SECRET",
+        isPlaceholder: a.secret?.startsWith("NEEDS_PASSWORD_RESET") || false,
+        isValidScrypt: a.secret?.includes(":") && a.secret.length > 100 || false,
+      }));
   },
 });

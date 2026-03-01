@@ -4,23 +4,40 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useConvex } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { BookOpen } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const convex = useConvex();
   const { signIn } = useAuthActions();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setNotFound(false);
     setLoading(true);
 
     try {
-      // Request password reset via Convex Auth
+      // First check if user exists
+      const result = await convex.query(api.users.checkAuthAccountExistsPublic, {
+        email: email.toLowerCase().trim()
+      });
+
+      if (!result.exists) {
+        // User doesn't exist - show helpful message
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      // User exists - request password reset via Convex Auth
       // This will send an OTP code to the user's email via ResendOTPPasswordReset
       await signIn("password", {
         email: email,
@@ -33,10 +50,7 @@ export default function ForgotPasswordPage() {
       setLoading(false);
     } catch (err) {
       console.error("Password reset error:", err);
-      // Don't reveal if email exists or not for security
-      // Always show success message
-      localStorage.setItem("safereads_reset_email", email);
-      setSubmitted(true);
+      setError("Something went wrong. Please try again.");
       setLoading(false);
     }
   };
@@ -55,7 +69,58 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="rounded-xl border border-parchment-200 bg-white p-8 shadow-sm">
-          {!submitted ? (
+          {notFound ? (
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+                <svg
+                  className="h-8 w-8 text-amber-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+
+              <h2 className="mb-2 font-serif text-xl font-bold text-ink-900">
+                No Account Found
+              </h2>
+              <p className="mb-6 text-sm text-ink-500">
+                We couldn&apos;t find an account with{" "}
+                <strong className="text-ink-700">{email}</strong>.
+              </p>
+
+              <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-left">
+                <p className="text-sm text-amber-800">
+                  <strong>Did you sign up with a different email?</strong> Try
+                  checking for typos, or try another email address you might
+                  have used.
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  setNotFound(false);
+                  setEmail("");
+                }}
+                className="mb-3 w-full rounded-lg bg-parchment-700 px-6 py-3 font-semibold text-parchment-50 transition hover:bg-parchment-800"
+              >
+                Try Another Email
+              </button>
+
+              <Link
+                href="/signup"
+                className="block w-full rounded-lg bg-parchment-100 px-6 py-3 text-center font-semibold text-ink-800 transition hover:bg-parchment-200"
+              >
+                Create an Account
+              </Link>
+            </div>
+          ) : !submitted ? (
             <>
               <div className="mb-6 text-center">
                 <h1 className="font-serif text-2xl font-bold text-ink-900">

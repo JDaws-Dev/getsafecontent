@@ -1,22 +1,39 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthActions } from '@convex-dev/auth/react';
+import { useConvex } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 function ForgotPasswordPage() {
   const navigate = useNavigate();
+  const convex = useConvex();
   const { signIn } = useAuthActions();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setNotFound(false);
     setLoading(true);
 
     try {
-      // Request password reset via Convex Auth
+      // First check if user exists
+      const result = await convex.query(api.users.checkAuthAccountExistsPublic, {
+        email: email.toLowerCase().trim()
+      });
+
+      if (!result.exists) {
+        // User doesn't exist - show helpful message
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      // User exists - request password reset via Convex Auth
       // This will send an OTP code to the user's email via ResendOTPPasswordReset
       await signIn('password', {
         email: email,
@@ -29,10 +46,7 @@ function ForgotPasswordPage() {
       setLoading(false);
     } catch (err) {
       console.error('Password reset error:', err);
-      // Don't reveal if email exists or not for security
-      // Always show success message
-      localStorage.setItem('safetunes_reset_email', email);
-      setSubmitted(true);
+      setError('Something went wrong. Please try again.');
       setLoading(false);
     }
   };
@@ -54,7 +68,43 @@ function ForgotPasswordPage() {
       <div className="container mx-auto px-6 py-12">
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
-            {!submitted ? (
+            {notFound ? (
+              <div className="text-center">
+                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">No Account Found</h2>
+                <p className="text-gray-600 mb-6">
+                  We couldn't find an account with <strong>{email}</strong>.
+                </p>
+
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg mb-6 text-left">
+                  <p className="text-sm">
+                    <strong>Did you sign up with a different email?</strong> Try checking for typos, or try another email address you might have used.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setNotFound(false);
+                    setEmail('');
+                  }}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition mb-3"
+                >
+                  Try Another Email
+                </button>
+
+                <Link
+                  to="/signup"
+                  className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold transition text-center"
+                >
+                  Create an Account
+                </Link>
+              </div>
+            ) : !submitted ? (
               <>
                 <div className="text-center mb-6">
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">Reset Password</h1>
