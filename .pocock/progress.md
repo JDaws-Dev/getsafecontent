@@ -26,6 +26,11 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Mar 1, 2026:
+- safecontent-c42 (Audit critical operations for cross-app consistency) - COMPLETE
+  - Created: docs/CRITICAL-OPS-AUDIT.md
+  - Spawned: safecontent-cla (SafeReads Stripe webhook investigation)
+  - Spawned: safecontent-10i (SafeTunes legacy delete code cleanup)
+  - Spawned: safecontent-59f (HTTP status code standardization)
 - safecontent-6el (E2E Test: Existing user login across all apps) - COMPLETE
 - safecontent-1pz (E2E Test: New user signup flow) - COMPLETE (tests already existed)
 - safecontent-8ze (Add migration path for existing BetterAuth users) - COMPLETE
@@ -115,6 +120,44 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-c42: Audit critical operations for cross-app consistency (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - Created comprehensive audit document + spawned follow-up issues
+
+**What was done:**
+
+1. **Audited Password Reset Flow:**
+   - All 3 apps use identical implementation: 6-digit OTP via Resend
+   - Password sync works correctly via Marketing site hub
+   - CONSISTENT ✅
+
+2. **Audited Account Deletion:**
+   - All apps have `/deleteUser` endpoint with ADMIN_KEY auth
+   - SafeTunes has orphaned legacy BetterAuth code (spawned safecontent-10i)
+   - Marketing has most comprehensive delete with reason logging
+   - MINOR GAP ⚠️
+
+3. **Audited Subscription Cancellation:**
+   - SafeTunes and SafeTube have comprehensive Stripe webhook handlers
+   - SafeReads has NO Stripe webhook (spawned safecontent-cla)
+   - Need to verify if SafeReads uses direct Stripe checkout
+   - GAP ⚠️
+
+4. **Audited Admin Endpoint Auth:**
+   - All apps use `process.env.ADMIN_KEY` comparison
+   - Minor: SafeReads returns 403 vs 401 for invalid key (spawned safecontent-59f)
+   - CONSISTENT ✅
+
+**Files created:**
+- `docs/CRITICAL-OPS-AUDIT.md` - Full audit report with comparison tables
+
+**Issues spawned:**
+- `safecontent-cla` - Investigate SafeReads Stripe webhook requirement (P2)
+- `safecontent-10i` - Clean up SafeTunes legacy BetterAuth delete code (P2)
+- `safecontent-59f` - Standardize HTTP error status codes (P3)
+
+---
 
 ### safecontent-8ze: Add migration path for existing BetterAuth users (Mar 1, 2026 - COMPLETE)
 
