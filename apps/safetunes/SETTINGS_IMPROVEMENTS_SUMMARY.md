@@ -84,10 +84,10 @@ All high-priority improvements to the Admin Settings page have been successfully
 - Logs user out and redirects to home after successful deletion
 
 **Technical Implementation:**
-- Backend mutation: `convex/deleteUser.ts` - `deleteUserByEmail`
+- Backend mutation: `convex/admin.ts` - `deleteOwnAccount`
 - Modal with confirmation input validation
 - Automatic logout and navigation after deletion
-- Full cleanup of user data and Better Auth records
+- Full cleanup of user data including all associated records
 
 ---
 
@@ -164,8 +164,8 @@ return (
    - Added `changePassword` mutation (lines 178-203)
    - Existing `updateUser` mutation used for account updates
 
-2. **`convex/deleteUser.ts`**
-   - Existing `deleteUserByEmail` mutation used for account deletion
+2. **`convex/admin.ts`**
+   - `deleteOwnAccount` mutation for authenticated account self-deletion
 
 ### Frontend (React)
 1. **`src/components/admin/Settings.jsx`**

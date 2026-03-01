@@ -47,7 +47,7 @@ function Settings({ user, onLogout, initialSection }) {
   const sendCancellationReason = useAction(api.emails.sendCancellationReasonEmail);
   const changePasswordAction = useAction(api.changePasswordAction.changePassword);
   const updateUserMutation = useMutation(api.users.updateUser);
-  const deleteUserMutation = useMutation(api.deleteUser.deleteUserByEmail);
+  const deleteOwnAccount = useMutation(api.admin.deleteOwnAccount);
   const setGlobalHideArtwork = useMutation(api.users.setGlobalHideArtwork);
 
   // View state: 'menu' shows the main list, others show specific sections
@@ -288,13 +288,7 @@ function Settings({ user, onLogout, initialSection }) {
     setDeleteLoading(true);
 
     try {
-      const userEmail = fullUser?.email || user?.email;
-
-      if (!userEmail) {
-        throw new Error('User email not found');
-      }
-
-      await deleteUserMutation({ email: userEmail });
+      await deleteOwnAccount();
       onLogout();
       navigate('/');
     } catch (error) {

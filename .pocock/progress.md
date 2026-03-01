@@ -26,6 +26,11 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Mar 1, 2026:
+- safecontent-10i (Clean up SafeTunes legacy BetterAuth delete code) - COMPLETE
+  - Deleted `convex/deleteUser.ts` - broken legacy file with BetterAuth references
+  - Added `admin.deleteOwnAccount` mutation for authenticated self-service deletion
+  - Updated Settings.jsx to use new mutation
+  - `deleteUserHttpAction` continues to work for admin HTTP endpoint
 - safecontent-cla (Investigate SafeReads Stripe webhook requirement) - COMPLETE
   - **Finding:** SafeReads DOES have Stripe webhook at `src/app/api/webhooks/stripe/route.ts`
   - Uses Next.js API routes instead of Convex HTTP actions (valid architecture)
@@ -126,6 +131,43 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-10i: Clean up SafeTunes legacy BetterAuth delete code (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - Removed broken legacy code, added proper user self-deletion
+
+**Problem:**
+- `convex/deleteUser.ts` contained legacy BetterAuth code that:
+  1. Referenced non-existent `components.betterAuth.adapter.deleteMany`
+  2. Would fail at runtime (BetterAuth component no longer exists)
+  3. Was used by Settings.jsx for "Delete My Account" feature
+  4. Only deleted user record, not associated data (kid profiles, playlists, etc.)
+
+**Solution:**
+1. Added `deleteOwnAccount` mutation to `admin.ts`:
+   - Requires authentication via `getAuthUserId(ctx)`
+   - Uses same comprehensive deletion logic as `deleteUserByEmailInternal`
+   - Deletes all associated records (kid profiles, playlists, approved content, etc.)
+
+2. Updated `Settings.jsx`:
+   - Changed from `api.deleteUser.deleteUserByEmail` to `api.admin.deleteOwnAccount`
+   - Simplified - no longer needs to pass email (uses authenticated user)
+
+3. Deleted `convex/deleteUser.ts`:
+   - Was orphaned, broken code
+   - Admin deletion uses `deleteUserHttpAction.ts` instead
+
+**Files changed:**
+- `apps/safetunes/convex/admin.ts` - Added `deleteOwnAccount` mutation
+- `apps/safetunes/convex/deleteUser.ts` - DELETED
+- `apps/safetunes/src/components/admin/Settings.jsx` - Use new mutation
+- `apps/safetunes/SETTINGS_IMPROVEMENTS_SUMMARY.md` - Updated docs
+
+**Verification:**
+- `npm run build` passes
+- `npx convex dev --once` passes
+
+---
 
 ### safecontent-cla: Investigate SafeReads Stripe webhook requirement (Mar 1, 2026 - COMPLETE)
 
