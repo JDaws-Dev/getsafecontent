@@ -122,6 +122,37 @@ export async function POST(req: Request) {
     // Store apps for error context
     errorContextApps = finalApps;
 
+    // DUPLICATE SUBSCRIPTION PROTECTION
+    // Check if this email already has an active/trialing subscription
+    if (email) {
+      const existingCustomers = await getStripe().customers.list({
+        email: email,
+        limit: 1,
+      });
+
+      if (existingCustomers.data.length > 0) {
+        const customerId = existingCustomers.data[0].id;
+        const activeSubscriptions = await getStripe().subscriptions.list({
+          customer: customerId,
+          status: "active",
+          limit: 1,
+        });
+        const trialingSubscriptions = await getStripe().subscriptions.list({
+          customer: customerId,
+          status: "trialing",
+          limit: 1,
+        });
+
+        if (activeSubscriptions.data.length > 0 || trialingSubscriptions.data.length > 0) {
+          console.log(`[Checkout] BLOCKED duplicate subscription for ${email} - already has active/trialing subscription`);
+          return NextResponse.json(
+            { error: "You already have an active subscription. Go to Settings to manage it." },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // Store apps as comma-separated string in metadata (sorted for consistency)
     const appsMetadata = finalApps.sort().join(",");
     const isBundle = finalApps.length > 1;
