@@ -6617,3 +6617,33 @@ cd ~/safecontent/apps/safetube && CONVEX_DEPLOYMENT=prod:rightful-rabbit-333 npx
 
 Use `scripts/stripe-cleanup.ts` and `docs/STRIPE-DUPLICATE-CLEANUP.md` for cleanup.
 
+
+---
+
+## 2026-03-01: safecontent-fwc - E2E Test: Password change syncs across apps
+
+### Task
+Create E2E tests verifying that changing password on one app syncs to all other apps.
+
+### What Was Done
+Created `sites/marketing/e2e/password-sync.spec.ts` with 9 tests:
+
+1. **SafeTunes Settings** (Tests 1-3): Settings page has password change, form has required fields, validates matching passwords
+2. **SafeTube Settings** (Test 4): Settings page has password change section
+3. **SafeReads** (Tests 5-6): Forgot password link on login page, forgot password page loads
+4. **Full Flow** (Test 7): Creates user, changes password on SafeTunes, verifies sync to SafeTube/SafeReads
+5. **Manual** (Tests 8-9): Verify old password rejected, verify central auth updated
+
+### Key Decisions
+- SafeReads has no in-app Settings page for password change - users must use forgot password flow
+- Full flow test (Test 7) creates user via promo, changes password, and verifies across apps
+- Tests 1-4 and 8-9 require TEST_USER_EMAIL env var (skipped without it)
+- Tests 5-6 are automated and don't require login
+
+### Files Changed
+- `sites/marketing/e2e/password-sync.spec.ts` (new)
+
+### Test Results
+- Tests 5-6 pass (automated, no login required)
+- Tests 1-4, 7-9 require credentials or manual verification
+
