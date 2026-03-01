@@ -26,6 +26,12 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Mar 1, 2026:
+- safecontent-cla (Investigate SafeReads Stripe webhook requirement) - COMPLETE
+  - **Finding:** SafeReads DOES have Stripe webhook at `src/app/api/webhooks/stripe/route.ts`
+  - Uses Next.js API routes instead of Convex HTTP actions (valid architecture)
+  - Handles: `subscription.created/updated/deleted` ✅
+  - Minor gap: Missing `invoice.payment_failed` (Stripe dunning covers this)
+  - Updated: docs/CRITICAL-OPS-AUDIT.md with corrected findings
 - safecontent-c42 (Audit critical operations for cross-app consistency) - COMPLETE
   - Created: docs/CRITICAL-OPS-AUDIT.md
   - Spawned: safecontent-cla (SafeReads Stripe webhook investigation)
@@ -120,6 +126,39 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-cla: Investigate SafeReads Stripe webhook requirement (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - Audit was incorrect; SafeReads DOES have a webhook handler
+
+**Key Finding:**
+The original audit (safecontent-c42) stated SafeReads had "NO Stripe webhook handler". This was incorrect because the audit only checked `convex/http.ts`. SafeReads uses a **Next.js API route** for webhooks instead of Convex HTTP actions.
+
+**SafeReads Webhook Location:**
+- `apps/safereads/src/app/api/webhooks/stripe/route.ts`
+- Uses `ConvexHttpClient` to call Convex mutations
+- This is a valid architectural pattern for Next.js apps
+
+**Events Handled:**
+| Event | SafeReads | SafeTunes/SafeTube |
+|-------|-----------|-------------------|
+| `checkout.session.completed` | ✅ (no-op) | ✅ |
+| `subscription.created` | ✅ + welcome email | ❌ |
+| `subscription.updated` | ✅ | ✅ |
+| `subscription.deleted` | ✅ | ✅ |
+| `invoice.paid` | ❌ | ✅ |
+| `invoice.payment_failed` | ❌ | ✅ |
+
+**Minor Gap:**
+- `invoice.payment_failed` not handled - users won't be marked `past_due`
+- However, Stripe sends dunning emails automatically, so this is low priority
+
+**Files modified:**
+- `docs/CRITICAL-OPS-AUDIT.md` - Corrected webhook findings
+
+**Verdict:** No code changes needed. Audit document corrected.
+
+---
 
 ### safecontent-c42: Audit critical operations for cross-app consistency (Mar 1, 2026 - COMPLETE)
 

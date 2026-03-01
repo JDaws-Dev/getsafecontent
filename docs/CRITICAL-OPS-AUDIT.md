@@ -14,7 +14,7 @@ This audit examines critical operations across all Safe Family apps (SafeTunes, 
 |------|-------------|--------------|
 | Password Reset | ✅ Consistent | Minor: SafeReads returns `403` for invalid key vs `401` |
 | Account Deletion | ⚠️ Gaps | SafeTunes has orphaned legacy code; Marketing has more comprehensive delete |
-| Subscription Cancellation | ⚠️ Gaps | SafeReads has NO Stripe webhook handler |
+| Subscription Cancellation | ✅ Mostly Consistent | SafeReads uses Next.js API routes (valid); missing `invoice.payment_failed` handler |
 | Admin Endpoint Auth | ✅ Consistent | All use `process.env.ADMIN_KEY` comparison |
 | Password Sync | ✅ Consistent | All 3 apps sync to Marketing hub identically |
 
@@ -109,32 +109,37 @@ All apps call Marketing site's `/api/auth/sync-password` endpoint:
 
 | Aspect | SafeTunes | SafeTube | SafeReads | Marketing |
 |--------|-----------|----------|-----------|-----------|
-| Has `/stripe` webhook | ✅ Yes | ✅ Yes | ❌ NO | N/A |
-| `checkout.session.completed` | ✅ | ✅ | N/A | N/A |
-| `customer.subscription.updated` | ✅ | ✅ | N/A | N/A |
-| `customer.subscription.deleted` | ✅ | ✅ | N/A | N/A |
-| `invoice.paid` | ✅ | ✅ | N/A | N/A |
-| `invoice.payment_failed` | ✅ | ✅ | N/A | N/A |
+| Has webhook handler | ✅ (Convex) | ✅ (Convex) | ✅ (Next.js) | N/A |
+| Webhook location | `convex/stripe.ts` | `convex/stripe.ts` | `src/app/api/webhooks/stripe/route.ts` | N/A |
+| `checkout.session.completed` | ✅ | ✅ | ✅ (no-op) | N/A |
+| `customer.subscription.created` | ❌ | ❌ | ✅ (+ welcome email) | N/A |
+| `customer.subscription.updated` | ✅ | ✅ | ✅ | N/A |
+| `customer.subscription.deleted` | ✅ | ✅ | ✅ | N/A |
+| `invoice.paid` | ✅ | ✅ | ❌ (minor gap) | N/A |
+| `invoice.payment_failed` | ✅ | ✅ | ❌ (gap) | N/A |
 | Multi-subscription check | ✅ | ✅ | N/A | N/A |
-| Event logging | ✅ | ✅ | N/A | N/A |
-| Cancellation email | ✅ | ✅ | N/A | N/A |
+| Event logging | ✅ | ✅ | ❌ | N/A |
+| Cancellation email | ✅ | ✅ | ❌ | N/A |
 
-### Critical Finding: SafeReads Missing Stripe Webhook
+### Architectural Difference
 
-**SafeReads has NO Stripe webhook handler.** This means:
+**SafeReads uses Next.js API routes for webhooks** instead of Convex HTTP actions:
+- Location: `apps/safereads/src/app/api/webhooks/stripe/route.ts`
+- Uses `ConvexHttpClient` to call Convex mutations
+- This is a valid architectural choice for Next.js apps
 
-1. Users who pay through SafeReads Stripe checkout won't have their status updated
-2. Subscription cancellations won't be tracked
-3. Payment failures won't update user status
+### Feature Parity Analysis
 
-Looking at `apps/safereads/convex/http.ts`, there is no `/stripe` route.
+**SafeReads has the CORE subscription events covered:**
+- ✅ `subscription.created` - Sets status to `active` + sends welcome email
+- ✅ `subscription.updated` - Updates status correctly
+- ✅ `subscription.deleted` - Sets status to `canceled`
 
-However, examining the architecture:
-- SafeReads users primarily go through **Marketing site bundle checkout**
-- Marketing site webhook calls each app's `/provisionUser` or `/setSubscriptionStatus` endpoint
-- Individual app Stripe checkouts may not be used for SafeReads
+**Minor gaps (nice-to-have):**
+- ❌ `invoice.paid` - SafeTunes/SafeTube use this to confirm `active` status; redundant since `subscription.created/updated` already handles this
+- ⚠️ `invoice.payment_failed` - Won't mark subscriptions as `past_due` or send payment failed emails
 
-**Mitigation:** If SafeReads has its own Stripe checkout (verify with business), it needs a webhook handler. If all checkouts go through Marketing, this is OK but should be documented.
+**Verdict:** ⚠️ **MINOR GAP** - SafeReads is missing `invoice.payment_failed` handler. Users with failed payments won't be notified and won't be marked `past_due`. However, Stripe's dunning emails may cover this.
 
 ### SafeTunes & SafeTube Webhook Comparison
 
@@ -147,7 +152,7 @@ Both apps have **nearly identical** webhook implementations:
 | Error logging to `subscriptionEvents` | ✅ | ✅ |
 | Multi-subscription deletion check | ✅ | ✅ |
 
-**Verdict:** ⚠️ **GAP** - SafeReads needs Stripe webhook if it has direct checkout.
+**Verdict:** ✅ **MOSTLY CONSISTENT** - All 3 apps have webhook handlers. SafeReads uses Next.js API routes instead of Convex HTTP actions (valid architectural choice). Minor gap: SafeReads missing `invoice.payment_failed` handler.
 
 ---
 
@@ -228,10 +233,11 @@ if (!key || key !== ADMIN_KEY) {
 
 ### High Priority
 
-1. **SafeReads Stripe Webhook**
-   - If SafeReads has direct Stripe checkout, add `/stripe` webhook handler
-   - Copy implementation from SafeTunes/SafeTube
-   - Issue: `safecontent-XXX` (create if needed)
+1. ~~**SafeReads Stripe Webhook**~~ **RESOLVED (Mar 1, 2026)**
+   - SafeReads DOES have a webhook handler at `src/app/api/webhooks/stripe/route.ts`
+   - Uses Next.js API routes instead of Convex HTTP actions (valid architecture)
+   - Handles core events: `subscription.created/updated/deleted`
+   - Minor gap: Missing `invoice.payment_failed` handler (Stripe dunning emails cover this)
 
 ### Medium Priority
 
@@ -276,8 +282,8 @@ if (!key || key !== ADMIN_KEY) {
 ### Subscription Cancellation
 - `apps/safetunes/convex/stripe.ts`
 - `apps/safetube/convex/stripe.ts`
-- `apps/safereads/convex/subscriptions.ts`
-- (SafeReads http.ts - confirmed no `/stripe` route)
+- `apps/safereads/src/app/api/webhooks/stripe/route.ts` (Next.js API route)
+- `apps/safereads/convex/subscriptions.ts` (mutations called by webhook)
 
 ### Admin Endpoints
 - `apps/safetunes/convex/http.ts`
