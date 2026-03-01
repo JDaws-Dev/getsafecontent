@@ -72,15 +72,46 @@ export async function POST() {
     // Reuse existing Stripe customer if we have one
     let customerId = user.stripeCustomerId;
     if (!customerId) {
-      const customer = await stripe.customers.create({
+      // Check if customer already exists in Stripe by email
+      const existingCustomers = await stripe.customers.list({
         email: user.email,
-        metadata: { convexUserId: user._id },
+        limit: 1,
       });
-      customerId = customer.id;
+
+      if (existingCustomers.data.length > 0) {
+        customerId = existingCustomers.data[0].id;
+      } else {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          metadata: { convexUserId: user._id },
+        });
+        customerId = customer.id;
+      }
       await fetchMutation(
         api.subscriptions.setStripeCustomerId,
         { stripeCustomerId: customerId },
         { token }
+      );
+    }
+
+    // DUPLICATE SUBSCRIPTION PROTECTION
+    // Check if this customer already has an active or trialing subscription
+    const activeSubscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "active",
+      limit: 1,
+    });
+    const trialingSubscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: "trialing",
+      limit: 1,
+    });
+
+    if (activeSubscriptions.data.length > 0 || trialingSubscriptions.data.length > 0) {
+      console.log(`[Checkout] BLOCKED duplicate subscription for ${user.email} - already has active/trialing subscription`);
+      return NextResponse.json(
+        { error: "You already have an active subscription. Go to Settings to manage it." },
+        { status: 400 }
       );
     }
 

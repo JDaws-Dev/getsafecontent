@@ -6302,3 +6302,62 @@ Added UpgradePrompt UI components to all three apps for handling users who have 
 
 ---
 
+
+---
+
+## safecontent-1cv: Fix duplicate charging bug (Mar 1, 2026)
+
+**Status:** Complete
+
+### Root Cause Analysis
+
+Customers were being charged multiple times because there was no active subscription check before creating new checkout sessions. The issue had multiple entry points:
+
+1. **Marketing checkout** - Had partial protection (only if email was provided upfront, not if collected at Stripe checkout)
+2. **SafeReads checkout** - NO duplicate subscription protection at all
+3. **SafeTunes/SafeTube checkouts** - Checked for past subscriptions but NOT for currently active ones
+
+### Fix Applied
+
+Added duplicate subscription checks to all checkout entry points:
+
+**SafeReads** (`apps/safereads/src/app/api/stripe/checkout/route.ts`):
+- Added check for existing customer by email before creating new one
+- Added check for active/trialing subscriptions before creating checkout session
+- Returns 400 error if subscription already exists
+
+**SafeTunes** (`apps/safetunes/convex/stripeActions.ts`):
+- Added check for active/trialing subscriptions before creating checkout session
+- Throws error if subscription already exists
+- Maintains existing trial logic for NEW customers
+
+**SafeTube** (`apps/safetube/convex/stripeActions.ts`):
+- Same fix as SafeTunes
+
+### Files Changed
+- `apps/safereads/src/app/api/stripe/checkout/route.ts` (modified - added duplicate protection)
+- `apps/safetunes/convex/stripeActions.ts` (modified - added subscription check)
+- `apps/safetube/convex/stripeActions.ts` (modified - added subscription check)
+
+### Verification
+- All apps build successfully
+- All Convex functions compile
+
+### Deployment Required
+After merging, deploy to production:
+```bash
+# SafeTunes
+cd ~/safecontent/apps/safetunes && npx convex deploy --prod
+
+# SafeTube  
+cd ~/safecontent/apps/safetube && CONVEX_DEPLOYMENT=prod:rightful-rabbit-333 npx convex deploy
+
+# SafeReads (Next.js - auto-deploys via Vercel on push)
+```
+
+### Known Affected Customers
+- bjak24@gmail.com - 4 duplicate customers (already refunded)
+- Jolene_Bryan@yahoo.com - 2 duplicate charges (already refunded)
+
+Use `scripts/stripe-cleanup.ts` and `docs/STRIPE-DUPLICATE-CLEANUP.md` for cleanup.
+

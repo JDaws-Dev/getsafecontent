@@ -36,6 +36,24 @@ export const createCheckoutSession = action({
       let hasHadSubscription = false;
 
       if (existingCustomer) {
+        // DUPLICATE SUBSCRIPTION PROTECTION
+        // Check if customer already has an active or trialing subscription - BLOCK if so
+        const activeSubscriptions = await stripe.subscriptions.list({
+          customer: existingCustomer.id,
+          status: "active",
+          limit: 1,
+        });
+        const trialingSubscriptions = await stripe.subscriptions.list({
+          customer: existingCustomer.id,
+          status: "trialing",
+          limit: 1,
+        });
+
+        if (activeSubscriptions.data.length > 0 || trialingSubscriptions.data.length > 0) {
+          console.log(`[Checkout] BLOCKED duplicate subscription for ${args.email} - already has active/trialing subscription`);
+          throw new Error("You already have an active subscription. Go to Settings to manage it.");
+        }
+
         // Check if this customer has ever had a subscription (active, trialing, or cancelled)
         const allSubscriptions = await stripe.subscriptions.list({
           customer: existingCustomer.id,
