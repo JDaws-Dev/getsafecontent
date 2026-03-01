@@ -25,6 +25,9 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 
 **WORKING ON:** None - ready for next issue
 
+As of Mar 1, 2026:
+- safecontent-ecg (Fix SafeReads centralAuth.ts - queries non-existent table) - COMPLETE
+
 As of Feb 24, 2026:
 - safecontent-vfq (Clean up duplicate Stripe customers) - COMPLETE (script + docs, owner runs cleanup)
 - safecontent-uhq (Automate daily Convex backups) - COMPLETE (workflow created, owner needs to add secrets)

@@ -2,9 +2,14 @@ import { v } from "convex/values";
 import { action, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-// Central auth URL - SafeReads IS the central auth server, so we query locally
-// The centralUsers table is hosted here
+// Central auth URL (Marketing is the central auth hub)
+const CENTRAL_AUTH_URL = "https://adamant-crow-705.convex.site";
+
+// The app name for entitlement checks
 const THIS_APP = "safereads";
+
+// Timeout for central auth requests (5 seconds)
+const CENTRAL_AUTH_TIMEOUT_MS = 5000;
 
 /**
  * Result type for central auth verification
@@ -39,16 +44,13 @@ type CentralAuthResult =
  * Verify user credentials against central auth, then check if they're entitled to this app.
  * If entitled, provisions user locally (creates authAccounts entry if needed).
  *
- * NOTE: SafeReads is special - it hosts the centralUsers table.
- * So we query the central users directly instead of making an HTTP call.
- *
  * This action is called by the login page BEFORE calling Convex Auth signIn().
  *
  * Flow:
- * 1. Query centralUsers table directly (local to SafeReads)
- * 2. Verify password with Scrypt
- * 3. If valid + entitled to safereads → provision user locally → return success
- * 4. If valid + NOT entitled → return success with entitled=false (show upgrade prompt)
+ * 1. Call central /verifyCentralCredentials endpoint
+ * 2. If valid + entitled to safereads → provision user locally → return success
+ * 3. If valid + NOT entitled → return success with entitled=false (show upgrade prompt)
+ * 4. If central unreachable → try local auth as fallback
  * 5. If invalid credentials → return error
  */
 export const verifyCentralCredentialsAndProvision = action({
@@ -58,57 +60,67 @@ export const verifyCentralCredentialsAndProvision = action({
   },
   handler: async (ctx, args): Promise<CentralAuthResult> => {
     const email = args.email.toLowerCase().trim();
+    const adminKey = process.env.ADMIN_KEY;
+
+    if (!adminKey) {
+      console.error("[centralAuth] ADMIN_KEY not configured");
+      return {
+        success: false,
+        error: "Server configuration error",
+        errorCode: "INTERNAL_ERROR",
+      };
+    }
 
     try {
-      // Query centralUsers table directly (SafeReads hosts this table)
-      const centralUser = await ctx.runQuery(
-        internal.centralUsers.verifyCentralUserCredentials,
-        { email }
-      );
+      // Call central auth endpoint
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), CENTRAL_AUTH_TIMEOUT_MS);
 
-      if (!centralUser.exists) {
-        // Check if user exists locally (for backwards compatibility)
-        const localUser = await ctx.runQuery(internal.centralAuth.getUserByEmailInternal, { email });
-
-        if (!localUser) {
-          return {
-            success: false,
-            error: "Invalid email or password",
-            errorCode: "INVALID_CREDENTIALS",
-          };
-        }
-
-        // User exists locally but not in central - fall back to local auth
-        console.log(`[centralAuth] User ${email} exists locally but not in centralUsers, falling back to local auth`);
-        return {
-          success: true,
-          source: "local",
-          entitled: true, // If they exist locally, they were entitled at some point
-          user: {
-            email: localUser.email || email, // Use input email as fallback
-            name: localUser.name || null,
-            subscriptionStatus: localUser.subscriptionStatus || "trial",
-            entitledApps: [THIS_APP],
+      let response: Response;
+      try {
+        response = await fetch(`${CENTRAL_AUTH_URL}/verifyCentralCredentials`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": adminKey,
           },
+          body: JSON.stringify({
+            email,
+            password: args.password,
+          }),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      // Parse response
+      const data = await response.json();
+
+      // Handle rate limiting
+      if (response.status === 429) {
+        console.warn(`[centralAuth] Rate limited for: ${email}`);
+        return {
+          success: false,
+          error: "Too many login attempts. Please try again in a minute.",
+          errorCode: "RATE_LIMITED",
         };
       }
 
-      // Check if user needs password reset (migrated from BetterAuth or bcrypt)
-      if (centralUser.passwordHash?.startsWith("NEEDS_PASSWORD_RESET:")) {
+      // Handle password reset required (migrated users from BetterAuth)
+      if (response.status === 403 && data.code === "PASSWORD_RESET_REQUIRED") {
         console.log(`[centralAuth] Password reset required for: ${email}`);
         return {
           success: false,
-          error: "Please reset your password. Click 'Forgot password?' to receive a reset link.",
+          error: data.error || "Please reset your password. Click 'Forgot password?' to receive a reset link.",
           errorCode: "PASSWORD_RESET_REQUIRED",
         };
       }
 
-      // Verify password using Scrypt
-      const { Scrypt } = await import("lucia");
-      const scrypt = new Scrypt();
-      const isValidPassword = await scrypt.verify(centralUser.passwordHash!, args.password);
-
-      if (!isValidPassword) {
+      // Handle invalid credentials
+      if (response.status === 401 || !data.success) {
+        console.log(`[centralAuth] Invalid credentials for: ${email}`);
+        // Don't fall back to local - if central says invalid, it's invalid
         return {
           success: false,
           error: "Invalid email or password",
@@ -117,7 +129,7 @@ export const verifyCentralCredentialsAndProvision = action({
       }
 
       // Success - check entitlement
-      const entitledApps: string[] = centralUser.entitledApps || [];
+      const entitledApps: string[] = data.entitledApps || [];
       const isEntitled = entitledApps.includes(THIS_APP);
 
       console.log(`[centralAuth] Verified: ${email}, entitled to ${THIS_APP}: ${isEntitled}`);
@@ -127,9 +139,9 @@ export const verifyCentralCredentialsAndProvision = action({
         try {
           await ctx.runMutation(internal.provisionUserInternal.provisionUserInternal, {
             email,
-            passwordHash: centralUser.passwordHash!,
-            name: centralUser.name || null,
-            subscriptionStatus: centralUser.subscriptionStatus || "active",
+            passwordHash: data.passwordHash,
+            name: data.name || null,
+            subscriptionStatus: data.subscriptionStatus || "active",
             entitledToThisApp: true,
             stripeCustomerId: null,
             subscriptionId: null,
@@ -148,9 +160,9 @@ export const verifyCentralCredentialsAndProvision = action({
         source: "central",
         entitled: isEntitled,
         user: {
-          email: centralUser.email,
-          name: centralUser.name || null,
-          subscriptionStatus: centralUser.subscriptionStatus || "trial",
+          email: data.email,
+          name: data.name || null,
+          subscriptionStatus: data.subscriptionStatus || "trial",
           entitledApps,
         },
         ...(isEntitled
@@ -160,12 +172,35 @@ export const verifyCentralCredentialsAndProvision = action({
             }),
       };
     } catch (error) {
-      // Error querying central - shouldn't happen since we're local
-      console.error("[centralAuth] Error:", error);
+      // Central auth is unreachable - fall back to local
+      console.warn("[centralAuth] Central unreachable, trying local auth:", error);
+
+      // Check if user exists locally
+      const localUser = await ctx.runQuery(internal.centralAuth.getUserByEmailInternal, { email });
+
+      if (!localUser) {
+        // User doesn't exist locally either
+        return {
+          success: false,
+          error: "Invalid email or password",
+          errorCode: "INVALID_CREDENTIALS",
+        };
+      }
+
+      // User exists locally - let Convex Auth handle the password verification
+      // Return a special response indicating fallback mode
+      console.log(`[centralAuth] Falling back to local auth for: ${email}`);
+
       return {
-        success: false,
-        error: "An error occurred. Please try again.",
-        errorCode: "INTERNAL_ERROR",
+        success: true,
+        source: "local",
+        entitled: true, // If they exist locally, they were entitled at some point
+        user: {
+          email: localUser.email || email,
+          name: localUser.name || null,
+          subscriptionStatus: localUser.subscriptionStatus || "trial",
+          entitledApps: [THIS_APP], // Assume entitled to this app if they exist locally
+        },
       };
     }
   },
