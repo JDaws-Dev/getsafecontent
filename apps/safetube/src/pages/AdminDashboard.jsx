@@ -12,6 +12,7 @@ import VideoRequests from '../components/admin/VideoRequests';
 import Settings from '../components/admin/Settings';
 import GettingStarted from '../components/admin/GettingStarted';
 import UpgradePrompt from '../components/UpgradePrompt';
+import { useSubscriptionSync } from '../hooks/useSubscriptionSync';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -21,6 +22,9 @@ export default function AdminDashboard() {
 
   // Get current user from Convex Auth
   const currentUser = useQuery(api.userSync.getCurrentUser);
+
+  // Sync subscription status with central service on startup and periodically
+  useSubscriptionSync();
   const setTimezone = useMutation(api.users.setTimezone);
 
   const copyFamilyCode = async () => {

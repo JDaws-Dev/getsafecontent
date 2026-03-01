@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { api } from "../../../convex/_generated/api";
 import { InactiveUserPrompt } from "@/components/InactiveUserPrompt";
+import { useSubscriptionSync } from "@/hooks/useSubscriptionSync";
 
 export default function DashboardLayout({
   children,
@@ -13,6 +14,9 @@ export default function DashboardLayout({
 }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const router = useRouter();
+
+  // Sync subscription status with central service on startup and periodically
+  useSubscriptionSync();
 
   const convexUser = useQuery(
     api.users.currentUser,

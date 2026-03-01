@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Mar 1, 2026:
+- safecontent-q75 (Implement subscription status sync from central to apps) - COMPLETE
 - safecontent-1zl (Create Marketing site signup page with unified auth) - COMPLETE (already implemented)
 - safecontent-ds0 (Implement password sync from apps to central) - COMPLETE
 - safecontent-ecg (Fix SafeReads centralAuth.ts - queries non-existent table) - COMPLETE
@@ -109,6 +110,55 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-q75: Implement subscription status sync from central to apps (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - Apps now sync subscription status with central on startup and hourly
+
+**What was done:**
+
+1. **Created useSubscriptionSync hook for each app:**
+   - `apps/safetunes/src/hooks/useSubscriptionSync.jsx`
+   - `apps/safetube/src/hooks/useSubscriptionSync.jsx`
+   - `apps/safereads/src/hooks/useSubscriptionSync.ts`
+
+2. **Integrated hook into main protected pages:**
+   - SafeTunes: `AdminPage.jsx`
+   - SafeTube: `AdminDashboard.jsx`
+   - SafeReads: `dashboard/layout.tsx`
+
+**Hook behavior:**
+- Calls `verifyCentralAccess` action on mount
+- Sets up hourly interval to recheck
+- Re-syncs when tab becomes visible (if >5 min since last sync)
+- Convex action has 5-min cache to avoid hammering central
+
+**Backend already existed:**
+- `verifyCentralAccess` action in each app's Convex (users.ts/userSync.ts)
+- Action calls Marketing's `/verifyAppAccess` endpoint
+- Syncs local subscriptionStatus if different from central
+- Falls back to local status if central unavailable
+
+**Key decisions:**
+- Hourly sync interval (as spec'd in issue)
+- Re-sync on tab visibility change for mobile/background scenarios
+- Cache at Convex level (5 min) prevents excessive API calls
+- Graceful fallback to local status if central is unreachable
+
+**Files created:**
+- apps/safetunes/src/hooks/useSubscriptionSync.jsx
+- apps/safetube/src/hooks/useSubscriptionSync.jsx
+- apps/safereads/src/hooks/useSubscriptionSync.ts
+
+**Files modified:**
+- apps/safetunes/src/pages/AdminPage.jsx (added hook import + call)
+- apps/safetube/src/pages/AdminDashboard.jsx (added hook import + call)
+- apps/safereads/src/app/dashboard/layout.tsx (added hook import + call)
+
+**Verification:**
+- All 3 apps build successfully
+
+---
 
 ### safecontent-1zl: Create Marketing site signup page with unified auth (Mar 1, 2026 - COMPLETE)
 

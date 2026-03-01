@@ -6,6 +6,7 @@ import { useAuthActions } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import UpgradePrompt from '../components/UpgradePrompt';
+import { useSubscriptionSync } from '../hooks/useSubscriptionSync';
 
 function AdminPage() {
   const { isAuthenticated, isLoading: isPending } = useConvexAuth();
@@ -18,6 +19,9 @@ function AdminPage() {
 
   // Get current user from Convex Auth
   const currentUser = useQuery(api.userSync.getCurrentUser);
+
+  // Sync subscription status with central service on startup and periodically
+  useSubscriptionSync();
 
   // Wait for session to settle before allowing redirects
   // This prevents race conditions after login where session might not be immediately available
