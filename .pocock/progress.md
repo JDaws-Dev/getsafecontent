@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Mar 1, 2026:
+- safecontent-2no (Handle Google OAuth users in unified auth flow) - COMPLETE
 - safecontent-zuo (E2E Test: Duplicate subscription prevention) - COMPLETE
 - safecontent-q75 (Implement subscription status sync from central to apps) - COMPLETE
 - safecontent-1zl (Create Marketing site signup page with unified auth) - COMPLETE (already implemented)
@@ -111,6 +112,67 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-2no: Handle Google OAuth users in unified auth flow (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - OAuth users now sync with central auth system
+
+**What was done:**
+
+1. **Added `/getOrCreateOAuthUser` endpoint to Marketing's http.ts:**
+   - Creates OAuth users in central if they don't exist
+   - Returns existing user data if they do exist
+   - Users get trial status by default, entitled to all apps
+
+2. **Added `getOrCreateOAuthUser` mutation to Marketing's signupInternal.ts:**
+   - Creates user in users table without authAccounts entry
+   - OAuth users authenticate via Google, not password
+   - Sets trial expiration, entitled apps, onboarding status
+
+3. **Updated auth.ts callbacks in all 3 apps:**
+   - SafeTunes: Schedules `syncOAuthUserWithCentral` after user creation
+   - SafeTube: Same
+   - SafeReads: Same
+
+4. **Added `syncOAuthUserWithCentral` action to all 3 apps' userSync.ts/users.ts:**
+   - Calls central `/getOrCreateOAuthUser` endpoint
+   - Checks if user is entitled to this specific app
+   - Syncs subscription status from central to local
+   - Sets "inactive" status if not entitled (triggers upgrade prompt)
+
+**OAuth Flow After Implementation:**
+1. User clicks "Continue with Google" on any app
+2. Convex Auth creates/updates user locally
+3. `afterUserCreatedOrUpdated` callback runs
+4. Schedules `syncOAuthUserWithCentral` async
+5. Action calls Marketing `/getOrCreateOAuthUser`
+6. Central creates/returns user with subscription status
+7. Local user status synced with central
+
+**Key Decisions:**
+- OAuth users don't get authAccounts entries (they auth via Google)
+- Central user creation handles trial setup (7 days, all apps)
+- Sync is async (scheduled) to not block login
+- "inactive" status triggers upgrade prompt for non-entitled users
+
+**Files created:**
+- None
+
+**Files modified:**
+- sites/marketing/convex/signupInternal.ts (added getOrCreateOAuthUser)
+- sites/marketing/convex/http.ts (added /getOrCreateOAuthUser endpoint)
+- apps/safetunes/convex/auth.ts (schedule central sync)
+- apps/safetunes/convex/userSync.ts (syncOAuthUserWithCentral action)
+- apps/safetube/convex/auth.ts (schedule central sync)
+- apps/safetube/convex/userSync.ts (syncOAuthUserWithCentral action)
+- apps/safereads/convex/auth.ts (schedule central sync)
+- apps/safereads/convex/users.ts (syncOAuthUserWithCentral action)
+
+**Verification:**
+- All 4 apps build successfully
+- All Convex functions deploy successfully
+
+---
 
 ### safecontent-zuo: E2E Test: Duplicate subscription prevention (Mar 1, 2026 - COMPLETE)
 

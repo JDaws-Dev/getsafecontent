@@ -1133,4 +1133,94 @@ http.route({
   }),
 });
 
+/**
+ * Get or Create OAuth User Endpoint
+ *
+ * Called by apps when a user logs in via Google OAuth.
+ * Creates a central user if they don't exist, returns their subscription status.
+ *
+ * POST /getOrCreateOAuthUser?key=API_KEY
+ * Body: { email: string, name?: string }
+ *
+ * Returns:
+ * {
+ *   success: boolean,
+ *   created: boolean,
+ *   email: string,
+ *   name?: string,
+ *   subscriptionStatus: string,
+ *   entitledApps: string[],
+ *   trialExpiresAt?: number
+ * }
+ */
+http.route({
+  path: "/getOrCreateOAuthUser",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key from query params
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+    const expectedKey = process.env.ADMIN_KEY;
+
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    try {
+      const body = await request.json();
+
+      if (!body.email || typeof body.email !== "string") {
+        return new Response(
+          JSON.stringify({ success: false, error: "Email is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      const { internal } = await import("./_generated/api");
+
+      const result = await ctx.runMutation(internal.signupInternal.getOrCreateOAuthUser, {
+        email: body.email,
+        name: body.name,
+      });
+
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      console.error("[getOrCreateOAuthUser] Error:", error);
+      return new Response(
+        JSON.stringify({ success: false, error: message }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/getOrCreateOAuthUser",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
 export default http;

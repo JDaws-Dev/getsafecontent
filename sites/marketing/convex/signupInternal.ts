@@ -327,6 +327,99 @@ export const addAuthAccountToExistingUser = internalMutation({
 });
 
 /**
+ * Get or create an OAuth user in the central system.
+ *
+ * This is called by apps when a user logs in via Google OAuth.
+ * If the user exists, returns their data (subscription status, entitled apps).
+ * If the user doesn't exist, creates them with trial status.
+ *
+ * @param email - User's email from Google OAuth
+ * @param name - User's name from Google OAuth
+ * @returns User data including subscription status and entitled apps
+ */
+export const getOrCreateOAuthUser = internalMutation({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+    const now = Date.now();
+
+    // Check if user already exists in users table
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (existingUser) {
+      // User exists - return their current data
+      console.log(`[getOrCreateOAuthUser] Found existing user: ${email}`);
+      return {
+        success: true,
+        created: false,
+        userId: existingUser._id,
+        email: existingUser.email,
+        name: existingUser.name,
+        subscriptionStatus: existingUser.subscriptionStatus || "trial",
+        entitledApps: existingUser.entitledApps || [],
+        trialExpiresAt: existingUser.trialExpiresAt,
+      };
+    }
+
+    // User doesn't exist - create them with trial status
+    // OAuth users don't have authAccounts entry for password
+    const trialExpiresAt = now + TRIAL_DURATION_MS;
+    const entitledApps: AppType[] = [...ALL_APPS]; // Trial gets all apps
+
+    const userId = await ctx.db.insert("users", {
+      email,
+      name: args.name,
+      subscriptionStatus: "trial" as SubscriptionStatus,
+      trialStartedAt: now,
+      trialExpiresAt,
+      entitledApps,
+      onboardingCompleted: {
+        safetunes: false,
+        safetube: false,
+        safereads: false,
+      },
+      createdAt: now,
+      lastLoginAt: now,
+    });
+
+    // Note: We don't create authAccounts entry for OAuth users
+    // They authenticate via Google, not password
+
+    // Log the signup event
+    await ctx.db.insert("subscriptionEvents", {
+      userId,
+      email,
+      eventType: "trial.started",
+      eventData: JSON.stringify({
+        authProvider: "google",
+        entitledApps,
+      }),
+      subscriptionStatus: "trial",
+      timestamp: now,
+    });
+
+    console.log(`[getOrCreateOAuthUser] Created new OAuth user: ${email}`);
+
+    return {
+      success: true,
+      created: true,
+      userId,
+      email,
+      name: args.name,
+      subscriptionStatus: "trial" as SubscriptionStatus,
+      entitledApps,
+      trialExpiresAt,
+    };
+  },
+});
+
+/**
  * Update a user's password hash
  *
  * Used during password sync when a user changes their password on any app.

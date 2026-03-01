@@ -417,3 +417,155 @@ export const updateCentralAccessCache = mutation({
     return { success: true };
   },
 });
+
+// Central auth URL for OAuth user sync
+const CENTRAL_AUTH_URL = "https://adamant-crow-705.convex.site";
+
+/**
+ * Sync an OAuth user with the central Safe Family system.
+ *
+ * This action is called after a user logs in via Google OAuth.
+ * It creates or retrieves the user from central and syncs their subscription status.
+ *
+ * Flow:
+ * 1. Call central /getOrCreateOAuthUser endpoint
+ * 2. If user exists in central, sync their subscription status locally
+ * 3. If user is new, they get trial status (already set by central)
+ * 4. If user exists but not entitled to this app, set status to "inactive"
+ */
+export const syncOAuthUserWithCentral = action({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<{
+    success: boolean;
+    entitled: boolean;
+    subscriptionStatus: string;
+    created: boolean;
+    error?: string;
+  }> => {
+    const adminKey = process.env.ADMIN_KEY;
+
+    if (!adminKey) {
+      console.error("[syncOAuthUserWithCentral] ADMIN_KEY not configured");
+      return {
+        success: false,
+        entitled: true, // Assume entitled if we can't check
+        subscriptionStatus: "trial",
+        created: false,
+        error: "Server configuration error",
+      };
+    }
+
+    try {
+      // Call central to get or create OAuth user
+      const url = `${CENTRAL_AUTH_URL}/getOrCreateOAuthUser?key=${encodeURIComponent(adminKey)}`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: args.email,
+          name: args.name,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[syncOAuthUserWithCentral] Central returned error:", response.status, errorText);
+        return {
+          success: false,
+          entitled: true,
+          subscriptionStatus: "trial",
+          created: false,
+          error: `Central error: ${response.status}`,
+        };
+      }
+
+      const centralUser = await response.json() as {
+        success: boolean;
+        created: boolean;
+        email: string;
+        name?: string;
+        subscriptionStatus: string;
+        entitledApps: string[];
+        trialExpiresAt?: number;
+      };
+
+      if (!centralUser.success) {
+        console.error("[syncOAuthUserWithCentral] Central returned failure");
+        return {
+          success: false,
+          entitled: true,
+          subscriptionStatus: "trial",
+          created: false,
+          error: "Central returned failure",
+        };
+      }
+
+      // Check if user is entitled to SafeTunes
+      const isEntitled = centralUser.entitledApps?.includes("safetunes") ?? false;
+      const effectiveStatus = isEntitled ? centralUser.subscriptionStatus : "inactive";
+
+      // Sync the subscription status to local user
+      await ctx.runMutation(api.userSync.syncOAuthUserStatus, {
+        email: args.email,
+        subscriptionStatus: effectiveStatus,
+        trialExpiresAt: centralUser.trialExpiresAt,
+      });
+
+      console.log(`[syncOAuthUserWithCentral] Synced ${args.email}: status=${effectiveStatus}, entitled=${isEntitled}, created=${centralUser.created}`);
+
+      return {
+        success: true,
+        entitled: isEntitled,
+        subscriptionStatus: effectiveStatus,
+        created: centralUser.created,
+      };
+    } catch (error) {
+      console.error("[syncOAuthUserWithCentral] Error:", error);
+      return {
+        success: false,
+        entitled: true,
+        subscriptionStatus: "trial",
+        created: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  },
+});
+
+/**
+ * Sync OAuth user's subscription status from central.
+ * Called by syncOAuthUserWithCentral action.
+ */
+export const syncOAuthUserStatus = mutation({
+  args: {
+    email: v.string(),
+    subscriptionStatus: v.string(),
+    trialExpiresAt: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    // Find user by email
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
+
+    if (!user) {
+      console.error("[syncOAuthUserStatus] User not found:", args.email);
+      return { success: false, reason: "user_not_found" };
+    }
+
+    // Update subscription status
+    const now = Date.now();
+    await ctx.db.patch(user._id, {
+      subscriptionStatus: args.subscriptionStatus,
+      centralAccessCacheExpiry: now + CENTRAL_ACCESS_CACHE_MS,
+    });
+
+    console.log(`[syncOAuthUserStatus] Updated ${args.email} to ${args.subscriptionStatus}`);
+    return { success: true };
+  },
+});

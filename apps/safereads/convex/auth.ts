@@ -3,6 +3,8 @@ import { convexAuth, getAuthUserId } from "@convex-dev/auth/server";
 import { Password } from "@convex-dev/auth/providers/Password";
 import { ResendOTPPasswordReset } from "./ResendOTPPasswordReset";
 import { api } from "./_generated/api";
+import { internalQuery } from "./_generated/server";
+import { v } from "convex/values";
 
 const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
@@ -70,6 +72,16 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           userEmail: user.email,
           userName: user.name,
         });
+
+        // Schedule central sync for OAuth users
+        // This will check if the user exists in central and sync their subscription status
+        await ctx.scheduler.runAfter(0, api.users.syncOAuthUserWithCentral, {
+          email: user.email,
+          name: user.name,
+        });
+        console.log(
+          `[afterUserCreatedOrUpdated] Scheduled central sync for OAuth user: ${user.email}`
+        );
       }
     },
   },
@@ -80,3 +92,29 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
  * Use this in queries/mutations to get the logged-in user
  */
 export { getAuthUserId };
+
+/**
+ * Internal query to get the password hash for a user.
+ * Used by password sync actions to retrieve the hash.
+ *
+ * SECURITY NOTE: This is internal only, never exposed publicly.
+ */
+export const getPasswordHashByEmail = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const authAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", args.email.toLowerCase())
+      )
+      .first();
+
+    if (!authAccount) {
+      return null;
+    }
+
+    return {
+      passwordHash: authAccount.secret,
+    };
+  },
+});

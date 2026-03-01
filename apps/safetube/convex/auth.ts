@@ -4,6 +4,7 @@ import Google from "@auth/core/providers/google";
 import { ResendOTPPasswordReset } from "./ResendOTPPasswordReset";
 import { DataModel } from "./_generated/dataModel";
 import { MutationCtx } from "./_generated/server";
+import { api } from "./_generated/api";
 
 // Helper function to generate a unique 6-character family code
 function generateFamilyCode(): string {
@@ -79,12 +80,25 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       await ctx.db.patch(userId, {
         familyCode,
         createdAt: Date.now(),
-        subscriptionStatus: "trial", // All new users start with trial
+        subscriptionStatus: "trial", // Default to trial, will be synced with central
       });
 
       console.log(
         `[afterUserCreatedOrUpdated] Initialized SafeTube user: ${user.email} with familyCode: ${familyCode}`
       );
+
+      // Schedule central sync for OAuth users
+      // This will check if the user exists in central and sync their subscription status
+      // We run this async to not block the login flow
+      if (user.email) {
+        await ctx.scheduler.runAfter(0, api.userSync.syncOAuthUserWithCentral, {
+          email: user.email,
+          name: user.name,
+        });
+        console.log(
+          `[afterUserCreatedOrUpdated] Scheduled central sync for OAuth user: ${user.email}`
+        );
+      }
     },
   },
 });
