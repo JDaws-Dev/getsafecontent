@@ -26,6 +26,8 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Mar 1, 2026:
+- safecontent-6el (E2E Test: Existing user login across all apps) - COMPLETE
+- safecontent-1pz (E2E Test: New user signup flow) - COMPLETE (tests already existed)
 - safecontent-8ze (Add migration path for existing BetterAuth users) - COMPLETE
 - safecontent-2no (Handle Google OAuth users in unified auth flow) - COMPLETE
 - safecontent-zuo (E2E Test: Duplicate subscription prevention) - COMPLETE
