@@ -6647,3 +6647,41 @@ Created `sites/marketing/e2e/password-sync.spec.ts` with 9 tests:
 - Tests 5-6 pass (automated, no login required)
 - Tests 1-4, 7-9 require credentials or manual verification
 
+
+---
+
+## 2026-03-01: safecontent-azj - E2E Test: Google OAuth signup and login
+
+### Task
+Create E2E tests for Google OAuth signup and cross-app login.
+
+### What Was Done
+Created `sites/marketing/e2e/google-oauth.spec.ts` with 15 tests:
+
+1. **Marketing Signup** (Tests 1-2): OAuth button visible, initiates OAuth flow
+2. **SafeTunes Login** (Tests 3-4): OAuth button visible and styled
+3. **SafeTube Login** (Tests 5-6): OAuth button visible and styled
+4. **SafeReads Login** (Tests 7-8): OAuth button visible and styled
+5. **Full Flow** (Tests 9-11): Manual tests for complete OAuth signup, cross-app login, admin verification
+6. **Error Handling** (Tests 12-13): Graceful handling of cancelled OAuth, error states
+7. **Subscription Flow** (Tests 14-15): Signup flow structure, app selection state
+
+### Key Decisions
+- Full OAuth flows cannot be fully automated (Google blocks bots)
+- Automated tests verify UI elements and flow initiation
+- Manual tests (9-11) document step-by-step verification process
+- Tests 12-15 verify error handling and flow structure
+
+### Files Changed
+- `sites/marketing/e2e/google-oauth.spec.ts` (new)
+
+### Test Results
+- 11 automated tests pass
+- 3 manual tests require --debug mode
+- 1 test skipped without ADMIN_API_KEY
+
+### Caveats
+- Google's bot detection prevents full OAuth automation
+- Manual verification required for complete flow testing
+- OAuth state preservation verified through UI structure tests
+
