@@ -2,11 +2,44 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import { auth } from "./auth";
+import verifyCentralCredentials from "./verifyCentralCredentials";
 
 const http = httpRouter();
 
 // Convex Auth routes - handles /api/auth/* endpoints
 auth.addHttpRoutes(http);
+
+/**
+ * Verify Central Credentials Endpoint
+ *
+ * This is the CENTRAL authentication endpoint for all Safe Family apps.
+ * SafeTunes, SafeTube, and SafeReads call this to verify user credentials
+ * before creating local sessions.
+ *
+ * POST /verifyCentralCredentials
+ * Headers: x-admin-key: ADMIN_KEY
+ * Body: { email: string, password: string }
+ */
+http.route({
+  path: "/verifyCentralCredentials",
+  method: "POST",
+  handler: verifyCentralCredentials,
+});
+
+http.route({
+  path: "/verifyCentralCredentials",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, x-admin-key",
+      },
+    });
+  }),
+});
 
 /**
  * Verify App Access Endpoint
@@ -635,6 +668,372 @@ http.route({
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+/**
+ * Create User with Password Endpoint
+ *
+ * Creates a new user account with email/password authentication.
+ * This creates both the users table entry AND the authAccounts entry
+ * so the user can log in with Convex Auth.
+ *
+ * POST /createUserWithPassword
+ * Header: x-admin-key: API_KEY
+ * Body: {
+ *   email: string,
+ *   passwordHash: string,  // Scrypt hash from lucia
+ *   name?: string,
+ *   selectedApps?: string[],
+ *   couponCode?: string
+ * }
+ */
+http.route({
+  path: "/createUserWithPassword",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, x-admin-key",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key from header
+    const key = request.headers.get("x-admin-key");
+    const expectedKey = process.env.ADMIN_KEY;
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    try {
+      const body = await request.json();
+
+      // Validate required fields
+      if (!body.email || typeof body.email !== "string") {
+        return new Response(
+          JSON.stringify({ success: false, error: "Email is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      if (!body.passwordHash || typeof body.passwordHash !== "string") {
+        return new Response(
+          JSON.stringify({ success: false, error: "Password hash is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      // Validate selectedApps if provided
+      const validApps = ["safetunes", "safetube", "safereads"];
+      if (body.selectedApps) {
+        if (!Array.isArray(body.selectedApps)) {
+          return new Response(
+            JSON.stringify({ success: false, error: "selectedApps must be an array" }),
+            { status: 400, headers }
+          );
+        }
+        if (!body.selectedApps.every((a: string) => validApps.includes(a))) {
+          return new Response(
+            JSON.stringify({ success: false, error: "selectedApps contains invalid app names" }),
+            { status: 400, headers }
+          );
+        }
+      }
+
+      // Import the internal mutation dynamically to avoid circular imports
+      const { internal } = await import("./_generated/api");
+
+      const result = await ctx.runMutation(internal.signupInternal.createUserWithPassword, {
+        email: body.email,
+        passwordHash: body.passwordHash,
+        name: body.name,
+        selectedApps: body.selectedApps,
+        couponCode: body.couponCode,
+      });
+
+      // Return appropriate status code based on result
+      if (!result.success && result.error === "USER_EXISTS") {
+        return new Response(JSON.stringify(result), { status: 409, headers });
+      }
+
+      return new Response(JSON.stringify(result), {
+        status: result.success ? 201 : 400,
+        headers,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      console.error("[createUserWithPassword] Error:", error);
+      return new Response(
+        JSON.stringify({ success: false, error: message }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/createUserWithPassword",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, x-admin-key",
+      },
+    });
+  }),
+});
+
+/**
+ * Check User Exists Endpoint
+ *
+ * Checks if a user with the given email exists.
+ *
+ * GET /checkUserExists?email=user@example.com&key=API_KEY
+ */
+http.route({
+  path: "/checkUserExists",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    const email = url.searchParams.get("email");
+    const key = url.searchParams.get("key");
+
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key
+    const expectedKey = process.env.ADMIN_KEY;
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    if (!email) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Email is required" }),
+        { status: 400, headers }
+      );
+    }
+
+    try {
+      const { internal } = await import("./_generated/api");
+
+      const result = await ctx.runQuery(internal.signupInternal.checkUserExists, {
+        email,
+      });
+
+      return new Response(JSON.stringify({ success: true, ...result }), {
+        status: 200,
+        headers,
+      });
+    } catch (error) {
+      console.error("[checkUserExists] Error:", error);
+      return new Response(
+        JSON.stringify({ success: false, error: "Internal server error" }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/checkUserExists",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+/**
+ * Add Auth Account Endpoint
+ *
+ * Adds an authAccount to an existing user who doesn't have one.
+ * Used to fix users who were migrated without auth credentials.
+ *
+ * POST /addAuthAccount
+ * Header: x-admin-key: API_KEY
+ * Body: { email, passwordHash }
+ */
+http.route({
+  path: "/addAuthAccount",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, x-admin-key",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key from header
+    const key = request.headers.get("x-admin-key");
+    const expectedKey = process.env.ADMIN_KEY;
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    try {
+      const body = await request.json();
+
+      if (!body.email || typeof body.email !== "string") {
+        return new Response(
+          JSON.stringify({ success: false, error: "Email is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      if (!body.passwordHash || typeof body.passwordHash !== "string") {
+        return new Response(
+          JSON.stringify({ success: false, error: "Password hash is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      const { internal } = await import("./_generated/api");
+
+      const result = await ctx.runMutation(internal.signupInternal.addAuthAccountToExistingUser, {
+        email: body.email,
+        passwordHash: body.passwordHash,
+      });
+
+      return new Response(JSON.stringify(result), {
+        status: result.success ? 200 : 400,
+        headers,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      console.error("[addAuthAccount] Error:", error);
+      return new Response(
+        JSON.stringify({ success: false, error: message }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/addAuthAccount",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, x-admin-key",
+      },
+    });
+  }),
+});
+
+/**
+ * Update Central Password Endpoint
+ *
+ * Updates a user's password in the central auth database.
+ * Called by sync-password API route when a user changes password on any app.
+ *
+ * POST /updateCentralPassword?key=API_KEY
+ * Body: { email, passwordHash, sourceApp }
+ */
+http.route({
+  path: "/updateCentralPassword",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key from query params
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+    const expectedKey = process.env.ADMIN_KEY;
+
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    try {
+      const body = await request.json();
+
+      if (!body.email || typeof body.email !== "string") {
+        return new Response(
+          JSON.stringify({ success: false, error: "Email is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      if (!body.passwordHash || typeof body.passwordHash !== "string") {
+        return new Response(
+          JSON.stringify({ success: false, error: "Password hash is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      console.log(`[updateCentralPassword] Updating for ${body.email} (source: ${body.sourceApp || "unknown"})`);
+
+      const { internal } = await import("./_generated/api");
+
+      const result = await ctx.runMutation(internal.signupInternal.updatePassword, {
+        email: body.email,
+        passwordHash: body.passwordHash,
+      });
+
+      return new Response(JSON.stringify(result), {
+        status: result.success ? 200 : 404,
+        headers,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      console.error("[updateCentralPassword] Error:", error);
+      return new Response(
+        JSON.stringify({ success: false, error: message }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/updateCentralPassword",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
       },
     });

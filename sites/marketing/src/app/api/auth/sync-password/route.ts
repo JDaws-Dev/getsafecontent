@@ -12,8 +12,8 @@ const APP_ENDPOINTS = {
   safereads: "https://exuberant-puffin-838.convex.site",
 } as const;
 
-// SafeReads hosts the centralUsers table
-const SAFEREADS_ENDPOINT = APP_ENDPOINTS.safereads;
+// Marketing Convex endpoint for central auth updates
+const MARKETING_CONVEX_ENDPOINT = "https://adamant-crow-705.convex.site";
 
 /**
  * POST /api/auth/sync-password
@@ -95,13 +95,13 @@ export async function POST(req: Request) {
     const normalizedEmail = email.toLowerCase().trim();
     console.log(`[sync-password] Starting sync for ${normalizedEmail} (source: ${sourceApp})`);
 
-    // Step 1: Update centralUsers table in SafeReads
+    // Step 1: Update central auth (Marketing's authAccounts table)
     const encodedKey = encodeURIComponent(effectiveKey);
     let centralUpdated = false;
 
     try {
       const centralResponse = await fetch(
-        `${SAFEREADS_ENDPOINT}/updateCentralPassword?key=${encodedKey}`,
+        `${MARKETING_CONVEX_ENDPOINT}/updateCentralPassword?key=${encodedKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -119,13 +119,13 @@ export async function POST(req: Request) {
 
       if (centralResponse.ok && centralResult.success) {
         centralUpdated = true;
-        console.log(`[sync-password] Central user updated for ${normalizedEmail}`);
+        console.log(`[sync-password] Central auth updated for ${normalizedEmail}`);
       } else {
         // If central user doesn't exist, that's okay - user might only exist in one app
-        console.log(`[sync-password] Central user not updated: ${centralResult.error || centralResult.reason || "unknown"}`);
+        console.log(`[sync-password] Central auth not updated: ${centralResult.error || centralResult.reason || "unknown"}`);
       }
     } catch (error) {
-      console.error(`[sync-password] Failed to update central user:`, error);
+      console.error(`[sync-password] Failed to update central auth:`, error);
       // Continue to update other apps even if central fails
     }
 

@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Mar 1, 2026:
+- safecontent-ds0 (Implement password sync from apps to central) - COMPLETE
 - safecontent-ecg (Fix SafeReads centralAuth.ts - queries non-existent table) - COMPLETE
 
 As of Feb 24, 2026:
@@ -107,6 +108,43 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-ds0: Implement password sync from apps to central (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - Fixed critical bug where password sync wasn't updating Marketing's authAccounts
+
+**Problem identified:**
+The password sync flow was calling SafeReads' `/updateCentralPassword` to update a `centralUsers` table,
+but Marketing's `/verifyCentralCredentials` reads from Marketing's own `authAccounts` table.
+This meant password changes never propagated to the actual auth system.
+
+**What was done:**
+
+1. **Added `/updateCentralPassword` endpoint to Marketing Convex:**
+   - `sites/marketing/convex/signupInternal.ts` - new `updatePassword` mutation
+   - `sites/marketing/convex/http.ts` - new `/updateCentralPassword` HTTP endpoint
+   - Updates `authAccounts.secret` field (the actual password hash)
+
+2. **Updated sync-password route:**
+   - `sites/marketing/src/app/api/auth/sync-password/route.ts`
+   - Changed central endpoint from SafeReads to Marketing (`adamant-crow-705.convex.site`)
+
+**Key decisions:**
+- Marketing (`adamant-crow-705`) is the true central auth hub
+- All credential verification happens against Marketing's `authAccounts` table
+- SafeReads' `centralUsers` table is legacy/redundant (may clean up later)
+
+**Files modified:**
+- `sites/marketing/convex/signupInternal.ts` (new mutation)
+- `sites/marketing/convex/http.ts` (new endpoint)
+- `sites/marketing/src/app/api/auth/sync-password/route.ts` (fixed endpoint URL)
+
+**Verification:**
+- Marketing build passes
+- Convex functions compile
+- All apps already have `syncPasswordToOtherApps` action and `/updatePassword` endpoints
+
+---
 
 ### safecontent-vfq: Clean up duplicate Stripe customers (Feb 24, 2026 - COMPLETE)
 

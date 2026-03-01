@@ -1,0 +1,373 @@
+import { v } from "convex/values";
+import { internalMutation, internalQuery } from "./_generated/server";
+
+/**
+ * Internal Signup Mutations
+ *
+ * These are internal mutations for creating users during signup.
+ * They handle both the users table AND the authAccounts table
+ * to ensure users can log in with their password via Convex Auth.
+ *
+ * IMPORTANT: Password hashes must be Scrypt format (from lucia package)
+ * to match what Convex Auth Password provider expects.
+ */
+
+// Constants
+const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const ALL_APPS = ["safetunes", "safetube", "safereads"] as const;
+
+type AppType = (typeof ALL_APPS)[number];
+type SubscriptionStatus =
+  | "trial"
+  | "active"
+  | "lifetime"
+  | "canceled"
+  | "past_due"
+  | "incomplete"
+  | "expired";
+
+/**
+ * Check if a user exists by email
+ */
+export const checkUserExists = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    return { exists: !!user, userId: user?._id };
+  },
+});
+
+/**
+ * Create a new user with password authentication
+ *
+ * This creates:
+ * 1. A user record in the users table
+ * 2. An authAccounts entry for Convex Auth password login
+ *
+ * @param email - User's email address
+ * @param passwordHash - Scrypt hash of the password (from lucia)
+ * @param name - Optional display name
+ * @param selectedApps - Which apps the user is signing up for
+ * @param couponCode - Optional promo code
+ */
+export const createUserWithPassword = internalMutation({
+  args: {
+    email: v.string(),
+    passwordHash: v.string(),
+    name: v.optional(v.string()),
+    selectedApps: v.optional(
+      v.array(
+        v.union(
+          v.literal("safetunes"),
+          v.literal("safetube"),
+          v.literal("safereads")
+        )
+      )
+    ),
+    couponCode: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+    const now = Date.now();
+
+    // Check if user already exists
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (existingUser) {
+      return {
+        success: false,
+        error: "USER_EXISTS",
+        message: "An account with this email already exists",
+      };
+    }
+
+    // Check if authAccounts entry already exists for this email
+    const existingAuthAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", email)
+      )
+      .first();
+
+    if (existingAuthAccount) {
+      return {
+        success: false,
+        error: "USER_EXISTS",
+        message: "An account with this email already exists",
+      };
+    }
+
+    // Determine initial subscription status and entitled apps
+    let subscriptionStatus: SubscriptionStatus = "trial";
+    let entitledApps: AppType[] = args.selectedApps ?? [...ALL_APPS];
+    let couponRedeemedAt: number | undefined;
+
+    // Handle coupon code if provided
+    if (args.couponCode) {
+      const code = args.couponCode.toUpperCase().trim();
+
+      // Check database for coupon
+      const coupon = await ctx.db
+        .query("couponCodes")
+        .withIndex("by_code", (q) => q.eq("code", code))
+        .first();
+
+      if (coupon && coupon.active) {
+        // Check expiry
+        if (!coupon.expiresAt || coupon.expiresAt > now) {
+          // Check usage limit
+          if (!coupon.usageLimit || coupon.usageCount < coupon.usageLimit) {
+            if (coupon.type === "lifetime") {
+              subscriptionStatus = "lifetime";
+              entitledApps = (coupon.grantedApps ?? [...ALL_APPS]) as AppType[];
+              couponRedeemedAt = now;
+
+              // Increment usage count
+              await ctx.db.patch(coupon._id, {
+                usageCount: coupon.usageCount + 1,
+              });
+            }
+          }
+        }
+      } else {
+        // Fallback to hardcoded lifetime codes
+        const HARDCODED_LIFETIME_CODES = ["DAWSFRIEND", "DEWITT"];
+        if (HARDCODED_LIFETIME_CODES.includes(code)) {
+          subscriptionStatus = "lifetime";
+          entitledApps = [...ALL_APPS] as AppType[];
+          couponRedeemedAt = now;
+        }
+      }
+    }
+
+    // Create the user record
+    const userId = await ctx.db.insert("users", {
+      email,
+      name: args.name,
+      subscriptionStatus,
+      trialStartedAt: subscriptionStatus === "trial" ? now : undefined,
+      trialExpiresAt:
+        subscriptionStatus === "trial" ? now + TRIAL_DURATION_MS : undefined,
+      entitledApps,
+      onboardingCompleted: {
+        safetunes: false,
+        safetube: false,
+        safereads: false,
+      },
+      couponCode: args.couponCode?.toUpperCase(),
+      couponRedeemedAt,
+      createdAt: now,
+      lastLoginAt: now,
+    });
+
+    // Create the authAccounts entry for password login
+    // This is required for Convex Auth Password provider to work
+    await ctx.db.insert("authAccounts", {
+      userId,
+      provider: "password",
+      providerAccountId: email, // For password auth, this is the email
+      secret: args.passwordHash, // Scrypt hash
+    });
+
+    // Log the signup event
+    await ctx.db.insert("subscriptionEvents", {
+      userId,
+      email,
+      eventType: args.couponCode ? "coupon.applied" : "trial.started",
+      eventData: JSON.stringify({
+        selectedApps: args.selectedApps,
+        couponCode: args.couponCode,
+        subscriptionStatus,
+        entitledApps,
+      }),
+      subscriptionStatus,
+      timestamp: now,
+    });
+
+    console.log(
+      `[signupInternal] Created user ${email} with status ${subscriptionStatus}`
+    );
+
+    return {
+      success: true,
+      userId,
+      email,
+      subscriptionStatus,
+      entitledApps,
+      trialExpiresAt:
+        subscriptionStatus === "trial" ? now + TRIAL_DURATION_MS : undefined,
+    };
+  },
+});
+
+/**
+ * Get user credentials for login verification
+ *
+ * Returns the password hash so the API can verify the password
+ * before creating a session.
+ */
+export const getUserCredentials = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+
+    // Get user
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (!user) {
+      return { exists: false };
+    }
+
+    // Get auth account for password
+    const authAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", email)
+      )
+      .first();
+
+    if (!authAccount) {
+      // User exists but doesn't have password auth (maybe OAuth only)
+      return {
+        exists: true,
+        hasPasswordAuth: false,
+        userId: user._id,
+        email: user.email,
+      };
+    }
+
+    return {
+      exists: true,
+      hasPasswordAuth: true,
+      userId: user._id,
+      email: user.email,
+      name: user.name || null,
+      passwordHash: authAccount.secret,
+      subscriptionStatus: user.subscriptionStatus,
+      entitledApps: user.entitledApps,
+    };
+  },
+});
+
+/**
+ * Add authAccount to an existing user (for migration fix)
+ *
+ * Used to fix users who have a users record but no authAccount.
+ * These users were created during migration but can't log in.
+ */
+export const addAuthAccountToExistingUser = internalMutation({
+  args: {
+    email: v.string(),
+    passwordHash: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+
+    // Find the existing user
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "USER_NOT_FOUND",
+        message: `No user found with email: ${email}`,
+      };
+    }
+
+    // Check if authAccount already exists
+    const existingAuthAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", email)
+      )
+      .first();
+
+    if (existingAuthAccount) {
+      return {
+        success: false,
+        error: "AUTH_ACCOUNT_EXISTS",
+        message: `AuthAccount already exists for: ${email}`,
+      };
+    }
+
+    // Create the authAccounts entry
+    const authAccountId = await ctx.db.insert("authAccounts", {
+      userId: user._id,
+      provider: "password",
+      providerAccountId: email,
+      secret: args.passwordHash,
+    });
+
+    console.log(
+      `[addAuthAccountToExistingUser] Created authAccount for ${email}, userId: ${user._id}`
+    );
+
+    return {
+      success: true,
+      userId: user._id,
+      authAccountId,
+      email,
+    };
+  },
+});
+
+/**
+ * Update a user's password hash
+ *
+ * Used during password sync when a user changes their password on any app.
+ * Updates the authAccounts.secret field so /verifyCentralCredentials works.
+ */
+export const updatePassword = internalMutation({
+  args: {
+    email: v.string(),
+    passwordHash: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+
+    // Find the authAccount for this email
+    const authAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", email)
+      )
+      .first();
+
+    if (!authAccount) {
+      console.log(`[updatePassword] No authAccount found for: ${email}`);
+      return {
+        success: false,
+        updated: false,
+        reason: "user_not_found",
+      };
+    }
+
+    // Update the password hash
+    await ctx.db.patch(authAccount._id, {
+      secret: args.passwordHash,
+    });
+
+    console.log(`[updatePassword] Updated password hash for: ${email}`);
+
+    return {
+      success: true,
+      updated: true,
+      email,
+    };
+  },
+});
