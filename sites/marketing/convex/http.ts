@@ -394,6 +394,67 @@ http.route({
 });
 
 /**
+ * Migration Status Endpoint
+ *
+ * Shows users needing password reset (BetterAuth migration status).
+ *
+ * GET /migrationStatus?key=API_KEY
+ */
+http.route({
+  path: "/migrationStatus",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key
+    const expectedKey = process.env.ADMIN_KEY;
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    try {
+      const { internal } = await import("./_generated/api");
+
+      const status = await ctx.runQuery(internal.signupInternal.getMigrationStatus, {});
+
+      return new Response(JSON.stringify(status), { status: 200, headers });
+    } catch (error) {
+      console.error("[migrationStatus] Error:", error);
+      return new Response(
+        JSON.stringify({ error: "Internal server error" }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/migrationStatus",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+/**
  * Delete User Endpoint
  *
  * Admin endpoint to delete a user account.

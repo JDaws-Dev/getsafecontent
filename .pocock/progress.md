@@ -26,6 +26,7 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 **WORKING ON:** None - ready for next issue
 
 As of Mar 1, 2026:
+- safecontent-8ze (Add migration path for existing BetterAuth users) - COMPLETE
 - safecontent-2no (Handle Google OAuth users in unified auth flow) - COMPLETE
 - safecontent-zuo (E2E Test: Duplicate subscription prevention) - COMPLETE
 - safecontent-q75 (Implement subscription status sync from central to apps) - COMPLETE
@@ -112,6 +113,59 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-8ze: Add migration path for existing BetterAuth users (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - Better UX for users needing password reset + admin migration status endpoint
+
+**What was done:**
+
+1. **Improved password reset UX in all 3 app login pages:**
+   - Instead of showing error with link to /forgot-password, now shows dedicated "Password Reset Required" screen
+   - Clear messaging: "We've upgraded our login system. Please set a new password."
+   - One-click "Send Password Reset Email" button - no need to navigate away
+   - After sending, shows "Check Your Email" with "Enter Reset Code" button
+
+2. **Added `/migrationStatus` endpoint to Marketing's http.ts:**
+   - Returns count of users needing password reset
+   - Lists emails of users with `NEEDS_PASSWORD_RESET:` prefix in authAccounts
+   - Shows total auth accounts vs. completed migrations
+
+3. **Added `getMigrationStatus` query to Marketing's signupInternal.ts:**
+   - Queries all password authAccounts
+   - Filters those with NEEDS_PASSWORD_RESET prefix
+   - Returns user details (email, name, status, createdAt)
+
+**Files modified:**
+- apps/safetunes/src/pages/LoginPage.jsx (added password reset prompt UI)
+- apps/safetube/src/pages/LoginPage.jsx (same)
+- apps/safereads/src/app/login/page.tsx (same)
+- sites/marketing/convex/signupInternal.ts (added getMigrationStatus query)
+- sites/marketing/convex/http.ts (added /migrationStatus endpoint)
+
+**Usage:**
+```bash
+# Check migration status
+curl "https://adamant-crow-705.convex.site/migrationStatus?key=ADMIN_KEY"
+```
+
+Returns:
+```json
+{
+  "totalAuthAccounts": 25,
+  "needingPasswordReset": 3,
+  "completedMigration": 22,
+  "usersNeedingReset": [
+    {"email": "user@example.com", "name": "User", "subscriptionStatus": "trial"}
+  ]
+}
+```
+
+**Verification:**
+- All 3 apps build successfully
+- Marketing Convex functions deploy successfully
+
+---
 
 ### safecontent-2no: Handle Google OAuth users in unified auth flow (Mar 1, 2026 - COMPLETE)
 

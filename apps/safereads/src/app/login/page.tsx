@@ -27,6 +27,11 @@ export default function LoginPage() {
     name: string | null;
   } | null>(null);
 
+  // Password reset for migrated users
+  const [showPasswordResetPrompt, setShowPasswordResetPrompt] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [sendingResetEmail, setSendingResetEmail] = useState(false);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -85,10 +90,10 @@ export default function LoginPage() {
         if (centralResult.errorCode === "RATE_LIMITED") {
           setError(centralResult.error);
         } else if (centralResult.errorCode === "PASSWORD_RESET_REQUIRED") {
-          // User was migrated from old auth system - they need to reset password
-          setError(
-            `${centralResult.error} Click 'Forgot password?' above to reset your password.`
-          );
+          // User was migrated from old auth system - show password reset prompt
+          setShowPasswordResetPrompt(true);
+          setLoading(false);
+          return;
         } else {
           setError("Invalid email or password. Please try again.");
         }
@@ -171,6 +176,149 @@ export default function LoginPage() {
   // Don't render if authenticated (will redirect)
   if (isAuthenticated) {
     return <div className="min-h-screen" />;
+  }
+
+  // Handle sending password reset email
+  const handleSendResetEmail = async () => {
+    setSendingResetEmail(true);
+    try {
+      // Trigger password reset flow via Convex Auth
+      await signIn("password", {
+        email: formData.email,
+        flow: "reset",
+      });
+      setResetEmailSent(true);
+      localStorage.setItem("safereads_reset_email", formData.email);
+      haptic.success();
+    } catch (err) {
+      console.error("[LoginPage] Password reset error:", err);
+      // Still show success for security (don't reveal if email exists)
+      setResetEmailSent(true);
+      localStorage.setItem("safereads_reset_email", formData.email);
+    } finally {
+      setSendingResetEmail(false);
+    }
+  };
+
+  // Show password reset prompt for migrated users
+  if (showPasswordResetPrompt) {
+    return (
+      <div className="min-h-screen bg-parchment-50">
+        <div className="mx-auto max-w-md px-4 py-12 sm:py-20">
+          {/* Logo */}
+          <div className="mb-8 text-center">
+            <Link href="/" className="inline-flex items-center gap-2">
+              <BookOpen className="h-10 w-10 text-parchment-600" />
+              <span className="font-serif text-2xl font-bold text-ink-900">
+                SafeReads
+              </span>
+            </Link>
+          </div>
+
+          <div className="rounded-xl border border-parchment-200 bg-white p-8 shadow-sm">
+            {!resetEmailSent ? (
+              <>
+                <div className="mb-6 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                    <svg
+                      className="h-8 w-8 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                  </div>
+                  <h1 className="font-serif text-2xl font-bold text-ink-900">
+                    We've Upgraded Our Login System
+                  </h1>
+                  <p className="mt-2 text-ink-600">
+                    For security, please set a new password to continue using SafeReads.
+                    This is a one-time process.
+                  </p>
+                </div>
+
+                <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+                  <p className="text-sm text-blue-800">
+                    <strong>Your email:</strong> {formData.email}
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleSendResetEmail}
+                  disabled={sendingResetEmail}
+                  className="btn-brand mb-3 w-full min-h-[48px] rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {sendingResetEmail ? "Sending..." : "Send Password Reset Email"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowPasswordResetPrompt(false);
+                    setFormData((prev) => ({ ...prev, password: "" }));
+                  }}
+                  className="w-full text-sm text-ink-600 hover:text-ink-900"
+                >
+                  ← Back to login
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="mb-6 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                    <svg
+                      className="h-8 w-8 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <h1 className="font-serif text-2xl font-bold text-ink-900">
+                    Check Your Email
+                  </h1>
+                  <p className="mt-2 text-ink-600">
+                    We've sent a 6-digit reset code to <strong>{formData.email}</strong>.
+                  </p>
+                </div>
+
+                <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm">
+                  <p className="text-blue-800">
+                    <strong>Next Steps:</strong> Check your inbox for an email from SafeReads.
+                    The code expires in 1 hour.
+                  </p>
+                </div>
+
+                <Link
+                  href="/reset-password"
+                  className="btn-brand mb-3 block w-full min-h-[48px] rounded-lg text-center"
+                >
+                  Enter Reset Code
+                </Link>
+
+                <button
+                  onClick={() => setResetEmailSent(false)}
+                  className="w-full text-sm text-parchment-600 hover:text-parchment-700"
+                >
+                  Didn't receive it? Try again
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Show upgrade prompt if user is verified but not entitled to SafeReads

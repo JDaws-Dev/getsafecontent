@@ -420,6 +420,51 @@ export const getOrCreateOAuthUser = internalMutation({
 });
 
 /**
+ * Get migration status: count of users needing password reset
+ *
+ * Returns users whose authAccounts.secret starts with "NEEDS_PASSWORD_RESET:"
+ * These are users migrated from BetterAuth who need to set a new password.
+ */
+export const getMigrationStatus = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    // Get all authAccounts with password provider
+    const authAccounts = await ctx.db
+      .query("authAccounts")
+      .filter((q) => q.eq(q.field("provider"), "password"))
+      .collect();
+
+    // Filter to those needing reset
+    const needingReset = authAccounts.filter(
+      (acc) =>
+        typeof acc.secret === "string" &&
+        acc.secret.startsWith("NEEDS_PASSWORD_RESET:")
+    );
+
+    // Get user details for those needing reset
+    const usersNeedingReset = [];
+    for (const acc of needingReset) {
+      const user = await ctx.db.get(acc.userId);
+      if (user) {
+        usersNeedingReset.push({
+          email: acc.providerAccountId,
+          name: user.name || null,
+          subscriptionStatus: user.subscriptionStatus || "unknown",
+          createdAt: user.createdAt,
+        });
+      }
+    }
+
+    return {
+      totalAuthAccounts: authAccounts.length,
+      needingPasswordReset: needingReset.length,
+      completedMigration: authAccounts.length - needingReset.length,
+      usersNeedingReset,
+    };
+  },
+});
+
+/**
  * Update a user's password hash
  *
  * Used during password sync when a user changes their password on any app.

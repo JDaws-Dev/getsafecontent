@@ -21,6 +21,11 @@ export default function LoginPage() {
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [centralUser, setCentralUser] = useState(null);
 
+  // Password reset for migrated users
+  const [showPasswordResetPrompt, setShowPasswordResetPrompt] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [sendingResetEmail, setSendingResetEmail] = useState(false);
+
   // Get current user from Convex Auth
   const currentUser = useQuery(api.userSync.getCurrentUser);
 
@@ -79,15 +84,10 @@ export default function LoginPage() {
         if (centralResult.errorCode === 'RATE_LIMITED') {
           setError(centralResult.error);
         } else if (centralResult.errorCode === 'PASSWORD_RESET_REQUIRED') {
-          // User was migrated from old auth system - they need to reset password
-          setError(
-            <span>
-              {centralResult.error}{' '}
-              <Link to="/forgot-password" className="underline font-semibold text-red-600">
-                Reset password
-              </Link>
-            </span>
-          );
+          // User was migrated from old auth system - show password reset prompt
+          setShowPasswordResetPrompt(true);
+          setLoading(false);
+          return;
         } else {
           setError('Invalid email or password. Please try again.');
         }
@@ -156,6 +156,131 @@ export default function LoginPage() {
       setGoogleLoading(false);
     }
   };
+
+  // Handle sending password reset email
+  const handleSendResetEmail = async () => {
+    setSendingResetEmail(true);
+    try {
+      // Trigger password reset flow via Convex Auth
+      await signIn('password', {
+        email: formData.email,
+        flow: 'reset',
+      });
+      setResetEmailSent(true);
+      localStorage.setItem('safetube_reset_email', formData.email);
+      haptic.success();
+    } catch (err) {
+      console.error('[LoginPage] Password reset error:', err);
+      // Still show success for security (don't reveal if email exists)
+      setResetEmailSent(true);
+      localStorage.setItem('safetube_reset_email', formData.email);
+    } finally {
+      setSendingResetEmail(false);
+    }
+  };
+
+  // Show password reset prompt for migrated users
+  if (showPasswordResetPrompt) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex flex-col">
+        <header className="px-6 py-4">
+          <Link to="/" className="flex items-center gap-2 w-fit">
+            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span className="font-semibold text-gray-900">SafeTube</span>
+          </Link>
+        </header>
+
+        <main className="flex-1 flex items-center justify-center px-6 py-12">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            {!resetEmailSent ? (
+              <>
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    We've Upgraded Our Login System
+                  </h1>
+                  <p className="text-gray-600">
+                    For security, please set a new password to continue using SafeTube.
+                    This is a one-time process.
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-6">
+                  <p className="text-sm">
+                    <strong>Your email:</strong> {formData.email}
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleSendResetEmail}
+                  disabled={sendingResetEmail}
+                  className="w-full min-h-[48px] bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed mb-3"
+                >
+                  {sendingResetEmail ? 'Sending...' : 'Send Password Reset Email'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowPasswordResetPrompt(false);
+                    setFormData(prev => ({ ...prev, password: '' }));
+                  }}
+                  className="w-full text-gray-600 hover:text-gray-900 text-sm"
+                >
+                  ← Back to login
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    Check Your Email
+                  </h1>
+                  <p className="text-gray-600 mb-4">
+                    We've sent a 6-digit reset code to <strong>{formData.email}</strong>.
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-6 text-sm">
+                  <p>
+                    <strong>Next Steps:</strong> Check your inbox for an email from SafeTube.
+                    The code expires in 1 hour.
+                  </p>
+                </div>
+
+                <Link
+                  to="/reset-password"
+                  className="block w-full min-h-[48px] bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold text-center transition mb-3"
+                >
+                  Enter Reset Code
+                </Link>
+
+                <button
+                  onClick={() => setResetEmailSent(false)}
+                  className="w-full text-red-600 hover:text-red-700 text-sm"
+                >
+                  Didn't receive it? Try again
+                </button>
+              </>
+            )}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   // Show upgrade prompt if user is verified but not entitled to SafeTube
   if (showUpgradePrompt && centralUser) {
