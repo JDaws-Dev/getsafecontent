@@ -1,0 +1,205 @@
+# Daily Stripe Health Audit
+# Checks for duplicates, multiple subscriptions, and failed webhooks
+#
+# Schedule: Daily at 4:00 AM UTC (after backups at 3:00 AM)
+# Manual: workflow_dispatch
+#
+# Required Secrets:
+# - STRIPE_SECRET_KEY: Stripe live API key
+# - RESEND_API_KEY: For alert emails
+#
+# Exit codes:
+# - 0: No issues found
+# - 1: Issues detected (triggers alert email)
+# - 2: Script error
+
+name: Daily Stripe Audit
+
+on:
+  schedule:
+    # 4:00 AM UTC daily (1 hour after backups)
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      send_report:
+        description: 'Send email report even if no issues'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  audit:
+    name: Stripe Health Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install stripe tsx
+
+      - name: Get audit date
+        id: date
+        run: echo "DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Run Stripe audit
+        id: audit
+        continue-on-error: true
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          # Run audit and capture output
+          npx tsx scripts/stripe-audit.ts --json > audit-result.json 2>&1
+          EXIT_CODE=$?
+
+          echo "exit_code=${EXIT_CODE}" >> $GITHUB_OUTPUT
+
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "has_issues=false" >> $GITHUB_OUTPUT
+          elif [ $EXIT_CODE -eq 1 ]; then
+            echo "status=issues_found" >> $GITHUB_OUTPUT
+            echo "has_issues=true" >> $GITHUB_OUTPUT
+          else
+            echo "status=error" >> $GITHUB_OUTPUT
+            echo "has_issues=true" >> $GITHUB_OUTPUT
+          fi
+
+          # Extract counts from JSON for summary
+          if [ -f audit-result.json ]; then
+            DUPLICATE_COUNT=$(cat audit-result.json | jq -r '.summary.duplicateCount // 0')
+            MULTI_SUB_COUNT=$(cat audit-result.json | jq -r '.summary.multipleSubscriptionCount // 0')
+            WEBHOOK_COUNT=$(cat audit-result.json | jq -r '.summary.failedWebhookCount // 0')
+            TOTAL_CUSTOMERS=$(cat audit-result.json | jq -r '.summary.totalCustomers // 0')
+
+            echo "duplicate_count=${DUPLICATE_COUNT}" >> $GITHUB_OUTPUT
+            echo "multi_sub_count=${MULTI_SUB_COUNT}" >> $GITHUB_OUTPUT
+            echo "webhook_count=${WEBHOOK_COUNT}" >> $GITHUB_OUTPUT
+            echo "total_customers=${TOTAL_CUSTOMERS}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate human-readable report
+        if: always()
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: |
+          npx tsx scripts/stripe-audit.ts > audit-report.txt 2>&1 || true
+          cat audit-report.txt
+
+      - name: Upload audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stripe-audit-${{ steps.date.outputs.DATE }}
+          path: |
+            audit-result.json
+            audit-report.txt
+          retention-days: 30
+
+      - name: Send alert email
+        if: steps.audit.outputs.has_issues == 'true' || github.event.inputs.send_report == 'true'
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          DATE="${{ steps.date.outputs.DATE }}"
+          STATUS="${{ steps.audit.outputs.status }}"
+          DUPLICATE_COUNT="${{ steps.audit.outputs.duplicate_count }}"
+          MULTI_SUB_COUNT="${{ steps.audit.outputs.multi_sub_count }}"
+          WEBHOOK_COUNT="${{ steps.audit.outputs.webhook_count }}"
+          TOTAL_CUSTOMERS="${{ steps.audit.outputs.total_customers }}"
+
+          if [ "$STATUS" = "healthy" ]; then
+            SUBJECT="[Stripe Audit] All Clear - ${DATE}"
+            STATUS_EMOJI="✅"
+            STATUS_TEXT="No issues detected"
+          elif [ "$STATUS" = "issues_found" ]; then
+            SUBJECT="[ALERT] Stripe Issues Detected - ${DATE}"
+            STATUS_EMOJI="⚠️"
+            STATUS_TEXT="Issues require attention"
+          else
+            SUBJECT="[ERROR] Stripe Audit Failed - ${DATE}"
+            STATUS_EMOJI="🔴"
+            STATUS_TEXT="Audit script error - check logs"
+          fi
+
+          # Build HTML email
+          HTML_BODY="<h2>${STATUS_EMOJI} Stripe Health Audit - ${DATE}</h2>"
+          HTML_BODY+="<p><strong>Status:</strong> ${STATUS_TEXT}</p>"
+          HTML_BODY+="<h3>Summary</h3>"
+          HTML_BODY+="<ul>"
+          HTML_BODY+="<li>Total customers: ${TOTAL_CUSTOMERS}</li>"
+          HTML_BODY+="<li>Duplicate customers: ${DUPLICATE_COUNT}</li>"
+          HTML_BODY+="<li>Multiple subscriptions: ${MULTI_SUB_COUNT}</li>"
+          HTML_BODY+="<li>Failed webhooks (24h): ${WEBHOOK_COUNT}</li>"
+          HTML_BODY+="</ul>"
+
+          if [ "$STATUS" = "issues_found" ]; then
+            HTML_BODY+="<h3>Recommended Actions</h3>"
+            HTML_BODY+="<ul>"
+            if [ "$DUPLICATE_COUNT" -gt 0 ]; then
+              HTML_BODY+="<li>Review duplicate customers and archive extras</li>"
+            fi
+            if [ "$MULTI_SUB_COUNT" -gt 0 ]; then
+              HTML_BODY+="<li>Check for double-billing and cancel duplicate subscriptions</li>"
+            fi
+            if [ "$WEBHOOK_COUNT" -gt 0 ]; then
+              HTML_BODY+="<li>Review failed webhooks in <a href='https://dashboard.stripe.com/webhooks'>Stripe Dashboard</a></li>"
+            fi
+            HTML_BODY+="</ul>"
+          fi
+
+          HTML_BODY+="<p><a href='https://github.com/JDaws-Dev/getsafecontent/actions'>View full audit report</a></p>"
+          HTML_BODY+="<p style='color: #666; font-size: 12px;'>Automated report from stripe-audit workflow</p>"
+
+          # Send via Resend API
+          curl -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer ${RESEND_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"from\": \"Safe Family Monitoring <noreply@getsafefamily.com>\",
+              \"to\": \"jedaws@gmail.com\",
+              \"subject\": \"${SUBJECT}\",
+              \"html\": \"${HTML_BODY}\"
+            }"
+
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "## Stripe Health Audit - ${{ steps.date.outputs.DATE }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          STATUS="${{ steps.audit.outputs.status }}"
+          if [ "$STATUS" = "healthy" ]; then
+            echo "### ✅ Status: Healthy" >> $GITHUB_STEP_SUMMARY
+          elif [ "$STATUS" = "issues_found" ]; then
+            echo "### ⚠️ Status: Issues Found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### 🔴 Status: Error" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total customers | ${{ steps.audit.outputs.total_customers }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Duplicate customers | ${{ steps.audit.outputs.duplicate_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Multiple subscriptions | ${{ steps.audit.outputs.multi_sub_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Failed webhooks (24h) | ${{ steps.audit.outputs.webhook_count }} |" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Artifacts:** Download audit-result.json for detailed breakdown" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail workflow if issues found
+        if: steps.audit.outputs.has_issues == 'true'
+        run: |
+          echo "::error::Stripe audit found issues - review the report above"
+          exit 1

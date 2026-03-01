@@ -6893,3 +6893,63 @@ curl -X POST "https://adamant-crow-705.convex.site/forceProvision?key=ADMIN_KEY"
 - debugAuth returns sensitive info (auth type, subscription status)
 - Only works with central auth users (not legacy app-only users)
 
+
+---
+
+## 2026-03-01: safecontent-9e1 - Add proactive Stripe monitoring for duplicate detection
+
+### Task
+Create automated monitoring to catch Stripe issues (duplicates, failed webhooks) before customers complain.
+
+### What Was Done
+1. Created `scripts/stripe-audit.ts`:
+   - Checks for duplicate customers (same email)
+   - Detects multiple active subscriptions per email
+   - Finds failed/pending webhooks in last 24 hours
+   - Outputs human-readable report or JSON (--json flag)
+   - Exit code 1 on issues (for CI alerting)
+
+2. Created `.github/workflows/stripe-audit.yml`:
+   - Runs daily at 4:00 AM UTC (after backups at 3:00 AM)
+   - Sends email alert when issues detected
+   - Uploads JSON/text reports as artifacts (30-day retention)
+   - Manual trigger with optional "send report even if healthy" flag
+   - Generates GitHub Actions summary
+
+3. Updated CLAUDE.md with Stripe Monitoring section:
+   - Documents manual audit commands
+   - Links to cleanup script and docs
+
+### Files Changed
+- `scripts/stripe-audit.ts` (new)
+- `.github/workflows/stripe-audit.yml` (new)
+- `CLAUDE.md` (added Stripe Monitoring section)
+
+### Key Decisions
+- Run after backups (4:00 AM vs 3:00 AM) to avoid overlap
+- Use Resend for email alerts (consistent with backup alerts)
+- Exit code 1 for issues allows CI/workflow to fail visibly
+- JSON output enables future dashboard integration
+
+### GitHub Secrets Required
+- `STRIPE_SECRET_KEY` - already exists from webhook handling
+- `RESEND_API_KEY` - already exists from backup alerts
+
+### Usage Examples
+
+```bash
+# Manual audit (human readable)
+STRIPE_SECRET_KEY=sk_live_xxx npx tsx scripts/stripe-audit.ts
+
+# JSON output for automation
+STRIPE_SECRET_KEY=sk_live_xxx npx tsx scripts/stripe-audit.ts --json
+
+# Trigger workflow manually
+gh workflow run stripe-audit.yml
+```
+
+### Caveats
+- Workflow requires STRIPE_SECRET_KEY to be set in GitHub secrets
+- Failed webhook detection relies on Stripe's pending_webhooks count
+- Does NOT check for orphaned subscriptions (no matching Convex user) - would require Convex access which adds complexity
+

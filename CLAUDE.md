@@ -179,6 +179,44 @@ See `docs/CONVEX-BACKUP-SETUP.md` for full configuration including:
 
 ---
 
+## Stripe Monitoring
+
+Daily automated audits to catch billing issues before customers do.
+
+- **Schedule**: 4:00 AM UTC daily (GitHub Actions)
+- **Alerts**: Email when issues detected
+- **Checks**:
+  - Duplicate customers (same email)
+  - Multiple active subscriptions per email
+  - Failed webhooks (last 24h)
+
+### Manual Audit
+```bash
+# Run audit (dry run - no changes)
+STRIPE_SECRET_KEY=sk_live_xxx npx tsx scripts/stripe-audit.ts
+
+# JSON output (for automation)
+STRIPE_SECRET_KEY=sk_live_xxx npx tsx scripts/stripe-audit.ts --json
+```
+
+### Cleanup Duplicates
+```bash
+# List duplicates
+STRIPE_SECRET_KEY=sk_live_xxx npx tsx scripts/stripe-cleanup.ts
+
+# Archive duplicates (CAUTION: review output first)
+STRIPE_SECRET_KEY=sk_live_xxx npx tsx scripts/stripe-cleanup.ts --archive
+```
+
+### Setup
+GitHub Actions requires these secrets:
+- `STRIPE_SECRET_KEY` - Stripe live API key
+- `RESEND_API_KEY` - For alert emails
+
+See `docs/STRIPE-DUPLICATE-CLEANUP.md` for cleanup guidance.
+
+---
+
 ## Auth Troubleshooting
 
 ### Current Auth Architecture
