@@ -92,6 +92,15 @@ export default defineSchema({
       )
     ), // Which app they originally subscribed to
     migratedAt: v.optional(v.number()), // When they were migrated to central accounts
+
+    // Provisioning tracking - when user was provisioned to each app
+    provisionedAt: v.optional(
+      v.object({
+        safetunes: v.optional(v.number()),
+        safetube: v.optional(v.number()),
+        safereads: v.optional(v.number()),
+      })
+    ),
   })
     .index("email", ["email"]) // Required by Convex Auth
     .index("phone", ["phone"]) // Required by Convex Auth

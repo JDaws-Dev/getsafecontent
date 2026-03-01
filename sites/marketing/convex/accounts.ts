@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { getAuthUserId } from "./auth";
 
 /**
@@ -1135,5 +1135,45 @@ export const applyLifetimeCode = mutation({
       subscriptionStatus: "lifetime",
       entitledApps: grantedApps,
     };
+  },
+});
+
+/**
+ * Mark Provisioned
+ *
+ * Internal mutation to record when a user was provisioned to an app.
+ * Called by forceProvision action after successful provisioning.
+ */
+export const markProvisioned = internalMutation({
+  args: {
+    email: v.string(),
+    app: v.union(
+      v.literal("safetunes"),
+      v.literal("safetube"),
+      v.literal("safereads")
+    ),
+  },
+  handler: async (ctx, args) => {
+    const { email, app } = args;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email.toLowerCase()))
+      .first();
+
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
+    // Update provisioned timestamp
+    const currentProvisioned = user.provisionedAt || {};
+    await ctx.db.patch(user._id, {
+      provisionedAt: {
+        ...currentProvisioned,
+        [app]: Date.now(),
+      },
+    });
+
+    return { success: true };
   },
 });

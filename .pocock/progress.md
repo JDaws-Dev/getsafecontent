@@ -6759,3 +6759,55 @@ Created `sites/marketing/e2e/subscription-cancellation.spec.ts` with 12 tests:
 - Subscription lifecycle depends on Stripe timing
 - Use Stripe test mode to manually trigger events
 
+
+---
+
+## 2026-03-01: safecontent-ogd - Add admin tools for unified auth troubleshooting
+
+### Task
+Create admin endpoints for debugging and fixing unified auth issues.
+
+### What Was Done
+1. Created `/debugAuth` endpoint:
+   - Shows central user status (exists, auth type, subscription)
+   - Shows app entitlements and provisioning status
+   - Diagnoses potential auth issues automatically
+
+2. Created `/forceProvision` endpoint:
+   - Force re-provisions user to specific app or all apps
+   - Useful when normal provisioning failed
+   - Updates central provisionedAt tracking
+
+3. Added `provisionedAt` field to schema:
+   - Tracks when user was provisioned to each app
+   - Stored as object with app names as keys
+
+### Files Changed
+- `sites/marketing/convex/debugAuth.ts` (new)
+- `sites/marketing/convex/forceProvision.ts` (new)
+- `sites/marketing/convex/accounts.ts` (added markProvisioned mutation)
+- `sites/marketing/convex/http.ts` (added debugAuth and forceProvision routes)
+- `sites/marketing/convex/schema.ts` (added provisionedAt field)
+
+### Usage Examples
+
+```bash
+# Debug auth status
+curl "https://adamant-crow-705.convex.site/debugAuth?email=user@example.com&key=ADMIN_KEY"
+
+# Force provision to single app
+curl -X POST "https://adamant-crow-705.convex.site/forceProvision?key=ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "app": "safetunes"}'
+
+# Force provision to all apps
+curl -X POST "https://adamant-crow-705.convex.site/forceProvision?key=ADMIN_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "app": "all"}'
+```
+
+### Caveats
+- forceProvision requires ADMIN_KEY
+- debugAuth returns sensitive info (auth type, subscription status)
+- Only works with central auth users (not legacy app-only users)
+

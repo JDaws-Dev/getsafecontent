@@ -363,16 +363,17 @@ http.route({
       // Get all users
       const users = await ctx.runQuery(api.accounts.getAllAccounts, {});
 
+      type User = (typeof users)[number];
       const stats = {
         totalAccounts: users.length,
         byStatus: {
-          trial: users.filter((u) => u.subscriptionStatus === "trial").length,
-          active: users.filter((u) => u.subscriptionStatus === "active").length,
-          lifetime: users.filter((u) => u.subscriptionStatus === "lifetime").length,
-          canceled: users.filter((u) => u.subscriptionStatus === "canceled").length,
-          expired: users.filter((u) => u.subscriptionStatus === "expired").length,
+          trial: users.filter((u: User) => u.subscriptionStatus === "trial").length,
+          active: users.filter((u: User) => u.subscriptionStatus === "active").length,
+          lifetime: users.filter((u: User) => u.subscriptionStatus === "lifetime").length,
+          canceled: users.filter((u: User) => u.subscriptionStatus === "canceled").length,
+          expired: users.filter((u: User) => u.subscriptionStatus === "expired").length,
         },
-        users: users.map((u) => ({
+        users: users.map((u: User) => ({
           email: u.email,
           name: u.name,
           status: u.subscriptionStatus,
@@ -1271,6 +1272,173 @@ http.route({
 
 http.route({
   path: "/getOrCreateOAuthUser",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+/**
+ * Debug Auth Endpoint
+ *
+ * Comprehensive auth status for troubleshooting.
+ *
+ * GET /debugAuth?email=user@example.com&key=API_KEY
+ *
+ * Returns:
+ * - Central user status (exists, auth type, subscription)
+ * - App entitlements and provisioning status
+ * - Diagnosed issues
+ */
+http.route({
+  path: "/debugAuth",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    const email = url.searchParams.get("email");
+    const key = url.searchParams.get("key");
+
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key
+    const expectedKey = process.env.ADMIN_KEY;
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    if (!email) {
+      return new Response(
+        JSON.stringify({ error: "Email is required" }),
+        { status: 400, headers }
+      );
+    }
+
+    try {
+      const result = await ctx.runQuery(api.debugAuth.getAuthStatus, { email });
+      return new Response(JSON.stringify(result), { status: 200, headers });
+    } catch (error) {
+      console.error("[debugAuth] Error:", error);
+      return new Response(
+        JSON.stringify({ error: "Internal server error" }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/debugAuth",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+/**
+ * Force Provision Endpoint
+ *
+ * Admin endpoint to force re-provision a user to an app.
+ *
+ * POST /forceProvision?key=API_KEY
+ * Body: { email: string, app: "safetunes" | "safetube" | "safereads" }
+ *
+ * OR for all apps:
+ * POST /forceProvision?key=API_KEY
+ * Body: { email: string, app: "all" }
+ */
+http.route({
+  path: "/forceProvision",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key
+    const expectedKey = process.env.ADMIN_KEY;
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    try {
+      const body = await request.json();
+      const { email, app } = body;
+
+      if (!email) {
+        return new Response(
+          JSON.stringify({ error: "Email is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      if (!app || !["safetunes", "safetube", "safereads", "all"].includes(app)) {
+        return new Response(
+          JSON.stringify({ error: "App must be safetunes, safetube, safereads, or all" }),
+          { status: 400, headers }
+        );
+      }
+
+      let result;
+      if (app === "all") {
+        result = await ctx.runAction(api.forceProvision.forceProvisionAll, {
+          email,
+          adminKey: key,
+        });
+      } else {
+        result = await ctx.runAction(api.forceProvision.forceProvisionUser, {
+          email,
+          app: app as "safetunes" | "safetube" | "safereads",
+          adminKey: key,
+        });
+      }
+
+      return new Response(JSON.stringify(result), {
+        status: result.success ? 200 : 400,
+        headers,
+      });
+    } catch (error) {
+      console.error("[forceProvision] Error:", error);
+      return new Response(
+        JSON.stringify({ error: "Internal server error" }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/forceProvision",
   method: "OPTIONS",
   handler: httpAction(async () => {
     return new Response(null, {
