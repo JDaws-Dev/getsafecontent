@@ -3,11 +3,47 @@ import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import { auth } from "./auth";
 import verifyCentralCredentials from "./verifyCentralCredentials";
+import { login } from "./authEndpoints";
 
 const http = httpRouter();
 
 // Convex Auth routes - handles /api/auth/* endpoints
 auth.addHttpRoutes(http);
+
+/**
+ * Login Endpoint - Public-facing JWT authentication
+ *
+ * This is the primary authentication endpoint for all Safe Family apps.
+ * Users call this endpoint directly (no admin key required).
+ *
+ * POST /login
+ * Body: { email: string, password: string }
+ *
+ * Returns:
+ * - JWT token for authentication
+ * - User info (email, name, subscriptionStatus, entitledApps)
+ * - Token expiration timestamp
+ */
+http.route({
+  path: "/login",
+  method: "POST",
+  handler: login,
+});
+
+http.route({
+  path: "/login",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
 
 /**
  * Verify Central Credentials Endpoint

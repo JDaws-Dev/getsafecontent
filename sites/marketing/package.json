@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:api": "tsx src/__tests__/unified-auth.integration.ts",
+    "test:e2e": "playwright test e2e/unified-auth-flow.spec.ts",
+    "test:e2e:headed": "playwright test e2e/unified-auth-flow.spec.ts --headed",
+    "test:e2e:debug": "playwright test e2e/unified-auth-flow.spec.ts --debug",
+    "test:all": "npm run test:api && npm run test:e2e"
   },
   "dependencies": {
     "@auth/core": "^0.37.4",
@@ -15,6 +20,8 @@
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.2",
     "convex": "^1.31.7",
+    "jose": "^6.1.3",
+    "lucia": "^3.2.2",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.30",
@@ -25,6 +32,7 @@
     "velite": "^0.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -33,6 +41,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
+    "tsx": "^4.7.0",
     "typescript": "^5"
   }
 }

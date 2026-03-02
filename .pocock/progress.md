@@ -25,6 +25,9 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 
 **WORKING ON:** None - ready for next issue
 
+As of Mar 1, 2026 (evening):
+- safecontent-mqy.1 (Add /login endpoint to Marketing that returns JWT) - COMPLETE
+
 As of Mar 1, 2026:
 - safecontent-59f (Standardize HTTP error status codes across apps) - COMPLETE
   - Changed SafeReads admin key validation from 403 to 401 (matches SafeTunes/SafeTube)
@@ -134,6 +137,32 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-mqy.1: Add /login endpoint to Marketing that returns JWT (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - Public-facing JWT login endpoint working
+
+**What was implemented:**
+- New `/login` POST endpoint on Marketing Convex (public, no admin key)
+- Accepts `{email, password}` body
+- Verifies password against authAccounts using Scrypt (same as existing verifyCentralCredentials)
+- Returns signed JWT (HS256, 7-day expiry) + user info on success
+- Error codes: 401 (invalid creds), 403 (PASSWORD_RESET_REQUIRED), 429 (rate limited)
+
+**Key design decisions:**
+1. **Uses jose library** - Modern, lightweight, no deps, works in Edge
+2. **Falls back to ADMIN_KEY for signing** - JWT_SECRET optional, uses ADMIN_KEY if not set
+3. **Separate from verifyCentralCredentials** - That endpoint returns passwordHash for app provisioning; this one returns JWT for direct user auth
+4. **Rate limited** - 10 req/min per IP (same as verifyCentralCredentials)
+
+**Files added/changed:**
+- `sites/marketing/convex/authEndpoints.ts` (NEW) - login handler with JWT generation
+- `sites/marketing/convex/http.ts` - Added /login route
+- `sites/marketing/package.json` - Added jose dependency
+
+**Next:** Task safecontent-mqy.2 (/verifyToken endpoint) can reuse jose for verification.
+
+---
 
 ### safecontent-59f: Standardize HTTP error status codes across apps (Mar 1, 2026 - COMPLETE)
 
