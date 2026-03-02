@@ -1,33 +1,33 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery, useAction } from 'convex/react';
-import { useConvexAuth } from 'convex/react';
-import { useAuthActions } from '@convex-dev/auth/react';
+import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 import { useHaptic } from '../hooks/useHaptic';
 import UpgradePrompt from '../components/UpgradePrompt';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading: isPending } = useConvexAuth();
-  const { signIn } = useAuthActions();
+  const { user: centralUser, isAuthenticated, isLoading: isPending, login, requestPasswordReset } = useAuth();
   const haptic = useHaptic();
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Central auth integration
-  const verifyCentralAuth = useAction(api.centralAuth.verifyCentralCredentialsAndProvision);
+  // Upgrade prompt state
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
-  const [centralUser, setCentralUser] = useState(null);
+  const [upgradeUser, setUpgradeUser] = useState(null);
 
   // Password reset for migrated users
   const [showPasswordResetPrompt, setShowPasswordResetPrompt] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [sendingResetEmail, setSendingResetEmail] = useState(false);
 
-  // Get current user from Convex Auth
-  const currentUser = useQuery(api.userSync.getCurrentUser);
+  // Get local SafeTube user data by email
+  const localUser = useQuery(
+    api.userSync.getSafeTubeUserByEmail,
+    centralUser?.email ? { email: centralUser.email } : "skip"
+  );
+  const currentUser = localUser;
 
   // Redirect to admin or onboarding if already logged in
   useEffect(() => {
@@ -69,52 +69,31 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Step 1: Verify against central auth first
-      // This checks credentials, entitlement, and provisions user locally if needed
-      const centralResult = await verifyCentralAuth({
-        email: formData.email,
-        password: formData.password,
-      });
+      // Use central JWT auth
+      const result = await login(formData.email, formData.password);
 
-      console.log('[LoginPage] Central auth result:', centralResult);
+      console.log('[LoginPage] Login result:', result);
 
-      if (!centralResult.success) {
-        // Central auth returned an error
+      if (!result.success) {
         haptic.error();
-        if (centralResult.errorCode === 'RATE_LIMITED') {
-          setError(centralResult.error);
-        } else if (centralResult.errorCode === 'PASSWORD_RESET_REQUIRED') {
-          // User was migrated from old auth system - show password reset prompt
-          setShowPasswordResetPrompt(true);
+
+        // Handle specific error codes
+        if (result.code === 'NOT_ENTITLED') {
+          // User exists but doesn't have SafeTube - show upgrade prompt
+          console.log('[LoginPage] User not entitled to SafeTube, showing upgrade prompt');
+          haptic.light();
+          setUpgradeUser(result.user);
+          setShowUpgradePrompt(true);
           setLoading(false);
           return;
-        } else {
-          setError('Invalid email or password. Please try again.');
         }
+
+        // Generic error
+        setError(result.error || 'Invalid email or password. Please try again.');
         emailInputRef.current?.focus();
         setLoading(false);
         return;
       }
-
-      // Step 2: Check entitlement
-      if (!centralResult.entitled) {
-        // User exists but doesn't have SafeTube - show upgrade prompt
-        console.log('[LoginPage] User not entitled to SafeTube, showing upgrade prompt');
-        haptic.light();
-        setCentralUser(centralResult.user);
-        setShowUpgradePrompt(true);
-        setLoading(false);
-        return;
-      }
-
-      // Step 3: User is verified and entitled - complete Convex Auth login
-      // The central auth action already provisioned the user (created authAccounts entry)
-      // Now we just need to create the session via Convex Auth
-      await signIn('password', {
-        email: formData.email,
-        password: formData.password,
-        flow: 'signIn',
-      });
 
       // Always save email for convenience
       localStorage.setItem('safetube_remembered_email', formData.email);
@@ -125,50 +104,26 @@ export default function LoginPage() {
     } catch (err) {
       console.error('[LoginPage] Login error:', err);
       haptic.error(); // Error feedback
-      // Provide user-friendly error messages
-      const errorMessage = err?.message || '';
-      if (errorMessage.includes('Invalid') || errorMessage.includes('credentials') || errorMessage.includes('password') || errorMessage.includes('Could not verify')) {
-        setError('Invalid email or password. Please try again.');
-        emailInputRef.current?.focus();
-      } else if (errorMessage.includes('network') || errorMessage.includes('fetch') || errorMessage.includes('Failed to fetch')) {
-        setError('Network error. Please check your connection and try again.');
-      } else if (errorMessage.includes('timeout')) {
-        setError('Request timed out. Please try again.');
-      } else {
-        setError('Login failed. Please try again.');
-      }
+      setError('Login failed. Please try again.');
       errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    haptic.light(); // Light tap on Google button
-    setGoogleLoading(true);
-    setError('');
-
-    try {
-      await signIn('google', { redirectTo: '/admin' });
-    } catch (err) {
-      console.error('[LoginPage] Google login error:', err);
-      haptic.error();
-      setError('Google sign-in failed. Please try again.');
-      setGoogleLoading(false);
-    }
-  };
-
-  // Handle sending password reset email
+  // Handle sending password reset email (uses central auth)
   const handleSendResetEmail = async () => {
     setSendingResetEmail(true);
     try {
-      // Trigger password reset flow via Convex Auth
-      await signIn('password', {
-        email: formData.email,
-        flow: 'reset',
-      });
-      setResetEmailSent(true);
-      localStorage.setItem('safetube_reset_email', formData.email);
-      haptic.success();
+      const result = await requestPasswordReset(formData.email);
+      if (result.success) {
+        setResetEmailSent(true);
+        localStorage.setItem('safetube_reset_email', formData.email);
+        haptic.success();
+      } else {
+        // Still show success for security (don't reveal if email exists)
+        setResetEmailSent(true);
+        localStorage.setItem('safetube_reset_email', formData.email);
+      }
     } catch (err) {
       console.error('[LoginPage] Password reset error:', err);
       // Still show success for security (don't reveal if email exists)
@@ -283,12 +238,12 @@ export default function LoginPage() {
   }
 
   // Show upgrade prompt if user is verified but not entitled to SafeTube
-  if (showUpgradePrompt && centralUser) {
+  if (showUpgradePrompt && upgradeUser) {
     return (
       <UpgradePrompt
-        user={centralUser}
+        user={upgradeUser}
         onLogout={() => {
-          setCentralUser(null);
+          setUpgradeUser(null);
           setShowUpgradePrompt(false);
         }}
       />
@@ -327,35 +282,6 @@ export default function LoginPage() {
               {error}
             </div>
           )}
-
-          {/* Google Sign In Button */}
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={googleLoading || loading}
-            className="w-full min-h-[48px] flex items-center justify-center gap-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-          >
-            {googleLoading ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-            ) : (
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-            )}
-            {googleLoading ? 'Signing in...' : 'Continue with Google'}
-          </button>
-
-          <div className="relative mb-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">or</span>
-            </div>
-          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4" aria-busy={loading}>
             <div>
@@ -407,7 +333,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || googleLoading}
+              disabled={loading}
               className="btn-brand w-full min-h-[48px] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Signing in...' : 'Sign In'}

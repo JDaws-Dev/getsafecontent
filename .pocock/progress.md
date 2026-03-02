@@ -72,6 +72,15 @@ User → App Login Form → Marketing /login → JWT Token
 
 **WORKING ON:** None - ready for next issue
 
+As of Mar 1, 2026 (late night):
+- safecontent-mqy.5 (Update SafeTube to use central JWT auth) - COMPLETE
+  - **ALREADY IMPLEMENTED** - SafeTube JWT auth was set up in a previous commit
+  - AuthContext.jsx calls Marketing endpoints: /login, /verifyToken, /requestPasswordReset, /resetPassword
+  - LoginPage, ForgotPasswordPage, ResetPasswordPage all use useAuth() hook
+  - App.jsx wraps everything in AuthProvider
+  - Build passes, Convex functions compile
+  - No additional changes needed
+
 As of Mar 1, 2026 (night):
 - safecontent-mqy.3 (Add /requestPasswordReset and /resetPassword endpoints) - COMPLETE
   - Added `passwordResetTokens` table to schema for storing OTPs
