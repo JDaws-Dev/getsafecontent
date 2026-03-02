@@ -171,6 +171,19 @@ export default defineSchema({
     .index("by_email_and_timestamp", ["email", "timestamp"])
     .index("by_stripe_event_id", ["stripeEventId"]),
 
+  // Password reset tokens for central JWT auth
+  // OTP codes sent via email for password reset
+  passwordResetTokens: defineTable({
+    email: v.string(), // Email address requesting reset
+    token: v.string(), // 6-digit OTP code
+    expiresAt: v.number(), // Unix timestamp when token expires
+    used: v.boolean(), // Whether token has been used
+    createdAt: v.number(),
+  })
+    .index("by_email", ["email"])
+    .index("by_token", ["token"])
+    .index("by_email_and_token", ["email", "token"]),
+
   // App-specific data sync tracking - tracks when each app was last synced
   appSyncStatus: defineTable({
     userId: v.id("users"),

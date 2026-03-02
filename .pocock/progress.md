@@ -72,10 +72,19 @@ User → App Login Form → Marketing /login → JWT Token
 
 **WORKING ON:** None - ready for next issue
 
+As of Mar 1, 2026 (night):
+- safecontent-mqy.3 (Add /requestPasswordReset and /resetPassword endpoints) - COMPLETE
+  - Added `passwordResetTokens` table to schema for storing OTPs
+  - Created `passwordReset.ts` with internal mutations for token management
+  - Added `requestPasswordReset` endpoint: sends OTP email via Resend
+  - Added `resetPassword` endpoint: verifies OTP, updates password, returns JWT
+  - OTP codes: 6 digits, 1 hour expiry
+  - Rate limited to prevent abuse
+  - Returns JWT on successful reset (auto-login)
+
 As of Mar 1, 2026 (late evening):
 - safecontent-mqy.2 (Add /verifyToken endpoint to Marketing) - COMPLETE
 - safecontent-mqy.1 (Add /login endpoint to Marketing that returns JWT) - COMPLETE
-- safecontent-mqy.2 (Add /verifyToken endpoint) - IN PROGRESS
 
 As of Mar 1, 2026:
 - safecontent-59f (Standardize HTTP error status codes across apps) - COMPLETE

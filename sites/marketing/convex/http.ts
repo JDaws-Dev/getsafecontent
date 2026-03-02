@@ -3,7 +3,7 @@ import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import { auth } from "./auth";
 import verifyCentralCredentials from "./verifyCentralCredentials";
-import { login, verifyToken } from "./authEndpoints";
+import { login, verifyToken, requestPasswordReset, resetPassword } from "./authEndpoints";
 
 const http = httpRouter();
 
@@ -73,6 +73,75 @@ http.route({
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+/**
+ * Request Password Reset Endpoint - Send OTP via email
+ *
+ * This endpoint is called by app frontends when a user wants to reset their password.
+ * It generates an OTP, stores it, and sends an email.
+ *
+ * POST /requestPasswordReset
+ * Body: { email: string }
+ *
+ * Returns:
+ * - Always success for security (don't reveal if email exists)
+ * - OTP email is sent if user exists with password auth
+ * - Returns OAUTH_ONLY code if user uses Google sign-in
+ */
+http.route({
+  path: "/requestPasswordReset",
+  method: "POST",
+  handler: requestPasswordReset,
+});
+
+http.route({
+  path: "/requestPasswordReset",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+/**
+ * Reset Password Endpoint - Verify OTP and set new password
+ *
+ * This endpoint verifies the OTP and updates the user's password.
+ * On success, it returns a JWT token so the user is automatically logged in.
+ *
+ * POST /resetPassword
+ * Body: { email: string, code: string, newPassword: string }
+ *
+ * Returns:
+ * - JWT token on successful reset (auto-login)
+ * - User info (email, name, subscriptionStatus, entitledApps)
+ */
+http.route({
+  path: "/resetPassword",
+  method: "POST",
+  handler: resetPassword,
+});
+
+http.route({
+  path: "/resetPassword",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
       },
     });
