@@ -7136,3 +7136,71 @@ gh workflow run stripe-audit.yml
 - Failed webhook detection relies on Stripe's pending_webhooks count
 - Does NOT check for orphaned subscriptions (no matching Convex user) - would require Convex access which adds complexity
 
+
+
+---
+
+## 2026-03-01: safecontent-mqy.4 - Update SafeTunes to use central JWT auth
+
+### Task
+Convert SafeTunes from local Convex Auth to central Marketing JWT auth.
+
+### What Was Done
+
+1. **Replaced ConvexAuthProvider with AuthProvider in App.jsx**
+   - Removed `@convex-dev/auth/react` import
+   - Added `ConvexProvider` (non-auth) for Convex data access
+   - Wrapped app in `AuthProvider` from new AuthContext
+
+2. **Updated AdminPage.jsx**
+   - Removed `useConvexAuth()` and `useAuthActions()` from Convex Auth
+   - Now uses `useAuth()` from AuthContext for `isAuthenticated`, `logout`, `centralUser`
+   - Gets local user data via `getSafeTunesUserByEmail` query (by email lookup)
+   - Merges central auth data (subscriptionStatus) with local user data
+
+3. **Updated OnboardingPage.jsx**
+   - Same pattern: `useAuth()` for auth state, email lookup for local data
+
+4. **Verified already-updated files**
+   - LoginPage.jsx - already uses AuthContext
+   - ForgotPasswordPage.jsx - already uses AuthContext
+   - ResetPasswordPage.jsx - already uses AuthContext
+   - SignupPage.jsx - already uses AuthContext
+   - UpgradePage.jsx - already uses AuthContext
+   - UpgradePrompt.jsx - already uses AuthContext
+   - AppLandingPage.jsx - already updated
+   - useSubscriptionSync.jsx - already uses AuthContext
+
+### Architecture Notes
+
+**Central Auth (JWT):**
+- User logs in → AuthContext calls Marketing `/login` endpoint
+- JWT token stored in localStorage
+- `user` object from JWT includes: email, name, subscriptionStatus, entitledApps
+
+**Local Convex Data:**
+- Apps still have local `users` table for app-specific data (kid profiles, playlists, familyCode)
+- Query `getSafeTunesUserByEmail` finds local user by email
+- Subscription status comes from central auth (source of truth)
+- Local data merged with central auth for `currentUser`
+
+**No more needed:**
+- `ConvexAuthProvider` - replaced with basic `ConvexProvider`
+- `useConvexAuth()` - replaced with `useAuth()` 
+- `useAuthActions()` - replaced with `logout` from AuthContext
+- `getCurrentUser` query (used Convex Auth session) - replaced with `getSafeTunesUserByEmail`
+
+### Files Changed
+- `apps/safetunes/src/App.jsx` - replaced auth provider
+- `apps/safetunes/src/pages/AdminPage.jsx` - use JWT auth
+- `apps/safetunes/src/pages/OnboardingPage.jsx` - use JWT auth
+- `apps/safetunes/src/pages/AppLandingPage.jsx` - use JWT auth
+
+### Verification
+- `npm run build` - passed
+- `npx convex dev --once` - passed
+
+### Caveats
+- The old `getCurrentUser` query still exists (for any remaining code) but shouldn't be needed
+- Google OAuth will need separate handling (not covered in this task)
+- Convex Auth packages still in dependencies (cleanup in mqy.7)

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from 'convex/react';
-import { useConvexAuth } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 import musicKitService from '../config/musickit';
 import { AVATAR_ICONS, COLORS } from '../constants/avatars';
 const DAILY_LIMIT_OPTIONS = [
@@ -15,12 +15,22 @@ const DAILY_LIMIT_OPTIONS = [
 
 function OnboardingPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading: isPending } = useConvexAuth();
+  const { user: centralUser, isAuthenticated, isLoading: isPending } = useAuth();
   const updateUser = useMutation(api.users.updateUser);
   const createKidProfile = useMutation(api.kidProfiles.createKidProfile);
 
-  // Get current user from Convex Auth
-  const currentUser = useQuery(api.userSync.getCurrentUser);
+  // Get local SafeTunes user data by email
+  const localUser = useQuery(
+    api.userSync.getSafeTunesUserByEmail,
+    centralUser?.email ? { email: centralUser.email } : "skip"
+  );
+
+  // Combine central auth with local user (central is source of truth for subscription)
+  const currentUser = localUser ? {
+    ...localUser,
+    subscriptionStatus: centralUser?.subscriptionStatus || localUser.subscriptionStatus,
+    entitledApps: centralUser?.entitledApps || [],
+  } : null;
 
   const [step, setStep] = useState(1); // 1: Welcome, 2: Apple Music, 3: Kid Profiles, 4: Complete
   const [loading, setLoading] = useState(false);

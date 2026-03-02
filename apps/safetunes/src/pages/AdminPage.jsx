@@ -1,27 +1,33 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from 'convex/react';
-import { useConvexAuth } from 'convex/react';
-import { useAuthActions } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import UpgradePrompt from '../components/UpgradePrompt';
-import { useSubscriptionSync } from '../hooks/useSubscriptionSync';
 
 function AdminPage() {
-  const { isAuthenticated, isLoading: isPending } = useConvexAuth();
-  const { signOut } = useAuthActions();
+  const { user: centralUser, isAuthenticated, isLoading: isPending, logout } = useAuth();
   const navigate = useNavigate();
   const logAccessDenied = useMutation(api.subscriptionEvents.logAccessDenied);
   // Track if we should redirect - gives session time to settle after login
   const [sessionChecked, setSessionChecked] = useState(false);
   const sessionCheckTimerRef = useRef(null);
 
-  // Get current user from Convex Auth
-  const currentUser = useQuery(api.userSync.getCurrentUser);
+  // Get local SafeTunes user data by email (kid profiles, family code, etc.)
+  // The subscription status and entitlements come from centralUser (JWT auth)
+  const localUser = useQuery(
+    api.userSync.getSafeTunesUserByEmail,
+    centralUser?.email ? { email: centralUser.email } : "skip"
+  );
 
-  // Sync subscription status with central service on startup and periodically
-  useSubscriptionSync();
+  // Combine central auth data with local user data
+  const currentUser = localUser ? {
+    ...localUser,
+    // Override subscription status from central auth (source of truth)
+    subscriptionStatus: centralUser?.subscriptionStatus || localUser.subscriptionStatus,
+    entitledApps: centralUser?.entitledApps || [],
+  } : null;
 
   // Wait for session to settle before allowing redirects
   // This prevents race conditions after login where session might not be immediately available
@@ -122,8 +128,8 @@ function AdminPage() {
     );
   }
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
+    logout();
     // In native app, go to app landing page; on web, go to login
     const isNativeApp = /SafeTunesApp/.test(navigator.userAgent) || window.isInSafeTunesApp;
     navigate(isNativeApp ? '/app' : '/login');

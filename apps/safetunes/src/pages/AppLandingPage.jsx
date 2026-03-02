@@ -1,15 +1,25 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useConvexAuth } from 'convex/react';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 import { SplashScreen } from '../components/SplashScreen';
 
 export default function AppLandingPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isAuthenticated, isLoading: sessionLoading } = useConvexAuth();
-  const currentUser = useQuery(api.userSync.getCurrentUser);
+  const { user: centralUser, isAuthenticated, isLoading: sessionLoading } = useAuth();
+
+  // Get local SafeTunes user data by email
+  const localUser = useQuery(
+    api.userSync.getSafeTunesUserByEmail,
+    centralUser?.email ? { email: centralUser.email } : "skip"
+  );
+
+  const currentUser = localUser ? {
+    ...localUser,
+    subscriptionStatus: centralUser?.subscriptionStatus || localUser.subscriptionStatus,
+  } : null;
   const [hasRedirected, setHasRedirected] = useState(false);
 
   // Skip splash if:

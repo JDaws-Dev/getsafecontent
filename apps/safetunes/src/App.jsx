@@ -1,10 +1,10 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ConvexReactClient } from 'convex/react';
-import { ConvexAuthProvider } from '@convex-dev/auth/react';
+import { ConvexReactClient, ConvexProvider } from 'convex/react';
 import { ErrorBoundary } from '@sentry/react';
 import { ToastProvider } from './contexts/ToastContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { FacebookPixel } from './components/analytics/FacebookPixel';
 import { GoogleAds } from './components/analytics/GoogleAds';
 import { CookieConsent } from './components/legal/CookieConsent';
@@ -112,9 +112,10 @@ function App() {
       showDialog={false}
     >
       <ThemeProvider>
-        <ConvexAuthProvider client={convex}>
-          <ToastProvider>
-            <Router>
+        <ConvexProvider client={convex}>
+          <AuthProvider>
+            <ToastProvider>
+              <Router>
             <FacebookPixel />
             <GoogleAds />
             <CookieConsent />
@@ -147,9 +148,10 @@ function App() {
                 <Route path="/delete-account" element={<DeleteAccountPage />} />
               </Routes>
               </Suspense>
-            </Router>
-          </ToastProvider>
-        </ConvexAuthProvider>
+              </Router>
+            </ToastProvider>
+          </AuthProvider>
+        </ConvexProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
