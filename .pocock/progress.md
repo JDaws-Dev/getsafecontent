@@ -21,12 +21,61 @@ When acceptance criteria says "MUST RUN" or "MUST VERIFY IN BROWSER":
 
 ---
 
+## 🔄 ARCHITECTURAL PIVOT: JWT-Based Central Auth (Mar 1, 2026)
+
+### Why We're Changing
+
+The "central auth" we built earlier (Feb 24) was fundamentally broken:
+- **Old approach**: Central password verification + local Convex Auth sessions per app
+- **Problem**: Each app had its own `users` and `authAccounts` tables
+- **Failure case**: metrotter reset password on SafeTunes, couldn't log into SafeTube
+- **Root cause**: Password sync was fire-and-forget, failed silently
+
+### New Architecture
+
+Marketing is now the **ONLY** auth system. Apps have NO local auth.
+
+```
+User → App Login Form → Marketing /login → JWT Token
+                                              ↓
+                            App stores JWT in localStorage
+                                              ↓
+                            Protected routes verify via /verifyToken
+```
+
+### Key Changes
+
+1. **Marketing endpoints** (in `convex/authEndpoints.ts`):
+   - `POST /login` - Returns JWT token (7-day expiry)
+   - `GET /verifyToken` - Validates JWT, returns fresh user data
+   - `POST /requestPasswordReset` - Sends reset email
+   - `POST /resetPassword` - Sets new password via token
+
+2. **Apps become JWT consumers**:
+   - No local `authAccounts` table queries
+   - Store JWT in localStorage
+   - Send JWT with API requests
+   - Redirect to Marketing for password reset
+
+3. **Migration epic**: safecontent-mqy (P0)
+
+### Lessons Learned
+
+- "Central verification" ≠ "Central auth"
+- Fire-and-forget sync is fragile
+- JWT tokens are stateless - no sync needed
+- Password resets MUST go through central system
+
+---
+
 ## Current Status
 
 **WORKING ON:** None - ready for next issue
 
-As of Mar 1, 2026 (evening):
+As of Mar 1, 2026 (late evening):
+- safecontent-mqy.2 (Add /verifyToken endpoint to Marketing) - COMPLETE
 - safecontent-mqy.1 (Add /login endpoint to Marketing that returns JWT) - COMPLETE
+- safecontent-mqy.2 (Add /verifyToken endpoint) - IN PROGRESS
 
 As of Mar 1, 2026:
 - safecontent-59f (Standardize HTTP error status codes across apps) - COMPLETE
@@ -137,6 +186,31 @@ Run `bd ready` to check for new issues.
 
 <!-- This section is a rolling window - keep only the last 3 entries -->
 <!-- Move older entries to the Archive section below -->
+
+### safecontent-mqy.2: Add /verifyToken endpoint to Marketing (Mar 1, 2026 - COMPLETE)
+
+**Status:** Complete - JWT verification endpoint deployed and tested
+
+**What was implemented:**
+- New `GET /verifyToken?token=xxx` endpoint on Marketing Convex
+- Verifies JWT signature using same secret as /login (ADMIN_KEY fallback)
+- Checks issuer claim ("getsafefamily.com")
+- Returns fresh user data from database (not cached token data)
+- Error codes: 400 (missing token), 401 (invalid/expired/bad signature)
+
+**Testing performed:**
+- Malformed token: returns `{"valid":false,"error":"Invalid token"}` (401)
+- Missing token: returns `{"valid":false,"error":"Token is required"}` (400)
+- Wrong signature: returns `{"valid":false,"error":"Invalid token"}` (401)
+- CORS preflight: returns 204 with proper headers
+
+**Files changed:**
+- `sites/marketing/convex/authEndpoints.ts` - Added `verifyToken` export, imported `jwtVerify` from jose
+- `sites/marketing/convex/http.ts` - Added `/verifyToken` routes (GET + OPTIONS)
+
+**Next:** Apps (mqy.4-6) can now use both `/login` and `/verifyToken` for full JWT auth.
+
+---
 
 ### safecontent-mqy.1: Add /login endpoint to Marketing that returns JWT (Mar 1, 2026 - COMPLETE)
 

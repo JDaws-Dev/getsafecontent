@@ -1,7 +1,7 @@
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Scrypt } from "lucia";
-import { SignJWT } from "jose";
+import { SignJWT, jwtVerify } from "jose";
 
 const scrypt = new Scrypt();
 
@@ -251,6 +251,128 @@ export const login = httpAction(async (ctx, request): Promise<Response> => {
     return new Response(
       JSON.stringify({ success: false, error: "Internal server error" }),
       { status: 500, headers }
+    );
+  }
+});
+
+/**
+ * Verify Token Endpoint - Validate JWT and return user info
+ *
+ * This endpoint validates a JWT token and returns fresh user data from the database.
+ * Apps use this to verify tokens on protected routes and refresh user data.
+ *
+ * GET /verifyToken?token=xxx
+ *
+ * Returns on success (200):
+ * {
+ *   valid: true,
+ *   user: {
+ *     id: string,
+ *     email: string,
+ *     name: string | null,
+ *     subscriptionStatus: string,
+ *     entitledApps: string[]
+ *   },
+ *   expiresAt: number  // Token expiration timestamp
+ * }
+ *
+ * Returns on invalid/expired token (401):
+ * { valid: false, error: "Token expired" | "Invalid token" }
+ */
+export const verifyToken = httpAction(async (ctx, request): Promise<Response> => {
+  const headers = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+
+  // Handle CORS preflight
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers });
+  }
+
+  // Get token from query params
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+
+  if (!token) {
+    return new Response(
+      JSON.stringify({ valid: false, error: "Token is required" }),
+      { status: 400, headers }
+    );
+  }
+
+  try {
+    // Verify the JWT
+    const secret = getJwtSecret();
+    const { payload } = await jwtVerify(token, secret, {
+      issuer: "getsafefamily.com",
+    });
+
+    // Extract user ID from subject
+    const userId = payload.sub;
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ valid: false, error: "Invalid token: missing subject" }),
+        { status: 401, headers }
+      );
+    }
+
+    // Get fresh user data from database
+    const credentials = await ctx.runQuery(
+      internal.signupInternal.getUserCredentials,
+      { email: payload.email as string }
+    );
+
+    if (!credentials.exists) {
+      // User was deleted after token was issued
+      return new Response(
+        JSON.stringify({ valid: false, error: "User not found" }),
+        { status: 401, headers }
+      );
+    }
+
+    // Return fresh user data
+    return new Response(
+      JSON.stringify({
+        valid: true,
+        user: {
+          id: credentials.userId,
+          email: credentials.email,
+          name: credentials.name || null,
+          subscriptionStatus: credentials.subscriptionStatus || "trial",
+          entitledApps: credentials.entitledApps || [],
+        },
+        expiresAt: payload.exp,
+      }),
+      { status: 200, headers }
+    );
+  } catch (error) {
+    // Handle specific JWT errors
+    if (error instanceof Error) {
+      if (error.message.includes("expired")) {
+        return new Response(
+          JSON.stringify({ valid: false, error: "Token expired" }),
+          { status: 401, headers }
+        );
+      }
+      if (
+        error.message.includes("signature") ||
+        error.message.includes("invalid") ||
+        error.message.includes("malformed")
+      ) {
+        return new Response(
+          JSON.stringify({ valid: false, error: "Invalid token" }),
+          { status: 401, headers }
+        );
+      }
+    }
+
+    console.error("[verifyToken] Error:", error);
+    return new Response(
+      JSON.stringify({ valid: false, error: "Invalid token" }),
+      { status: 401, headers }
     );
   }
 });

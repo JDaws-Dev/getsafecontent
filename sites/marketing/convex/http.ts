@@ -3,7 +3,7 @@ import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import { auth } from "./auth";
 import verifyCentralCredentials from "./verifyCentralCredentials";
-import { login } from "./authEndpoints";
+import { login, verifyToken } from "./authEndpoints";
 
 const http = httpRouter();
 
@@ -39,6 +39,40 @@ http.route({
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+/**
+ * Verify Token Endpoint - Validate JWT and return user info
+ *
+ * This endpoint validates a JWT token and returns fresh user data from the database.
+ * Apps use this to verify tokens on protected routes and refresh user data.
+ *
+ * GET /verifyToken?token=xxx
+ *
+ * Returns:
+ * - valid: true/false
+ * - user info (id, email, name, subscriptionStatus, entitledApps)
+ * - Token expiration timestamp
+ */
+http.route({
+  path: "/verifyToken",
+  method: "GET",
+  handler: verifyToken,
+});
+
+http.route({
+  path: "/verifyToken",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
       },
     });
