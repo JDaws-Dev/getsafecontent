@@ -1,6 +1,6 @@
 "use client";
 
-import { useConvexAuth } from "convex/react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -82,7 +82,7 @@ const faqs = [
 import { Footer } from "@/components/Footer";
 
 export default function Home() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {

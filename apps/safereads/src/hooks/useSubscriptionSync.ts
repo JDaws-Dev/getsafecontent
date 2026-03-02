@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { useConvexAuth, useAction, useQuery } from "convex/react";
+import { useAction, useQuery } from "convex/react";
+import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../convex/_generated/api";
 
 // How often to recheck subscription status (1 hour in ms)
@@ -20,8 +21,11 @@ const SYNC_INTERVAL_MS = 60 * 60 * 1000;
  * - Syncs when tab becomes visible (if stale)
  */
 export function useSubscriptionSync() {
-  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
-  const currentUser = useQuery(api.users.currentUser);
+  const { isAuthenticated, isLoading: isAuthLoading, user: centralUser } = useAuth();
+  const currentUser = useQuery(
+    api.userSync.getSafeReadsUserByEmail,
+    centralUser?.email ? { email: centralUser.email } : "skip"
+  );
   const verifyCentralAccess = useAction(api.users.verifyCentralAccess);
 
   // Track sync state

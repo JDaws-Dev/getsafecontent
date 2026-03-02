@@ -3,46 +3,40 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useConvex } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 import { BookOpen } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const convex = useConvex();
-  const { signIn } = useAuthActions();
+  const { requestPasswordReset } = useAuth();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [notFound, setNotFound] = useState(false);
+  const [oauthOnly, setOauthOnly] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setNotFound(false);
+    setOauthOnly(false);
     setLoading(true);
 
     try {
-      // First check if user exists
-      const result = await convex.query(api.users.checkAuthAccountExistsPublic, {
-        email: email.toLowerCase().trim()
-      });
+      const emailToSend = email.toLowerCase().trim();
+      const result = await requestPasswordReset(emailToSend);
 
-      if (!result.exists) {
-        // User doesn't exist - show helpful message
-        setNotFound(true);
+      if (!result.success) {
+        if (result.code === "OAUTH_ONLY") {
+          // User signed up with Google, can't reset password
+          setOauthOnly(true);
+          setLoading(false);
+          return;
+        }
+        // Generic error
+        setError(result.error || "Something went wrong. Please try again.");
         setLoading(false);
         return;
       }
-
-      // User exists - request password reset via Convex Auth
-      // This will send an OTP code to the user's email via ResendOTPPasswordReset
-      await signIn("password", {
-        email: email,
-        flow: "reset",
-      });
 
       // Success - store email for reset page and show confirmation
       localStorage.setItem("safereads_reset_email", email);
@@ -69,56 +63,54 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="rounded-xl border border-parchment-200 bg-white p-8 shadow-sm">
-          {notFound ? (
+          {oauthOnly ? (
+            // User signed up with Google OAuth
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
-                <svg
-                  className="h-8 w-8 text-amber-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                <svg className="h-8 w-8 text-blue-600" viewBox="0 0 24 24">
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
               </div>
 
               <h2 className="mb-2 font-serif text-xl font-bold text-ink-900">
-                No Account Found
+                Use Google Sign-In
               </h2>
               <p className="mb-6 text-sm text-ink-500">
-                We couldn&apos;t find an account with{" "}
-                <strong className="text-ink-700">{email}</strong>.
+                This account uses Google sign-in. Please use the Google sign-in
+                option on the login page to access your account.
               </p>
 
-              <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-left">
-                <p className="text-sm text-amber-800">
-                  <strong>Did you sign up with a different email?</strong> Try
-                  checking for typos, or try another email address you might
-                  have used.
-                </p>
-              </div>
+              <Link
+                href="/login"
+                className="mb-3 block w-full rounded-lg bg-parchment-700 px-6 py-3 text-center font-semibold text-parchment-50 transition hover:bg-parchment-800"
+              >
+                Go to Login
+              </Link>
 
               <button
                 onClick={() => {
-                  setNotFound(false);
+                  setOauthOnly(false);
                   setEmail("");
                 }}
-                className="mb-3 w-full rounded-lg bg-parchment-700 px-6 py-3 font-semibold text-parchment-50 transition hover:bg-parchment-800"
+                className="text-sm text-parchment-600 hover:text-parchment-700"
               >
                 Try Another Email
               </button>
-
-              <Link
-                href="/signup"
-                className="block w-full rounded-lg bg-parchment-100 px-6 py-3 text-center font-semibold text-ink-800 transition hover:bg-parchment-200"
-              >
-                Create an Account
-              </Link>
             </div>
           ) : !submitted ? (
             <>
@@ -206,7 +198,7 @@ export default function ForgotPasswordPage() {
               <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-left">
                 <p className="text-sm text-blue-800">
                   <strong>Next Steps:</strong> Check your inbox for an email
-                  from SafeReads with your reset code. The code will expire in 1
+                  from Safe Family with your reset code. The code will expire in 1
                   hour for security purposes.
                 </p>
               </div>

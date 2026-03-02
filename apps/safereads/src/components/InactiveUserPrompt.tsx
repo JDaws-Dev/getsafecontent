@@ -1,8 +1,8 @@
 "use client";
 
-import { useAuthActions } from "@convex-dev/auth/react";
 import Link from "next/link";
 import { BookOpen, LogOut, Sparkles, Heart, Infinity, ArrowRight } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface InactiveUserPromptProps {
   user: {
@@ -20,14 +20,14 @@ interface InactiveUserPromptProps {
  * - Inactive: User has credentials but never had this app
  */
 export function InactiveUserPrompt({ user }: InactiveUserPromptProps) {
-  const { signOut } = useAuthActions();
+  const { logout } = useAuth();
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
+    logout();
     window.location.href = "/";
   };
 
-  const upgradeUrl = `https://getsafefamily.com/signup?app=safereads&email=${encodeURIComponent(user?.email || "")}`;
+  const upgradeUrl = `https://getsafefamily.com/account?upgrade=safereads&email=${encodeURIComponent(user?.email || "")}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-parchment-50 to-white flex items-center justify-center p-6">

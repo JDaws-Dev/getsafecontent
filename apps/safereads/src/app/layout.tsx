@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Libre_Baskerville } from "next/font/google";
-import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
-import { Navbar } from "@/components/Navbar";
-import { BottomNav } from "@/components/BottomNav";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ClientNavWrapper } from "@/components/ClientNavWrapper";
 import "./globals.css";
 
 const inter = Inter({
@@ -56,16 +55,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ConvexAuthNextjsServerProvider>
-      <html lang="en">
-        <body className={`${inter.variable} ${libreBaskerville.variable} font-sans antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} ${libreBaskerville.variable} font-sans antialiased`}>
+        <ThemeProvider>
           <ConvexClientProvider>
-            <Navbar />
-            <main className="pb-20 sm:pb-0">{children}</main>
-            <BottomNav />
+            <ClientNavWrapper>{children}</ClientNavWrapper>
           </ConvexClientProvider>
-        </body>
-      </html>
-    </ConvexAuthNextjsServerProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

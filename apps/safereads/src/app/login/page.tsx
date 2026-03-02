@@ -3,24 +3,19 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useConvexAuth, useAction } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { BookOpen } from "lucide-react";
-import { useHaptic } from "../../hooks/useHaptic";
-import { api } from "../../../convex/_generated/api";
-import { InactiveUserPrompt } from "../../components/InactiveUserPrompt";
+import { useAuth } from "@/contexts/AuthContext";
+import { useHaptic } from "@/hooks/useHaptic";
+import { InactiveUserPrompt } from "@/components/InactiveUserPrompt";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: isPending } = useConvexAuth();
-  const { signIn } = useAuthActions();
+  const { isAuthenticated, isLoading: isPending, login, requestPasswordReset } = useAuth();
   const haptic = useHaptic();
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Central auth integration
-  const verifyCentralAuth = useAction(api.centralAuth.verifyCentralCredentialsAndProvision);
+  // Upgrade prompt state
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [centralUser, setCentralUser] = useState<{
     email: string;
@@ -70,101 +65,56 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    haptic.light(); // Light tap on submit
+    haptic.light();
     setLoading(true);
     setError("");
 
     try {
-      // Step 1: Verify against central auth first
-      // This checks credentials, entitlement, and provisions user locally if needed
-      const centralResult = await verifyCentralAuth({
-        email: formData.email,
-        password: formData.password,
-      });
+      const result = await login(formData.email, formData.password);
 
-      console.log("[LoginPage] Central auth result:", centralResult);
+      console.log("[LoginPage] Login result:", result);
 
-      if (!centralResult.success) {
-        // Central auth returned an error
+      if (!result.success) {
         haptic.error();
-        if (centralResult.errorCode === "RATE_LIMITED") {
-          setError(centralResult.error);
-        } else if (centralResult.errorCode === "PASSWORD_RESET_REQUIRED") {
+
+        if (result.code === "PASSWORD_RESET_REQUIRED") {
           // User was migrated from old auth system - show password reset prompt
           setShowPasswordResetPrompt(true);
           setLoading(false);
           return;
+        }
+
+        if (result.code === "NOT_ENTITLED") {
+          // User exists but doesn't have SafeReads - show upgrade prompt
+          console.log("[LoginPage] User not entitled to SafeReads, showing upgrade prompt");
+          haptic.light();
+          setCentralUser(result.user || null);
+          setShowUpgradePrompt(true);
+          setLoading(false);
+          return;
+        }
+
+        if (result.code === "OAUTH_ONLY") {
+          setError("This account uses Google sign-in. Please use the Google sign-in option.");
         } else {
-          setError("Invalid email or password. Please try again.");
+          setError(result.error || "Invalid email or password. Please try again.");
         }
         emailInputRef.current?.focus();
         setLoading(false);
         return;
       }
 
-      // Step 2: Check entitlement
-      if (!centralResult.entitled) {
-        // User exists but doesn't have SafeReads - show upgrade prompt
-        console.log("[LoginPage] User not entitled to SafeReads, showing upgrade prompt");
-        haptic.light();
-        setCentralUser(centralResult.user);
-        setShowUpgradePrompt(true);
-        setLoading(false);
-        return;
-      }
-
-      // Step 3: User is verified and entitled - complete Convex Auth login
-      // The central auth action already provisioned the user (created authAccounts entry)
-      // Now we just need to create the session via Convex Auth
-      await signIn("password", {
-        email: formData.email,
-        password: formData.password,
-        flow: "signIn",
-      });
-
       // Save email for convenience
       localStorage.setItem("safereads_remembered_email", formData.email);
 
-      haptic.success(); // Success feedback
-      // Redirect to dashboard
+      haptic.success();
       router.push("/dashboard");
     } catch (err: unknown) {
       console.error("[LoginPage] Login error:", err);
-      haptic.error(); // Error feedback
-      const errorMessage = err instanceof Error ? err.message : "";
-      if (
-        errorMessage.includes("Invalid") ||
-        errorMessage.includes("credentials") ||
-        errorMessage.includes("password") ||
-        errorMessage.includes("Could not verify")
-      ) {
-        setError("Invalid email or password. Please try again.");
-        emailInputRef.current?.focus();
-      } else if (
-        errorMessage.includes("network") ||
-        errorMessage.includes("fetch") ||
-        errorMessage.includes("Failed to fetch")
-      ) {
-        setError("Network error. Please check your connection and try again.");
-      } else {
-        setError("Login failed. Please try again.");
-      }
+      haptic.error();
+      setError("Login failed. Please try again.");
       errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       setLoading(false);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    haptic.light(); // Light tap on Google button
-    setGoogleLoading(true);
-    setError("");
-
-    try {
-      await signIn("google", { redirectTo: "/dashboard" });
-    } catch (err) {
-      console.error("[LoginPage] Google login error:", err);
-      setError("Google sign-in failed. Please try again.");
-      setGoogleLoading(false);
     }
   };
 
@@ -182,11 +132,7 @@ export default function LoginPage() {
   const handleSendResetEmail = async () => {
     setSendingResetEmail(true);
     try {
-      // Trigger password reset flow via Convex Auth
-      await signIn("password", {
-        email: formData.email,
-        flow: "reset",
-      });
+      await requestPasswordReset(formData.email);
       setResetEmailSent(true);
       localStorage.setItem("safereads_reset_email", formData.email);
       haptic.success();
@@ -295,7 +241,7 @@ export default function LoginPage() {
 
                 <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm">
                   <p className="text-blue-800">
-                    <strong>Next Steps:</strong> Check your inbox for an email from SafeReads.
+                    <strong>Next Steps:</strong> Check your inbox for an email from Safe Family.
                     The code expires in 1 hour.
                   </p>
                 </div>
@@ -361,47 +307,6 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Google Sign In Button */}
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={googleLoading || loading}
-            className="mb-4 flex w-full min-h-[48px] items-center justify-center gap-3 rounded-lg border border-parchment-300 bg-white px-4 py-3 font-medium text-ink-700 transition hover:bg-parchment-50 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {googleLoading ? (
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-parchment-300 border-t-parchment-600" />
-            ) : (
-              <svg className="h-5 w-5" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                />
-              </svg>
-            )}
-            {googleLoading ? "Signing in..." : "Continue with Google"}
-          </button>
-
-          <div className="relative mb-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-parchment-200" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-ink-400">or</span>
-            </div>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-4" aria-busy={loading}>
             <div>
               <label
@@ -460,7 +365,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || googleLoading}
+              disabled={loading}
               className="btn-brand w-full min-h-[48px] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Signing in..." : "Sign In"}

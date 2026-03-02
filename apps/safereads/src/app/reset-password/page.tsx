@@ -3,12 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { BookOpen } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const { signIn } = useAuthActions();
+  const { resetPassword, isAuthenticated, user } = useAuth();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -28,6 +28,16 @@ export default function ResetPasswordPage() {
       setEmail(storedEmail);
     }
   }, [router]);
+
+  // Redirect after successful reset and auto-login
+  useEffect(() => {
+    if (success && isAuthenticated && user) {
+      // Check if user is entitled to SafeReads
+      if (user.entitledApps?.includes("safereads")) {
+        router.push("/dashboard");
+      }
+    }
+  }, [success, isAuthenticated, user, router]);
 
   // Handle individual code digit input
   const handleCodeChange = (index: number, value: string) => {
@@ -96,37 +106,39 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      // Complete password reset with OTP code via Convex Auth
-      await signIn("password", {
-        email: email,
-        code: fullCode,
-        newPassword: password,
-        flow: "reset-verification",
-      });
+      // Complete password reset with OTP code via central JWT auth
+      const result = await resetPassword(email, fullCode, password);
 
-      // Success!
+      if (!result.success) {
+        const errorMessage = result.error || "";
+        if (
+          errorMessage.includes("expired") ||
+          errorMessage.includes("invalid") ||
+          errorMessage.includes("Invalid")
+        ) {
+          setError("Invalid or expired code. Please request a new one.");
+        } else {
+          setError(result.error || "Failed to reset password. Please try again.");
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Success! The resetPassword function auto-logs in the user via JWT
       setSuccess(true);
       setLoading(false);
 
       // Clear stored email
       localStorage.removeItem("safereads_reset_email");
 
-      // Redirect to login after 3 seconds
+      // Auto-redirect to dashboard will happen via useEffect when user state updates
+      // But also add a fallback redirect
       setTimeout(() => {
-        router.push("/login");
+        router.push("/dashboard");
       }, 3000);
     } catch (err: unknown) {
       console.error("Password reset error:", err);
-      const errorMessage = err instanceof Error ? err.message : "";
-      if (
-        errorMessage.includes("code") ||
-        errorMessage.includes("expired") ||
-        errorMessage.includes("invalid")
-      ) {
-        setError("Invalid or expired code. Please request a new one.");
-      } else {
-        setError("Failed to reset password. Please try again.");
-      }
+      setError("Failed to reset password. Please try again.");
       setLoading(false);
     }
   };
@@ -171,19 +183,18 @@ export default function ResetPasswordPage() {
                 Password Reset Successful!
               </h2>
               <p className="mb-6 text-sm text-ink-500">
-                Your password has been updated successfully. You can now log in
-                with your new password.
+                Your password has been updated and you&apos;re now logged in.
               </p>
 
               <Link
-                href="/login"
+                href="/dashboard"
                 className="inline-block rounded-lg bg-parchment-700 px-6 py-2 font-semibold text-parchment-50 transition hover:bg-parchment-800"
               >
-                Go to Login
+                Go to Dashboard
               </Link>
 
               <p className="mt-4 text-sm text-ink-400">
-                Redirecting to login in 3 seconds...
+                Redirecting to dashboard...
               </p>
             </div>
           ) : (

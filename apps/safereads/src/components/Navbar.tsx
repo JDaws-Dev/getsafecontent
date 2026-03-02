@@ -1,16 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useConvexAuth } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { BookOpen, LogOut, Settings, User, ChevronDown } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const { signOut } = useAuthActions();
+  const { isAuthenticated, isLoading, logout } = useAuth();
 
   return (
     <nav className="border-b border-parchment-200 bg-parchment-50">
@@ -77,7 +75,7 @@ export function Navbar() {
                   Chat
                 </Link>
               </div>
-              <UserMenu onSignOut={() => void signOut()} />
+              <UserMenu onSignOut={logout} />
             </>
           )}
         </div>

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useConvexAuth } from "convex/react";
 import { Home, Search, Users, MessageCircle, Settings } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
@@ -15,7 +15,7 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { isAuthenticated } = useConvexAuth();
+  const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) return null;
 

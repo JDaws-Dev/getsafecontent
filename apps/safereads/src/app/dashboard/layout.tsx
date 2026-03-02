@@ -1,27 +1,35 @@
 "use client";
 
-import { useConvexAuth, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { api } from "../../../convex/_generated/api";
 import { InactiveUserPrompt } from "@/components/InactiveUserPrompt";
-import { useSubscriptionSync } from "@/hooks/useSubscriptionSync";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading } = useConvexAuth();
+  // Use central JWT auth for authentication state
+  const { user: centralUser, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
-  // Sync subscription status with central service on startup and periodically
-  useSubscriptionSync();
-
-  const convexUser = useQuery(
-    api.users.currentUser,
-    isAuthenticated ? {} : "skip"
+  // Get local SafeReads user data (kid profiles, onboarding status, etc.)
+  // The subscription status comes from centralUser (JWT auth)
+  const localUser = useQuery(
+    api.userSync.getSafeReadsUserByEmail,
+    centralUser?.email ? { email: centralUser.email } : "skip"
   );
+
+  // Combine central auth data with local user data
+  const convexUser = localUser ? {
+    ...localUser,
+    // Override subscription status from central auth (source of truth)
+    subscriptionStatus: centralUser?.subscriptionStatus || localUser.subscriptionStatus,
+    entitledApps: centralUser?.entitledApps || [],
+  } : null;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -47,7 +55,7 @@ export default function DashboardLayout({
   }
 
   // Show loading state while fetching user
-  if (convexUser === undefined) {
+  if (convexUser === undefined || convexUser === null) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="flex items-center justify-center py-12">
@@ -60,6 +68,11 @@ export default function DashboardLayout({
   // Show InactiveUserPrompt for users with 'inactive' status
   // (have Safe Family credentials but not entitled to SafeReads)
   if (convexUser?.subscriptionStatus === "inactive") {
+    return <InactiveUserPrompt user={convexUser} />;
+  }
+
+  // Also check entitlements from central auth
+  if (centralUser && !centralUser.entitledApps?.includes("safereads")) {
     return <InactiveUserPrompt user={convexUser} />;
   }
 
