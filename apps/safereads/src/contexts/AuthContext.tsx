@@ -33,6 +33,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; code?: string; user?: User }>;
+  loginWithGoogle: () => void;
   logout: () => void;
   requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string; code?: string }>;
   resetPassword: (email: string, code: string, newPassword: string) => Promise<{ success: boolean; error?: string; user?: User }>;
@@ -41,6 +42,9 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Marketing OAuth URL
+const MARKETING_OAUTH_URL = "https://getsafefamily.com/oauth";
+
 /**
  * AuthProvider component that manages JWT auth state
  */
@@ -48,6 +52,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
+
+  /**
+   * Handle OAuth callback token from URL params
+   */
+  const handleOAuthCallback = useCallback((tokenParam: string): boolean => {
+    if (!tokenParam) return false;
+
+    console.log("[AuthContext] Handling OAuth callback token");
+
+    // Store the token
+    localStorage.setItem(JWT_KEY, tokenParam);
+    setToken(tokenParam);
+
+    // Clean up URL params
+    const url = new URL(window.location.href);
+    url.searchParams.delete("token");
+    url.searchParams.delete("expiresAt");
+    window.history.replaceState({}, "", url.toString());
+
+    return true;
+  }, []);
 
   /**
    * Verify the stored token and get fresh user data
@@ -116,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /**
    * Initialize auth state on mount
+   * Also handles OAuth callback if token is in URL params
    */
   useEffect(() => {
     // Guard for SSR - localStorage is only available in browser
@@ -125,6 +151,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const initAuth = async () => {
+      // Check for OAuth callback token in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenParam = urlParams.get("token");
+
+      if (tokenParam) {
+        // Handle OAuth callback
+        handleOAuthCallback(tokenParam);
+        await verifyAndRefresh(tokenParam);
+        setIsLoading(false);
+        return;
+      }
+
+      // Check for stored token
       const storedToken = localStorage.getItem(JWT_KEY);
 
       if (storedToken) {
@@ -136,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     initAuth();
-  }, [verifyAndRefresh]);
+  }, [verifyAndRefresh, handleOAuthCallback]);
 
   /**
    * Log in with email and password
@@ -197,6 +236,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setUser(null);
     console.log("[AuthContext] Logged out");
+  }, []);
+
+  /**
+   * Redirect to Marketing's Google OAuth flow
+   * After OAuth completes, Marketing will redirect back with JWT
+   */
+  const loginWithGoogle = useCallback(() => {
+    // Build the return URL with the login path (so we return and handle the token)
+    const returnTo = window.location.origin + "/login";
+    const oauthUrl = new URL(MARKETING_OAUTH_URL);
+    oauthUrl.searchParams.set("returnTo", returnTo);
+    oauthUrl.searchParams.set("app", "SafeReads");
+
+    console.log("[AuthContext] Redirecting to Marketing OAuth:", oauthUrl.toString());
+    window.location.href = oauthUrl.toString();
   }, []);
 
   /**
@@ -284,6 +338,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!user,
     isLoading,
     login,
+    loginWithGoogle,
     logout,
     requestPasswordReset,
     resetPassword,
@@ -299,6 +354,7 @@ const defaultAuthValue: AuthContextValue = {
   isAuthenticated: false,
   isLoading: true,
   login: async () => ({ success: false, error: "Not initialized" }),
+  loginWithGoogle: () => {},
   logout: () => {},
   requestPasswordReset: async () => ({ success: false, error: "Not initialized" }),
   resetPassword: async () => ({ success: false, error: "Not initialized" }),

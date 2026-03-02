@@ -72,6 +72,16 @@ User → App Login Form → Marketing /login → JWT Token
 
 **WORKING ON:** None - ready for next issue
 
+As of Mar 2, 2026 (early AM):
+- safecontent-bib (Verify Google OAuth works with central JWT auth on all apps) - COMPLETE
+  - **FINDING:** SafeReads was MISSING Google OAuth functionality
+  - Added `loginWithGoogle` function to SafeReads AuthContext.tsx
+  - Added `handleOAuthCallback` for processing JWT from URL params
+  - Added OAuth callback handling in useEffect
+  - Added Google sign-in button to SafeReads login page
+  - Build passes, Convex functions compile
+  - Architecture: App redirects to Marketing OAuth → Google → Marketing → JWT → Redirect back to app with token
+
 As of Mar 1, 2026 (late night):
 - safecontent-mqy.5 (Update SafeTube to use central JWT auth) - COMPLETE
   - **ALREADY IMPLEMENTED** - SafeTube JWT auth was set up in a previous commit
