@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Users,
   BookOpen,
@@ -45,9 +46,11 @@ function SortIndicator({
 
 export default function AdminPage() {
   const router = useRouter();
-  const isAdmin = useQuery(api.admin.isAdmin);
-  const stats = useQuery(api.admin.getStats);
-  const users = useQuery(api.admin.listUsers);
+  const { user: authUser } = useAuth();
+  const adminEmail = authUser?.email || "";
+  const isAdmin = useQuery(api.admin.isAdmin, adminEmail ? { email: adminEmail } : "skip");
+  const stats = useQuery(api.admin.getStats, adminEmail ? { adminEmail } : "skip");
+  const users = useQuery(api.admin.listUsers, adminEmail ? { adminEmail } : "skip");
 
   // Table state
   const [searchQuery, setSearchQuery] = useState("");

@@ -8,16 +8,15 @@
  * @module
  */
 
-import type * as ResendOTPPasswordReset from "../ResendOTPPasswordReset.js";
 import type * as admin from "../admin.js";
 import type * as adminDashboard from "../adminDashboard.js";
+import type * as adminOrphans from "../adminOrphans.js";
 import type * as ai_aiSearch from "../ai/aiSearch.js";
 import type * as ai_contentReview from "../ai/contentReview.js";
 import type * as ai_lyrics from "../ai/lyrics.js";
 import type * as ai_recommendations from "../ai/recommendations.js";
 import type * as albumRequests from "../albumRequests.js";
 import type * as albums from "../albums.js";
-import type * as auth from "../auth.js";
 import type * as blockedSearches from "../blockedSearches.js";
 import type * as checkAllUsers from "../checkAllUsers.js";
 import type * as checkClaire from "../checkClaire.js";
@@ -31,13 +30,13 @@ import type * as debug from "../debug.js";
 import type * as debugUsers from "../debugUsers.js";
 import type * as deleteTestUsers from "../deleteTestUsers.js";
 import type * as deleteTestUsersInternal from "../deleteTestUsersInternal.js";
-import type * as deleteUser from "../deleteUser.js";
 import type * as deleteUserHttpAction from "../deleteUserHttpAction.js";
 import type * as discovery from "../discovery.js";
 import type * as emailNotifications from "../emailNotifications.js";
 import type * as emails from "../emails.js";
 import type * as expoPushNotifications from "../expoPushNotifications.js";
 import type * as expoPushTokens from "../expoPushTokens.js";
+import type * as exportUsersForMigration from "../exportUsersForMigration.js";
 import type * as featured from "../featured.js";
 import type * as featuredPlaylists from "../featuredPlaylists.js";
 import type * as findBrokenIds from "../findBrokenIds.js";
@@ -49,11 +48,13 @@ import type * as fixNullKids from "../fixNullKids.js";
 import type * as getAllApprovedSongs from "../getAllApprovedSongs.js";
 import type * as grantLifetime from "../grantLifetime.js";
 import type * as http from "../http.js";
+import type * as httpRateLimit from "../httpRateLimit.js";
 import type * as kidProfiles from "../kidProfiles.js";
 import type * as kidRequests from "../kidRequests.js";
 import type * as listeningStats from "../listeningStats.js";
 import type * as migrations from "../migrations.js";
 import type * as migrations_fixFamiliesData from "../migrations/fixFamiliesData.js";
+import type * as orphanDetection from "../orphanDetection.js";
 import type * as playlists from "../playlists.js";
 import type * as preApprovedContent from "../preApprovedContent.js";
 import type * as provisionUser from "../provisionUser.js";
@@ -83,16 +84,15 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  ResendOTPPasswordReset: typeof ResendOTPPasswordReset;
   admin: typeof admin;
   adminDashboard: typeof adminDashboard;
+  adminOrphans: typeof adminOrphans;
   "ai/aiSearch": typeof ai_aiSearch;
   "ai/contentReview": typeof ai_contentReview;
   "ai/lyrics": typeof ai_lyrics;
   "ai/recommendations": typeof ai_recommendations;
   albumRequests: typeof albumRequests;
   albums: typeof albums;
-  auth: typeof auth;
   blockedSearches: typeof blockedSearches;
   checkAllUsers: typeof checkAllUsers;
   checkClaire: typeof checkClaire;
@@ -106,13 +106,13 @@ declare const fullApi: ApiFromModules<{
   debugUsers: typeof debugUsers;
   deleteTestUsers: typeof deleteTestUsers;
   deleteTestUsersInternal: typeof deleteTestUsersInternal;
-  deleteUser: typeof deleteUser;
   deleteUserHttpAction: typeof deleteUserHttpAction;
   discovery: typeof discovery;
   emailNotifications: typeof emailNotifications;
   emails: typeof emails;
   expoPushNotifications: typeof expoPushNotifications;
   expoPushTokens: typeof expoPushTokens;
+  exportUsersForMigration: typeof exportUsersForMigration;
   featured: typeof featured;
   featuredPlaylists: typeof featuredPlaylists;
   findBrokenIds: typeof findBrokenIds;
@@ -124,11 +124,13 @@ declare const fullApi: ApiFromModules<{
   getAllApprovedSongs: typeof getAllApprovedSongs;
   grantLifetime: typeof grantLifetime;
   http: typeof http;
+  httpRateLimit: typeof httpRateLimit;
   kidProfiles: typeof kidProfiles;
   kidRequests: typeof kidRequests;
   listeningStats: typeof listeningStats;
   migrations: typeof migrations;
   "migrations/fixFamiliesData": typeof migrations_fixFamiliesData;
+  orphanDetection: typeof orphanDetection;
   playlists: typeof playlists;
   preApprovedContent: typeof preApprovedContent;
   provisionUser: typeof provisionUser;

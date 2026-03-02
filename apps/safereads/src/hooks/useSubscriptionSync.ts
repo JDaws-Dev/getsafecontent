@@ -35,15 +35,15 @@ export function useSubscriptionSync() {
 
   // Perform the sync
   const syncNow = useCallback(async () => {
-    // Don't sync if already syncing, not authenticated, or no user
-    if (isSyncingRef.current || !isAuthenticated || !currentUser) {
+    // Don't sync if already syncing, not authenticated, or no user with email
+    if (isSyncingRef.current || !isAuthenticated || !centralUser?.email) {
       return;
     }
 
     isSyncingRef.current = true;
 
     try {
-      const result = await verifyCentralAccess();
+      const result = await verifyCentralAccess({ email: centralUser.email });
       lastSyncRef.current = Date.now();
 
       if (!result.cached) {
@@ -58,7 +58,7 @@ export function useSubscriptionSync() {
     } finally {
       isSyncingRef.current = false;
     }
-  }, [isAuthenticated, currentUser, verifyCentralAccess]);
+  }, [isAuthenticated, centralUser, verifyCentralAccess]);
 
   // Sync on mount and when auth state changes
   useEffect(() => {

@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { X, Sparkles, BookOpen, Infinity, Heart, Tag, Check, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UpgradePromptProps {
   onDismiss: () => void;
 }
 
 export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
+  const { user: authUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showCoupon, setShowCoupon] = useState(false);
   const [couponCode, setCouponCode] = useState("");
@@ -34,11 +36,11 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
   }
 
   async function handleRedeemCoupon() {
-    if (!couponCode.trim()) return;
+    if (!couponCode.trim() || !authUser?.email) return;
     setCouponLoading(true);
     setCouponResult(null);
     try {
-      const result = await redeemCoupon({ code: couponCode });
+      const result = await redeemCoupon({ email: authUser.email, code: couponCode });
       setCouponResult(result);
       if (result.success) {
         // Reload after short delay to show success message

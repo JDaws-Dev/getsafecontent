@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation } from 'convex/react';
-import { useConvexAuth } from 'convex/react';
-import { useAuthActions } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 
 // Components
 import YouTubeSearch from '../components/admin/YouTubeSearch';
@@ -16,12 +15,22 @@ import { useSubscriptionSync } from '../hooks/useSubscriptionSync';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading: sessionPending } = useConvexAuth();
-  const { signOut } = useAuthActions();
+  const { user: centralUser, isAuthenticated, isLoading: sessionPending, logout } = useAuth();
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Get current user from Convex Auth
-  const currentUser = useQuery(api.userSync.getCurrentUser);
+  // Get local SafeTube user data by email
+  const localUser = useQuery(
+    api.userSync.getSafeTubeUserByEmail,
+    centralUser?.email ? { email: centralUser.email } : "skip"
+  );
+
+  // Combine central auth data with local user data
+  const currentUser = localUser ? {
+    ...localUser,
+    // Override subscription status from central auth (source of truth)
+    subscriptionStatus: centralUser?.subscriptionStatus || localUser.subscriptionStatus,
+    entitledApps: centralUser?.entitledApps || [],
+  } : null;
 
   // Sync subscription status with central service on startup and periodically
   useSubscriptionSync();
@@ -85,8 +94,8 @@ export default function AdminDashboard() {
     }
   }, [kidProfiles, selectedKidId]);
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
+    logout();
     navigate('/login');
   };
 

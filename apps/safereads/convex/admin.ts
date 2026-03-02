@@ -1,19 +1,14 @@
 import { query, mutation, internalMutation, QueryCtx, MutationCtx } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 // Admin emails - add your email here
 const ADMIN_EMAILS = ["jedaws@gmail.com", "jeremiah@getsafereads.com"];
 
-async function requireAdmin(ctx: QueryCtx | MutationCtx) {
-  const userId = await getAuthUserId(ctx);
-  if (!userId) throw new Error("Not authenticated");
-
-  const user = await ctx.db.get(userId);
-  if (!user?.email || !ADMIN_EMAILS.includes(user.email)) {
-    throw new Error("Not authorized");
-  }
-  return user;
+/**
+ * Check if an email is an admin.
+ */
+function isAdminEmail(email: string | undefined): boolean {
+  return !!email && ADMIN_EMAILS.includes(email);
 }
 
 /**
@@ -21,18 +16,21 @@ async function requireAdmin(ctx: QueryCtx | MutationCtx) {
  */
 export const activateSubscription = mutation({
   args: {
-    email: v.string(),
+    adminEmail: v.string(),
+    targetEmail: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireAdmin(ctx);
+    if (!isAdminEmail(args.adminEmail)) {
+      throw new Error("Not authorized");
+    }
 
     const user = await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("email"), args.email))
+      .filter((q) => q.eq(q.field("email"), args.targetEmail))
       .unique();
 
     if (!user) {
-      throw new Error(`User not found: ${args.email}`);
+      throw new Error(`User not found: ${args.targetEmail}`);
     }
 
     // Set subscription to active for 1 year
@@ -48,9 +46,11 @@ export const activateSubscription = mutation({
 });
 
 export const getStats = query({
-  args: {},
-  handler: async (ctx) => {
-    await requireAdmin(ctx);
+  args: { adminEmail: v.string() },
+  handler: async (ctx, args) => {
+    if (!isAdminEmail(args.adminEmail)) {
+      throw new Error("Not authorized");
+    }
 
     const users = await ctx.db.query("users").collect();
     const books = await ctx.db.query("books").collect();
@@ -98,9 +98,11 @@ export const getStats = query({
 });
 
 export const listUsers = query({
-  args: {},
-  handler: async (ctx) => {
-    await requireAdmin(ctx);
+  args: { adminEmail: v.string() },
+  handler: async (ctx, args) => {
+    if (!isAdminEmail(args.adminEmail)) {
+      throw new Error("Not authorized");
+    }
 
     const users = await ctx.db.query("users").order("desc").take(100);
     const kids = await ctx.db.query("kids").collect();
@@ -127,15 +129,9 @@ export const listUsers = query({
 });
 
 export const isAdmin = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return false;
-
-    const user = await ctx.db.get(userId);
-    if (!user?.email) return false;
-
-    return ADMIN_EMAILS.includes(user.email);
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return isAdminEmail(args.email);
   },
 });
 
@@ -300,14 +296,13 @@ export const deleteUserByEmailInternal = internalMutation({
  * Uses the same deletion logic as deleteUserByEmailInternal.
  */
 export const deleteOwnAccount = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
 
-    const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error("User not found");
     }
@@ -398,7 +393,7 @@ export const deleteOwnAccount = mutation({
       deletedReports++;
     }
 
-    // Delete auth accounts and sessions for this user
+    // Delete auth accounts and sessions for this user (legacy cleanup)
     const authAccounts = await ctx.db
       .query("authAccounts")
       .withIndex("userIdAndProvider", (q) => q.eq("userId", user._id))

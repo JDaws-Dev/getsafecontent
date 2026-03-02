@@ -2,9 +2,9 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useConvexAuth } from "convex/react";
 import { BookOpen } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * SafeReads Signup Page - Redirects to Central Signup
@@ -19,7 +19,7 @@ const CENTRAL_SIGNUP_URL = "https://getsafefamily.com/signup?app=safereads";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     // If already authenticated, go to onboarding

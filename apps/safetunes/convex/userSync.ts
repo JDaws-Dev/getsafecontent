@@ -1,7 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query, action } from "./_generated/server";
-import { api } from "./_generated/api";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { mutation, query, action, internalQuery } from "./_generated/server";
+import { api, internal } from "./_generated/api";
 
 // Central accounts service URL (marketing site)
 const CENTRAL_ACCOUNTS_URL = process.env.CENTRAL_ACCOUNTS_URL || "https://getsafefamily.com";
@@ -20,35 +19,46 @@ function generateFamilyCode(): string {
 }
 
 /**
- * Get the current authenticated user from Convex Auth
- * Use this in queries/mutations to get the logged-in user's SafeTunes data
+ * Get user by email - for use with JWT auth where email comes from the token
  */
-export const getCurrentUser = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return null;
-    }
-    return await ctx.db.get(userId);
+export const getUserByEmail = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
   },
 });
 
 /**
- * Apply a coupon code to the current user's account
- * Called after signup if user enters a coupon code
+ * Internal query to get user by email (for use by actions)
+ */
+export const getUserByEmailInternal = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
+  },
+});
+
+/**
+ * Apply a coupon code to user's account
+ * With JWT auth, email is passed from authenticated frontend
  */
 export const applyCouponCode = mutation({
   args: {
+    email: v.string(),
     couponCode: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
 
-    const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error("User not found");
     }
@@ -63,7 +73,7 @@ export const applyCouponCode = mutation({
     }
 
     // Apply lifetime status
-    await ctx.db.patch(userId, {
+    await ctx.db.patch(user._id, {
       subscriptionStatus: "lifetime",
       couponCode: couponUpper,
     });
@@ -73,74 +83,7 @@ export const applyCouponCode = mutation({
 });
 
 /**
- * LEGACY: Sync Better Auth user to SafeTunes users table
- * @deprecated Use Convex Auth's afterUserCreatedOrUpdated callback instead
- * Kept for backward compatibility during migration
- */
-export const syncBetterAuthUser = mutation({
-  args: {
-    email: v.string(),
-    name: v.string(),
-    couponCode: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    // Check if SafeTunes user already exists for this email
-    const existing = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
-      .first();
-
-    if (existing) {
-      // User already exists, just return the existing user ID
-      return existing._id;
-    }
-
-    // Generate a unique family code
-    let familyCode = generateFamilyCode();
-    let codeExists = true;
-
-    // Keep generating until we get a unique code
-    while (codeExists) {
-      const existingCode = await ctx.db
-        .query("users")
-        .withIndex("by_family_code", (q) => q.eq("familyCode", familyCode))
-        .first();
-
-      if (!existingCode) {
-        codeExists = false;
-      } else {
-        familyCode = generateFamilyCode();
-      }
-    }
-
-    // Check if coupon code is valid (lifetime free codes)
-    const lifetimeCodes = ["DAWSFRIEND", "DEWITT"];
-    const couponUpper = args.couponCode?.trim().toUpperCase();
-    const hasValidCoupon = couponUpper && lifetimeCodes.includes(couponUpper);
-    const subscriptionStatus = hasValidCoupon ? "lifetime" : "trial";
-
-    // Create SafeTunes user record
-    const userId = await ctx.db.insert("users", {
-      email: args.email,
-      name: args.name,
-      familyCode: familyCode,
-      createdAt: Date.now(),
-      subscriptionStatus: subscriptionStatus,
-      couponCode: args.couponCode?.trim().toUpperCase(),
-    });
-
-    // Send welcome email to user and admin notification (scheduled to run immediately)
-    await ctx.scheduler.runAfter(0, api.emails.sendTrialSignupEmails, {
-      userEmail: args.email,
-      userName: args.name,
-    });
-
-    return userId;
-  },
-});
-
-/**
- * Get SafeTunes user data by email (linked to Better Auth user)
+ * Get SafeTunes user data by email
  */
 export const getSafeTunesUserByEmail = query({
   args: { email: v.string() },
@@ -154,8 +97,7 @@ export const getSafeTunesUserByEmail = query({
 
 /**
  * Ensure SafeTunes user exists - called on EVERY login as a safety net
- * This catches any users who authenticated with Better Auth but didn't sync
- * (e.g., if syncBetterAuthUser failed during signup due to network issues)
+ * This catches any users who were created in central but not provisioned locally
  */
 export const ensureSafeTunesUser = mutation({
   args: {
@@ -174,8 +116,7 @@ export const ensureSafeTunesUser = mutation({
       return { userId: existing._id, wasCreated: false };
     }
 
-    // User is in Better Auth but NOT in SafeTunes! This shouldn't happen,
-    // but we'll create them now to prevent the app from breaking
+    // User doesn't exist locally, create them
     console.warn(`[ensureSafeTunesUser] Creating missing user: ${args.email}`);
 
     // Generate a unique family code
@@ -253,23 +194,27 @@ export const updateSafeTunesUserSubscription = mutation({
  * This action calls the central verifyAppAccess endpoint and syncs
  * the local user's subscriptionStatus with the central service.
  *
+ * With JWT auth, the email is passed from the authenticated frontend.
+ *
  * Returns cached result if within 5-minute window.
  */
 export const verifyCentralAccess = action({
-  args: {},
-  handler: async (ctx): Promise<{
+  args: {
+    email: v.string(),
+  },
+  handler: async (ctx, args): Promise<{
     hasAccess: boolean;
     reason: string;
     subscriptionStatus: string | null;
     cached: boolean;
   }> => {
-    // Get current user
-    const user = await ctx.runQuery(api.userSync.getCurrentUser, {});
+    // Get user by email
+    const user = await ctx.runQuery(internal.userSync.getUserByEmailInternal, { email: args.email });
 
-    if (!user || !user.email) {
+    if (!user) {
       return {
         hasAccess: false,
-        reason: "not_authenticated",
+        reason: "user_not_found",
         subscriptionStatus: null,
         cached: false,
       };
@@ -304,7 +249,7 @@ export const verifyCentralAccess = action({
 
     try {
       const url = new URL("/verifyAppAccess", CENTRAL_ACCOUNTS_URL);
-      url.searchParams.set("email", user.email);
+      url.searchParams.set("email", args.email);
       url.searchParams.set("app", "safetunes");
       url.searchParams.set("key", adminKey);
 
@@ -342,13 +287,16 @@ export const verifyCentralAccess = action({
       // Sync local subscription status with central if different
       if (result.subscriptionStatus && result.subscriptionStatus !== user.subscriptionStatus) {
         await ctx.runMutation(api.userSync.syncFromCentralAccess, {
+          email: args.email,
           subscriptionStatus: result.subscriptionStatus,
           subscriptionEndsAt: result.subscriptionEndsAt,
           trialExpiresAt: result.trialExpiresAt,
         });
       } else {
         // Just update the cache expiry
-        await ctx.runMutation(api.userSync.updateCentralAccessCache, {});
+        await ctx.runMutation(api.userSync.updateCentralAccessCache, {
+          email: args.email,
+        });
       }
 
       return {
@@ -374,21 +322,27 @@ export const verifyCentralAccess = action({
 /**
  * Sync local subscription status from central service response.
  * Called by verifyCentralAccess action when central status differs.
+ * With JWT auth, email is passed from the action.
  */
 export const syncFromCentralAccess = mutation({
   args: {
+    email: v.string(),
     subscriptionStatus: v.string(),
     subscriptionEndsAt: v.optional(v.number()),
     trialExpiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
     }
 
     const now = Date.now();
-    await ctx.db.patch(userId, {
+    await ctx.db.patch(user._id, {
       subscriptionStatus: args.subscriptionStatus,
       subscriptionEndsAt: args.subscriptionEndsAt,
       centralAccessCacheExpiry: now + CENTRAL_ACCESS_CACHE_MS,
@@ -400,17 +354,24 @@ export const syncFromCentralAccess = mutation({
 
 /**
  * Update the central access cache expiry without changing subscription status.
+ * With JWT auth, email is passed from the action.
  */
 export const updateCentralAccessCache = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
+  args: {
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
     }
 
     const now = Date.now();
-    await ctx.db.patch(userId, {
+    await ctx.db.patch(user._id, {
       centralAccessCacheExpiry: now + CENTRAL_ACCESS_CACHE_MS,
     });
 

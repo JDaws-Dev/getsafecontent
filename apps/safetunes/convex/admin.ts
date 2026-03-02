@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
-import { getAuthUserId } from "./auth";
 
 // Delete a user and all their associated data by email (admin use via HTTP endpoint)
 export const deleteUserByEmailInternal = internalMutation({
@@ -258,17 +257,20 @@ export const getAllUsersWithKids = query({
 
 /**
  * Delete own account - user-facing mutation for self-service account deletion.
- * Requires authentication. Uses the same deletion logic as deleteUserByEmailInternal.
+ * With JWT auth, the email is passed from the authenticated frontend context.
+ * Uses the same deletion logic as deleteUserByEmailInternal.
  */
 export const deleteOwnAccount = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
+  args: {
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Find user by email
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
 
-    const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error("User not found");
     }

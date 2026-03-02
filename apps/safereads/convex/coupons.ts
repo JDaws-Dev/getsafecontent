@@ -1,22 +1,21 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
- * Redeem a coupon code for the current user.
+ * Redeem a coupon code for a user by email.
  * Returns success/failure with a message.
  */
 export const redeemCoupon = mutation({
   args: {
+    email: v.string(),
     code: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return { success: false, message: "Not authenticated" };
-    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
 
-    const user = await ctx.db.get(userId);
     if (!user) {
       return { success: false, message: "User not found" };
     }
@@ -66,7 +65,7 @@ export const redeemCoupon = mutation({
     // Apply the coupon based on type
     if (coupon.type === "lifetime") {
       // Grant lifetime pro access
-      await ctx.db.patch(userId, {
+      await ctx.db.patch(user._id, {
         subscriptionStatus: "active",
         // No subscriptionCurrentPeriodEnd = never expires
         redeemedCoupon: normalizedCode,
@@ -74,7 +73,7 @@ export const redeemCoupon = mutation({
     } else if (coupon.type === "trial") {
       // Trial coupons could have a period end date
       // For now, just grant active status
-      await ctx.db.patch(userId, {
+      await ctx.db.patch(user._id, {
         subscriptionStatus: "active",
         redeemedCoupon: normalizedCode,
       });

@@ -1,10 +1,9 @@
-import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "../../../../../convex/_generated/api";
 import Stripe from "stripe";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     // Validate environment variables early
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
@@ -18,16 +17,24 @@ export async function POST() {
       );
     }
 
-    const token = await convexAuthNextjsToken();
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Get email from request body (with JWT auth, frontend sends user info)
+    let body: { email?: string } = {};
+    try {
+      body = await request.json();
+    } catch {
+      // If no body, continue (will fail on missing email)
+    }
+
+    const email = body.email;
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     const stripe = new Stripe(stripeSecretKey, {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    const user = await fetchQuery(api.users.currentUser, {}, { token });
+    const user = await fetchQuery(api.users.getUserByEmail, { email });
     if (!user?.stripeCustomerId) {
       return NextResponse.json(
         { error: "No subscription found" },

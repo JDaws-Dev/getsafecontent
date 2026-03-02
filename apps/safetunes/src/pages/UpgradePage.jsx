@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAction, useQuery } from 'convex/react';
-import { useConvexAuth } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 
 // Detect if running in native SafeTunes app
 const isNativeApp = typeof window !== 'undefined' && (
@@ -12,14 +12,18 @@ const isNativeApp = typeof window !== 'undefined' && (
 
 function UpgradePage() {
   const [searchParams] = useSearchParams();
-  const { isAuthenticated } = useConvexAuth();
+  const { user: centralUser, isAuthenticated } = useAuth();
   const createCheckoutSession = useAction(api.stripeActions.createCheckoutSession);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Get current user from Convex Auth
-  const currentUser = useQuery(api.userSync.getCurrentUser);
+  // Get local SafeTunes user data by email
+  const localUser = useQuery(
+    api.userSync.getSafeTunesUserByEmail,
+    centralUser?.email ? { email: centralUser.email } : "skip"
+  );
+  const currentUser = localUser;
 
   const isTrialExpired = searchParams.get('trial_expired') === 'true';
   const isSubscriptionRequired = searchParams.get('subscription_required') === 'true';

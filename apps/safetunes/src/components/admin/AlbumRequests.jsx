@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useConvexAuth } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
 import PersistentPlayer from './PersistentPlayer';

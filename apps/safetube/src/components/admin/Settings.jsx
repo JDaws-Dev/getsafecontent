@@ -87,17 +87,7 @@ export default function Settings({ userData, onLogout }) {
   const [editNameSuccess, setEditNameSuccess] = useState('');
   const updateUser = useMutation(api.users.updateUser);
 
-  // Password change state
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordSuccess, setPasswordSuccess] = useState('');
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  const changePasswordAction = useAction(api.changePasswordAction.changePassword);
+  // Password change now uses central auth (redirect to forgot password)
 
   // Get kid profiles
   const kidProfiles = useQuery(
@@ -170,63 +160,10 @@ export default function Settings({ userData, onLogout }) {
     }
   };
 
-  // Password change handler - uses Scrypt hashing on server and syncs to all apps
-  const handlePasswordChange = async (e) => {
-    e.preventDefault();
-    setPasswordError('');
-    setPasswordSuccess('');
-
-    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      setPasswordError('All fields are required');
-      return;
-    }
-
-    if (passwordForm.newPassword.length < 8) {
-      setPasswordError('New password must be at least 8 characters');
-      return;
-    }
-
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setPasswordError('New passwords do not match');
-      return;
-    }
-
-    if (passwordForm.currentPassword === passwordForm.newPassword) {
-      setPasswordError('New password must be different from current password');
-      return;
-    }
-
-    setPasswordLoading(true);
-
-    try {
-      // Get user email for the action
-      const email = userData?.email;
-      if (!email) {
-        setPasswordError('Unable to get user email');
-        return;
-      }
-
-      // Call the server-side action that handles Scrypt hashing and sync
-      const result = await changePasswordAction({
-        email,
-        currentPassword: passwordForm.currentPassword,
-        newPassword: passwordForm.newPassword,
-      });
-
-      if (!result.success) {
-        setPasswordError(result.error || 'Failed to update password');
-        return;
-      }
-
-      setPasswordSuccess('Password updated successfully!');
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      setShowChangePassword(false);
-    } catch (error) {
-      console.error('Password change error:', error);
-      setPasswordError(error.message || 'Failed to update password. Please check your current password and try again.');
-    } finally {
-      setPasswordLoading(false);
-    }
+  // Password change handler - navigates to forgot password page
+  // Password changes go through central auth (Marketing) which sends an OTP via email
+  const handlePasswordChange = () => {
+    window.location.href = '/forgot-password';
   };
 
   return (
@@ -488,91 +425,15 @@ export default function Settings({ userData, onLogout }) {
               </h2>
             </div>
             <div className="p-6">
-              {!showChangePassword ? (
-                <div>
-                  <button
-                    onClick={() => setShowChangePassword(true)}
-                    className="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-medium transition"
-                  >
-                    Change Password
-                  </button>
-                  {passwordSuccess && (
-                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-                      <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm text-green-700 font-medium">{passwordSuccess}</span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <form onSubmit={handlePasswordChange} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                    <input
-                      type="password"
-                      value={passwordForm.currentPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                      placeholder="Enter your current password"
-                      autoComplete="current-password"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                    <input
-                      type="password"
-                      value={passwordForm.newPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                      placeholder="At least 8 characters"
-                      autoComplete="new-password"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                    <input
-                      type="password"
-                      value={passwordForm.confirmPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                      placeholder="Re-enter your new password"
-                      autoComplete="new-password"
-                    />
-                  </div>
-
-                  {passwordError && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                      <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm text-red-700">{passwordError}</span>
-                    </div>
-                  )}
-
-                  <div className="flex gap-3 pt-2">
-                    <button
-                      type="submit"
-                      disabled={passwordLoading}
-                      className="px-6 py-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {passwordLoading ? 'Updating...' : 'Update Password'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowChangePassword(false);
-                        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                        setPasswordError('');
-                      }}
-                      disabled={passwordLoading}
-                      className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
+              <p className="text-sm text-gray-600 mb-4">
+                To change your password, we'll send a reset code to your email.
+              </p>
+              <button
+                onClick={handlePasswordChange}
+                className="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-medium transition"
+              >
+                Change Password
+              </button>
             </div>
           </div>
 

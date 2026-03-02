@@ -8,6 +8,7 @@ import { ConversationList } from "@/components/chat/ConversationList";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { ArrowLeft, Bot, History } from "lucide-react";
 import { ChatInput } from "@/components/chat/ChatInput";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SUGGESTED_PROMPTS = [
   "What should my 8-year-old read next?",
@@ -16,7 +17,11 @@ const SUGGESTED_PROMPTS = [
 ];
 
 export default function ChatPage() {
-  const currentUser = useQuery(api.users.currentUser);
+  const { user: authUser } = useAuth();
+  const currentUser = useQuery(
+    api.users.currentUser,
+    authUser?.email ? { email: authUser.email } : "skip"
+  );
 
   const conversations = useQuery(
     api.chat.listConversations,

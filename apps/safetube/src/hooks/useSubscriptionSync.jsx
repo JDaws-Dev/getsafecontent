@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useConvexAuth, useAction, useQuery } from 'convex/react';
+import { useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 
 // How often to recheck subscription status (1 hour in ms)
 const SYNC_INTERVAL_MS = 60 * 60 * 1000;
@@ -25,8 +26,7 @@ const SYNC_INTERVAL_MS = 60 * 60 * 1000;
  * }}
  */
 export function useSubscriptionSync() {
-  const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
-  const currentUser = useQuery(api.userSync.getCurrentUser);
+  const { user: currentUser, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const verifyCentralAccess = useAction(api.userSync.verifyCentralAccess);
 
   // Track sync state
@@ -36,15 +36,15 @@ export function useSubscriptionSync() {
 
   // Perform the sync
   const syncNow = useCallback(async () => {
-    // Don't sync if already syncing, not authenticated, or no user
-    if (isSyncingRef.current || !isAuthenticated || !currentUser) {
+    // Don't sync if already syncing, not authenticated, or no user with email
+    if (isSyncingRef.current || !isAuthenticated || !currentUser?.email) {
       return;
     }
 
     isSyncingRef.current = true;
 
     try {
-      const result = await verifyCentralAccess();
+      const result = await verifyCentralAccess({ email: currentUser.email });
       lastSyncRef.current = Date.now();
 
       if (!result.cached) {

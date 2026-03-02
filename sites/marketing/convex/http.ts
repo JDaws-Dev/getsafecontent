@@ -3,7 +3,7 @@ import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import { auth } from "./auth";
 import verifyCentralCredentials from "./verifyCentralCredentials";
-import { login, verifyToken, requestPasswordReset, resetPassword } from "./authEndpoints";
+import { login, verifyToken, requestPasswordReset, resetPassword, generateOAuthToken } from "./authEndpoints";
 
 const http = httpRouter();
 
@@ -143,6 +143,41 @@ http.route({
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+/**
+ * Generate OAuth Token Endpoint
+ *
+ * Generates a JWT for a user who authenticated via Google OAuth.
+ * Called by the /oauth page after successful OAuth authentication.
+ *
+ * POST /generateOAuthToken
+ * Header: x-admin-key: ADMIN_KEY
+ * Body: { email: string }
+ *
+ * Returns:
+ * - JWT token for the OAuth user
+ * - User info (email, name, subscriptionStatus, entitledApps)
+ */
+http.route({
+  path: "/generateOAuthToken",
+  method: "POST",
+  handler: generateOAuthToken,
+});
+
+http.route({
+  path: "/generateOAuthToken",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, x-admin-key",
       },
     });
   }),

@@ -6,6 +6,7 @@ import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Flag, X, Check } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const REASONS = [
   { value: "too_lenient", label: "Verdict is too lenient" },
@@ -23,7 +24,8 @@ interface ReportButtonProps {
 }
 
 export function ReportButton({ bookId, analysisId }: ReportButtonProps) {
-  const userId = useQuery(api.users.currentUserId);
+  const { user: authUser } = useAuth();
+  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
 
   const existingReport = useQuery(
     api.reports.getByUserAndAnalysis,

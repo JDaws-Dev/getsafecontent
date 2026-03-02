@@ -10,14 +10,10 @@ import deleteTestUsers from "./deleteTestUsers";
 import deleteUserHttpAction from "./deleteUserHttpAction";
 import setupOnboarding from "./setupOnboarding";
 import provisionUser from "./provisionUser";
-import updatePassword from "./updatePassword";
-import createAuthAccountHttp from "./createAuthAccountHttp";
-import exportUsersForMigration from "./exportUsersForMigration";
-import { auth } from "./auth";
 
 const http = httpRouter();
 
-// Admin dashboard route - must be before auth routes
+// Admin dashboard route
 // Supports both GET (data) and OPTIONS (CORS preflight)
 http.route({
   path: "/adminDashboard",
@@ -93,7 +89,7 @@ http.route({
   handler: setupOnboarding,
 });
 
-// Provision user route (creates user with auth credentials from central auth)
+// Provision user route (creates user from central auth)
 http.route({
   path: "/provisionUser",
   method: "POST",
@@ -107,42 +103,11 @@ http.route({
   handler: provisionUser,
 });
 
-// Update password route (for password sync from central auth)
-http.route({
-  path: "/updatePassword",
-  method: "POST",
-  handler: updatePassword,
-});
-
-// Update password CORS preflight
-http.route({
-  path: "/updatePassword",
-  method: "OPTIONS",
-  handler: updatePassword,
-});
-
-// Create auth account for legacy users (admin)
-http.route({
-  path: "/createAuthAccount",
-  method: "GET",
-  handler: createAuthAccountHttp,
-});
-
 // Stripe webhook route
 http.route({
   path: "/stripe",
   method: "POST",
   handler: stripe,
 });
-
-// Export users for migration (one-time use)
-http.route({
-  path: "/exportUsersForMigration",
-  method: "GET",
-  handler: exportUsersForMigration,
-});
-
-// Convex Auth routes
-auth.addHttpRoutes(http);
 
 export default http;

@@ -154,6 +154,7 @@ export const store = internalMutation({
 export const analyze = action({
   args: {
     bookId: v.id("books"),
+    email: v.string(),
   },
   handler: async (ctx, args): Promise<AnalysisResult> => {
     // 1. Fetch book
@@ -173,7 +174,7 @@ export const analyze = action({
     }
 
     // 3. Paywall check — only for new (non-cached) analyses
-    const access = await ctx.runQuery(api.subscriptions.checkAccess, {});
+    const access = await ctx.runQuery(api.subscriptions.checkAccess, { email: args.email });
     if (!access.hasAccess) {
       throw new Error("UPGRADE_REQUIRED");
     }
@@ -185,7 +186,7 @@ export const analyze = action({
     await ctx.runMutation(internal.analyses.store, result);
 
     // 6. Increment analysis count
-    await ctx.runMutation(api.subscriptions.incrementAnalysisCount, {});
+    await ctx.runMutation(api.subscriptions.incrementAnalysisCount, { email: args.email });
 
     return result;
   },
@@ -209,10 +210,11 @@ export const getBookById = internalQuery({
 export const reanalyze = action({
   args: {
     bookId: v.id("books"),
+    email: v.string(),
   },
   handler: async (ctx, args) => {
     // 1. Paywall check — re-analysis always counts as new
-    const access = await ctx.runQuery(api.subscriptions.checkAccess, {});
+    const access = await ctx.runQuery(api.subscriptions.checkAccess, { email: args.email });
     if (!access.hasAccess) {
       throw new Error("UPGRADE_REQUIRED");
     }
@@ -237,7 +239,7 @@ export const reanalyze = action({
     await ctx.runMutation(internal.analyses.store, result);
 
     // 6. Increment analysis count
-    await ctx.runMutation(api.subscriptions.incrementAnalysisCount, {});
+    await ctx.runMutation(api.subscriptions.incrementAnalysisCount, { email: args.email });
 
     return result;
   },

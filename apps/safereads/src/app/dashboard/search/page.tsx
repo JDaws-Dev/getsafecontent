@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useSearchParams } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { SearchBar } from "@/components/SearchBar";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { CoverScanner } from "@/components/CoverScanner";
@@ -14,7 +15,8 @@ import { BookOpen, Search, Trash2, BookText, User } from "lucide-react";
 type SearchMode = "title" | "author";
 
 export default function SearchPage() {
-  const currentUser = useQuery(api.users.currentUser);
+  const { user: authUser } = useAuth();
+  const currentUser = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
 
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";

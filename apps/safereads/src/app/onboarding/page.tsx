@@ -7,13 +7,18 @@ import { useRouter } from "next/navigation";
 import { BookOpen, Users, ArrowRight, Plus, X } from "lucide-react";
 import { KidForm, KidFormValues } from "@/components/KidForm";
 import { Id } from "../../../convex/_generated/dataModel";
+import { useAuth } from "@/contexts/AuthContext";
 
 type AddedKid = { name: string; age?: number };
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { user: authUser } = useAuth();
 
-  const currentUser = useQuery(api.users.currentUser);
+  const currentUser = useQuery(
+    api.users.currentUser,
+    authUser?.email ? { email: authUser.email } : "skip"
+  );
   const completeOnboarding = useMutation(api.users.completeOnboarding);
   const createKid = useMutation(api.kids.create);
 
@@ -64,7 +69,10 @@ export default function OnboardingPage() {
         });
       }
       // Mark onboarding complete
-      await completeOnboarding();
+      if (!authUser?.email) {
+        throw new Error("Not authenticated");
+      }
+      await completeOnboarding({ email: authUser.email });
       router.replace("/dashboard");
     } catch {
       setSaving(false);

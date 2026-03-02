@@ -6,6 +6,7 @@ import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Heart, X, Check, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Kid = {
   _id: Id<"kids">;
@@ -14,7 +15,8 @@ type Kid = {
 };
 
 export function WishlistButton({ bookId }: { bookId: Id<"books"> }) {
-  const userId = useQuery(api.users.currentUserId);
+  const { user: authUser } = useAuth();
+  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
   const kids = useQuery(
     api.kids.listByUser,
     userId ? { userId } : "skip"

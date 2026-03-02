@@ -8,6 +8,7 @@ import { KidForm, KidFormValues } from "@/components/KidForm";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Plus, Pencil, Trash2, X, User, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Kid = {
   _id: Id<"kids">;
@@ -16,7 +17,11 @@ type Kid = {
 };
 
 export default function KidsPage() {
-  const currentUser = useQuery(api.users.currentUser);
+  const { user: authUser } = useAuth();
+  const currentUser = useQuery(
+    api.users.currentUser,
+    authUser?.email ? { email: authUser.email } : "skip"
+  );
   const kids = useQuery(
     api.kids.listByUser,
     currentUser?._id ? { userId: currentUser._id } : "skip"

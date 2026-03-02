@@ -72,8 +72,8 @@ function checkRateLimit(clientIp: string): { allowed: boolean; retryAfter?: numb
  * Returns on invalid credentials (401):
  * { success: false, error: "Invalid email or password" }
  *
- * Returns on user not found (404):
- * { success: false, error: "User not found" }
+ * Returns on user not found (401):
+ * { success: false, error: "Invalid email or password" }
  */
 export default httpAction(async (ctx, request): Promise<Response> => {
   const headers = {
@@ -145,12 +145,12 @@ export default httpAction(async (ctx, request): Promise<Response> => {
   }
 
   try {
-    // Look up user in centralUsers table
-    const user = await ctx.runQuery(internal.centralUsers.verifyCentralUserCredentials, {
+    // Look up user credentials using internal query
+    const credentials = await ctx.runQuery(internal.signupInternal.getUserCredentials, {
       email: email.toLowerCase().trim(),
     });
 
-    if (!user.exists) {
+    if (!credentials.exists) {
       // Don't reveal whether email exists for security
       return new Response(
         JSON.stringify({ success: false, error: "Invalid email or password" }),
@@ -158,8 +158,21 @@ export default httpAction(async (ctx, request): Promise<Response> => {
       );
     }
 
+    if (!credentials.hasPasswordAuth) {
+      // User exists but uses OAuth, not password
+      console.log(`[verifyCentralCredentials] User ${email} has no password auth (OAuth only)`);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "This account uses Google sign-in. Please use the Google sign-in option.",
+          code: "OAUTH_ONLY"
+        }),
+        { status: 401, headers }
+      );
+    }
+
     // Check if user needs password reset (migrated from BetterAuth or bcrypt)
-    if (user.passwordHash?.startsWith("NEEDS_PASSWORD_RESET:")) {
+    if (credentials.passwordHash?.startsWith("NEEDS_PASSWORD_RESET:")) {
       console.log(`[verifyCentralCredentials] User needs password reset: ${email}`);
       return new Response(
         JSON.stringify({
@@ -172,7 +185,7 @@ export default httpAction(async (ctx, request): Promise<Response> => {
     }
 
     // Verify password using Scrypt
-    const isValidPassword = await scrypt.verify(user.passwordHash!, password);
+    const isValidPassword = await scrypt.verify(credentials.passwordHash!, password);
 
     if (!isValidPassword) {
       return new Response(
@@ -187,11 +200,11 @@ export default httpAction(async (ctx, request): Promise<Response> => {
     return new Response(
       JSON.stringify({
         success: true,
-        email: user.email,
-        name: user.name || null,
-        passwordHash: user.passwordHash, // App needs this to create local authAccounts
-        entitledApps: user.entitledApps || [],
-        subscriptionStatus: user.subscriptionStatus || "trial",
+        email: credentials.email,
+        name: credentials.name || null,
+        passwordHash: credentials.passwordHash, // App needs this to create local authAccounts
+        entitledApps: credentials.entitledApps || [],
+        subscriptionStatus: credentials.subscriptionStatus || "trial",
       }),
       { status: 200, headers }
     );

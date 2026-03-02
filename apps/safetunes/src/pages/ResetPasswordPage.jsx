@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthActions } from '@convex-dev/auth/react';
+import { useAuth } from '../contexts/AuthContext';
 
 function ResetPasswordPage() {
   const navigate = useNavigate();
-  const { signIn } = useAuthActions();
+  const { resetPassword, isAuthenticated, user } = useAuth();
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,6 +22,16 @@ function ResetPasswordPage() {
       navigate('/forgot-password');
     }
   }, [email, navigate]);
+
+  // Redirect after successful reset and auto-login
+  useEffect(() => {
+    if (success && isAuthenticated && user) {
+      // Check if user is entitled to SafeTunes
+      if (user.entitledApps?.includes('safetunes')) {
+        navigate('/admin');
+      }
+    }
+  }, [success, isAuthenticated, user, navigate]);
 
   // Handle individual code digit input
   const handleCodeChange = (index, value) => {
@@ -87,33 +97,34 @@ function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      // Complete password reset with OTP code via Convex Auth
-      await signIn('password', {
-        email: email,
-        code: fullCode,
-        newPassword: password,
-        flow: 'reset-verification',
-      });
+      const result = await resetPassword(email, fullCode, password);
 
-      // Success!
+      if (!result.success) {
+        const errorMessage = result.error || '';
+        if (errorMessage.includes('expired') || errorMessage.includes('invalid') || errorMessage.includes('Invalid')) {
+          setError('Invalid or expired code. Please request a new one.');
+        } else {
+          setError(result.error || 'Failed to reset password. Please try again.');
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Success! The resetPassword function auto-logs in the user via JWT
       setSuccess(true);
       setLoading(false);
 
       // Clear stored email
       localStorage.removeItem('safetunes_reset_email');
 
-      // Redirect to login after 3 seconds
+      // Auto-redirect to admin will happen via useEffect when user state updates
+      // But also add a fallback redirect
       setTimeout(() => {
-        navigate('/login');
+        navigate('/admin');
       }, 3000);
     } catch (err) {
       console.error('Password reset error:', err);
-      const errorMessage = err?.message || '';
-      if (errorMessage.includes('code') || errorMessage.includes('expired') || errorMessage.includes('invalid')) {
-        setError('Invalid or expired code. Please request a new one.');
-      } else {
-        setError('Failed to reset password. Please try again.');
-      }
+      setError('Failed to reset password. Please try again.');
       setLoading(false);
     }
   };
@@ -145,17 +156,17 @@ function ResetPasswordPage() {
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Password Reset Successful!</h2>
                 <p className="text-gray-600 mb-6">
-                  Your password has been updated successfully. You can now log in with your new password.
+                  Your password has been updated and you're now logged in.
                 </p>
 
                 <Link
-                  to="/login"
+                  to="/admin"
                   className="inline-block bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition"
                 >
-                  Go to Login
+                  Go to Dashboard
                 </Link>
 
-                <p className="text-sm text-gray-500 mt-4">Redirecting to login in 3 seconds...</p>
+                <p className="text-sm text-gray-500 mt-4">Redirecting to dashboard...</p>
               </div>
             ) : (
               <>

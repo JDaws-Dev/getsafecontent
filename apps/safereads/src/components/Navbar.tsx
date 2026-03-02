@@ -85,7 +85,8 @@ export function Navbar() {
 }
 
 function UserMenu({ onSignOut }: { onSignOut: () => void }) {
-  const currentUser = useQuery(api.users.currentUser);
+  const { user: authUser } = useAuth();
+  const currentUser = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
 
   return (
     <DropdownMenu.Root>

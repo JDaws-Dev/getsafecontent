@@ -19,6 +19,8 @@ function getRedis(): Redis | null {
 let checkoutLimiter: Ratelimit | null = null;
 let demoLimiter: Ratelimit | null = null;
 let newsletterLimiter: Ratelimit | null = null;
+let signupLimiter: Ratelimit | null = null;
+let syncPasswordLimiter: Ratelimit | null = null;
 
 function getCheckoutLimiter(): Ratelimit | null {
   if (!checkoutLimiter) {
@@ -68,7 +70,39 @@ function getNewsletterLimiter(): Ratelimit | null {
   return newsletterLimiter;
 }
 
-export type RateLimitType = "checkout" | "demo" | "newsletter";
+function getSignupLimiter(): Ratelimit | null {
+  if (!signupLimiter) {
+    const r = getRedis();
+    if (r) {
+      // 5 requests per minute for signup (prevents account enumeration attacks)
+      signupLimiter = new Ratelimit({
+        redis: r,
+        limiter: Ratelimit.slidingWindow(5, "1 m"),
+        prefix: "ratelimit:signup:",
+        analytics: true,
+      });
+    }
+  }
+  return signupLimiter;
+}
+
+function getSyncPasswordLimiter(): Ratelimit | null {
+  if (!syncPasswordLimiter) {
+    const r = getRedis();
+    if (r) {
+      // 10 requests per minute for password sync (app-to-app internal calls)
+      syncPasswordLimiter = new Ratelimit({
+        redis: r,
+        limiter: Ratelimit.slidingWindow(10, "1 m"),
+        prefix: "ratelimit:sync-password:",
+        analytics: true,
+      });
+    }
+  }
+  return syncPasswordLimiter;
+}
+
+export type RateLimitType = "checkout" | "demo" | "newsletter" | "signup" | "sync-password";
 
 /**
  * Check rate limit for a request
@@ -81,7 +115,7 @@ export async function checkRateLimit(
   request: Request
 ): Promise<{ success: true } | NextResponse> {
   // Get the appropriate limiter
-  let limiter: Ratelimit | null;
+  let limiter: Ratelimit | null = null;
   switch (type) {
     case "checkout":
       limiter = getCheckoutLimiter();
@@ -91,6 +125,12 @@ export async function checkRateLimit(
       break;
     case "newsletter":
       limiter = getNewsletterLimiter();
+      break;
+    case "signup":
+      limiter = getSignupLimiter();
+      break;
+    case "sync-password":
+      limiter = getSyncPasswordLimiter();
       break;
   }
 
@@ -139,7 +179,7 @@ export async function getRateLimitHeaders(
   type: RateLimitType,
   request: Request
 ): Promise<Record<string, string>> {
-  let limiter: Ratelimit | null;
+  let limiter: Ratelimit | null = null;
   switch (type) {
     case "checkout":
       limiter = getCheckoutLimiter();
@@ -150,6 +190,14 @@ export async function getRateLimitHeaders(
     case "newsletter":
       limiter = getNewsletterLimiter();
       break;
+    case "signup":
+      limiter = getSignupLimiter();
+      break;
+    case "sync-password":
+      limiter = getSyncPasswordLimiter();
+      break;
+    default:
+      limiter = null;
   }
 
   if (!limiter) {

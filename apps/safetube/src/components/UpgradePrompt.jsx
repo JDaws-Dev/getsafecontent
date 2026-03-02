@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useAuthActions } from '@convex-dev/auth/react';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * UpgradePrompt - Shown to users who have a Safe Family account
@@ -10,10 +10,10 @@ import { useAuthActions } from '@convex-dev/auth/react';
  * - Inactive: User has credentials but never had this app
  */
 export default function UpgradePrompt({ user, onLogout }) {
-  const { signOut } = useAuthActions();
+  const { logout } = useAuth();
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
+    logout();
     if (onLogout) {
       onLogout();
     } else {
@@ -21,7 +21,7 @@ export default function UpgradePrompt({ user, onLogout }) {
     }
   };
 
-  const upgradeUrl = `https://getsafefamily.com/signup?app=safetube&email=${encodeURIComponent(user?.email || '')}`;
+  const upgradeUrl = `https://getsafefamily.com/account?upgrade=safetube&email=${encodeURIComponent(user?.email || '')}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex items-center justify-center p-6">

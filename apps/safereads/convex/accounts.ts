@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * Central Accounts API
@@ -204,20 +203,19 @@ export const getAccountByEmail = query({
 });
 
 /**
- * Get current authenticated user
+ * Get user by email
  *
- * Returns the account details for the currently logged in user.
+ * Returns the account details for a given email.
  * Used by the /account page to display user information.
  */
-export const getCurrentUser = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return null;
-    }
+export const getUserByEmail = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
 
-    const user = await ctx.db.get(userId);
     if (!user) {
       return null;
     }
@@ -1040,22 +1038,22 @@ export const validateCouponCode = query({
 });
 
 /**
- * Apply a lifetime coupon code to the current user
+ * Apply a lifetime coupon code to a user by email
  *
  * Called after user signs up with a valid lifetime code.
  * Updates their status from trial to lifetime and grants access to all apps.
  */
 export const applyLifetimeCode = mutation({
   args: {
+    email: v.string(),
     couponCode: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
 
-    const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error("User not found");
     }
@@ -1109,7 +1107,7 @@ export const applyLifetimeCode = mutation({
     }
 
     // Update user to lifetime status
-    await ctx.db.patch(userId, {
+    await ctx.db.patch(user._id, {
       subscriptionStatus: "lifetime",
       entitledApps: grantedApps,
       couponCode: code,
@@ -1121,7 +1119,7 @@ export const applyLifetimeCode = mutation({
 
     // Log the event
     await ctx.db.insert("subscriptionEvents", {
-      userId,
+      userId: user._id,
       email: user.email ?? "unknown",
       eventType: "coupon.applied",
       eventData: JSON.stringify({

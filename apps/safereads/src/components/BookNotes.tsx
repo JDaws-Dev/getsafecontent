@@ -5,9 +5,11 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { StickyNote, Pencil, Trash2, Check, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function BookNotes({ bookId }: { bookId: Id<"books"> }) {
-  const userId = useQuery(api.users.currentUserId);
+  const { user: authUser } = useAuth();
+  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
 
   const note = useQuery(
     api.notes.getByUserAndBook,

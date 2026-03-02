@@ -1,25 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery, useAction } from 'convex/react';
-import { useConvexAuth } from 'convex/react';
-import { useAuthActions } from '@convex-dev/auth/react';
-import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 import { useIsNativeApp } from '../hooks/useIsNativeApp';
 import { useHaptic } from '../hooks/useHaptic';
 import UpgradePrompt from '../components/UpgradePrompt';
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading: isPending } = useConvexAuth();
-  const { signIn } = useAuthActions();
+  const { isAuthenticated, isLoading: isPending, user, login, loginWithGoogle, requestPasswordReset } = useAuth();
   const isNativeApp = useIsNativeApp();
   const haptic = useHaptic();
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Central auth integration
-  const verifyCentralAuth = useAction(api.centralAuth.verifyCentralCredentialsAndProvision);
+  // Upgrade prompt for users without SafeTunes entitlement
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [centralUser, setCentralUser] = useState(null);
 
@@ -28,20 +23,18 @@ function LoginPage() {
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [sendingResetEmail, setSendingResetEmail] = useState(false);
 
-  // Get current user from Convex Auth
-  const currentUser = useQuery(api.userSync.getCurrentUser);
-
   // Redirect to admin or onboarding if already logged in
   useEffect(() => {
-    if (isAuthenticated && currentUser && !isPending) {
-      // If onboarding not completed, go to onboarding
-      if (!currentUser.onboardingCompleted) {
-        navigate('/onboarding');
-      } else {
-        navigate('/admin');
+    if (isAuthenticated && user && !isPending) {
+      // Check if user is entitled to SafeTunes
+      if (!user.entitledApps?.includes('safetunes')) {
+        setCentralUser(user);
+        setShowUpgradePrompt(true);
+        return;
       }
+      navigate('/admin');
     }
-  }, [isAuthenticated, currentUser, isPending, navigate]);
+  }, [isAuthenticated, user, isPending, navigate]);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -76,108 +69,74 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    haptic.light(); // Light tap on submit
+    haptic.light();
     setLoading(true);
     setError('');
 
     try {
-      // Step 1: Verify against central auth first
-      // This checks credentials, entitlement, and provisions user locally if needed
-      const centralResult = await verifyCentralAuth({
-        email: formData.email,
-        password: formData.password,
-      });
+      const result = await login(formData.email, formData.password);
 
-      console.log('[LoginPage] Central auth result:', centralResult);
+      console.log('[LoginPage] Login result:', result);
 
-      if (!centralResult.success) {
-        // Central auth returned an error
+      if (!result.success) {
         haptic.error();
-        if (centralResult.errorCode === 'RATE_LIMITED') {
-          setError(centralResult.error);
-        } else if (centralResult.errorCode === 'PASSWORD_RESET_REQUIRED') {
+
+        if (result.code === 'PASSWORD_RESET_REQUIRED') {
           // User was migrated from old auth system - show password reset prompt
           setShowPasswordResetPrompt(true);
           setLoading(false);
           return;
+        }
+
+        if (result.code === 'NOT_ENTITLED') {
+          // User exists but doesn't have SafeTunes - show upgrade prompt
+          console.log('[LoginPage] User not entitled to SafeTunes, showing upgrade prompt');
+          haptic.light();
+          setCentralUser(result.user);
+          setShowUpgradePrompt(true);
+          setLoading(false);
+          return;
+        }
+
+        if (result.code === 'OAUTH_ONLY') {
+          setError('This account uses Google sign-in. Please use the Google sign-in option.');
         } else {
-          setError('Invalid email or password. Please try again.');
+          setError(result.error || 'Invalid email or password. Please try again.');
         }
         emailInputRef.current?.focus();
         setLoading(false);
         return;
       }
 
-      // Step 2: Check entitlement
-      if (!centralResult.entitled) {
-        // User exists but doesn't have SafeTunes - show upgrade prompt
-        console.log('[LoginPage] User not entitled to SafeTunes, showing upgrade prompt');
-        haptic.light();
-        setCentralUser(centralResult.user);
-        setShowUpgradePrompt(true);
-        setLoading(false);
-        return;
-      }
-
-      // Step 3: User is verified and entitled - complete Convex Auth login
-      // The central auth action already provisioned the user (created authAccounts entry)
-      // Now we just need to create the session via Convex Auth
-      await signIn('password', {
-        email: formData.email,
-        password: formData.password,
-        flow: 'signIn',
-      });
-
       // Always save email for convenience
       localStorage.setItem('safetunes_remembered_email', formData.email);
 
-      haptic.success(); // Success feedback
-      // Login succeeded - navigate to admin (or onboarding will redirect if needed)
+      haptic.success();
       navigate('/admin');
     } catch (err) {
       console.error('[LoginPage] Login error:', err);
-      haptic.error(); // Error feedback
-      // Provide user-friendly error messages
-      const errorMessage = err?.message || '';
-      if (errorMessage.includes('Invalid') || errorMessage.includes('credentials') || errorMessage.includes('password') || errorMessage.includes('Could not verify')) {
-        setError('Invalid email or password. Please try again.');
-        emailInputRef.current?.focus();
-      } else if (errorMessage.includes('network') || errorMessage.includes('fetch') || errorMessage.includes('Failed to fetch')) {
-        setError('Network error. Please check your connection and try again.');
-      } else if (errorMessage.includes('timeout')) {
-        setError('Request timed out. Please try again.');
-      } else {
-        setError('Login failed. Please try again.');
-      }
+      haptic.error();
+      setError('Login failed. Please try again.');
       errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    haptic.light(); // Light tap on Google button
+  const handleGoogleSignIn = () => {
+    haptic.light();
     setGoogleLoading(true);
     setError('');
 
-    try {
-      await signIn('google', { redirectTo: '/admin' });
-    } catch (err) {
-      console.error('[LoginPage] Google login error:', err);
-      haptic.error();
-      setError('Google sign-in failed. Please try again.');
-      setGoogleLoading(false);
-    }
+    // Redirect to Marketing's Google OAuth flow
+    // Marketing will redirect back with JWT after OAuth completes
+    loginWithGoogle();
   };
 
   // Handle sending password reset email
   const handleSendResetEmail = async () => {
     setSendingResetEmail(true);
     try {
-      // Trigger password reset flow via Convex Auth
-      await signIn('password', {
-        email: formData.email,
-        flow: 'reset',
-      });
+      await requestPasswordReset(formData.email);
       setResetEmailSent(true);
       localStorage.setItem('safetunes_reset_email', formData.email);
       haptic.success();
@@ -268,7 +227,7 @@ function LoginPage() {
 
                   <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-6 text-sm">
                     <p>
-                      <strong>Next Steps:</strong> Check your inbox for an email from SafeTunes.
+                      <strong>Next Steps:</strong> Check your inbox for an email from Safe Family.
                       The code expires in 1 hour.
                     </p>
                   </div>

@@ -800,3 +800,121 @@ export const resetPassword = httpAction(async (ctx, request): Promise<Response> 
     );
   }
 });
+
+/**
+ * Generate JWT for OAuth User Endpoint
+ *
+ * This endpoint is called after a user authenticates via Google OAuth.
+ * It generates a JWT token for the user without requiring password verification.
+ *
+ * POST /generateOAuthToken
+ * Body: { email: string }
+ * Header: x-admin-key: ADMIN_KEY (required for security)
+ *
+ * Returns on success (200):
+ * {
+ *   success: true,
+ *   token: string,
+ *   expiresAt: number,
+ *   user: { email, name, subscriptionStatus, entitledApps }
+ * }
+ *
+ * This endpoint is used by the OAuth flow to convert a Convex Auth session
+ * into a JWT that can be used across all Safe Family apps.
+ */
+export const generateOAuthToken = httpAction(async (ctx, request): Promise<Response> => {
+  const headers = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, x-admin-key",
+  };
+
+  // Handle CORS preflight
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers });
+  }
+
+  // Verify admin key (required since this bypasses password verification)
+  const adminKey = request.headers.get("x-admin-key");
+  const expectedKey = process.env.ADMIN_KEY;
+  if (!expectedKey || adminKey !== expectedKey) {
+    return new Response(
+      JSON.stringify({ success: false, error: "Unauthorized" }),
+      { status: 401, headers }
+    );
+  }
+
+  // Parse request body
+  let body: { email?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(
+      JSON.stringify({ success: false, error: "Invalid JSON body" }),
+      { status: 400, headers }
+    );
+  }
+
+  const { email } = body;
+
+  if (!email || typeof email !== "string") {
+    return new Response(
+      JSON.stringify({ success: false, error: "Email is required" }),
+      { status: 400, headers }
+    );
+  }
+
+  try {
+    // Get user credentials from database
+    const credentials = await ctx.runQuery(
+      internal.signupInternal.getUserCredentials,
+      { email: email.toLowerCase().trim() }
+    );
+
+    if (!credentials.exists) {
+      return new Response(
+        JSON.stringify({ success: false, error: "User not found" }),
+        { status: 404, headers }
+      );
+    }
+
+    // Generate JWT token
+    const now = Math.floor(Date.now() / 1000);
+    const expiresAt = now + JWT_EXPIRY_SECONDS;
+
+    const token = await new SignJWT({
+      sub: credentials.userId as string,
+      email: credentials.email,
+      entitledApps: credentials.entitledApps || [],
+    })
+      .setProtectedHeader({ alg: JWT_ALGORITHM })
+      .setIssuedAt(now)
+      .setExpirationTime(expiresAt)
+      .setIssuer("getsafefamily.com")
+      .sign(getJwtSecret());
+
+    console.log(`[generateOAuthToken] Generated JWT for OAuth user: ${email}`);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        token,
+        expiresAt,
+        user: {
+          email: credentials.email,
+          name: credentials.name || null,
+          subscriptionStatus: credentials.subscriptionStatus || "trial",
+          entitledApps: credentials.entitledApps || [],
+        },
+      }),
+      { status: 200, headers }
+    );
+  } catch (error) {
+    console.error("[generateOAuthToken] Error:", error);
+    return new Response(
+      JSON.stringify({ success: false, error: "Internal server error" }),
+      { status: 500, headers }
+    );
+  }
+});

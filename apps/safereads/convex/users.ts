@@ -1,7 +1,6 @@
-import { mutation, query, action, internalQuery } from "./_generated/server";
+import { mutation, query, action, internalQuery, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import { api } from "./_generated/api";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { internal } from "./_generated/api";
 
 // Central accounts service URL (marketing site)
 const CENTRAL_ACCOUNTS_URL = process.env.CENTRAL_ACCOUNTS_URL || "https://getsafefamily.com";
@@ -10,31 +9,70 @@ const CENTRAL_ACCOUNTS_URL = process.env.CENTRAL_ACCOUNTS_URL || "https://getsaf
 const CENTRAL_ACCESS_CACHE_MS = 5 * 60 * 1000;
 
 /**
- * Get the current authenticated user.
- * Convex Auth automatically creates users in the users table via authTables.
+ * Get user by email.
+ * Used by frontend to get user data after JWT auth.
  */
-export const currentUser = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
-    return await ctx.db.get(userId);
+export const getUserByEmail = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
   },
 });
 
 /**
- * Get the current user's ID (for use in components).
+ * Get current user by email.
+ * Alias for getUserByEmail, but with optional email for backward compatibility.
+ * The email should be passed from AuthContext.
+ */
+export const currentUser = query({
+  args: { email: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    if (!args.email) return null;
+    const email = args.email;
+    return await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email.toLowerCase()))
+      .first();
+  },
+});
+
+/**
+ * Get current user ID by email.
+ * Returns the user's Convex ID for use in queries that need it.
  */
 export const currentUserId = query({
-  args: {},
-  handler: async (ctx) => {
-    return await getAuthUserId(ctx);
+  args: { email: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const email = args.email;
+    if (!email) return null;
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email.toLowerCase()))
+      .first();
+    return user?._id ?? null;
+  },
+});
+
+/**
+ * Internal query to get user by email (used by actions).
+ */
+export const getUserByEmailInternal = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
   },
 });
 
 /**
  * Public query to check if a user has an authAccounts entry.
  * Used by forgot password page to show helpful message if user doesn't exist.
+ * NOTE: This is legacy - with JWT auth, passwords are managed in Marketing.
  */
 export const checkAuthAccountExistsPublic = query({
   args: { email: v.string() },
@@ -52,14 +90,18 @@ export const checkAuthAccountExistsPublic = query({
 });
 
 /**
- * Mark onboarding as complete for the current user.
+ * Mark onboarding as complete for a user by email.
  */
 export const completeOnboarding = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-    await ctx.db.patch(userId, { onboardingComplete: true });
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
+
+    if (!user) throw new Error("User not found");
+    await ctx.db.patch(user._id, { onboardingComplete: true });
   },
 });
 
@@ -72,17 +114,17 @@ export const completeOnboarding = mutation({
  * Returns cached result if within 5-minute window.
  */
 export const verifyCentralAccess = action({
-  args: {},
-  handler: async (ctx): Promise<{
+  args: { email: v.string() },
+  handler: async (ctx, args): Promise<{
     hasAccess: boolean;
     reason: string;
     subscriptionStatus: string | null;
     cached: boolean;
   }> => {
-    // Get current user
-    const user = await ctx.runQuery(api.users.currentUser, {});
+    // Get user by email
+    const user = await ctx.runQuery(internal.users.getUserByEmailInternal, { email: args.email });
 
-    if (!user || !user.email) {
+    if (!user) {
       return {
         hasAccess: false,
         reason: "not_authenticated",
@@ -120,7 +162,7 @@ export const verifyCentralAccess = action({
 
     try {
       const url = new URL("/verifyAppAccess", CENTRAL_ACCOUNTS_URL);
-      url.searchParams.set("email", user.email);
+      url.searchParams.set("email", args.email);
       url.searchParams.set("app", "safereads");
       url.searchParams.set("key", adminKey);
 
@@ -157,14 +199,15 @@ export const verifyCentralAccess = action({
 
       // Sync local subscription status with central if different
       if (result.subscriptionStatus && result.subscriptionStatus !== user.subscriptionStatus) {
-        await ctx.runMutation(api.users.syncFromCentralAccess, {
+        await ctx.runMutation(internal.users.syncFromCentralAccessInternal, {
+          email: args.email,
           subscriptionStatus: result.subscriptionStatus,
           subscriptionEndsAt: result.subscriptionEndsAt,
           trialExpiresAt: result.trialExpiresAt,
         });
       } else {
         // Just update the cache expiry
-        await ctx.runMutation(api.users.updateCentralAccessCache, {});
+        await ctx.runMutation(internal.users.updateCentralAccessCacheInternal, { email: args.email });
       }
 
       return {
@@ -188,19 +231,24 @@ export const verifyCentralAccess = action({
 });
 
 /**
- * Sync local subscription status from central service response.
+ * Internal mutation to sync local subscription status from central service response.
  * Called by verifyCentralAccess action when central status differs.
  */
-export const syncFromCentralAccess = mutation({
+export const syncFromCentralAccessInternal = internalMutation({
   args: {
+    email: v.string(),
     subscriptionStatus: v.string(),
     subscriptionEndsAt: v.optional(v.number()),
     trialExpiresAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
     }
 
     const now = Date.now();
@@ -213,7 +261,7 @@ export const syncFromCentralAccess = mutation({
       ? (args.subscriptionStatus as SubscriptionStatus)
       : "trial";
 
-    await ctx.db.patch(userId, {
+    await ctx.db.patch(user._id, {
       subscriptionStatus: status,
       subscriptionCurrentPeriodEnd: args.subscriptionEndsAt,
       trialExpiresAt: args.trialExpiresAt,
@@ -225,31 +273,22 @@ export const syncFromCentralAccess = mutation({
 });
 
 /**
- * Internal query to get user by email (used by HTTP endpoints).
+ * Internal mutation to update the central access cache expiry without changing subscription status.
  */
-export const getUserByEmailInternal = internalQuery({
+export const updateCentralAccessCacheInternal = internalMutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
       .first();
-  },
-});
 
-/**
- * Update the central access cache expiry without changing subscription status.
- */
-export const updateCentralAccessCache = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
+    if (!user) {
+      throw new Error("User not found");
     }
 
     const now = Date.now();
-    await ctx.db.patch(userId, {
+    await ctx.db.patch(user._id, {
       centralAccessCacheExpiry: now + CENTRAL_ACCESS_CACHE_MS,
     });
 
@@ -348,7 +387,7 @@ export const syncOAuthUserWithCentral = action({
       const effectiveStatus = isEntitled ? centralUser.subscriptionStatus : "inactive";
 
       // Sync the subscription status to local user
-      await ctx.runMutation(api.users.syncOAuthUserStatus, {
+      await ctx.runMutation(internal.users.syncOAuthUserStatusInternal, {
         email: args.email,
         subscriptionStatus: effectiveStatus,
         trialExpiresAt: centralUser.trialExpiresAt,
@@ -376,10 +415,10 @@ export const syncOAuthUserWithCentral = action({
 });
 
 /**
- * Sync OAuth user's subscription status from central.
+ * Internal mutation to sync OAuth user's subscription status from central.
  * Called by syncOAuthUserWithCentral action.
  */
-export const syncOAuthUserStatus = mutation({
+export const syncOAuthUserStatusInternal = internalMutation({
   args: {
     email: v.string(),
     subscriptionStatus: v.string(),
@@ -393,7 +432,7 @@ export const syncOAuthUserStatus = mutation({
       .first();
 
     if (!user) {
-      console.error("[syncOAuthUserStatus] User not found:", args.email);
+      console.error("[syncOAuthUserStatusInternal] User not found:", args.email);
       return { success: false, reason: "user_not_found" };
     }
 
@@ -413,7 +452,7 @@ export const syncOAuthUserStatus = mutation({
       centralAccessCacheExpiry: now + CENTRAL_ACCESS_CACHE_MS,
     });
 
-    console.log(`[syncOAuthUserStatus] Updated ${args.email} to ${status}`);
+    console.log(`[syncOAuthUserStatusInternal] Updated ${args.email} to ${status}`);
     return { success: true };
   },
 });

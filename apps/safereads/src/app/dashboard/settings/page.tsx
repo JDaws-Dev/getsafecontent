@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../../../convex/_generated/api";
 import {
   Crown,
@@ -26,9 +26,12 @@ import {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { signOut } = useAuthActions();
-  const user = useQuery(api.users.currentUser);
-  const details = useQuery(api.subscriptions.getDetails) as {
+  const { logout, user: authUser } = useAuth();
+  const user = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
+  const details = useQuery(
+    api.subscriptions.getDetails,
+    authUser?.email ? { email: authUser.email } : "skip"
+  ) as {
     isSubscribed: boolean;
     status: string | null;
     currentPeriodEnd: number | null;
@@ -48,9 +51,16 @@ export default function SettingsPage() {
   const [deleteError, setDeleteError] = useState("");
 
   async function handleUpgrade() {
+    if (!authUser?.email) {
+      return;
+    }
     setCheckoutLoading(true);
     try {
-      const res = await fetch("/api/stripe/checkout", { method: "POST" });
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: authUser.email }),
+      });
       const data = (await res.json()) as { url?: string };
       if (data.url) {
         window.location.href = data.url;
@@ -63,9 +73,16 @@ export default function SettingsPage() {
   }
 
   async function handleManage() {
+    if (!authUser?.email) {
+      return;
+    }
     setPortalLoading(true);
     try {
-      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: authUser.email }),
+      });
       const data = (await res.json()) as { url?: string };
       if (data.url) {
         window.location.href = data.url;
@@ -87,8 +104,11 @@ export default function SettingsPage() {
     setDeleteError("");
 
     try {
-      await deleteOwnAccount();
-      await signOut();
+      if (!authUser?.email) {
+        throw new Error("Not authenticated");
+      }
+      await deleteOwnAccount({ email: authUser.email });
+      await logout();
       router.push("/");
     } catch (error) {
       console.error("Failed to delete account:", error);
@@ -399,7 +419,7 @@ export default function SettingsPage() {
       {/* Logout Button */}
       <button
         onClick={async () => {
-          await signOut();
+          await logout();
           router.push("/");
         }}
         className="flex w-full items-center justify-center gap-2 rounded-xl border border-parchment-200 bg-white px-4 py-3 text-sm font-medium text-ink-700 transition-colors hover:bg-parchment-50"

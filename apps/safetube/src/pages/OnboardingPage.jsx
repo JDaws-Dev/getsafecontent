@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useConvexAuth, useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const COLORS = [
   { name: 'red', class: 'bg-red-500', ring: 'ring-red-300' },
@@ -15,7 +16,7 @@ const COLORS = [
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading: sessionLoading } = useConvexAuth();
+  const { user: centralUser, isAuthenticated, isLoading: sessionLoading } = useAuth();
 
   const [step, setStep] = useState(1); // 1 = welcome, 2 = create kids
   const [kids, setKids] = useState([{ name: '', color: 'blue' }]);
@@ -23,8 +24,12 @@ export default function OnboardingPage() {
   const [showFamilyCodeModal, setShowFamilyCodeModal] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Get current user from Convex Auth
-  const currentUser = useQuery(api.userSync.getCurrentUser);
+  // Get local SafeTube user data by email
+  const localUser = useQuery(
+    api.userSync.getSafeTubeUserByEmail,
+    centralUser?.email ? { email: centralUser.email } : "skip"
+  );
+  const currentUser = localUser;
 
   // Build onboarding status from currentUser
   const onboardingStatus = currentUser !== undefined ? {

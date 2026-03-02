@@ -1,28 +1,20 @@
 import { v } from "convex/values";
 import { query, mutation, internalMutation } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
 
 const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 /**
- * Check whether the current user can run an analysis.
+ * Check whether a user can run an analysis.
  * Trial users get 7 days; subscribed/lifetime users get unlimited.
  */
 export const checkAccess = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return {
-        hasAccess: false,
-        isSubscribed: false,
-        status: null,
-        trialDaysRemaining: 0,
-        analysisCount: 0,
-      };
-    }
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
 
-    const user = await ctx.db.get(userId);
     if (!user) {
       return {
         hasAccess: false,
@@ -63,21 +55,13 @@ export const checkAccess = query({
  * Get subscription details for the settings/account UI.
  */
 export const getDetails = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      return {
-        isSubscribed: false,
-        status: null,
-        currentPeriodEnd: null,
-        trialExpiresAt: null,
-        trialDaysRemaining: 0,
-        analysisCount: 0,
-      };
-    }
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
 
-    const user = await ctx.db.get(userId);
     if (!user) {
       return {
         isSubscribed: false,
@@ -112,18 +96,19 @@ export const getDetails = query({
 });
 
 /**
- * Increment the analysis count for the current user after a successful analysis.
+ * Increment the analysis count for a user after a successful analysis.
  */
 export const incrementAnalysisCount = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
 
-    const user = await ctx.db.get(userId);
     if (!user) throw new Error("User not found");
 
-    await ctx.db.patch(userId, {
+    await ctx.db.patch(user._id, {
       analysisCount: (user.analysisCount ?? 0) + 1,
     });
   },
@@ -164,18 +149,23 @@ export const updateSubscription = mutation({
 });
 
 /**
- * Store the Stripe customer ID on the current user's record.
+ * Store the Stripe customer ID on a user's record.
  * Called after creating a Stripe customer during checkout.
  */
 export const setStripeCustomerId = mutation({
   args: {
+    email: v.string(),
     stripeCustomerId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
 
-    await ctx.db.patch(userId, {
+    if (!user) throw new Error("User not found");
+
+    await ctx.db.patch(user._id, {
       stripeCustomerId: args.stripeCustomerId,
     });
   },

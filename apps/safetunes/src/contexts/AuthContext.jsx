@@ -33,6 +33,7 @@ const USER_KEY = 'safetunes_user';
  * @property {boolean} isAuthenticated
  * @property {boolean} isLoading
  * @property {function(string, string): Promise<{success: boolean, error?: string, code?: string}>} login
+ * @property {function(): void} loginWithGoogle - Redirects to Marketing OAuth flow
  * @property {function(): void} logout
  * @property {function(string): Promise<{success: boolean, error?: string, code?: string}>} requestPasswordReset
  * @property {function(string, string, string): Promise<{success: boolean, error?: string}>} resetPassword
@@ -41,6 +42,9 @@ const USER_KEY = 'safetunes_user';
 
 const AuthContext = createContext(null);
 
+// Marketing OAuth URL
+const MARKETING_OAUTH_URL = 'https://getsafefamily.com/oauth';
+
 /**
  * AuthProvider component that manages JWT auth state
  */
@@ -48,6 +52,27 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
+
+  /**
+   * Handle OAuth callback token from URL params
+   */
+  const handleOAuthCallback = useCallback((tokenParam, expiresAtParam) => {
+    if (!tokenParam) return false;
+
+    console.log('[AuthContext] Handling OAuth callback token');
+
+    // Store the token
+    localStorage.setItem(JWT_KEY, tokenParam);
+    setToken(tokenParam);
+
+    // Clean up URL params
+    const url = new URL(window.location.href);
+    url.searchParams.delete('token');
+    url.searchParams.delete('expiresAt');
+    window.history.replaceState({}, '', url.toString());
+
+    return true;
+  }, []);
 
   /**
    * Verify the stored token and get fresh user data
@@ -116,9 +141,24 @@ export function AuthProvider({ children }) {
 
   /**
    * Initialize auth state on mount
+   * Also handles OAuth callback if token is in URL params
    */
   useEffect(() => {
     const initAuth = async () => {
+      // Check for OAuth callback token in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenParam = urlParams.get('token');
+      const expiresAtParam = urlParams.get('expiresAt');
+
+      if (tokenParam) {
+        // Handle OAuth callback
+        handleOAuthCallback(tokenParam, expiresAtParam);
+        await verifyAndRefresh(tokenParam);
+        setIsLoading(false);
+        return;
+      }
+
+      // Check for stored token
       const storedToken = localStorage.getItem(JWT_KEY);
 
       if (storedToken) {
@@ -130,7 +170,7 @@ export function AuthProvider({ children }) {
     };
 
     initAuth();
-  }, [verifyAndRefresh]);
+  }, [verifyAndRefresh, handleOAuthCallback]);
 
   /**
    * Log in with email and password
@@ -192,6 +232,21 @@ export function AuthProvider({ children }) {
     setToken(null);
     setUser(null);
     console.log('[AuthContext] Logged out');
+  }, []);
+
+  /**
+   * Redirect to Marketing's Google OAuth flow
+   * After OAuth completes, Marketing will redirect back with JWT
+   */
+  const loginWithGoogle = useCallback(() => {
+    // Build the return URL with the current path (so we return to the same page)
+    const returnTo = window.location.origin + '/login';
+    const oauthUrl = new URL(MARKETING_OAUTH_URL);
+    oauthUrl.searchParams.set('returnTo', returnTo);
+    oauthUrl.searchParams.set('app', 'SafeTunes');
+
+    console.log('[AuthContext] Redirecting to Marketing OAuth:', oauthUrl.toString());
+    window.location.href = oauthUrl.toString();
   }, []);
 
   /**
@@ -281,6 +336,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!user,
     isLoading,
     login,
+    loginWithGoogle,
     logout,
     requestPasswordReset,
     resetPassword,

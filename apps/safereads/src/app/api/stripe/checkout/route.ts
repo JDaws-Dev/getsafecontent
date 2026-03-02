@@ -1,10 +1,9 @@
-import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { fetchQuery, fetchMutation } from "convex/nextjs";
 import { api } from "../../../../../convex/_generated/api";
 import Stripe from "stripe";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     // Validate environment variables early
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
@@ -39,24 +38,22 @@ export async function POST() {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    let token: string | undefined;
+    // Get email from request body (with JWT auth, frontend sends user info)
+    let body: { email?: string } = {};
     try {
-      token = await convexAuthNextjsToken();
-    } catch (tokenError) {
-      console.error("Token retrieval error:", tokenError);
-      return NextResponse.json(
-        { error: "Authentication error", details: String(tokenError) },
-        { status: 401 }
-      );
+      body = await request.json();
+    } catch {
+      // If no body, continue (will fail on missing email)
     }
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized - no token" }, { status: 401 });
+    const email = body.email;
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
     let user;
     try {
-      user = await fetchQuery(api.users.currentUser, {}, { token });
+      user = await fetchQuery(api.users.getUserByEmail, { email });
     } catch (queryError) {
       console.error("User query error:", queryError);
       return NextResponse.json(
@@ -89,8 +86,7 @@ export async function POST() {
       }
       await fetchMutation(
         api.subscriptions.setStripeCustomerId,
-        { stripeCustomerId: customerId },
-        { token }
+        { email, stripeCustomerId: customerId }
       );
     }
 

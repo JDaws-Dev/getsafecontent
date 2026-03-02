@@ -8,11 +8,10 @@
  * @module
  */
 
-import type * as ResendOTPPasswordReset from "../ResendOTPPasswordReset.js";
 import type * as admin from "../admin.js";
 import type * as adminDashboard from "../adminDashboard.js";
 import type * as ai_channelReview from "../ai/channelReview.js";
-import type * as auth from "../auth.js";
+import type * as blockedSearches from "../blockedSearches.js";
 import type * as channelRequests from "../channelRequests.js";
 import type * as channels from "../channels.js";
 import type * as deleteUser from "../deleteUser.js";
@@ -20,6 +19,7 @@ import type * as emails from "../emails.js";
 import type * as extensionApi from "../extensionApi.js";
 import type * as grantLifetime from "../grantLifetime.js";
 import type * as http from "../http.js";
+import type * as httpRateLimit from "../httpRateLimit.js";
 import type * as kidPlaylists from "../kidPlaylists.js";
 import type * as kidProfiles from "../kidProfiles.js";
 import type * as provisionUser from "../provisionUser.js";
@@ -43,11 +43,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  ResendOTPPasswordReset: typeof ResendOTPPasswordReset;
   admin: typeof admin;
   adminDashboard: typeof adminDashboard;
   "ai/channelReview": typeof ai_channelReview;
-  auth: typeof auth;
+  blockedSearches: typeof blockedSearches;
   channelRequests: typeof channelRequests;
   channels: typeof channels;
   deleteUser: typeof deleteUser;
@@ -55,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   extensionApi: typeof extensionApi;
   grantLifetime: typeof grantLifetime;
   http: typeof http;
+  httpRateLimit: typeof httpRateLimit;
   kidPlaylists: typeof kidPlaylists;
   kidProfiles: typeof kidProfiles;
   provisionUser: typeof provisionUser;

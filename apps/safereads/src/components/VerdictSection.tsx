@@ -11,6 +11,7 @@ import { ReportButton } from "./ReportButton";
 import { ShareVerdictButton } from "./ShareVerdictButton";
 import { UpgradePrompt } from "./UpgradePrompt";
 import { useNotification } from "@/hooks/useNotification";
+import { useAuth } from "@/contexts/AuthContext";
 import { Sparkles } from "lucide-react";
 
 interface VerdictSectionProps {
@@ -19,8 +20,12 @@ interface VerdictSectionProps {
 }
 
 export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
+  const { user } = useAuth();
   const cachedAnalysis = useQuery(api.analyses.getByBook, { bookId });
-  const access = useQuery(api.subscriptions.checkAccess) as {
+  const access = useQuery(
+    api.subscriptions.checkAccess,
+    user?.email ? { email: user.email } : "skip"
+  ) as {
     hasAccess: boolean;
     isSubscribed: boolean;
     status: string | null;
@@ -47,10 +52,14 @@ export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
   }, []);
 
   async function handleAnalyze() {
+    if (!user?.email) {
+      setError("Please log in to analyze books.");
+      return;
+    }
     setAnalyzing(true);
     setError(null);
     try {
-      const result = await analyzeAction({ bookId });
+      const result = await analyzeAction({ bookId, email: user.email });
       setActionResult(result as typeof actionResult);
       notify(`SafeReads: ${bookTitle}`, {
         body: `Review complete \u2014 ${(result as { verdict: string }).verdict.replace("_", " ")}`,

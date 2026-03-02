@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "../../../convex/_generated/api";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Search,
   ScanBarcode,
@@ -27,6 +28,7 @@ const VERDICT_STYLES: Record<string, { bg: string; text: string; label: string }
 };
 
 export default function DashboardPage() {
+  const { user: authUser } = useAuth();
   const searchParams = useSearchParams();
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
@@ -37,8 +39,8 @@ export default function DashboardPage() {
       ? subscriptionParam
       : null;
 
-  const convexUser = useQuery(api.users.currentUser);
-  const userId = useQuery(api.users.currentUserId);
+  const convexUser = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
+  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
 
   const kids = useQuery(
     api.kids.listByUser,

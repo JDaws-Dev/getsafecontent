@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useConvexAuth } from 'convex/react';
-import { useQuery } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { useAuth } from '../contexts/AuthContext';
 import { useIsNativeApp } from '../hooks/useIsNativeApp';
 
 /**
@@ -19,18 +17,15 @@ import { useIsNativeApp } from '../hooks/useIsNativeApp';
 function SignupPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isAuthenticated, isLoading: isPending } = useConvexAuth();
+  const { user, isAuthenticated, isLoading: isPending } = useAuth();
   const isNativeApp = useIsNativeApp();
-
-  // Get current user to check if already logged in
-  const currentUser = useQuery(api.userSync.getCurrentUser);
 
   // Redirect to onboarding if already logged in
   useEffect(() => {
-    if (isAuthenticated && currentUser && !isPending) {
+    if (isAuthenticated && user && !isPending) {
       navigate('/onboarding');
     }
-  }, [isAuthenticated, currentUser, isPending, navigate]);
+  }, [isAuthenticated, user, isPending, navigate]);
 
   // Central signup URL
   const centralSignupUrl = 'https://getsafefamily.com/signup?app=safetunes';
