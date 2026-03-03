@@ -67,6 +67,9 @@ const APP_ENDPOINTS: Record<AppName, string> = {
   safereads: "https://exuberant-puffin-838.convex.site",
 };
 
+// Marketing central auth endpoint URL
+const MARKETING_ENDPOINT = "https://adamant-crow-705.convex.site";
+
 // Parse apps from metadata (comma-separated string or undefined for legacy bundles)
 function parseAppsFromMetadata(metadata: Stripe.Metadata | null): AppName[] {
   if (!metadata?.apps) {
@@ -128,6 +131,71 @@ type AppProvisionResult = {
   error?: string;
   attempts?: number;
 };
+
+/**
+ * Create or update user in the Marketing central database.
+ * This ensures users are tracked centrally even when using the legacy flow
+ * (direct Stripe checkout without going through the signup form first).
+ *
+ * Note: This does NOT create an authAccounts entry - users who signed up
+ * via direct checkout will need to use "Forgot Password" to set a password.
+ */
+async function createOrUpdateCentralUser(
+  email: string,
+  options: {
+    name?: string | null;
+    subscriptionStatus: "trial" | "active" | "lifetime";
+    apps: AppName[];
+    stripeCustomerId?: string | null;
+    subscriptionId?: string | null;
+  }
+): Promise<{ success: boolean; action?: string; error?: string }> {
+  if (!ADMIN_KEY) {
+    console.warn("[createOrUpdateCentralUser] ADMIN_API_KEY not set");
+    return { success: false, error: "ADMIN_API_KEY not configured" };
+  }
+
+  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const url = `${MARKETING_ENDPOINT}/createOrUpdateUser?key=${encodedKey}`;
+
+  const body = {
+    email,
+    name: options.name || undefined,
+    subscriptionStatus: options.subscriptionStatus,
+    entitledApps: options.apps,
+    stripeCustomerId: options.stripeCustomerId || undefined,
+    subscriptionId: options.subscriptionId || undefined,
+  };
+
+  try {
+    const response = await fetchWithTimeout(
+      url,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      },
+      PROVISION_TIMEOUT_MS
+    );
+
+    if (!response.ok) {
+      const responseBody = await response.text().catch(() => "");
+      console.error(`[createOrUpdateCentralUser] Failed for ${email}: HTTP ${response.status} - ${responseBody}`);
+      return { success: false, error: `HTTP ${response.status}` };
+    }
+
+    const result = await response.json();
+    console.log(`[createOrUpdateCentralUser] ${result.action || "processed"} central user: ${email}`);
+    return { success: true, action: result.action };
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      console.error(`[createOrUpdateCentralUser] Timeout for ${email}`);
+      return { success: false, error: `Timeout after ${PROVISION_TIMEOUT_MS}ms` };
+    }
+    console.error(`[createOrUpdateCentralUser] Error for ${email}:`, err);
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
 
 // Helper to fetch with timeout using AbortController
 async function fetchWithTimeout(
@@ -513,6 +581,10 @@ async function sendBundleSignupNotification(
     planType = "Monthly ($9.99/mo)";
   } else if (amountPaid >= 799) {
     planType = "2-App Monthly ($7.99/mo)";
+  } else if (amountPaid >= 499) {
+    planType = "Single App ($4.99/mo)";
+  } else if (amountPaid === 0) {
+    planType = "Free Trial";
   } else {
     planType = `Unknown ($${(amountPaid / 100).toFixed(2)})`;
   }
@@ -747,7 +819,9 @@ export async function POST(req: Request) {
           subscriptionId: session.subscription,
         };
 
-        if (isBundle && email) {
+        // Handle ALL checkout types (single app, 2-app bundle, 3-app bundle, yearly)
+        // Previously this only handled bundles (2+ apps), leaving single app signups broken
+        if (email && apps.length > 0) {
           // Extract Stripe metadata for provisioning
           const amountTotal = session.amount_total || 0;
           const customerName = session.customer_details?.name || null;
@@ -757,9 +831,35 @@ export async function POST(req: Request) {
           webhookContext.customerName = customerName;
           webhookContext.amountCents = amountTotal;
 
+          // Determine subscription status based on payment
+          // $0 payment with trial = trial status
+          // Any payment = active status
+          const isTrialStart = amountTotal === 0;
+          const subscriptionStatus = isTrialStart ? "trial" : "active";
+
+          // CRITICAL: Create/update user in Marketing central database
+          // This ensures the user exists in the central system regardless of flow
+          // (unified auth or legacy). Without this, users won't be tracked centrally
+          // and won't be able to manage their subscription in one place.
+          const centralResult = await createOrUpdateCentralUser(email, {
+            name: customerName,
+            subscriptionStatus,
+            apps,
+            stripeCustomerId,
+            subscriptionId,
+          });
+
+          if (!centralResult.success) {
+            console.error(`[checkout.session.completed] Failed to create central user for ${email}:`, centralResult.error);
+            // Don't fail the entire webhook - apps can still be provisioned
+            // The central user can be created later via admin tools
+          }
+
           // Grant access to selected apps only (with retry logic)
           // This will use the NEW provisioning flow if a centralUser with passwordHash exists,
           // or fall back to the LEGACY flow for users without central accounts.
+          // Note: We use "active" here because the apps don't distinguish trial vs active internally
+          // - they just check if the user has access. The Marketing central DB tracks trial status.
           const result = await grantAppAccess(email, apps, "active", {
             stripeCustomerId,
             subscriptionId,
@@ -822,8 +922,8 @@ export async function POST(req: Request) {
           isBundle,
         };
 
-        // Handle subscription status changes
-        if (isBundle) {
+        // Handle subscription status changes for ALL subscription types
+        if (newApps.length > 0) {
           // Get customer email from Stripe
           const customer = await getStripe().customers.retrieve(
             subscription.customer as string
@@ -885,7 +985,8 @@ export async function POST(req: Request) {
           isBundle,
         };
 
-        if (isBundle) {
+        // Handle ALL subscription cancellations
+        if (apps.length > 0) {
           // Get customer email and revoke access
           const customer = await getStripe().customers.retrieve(
             subscription.customer as string

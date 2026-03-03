@@ -89,7 +89,7 @@ export default function Hero() {
                 7-day free trial
               </span>
               <span className="hidden sm:inline">•</span>
-              <span>No credit card required</span>
+              <span>No charge until day 8</span>
               <span className="hidden sm:inline">•</span>
               <span>Cancel anytime</span>
             </div>

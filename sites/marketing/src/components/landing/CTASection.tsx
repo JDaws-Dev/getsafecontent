@@ -47,7 +47,7 @@ export default function CTASection() {
             </div>
 
             <p className="mt-6 text-sm text-slate-400">
-              No credit card required. 7-day free trial on all apps.
+              7-day free trial on all apps. Cancel anytime.
             </p>
           </div>
         </div>

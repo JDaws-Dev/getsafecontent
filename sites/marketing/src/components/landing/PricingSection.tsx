@@ -171,7 +171,7 @@ export default function PricingSection() {
                 </CheckoutButton>
 
                 <p className="mt-4 text-center text-sm text-navy/60 font-medium">
-                  No credit card required
+                  No charge until day 8 • Cancel anytime
                 </p>
 
                 {/* Money-back guarantee - prominent */}
