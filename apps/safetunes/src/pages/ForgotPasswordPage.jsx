@@ -36,8 +36,8 @@ function ForgotPasswordPage() {
         return;
       }
 
-      // Success - store email for reset page and show confirmation
-      localStorage.setItem('safetunes_reset_email', email);
+      // Success - store NORMALIZED email for reset page (must match what was sent to API)
+      localStorage.setItem('safetunes_reset_email', emailToSend);
       setSubmitted(true);
       setLoading(false);
     } catch (err) {

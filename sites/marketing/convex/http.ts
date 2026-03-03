@@ -1626,4 +1626,44 @@ http.route({
   }),
 });
 
+// Debug endpoint to check env vars - TEMPORARY
+http.route({
+  path: "/debugEnv",
+  method: "GET",
+  handler: httpAction(async (_ctx, request) => {
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+    const expectedKey = process.env.ADMIN_KEY;
+
+    if (!key || key !== expectedKey) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // List all env vars (names only, not values for security)
+    const envKeys = Object.keys(process.env || {});
+    const adminKey = process.env.ADMIN_KEY;
+    const resendKey = process.env.RESEND_API_KEY;
+    const envStatus = {
+      ADMIN_KEY_exists: !!adminKey,
+      ADMIN_KEY_length: adminKey?.length || 0,
+      ADMIN_KEY_prefix: adminKey?.substring(0, 5),
+      RESEND_API_KEY_exists: !!resendKey,
+      RESEND_API_KEY_length: resendKey?.length || 0,
+      RESEND_API_KEY_prefix: resendKey?.substring(0, 5),
+      RESEND_KEY: !!process.env.RESEND_KEY,
+      SITE_URL: !!process.env.SITE_URL,
+      AUTH_GOOGLE_ID: !!process.env.AUTH_GOOGLE_ID,
+      totalEnvVars: envKeys.length,
+    };
+
+    return new Response(JSON.stringify(envStatus), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
 export default http;
