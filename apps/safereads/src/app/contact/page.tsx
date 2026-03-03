@@ -24,10 +24,10 @@ export default function ContactPage() {
           The fastest way to reach us. We aim to respond within a few days.
         </p>
         <a
-          href="mailto:jedaws@gmail.com"
+          href="mailto:jeremiah@getsafefamily.com"
           className="mt-3 inline-block text-sm font-medium text-parchment-700 transition-colors hover:text-parchment-800"
         >
-          jedaws@gmail.com
+          jeremiah@getsafefamily.com
         </a>
       </div>
 

@@ -95,10 +95,10 @@ export default function PrivacyPage() {
             If you have questions about this policy or want to request data
             deletion, email us at{" "}
             <a
-              href="mailto:jedaws@gmail.com"
+              href="mailto:jeremiah@getsafefamily.com"
               className="text-parchment-700 hover:text-parchment-800"
             >
-              jedaws@gmail.com
+              jeremiah@getsafefamily.com
             </a>
             .
           </p>

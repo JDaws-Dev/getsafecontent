@@ -598,7 +598,7 @@ function FAQSection() {
           <p className="text-ink-500">
             Still have questions?{" "}
             <a
-              href="mailto:jedaws@gmail.com"
+              href="mailto:jeremiah@getsafefamily.com"
               className="font-medium text-parchment-700 underline underline-offset-2 hover:text-parchment-800"
             >
               Reach out to our team
