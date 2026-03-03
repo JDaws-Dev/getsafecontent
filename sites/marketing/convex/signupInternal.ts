@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery } from "./_generated/server";
+import { internalMutation, internalQuery, mutation } from "./_generated/server";
 
 /**
  * Internal Signup Mutations
@@ -460,6 +460,269 @@ export const getMigrationStatus = internalQuery({
       needingPasswordReset: needingReset.length,
       completedMigration: authAccounts.length - needingReset.length,
       usersNeedingReset,
+    };
+  },
+});
+
+/**
+ * Grant all apps to a user (keep their current subscription status)
+ *
+ * Used to upgrade early adopters to have access to all apps
+ * without changing their payment status.
+ */
+export const grantAllApps = mutation({
+  args: {
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+
+    // Find the user
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (!user) {
+      console.log(`[grantAllApps] User not found: ${email}`);
+      return {
+        success: false,
+        error: "USER_NOT_FOUND",
+        email,
+      };
+    }
+
+    // Update entitledApps to all apps
+    await ctx.db.patch(user._id, {
+      entitledApps: [...ALL_APPS] as AppType[],
+    });
+
+    console.log(`[grantAllApps] Updated ${email} to all apps (status: ${user.subscriptionStatus})`);
+
+    return {
+      success: true,
+      email,
+      subscriptionStatus: user.subscriptionStatus,
+      entitledApps: [...ALL_APPS],
+    };
+  },
+});
+
+/**
+ * Ensure a user exists with all apps access
+ *
+ * If user exists: updates their entitledApps to all apps (keeps status)
+ * If user doesn't exist: creates them with active status and all apps
+ *
+ * Used to onboard early adopter Stripe customers to the central auth system.
+ */
+export const ensureUserWithAllApps = mutation({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+    subscriptionStatus: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+    const now = Date.now();
+
+    // Check if user exists
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (existingUser) {
+      // User exists - just update entitledApps
+      await ctx.db.patch(existingUser._id, {
+        entitledApps: [...ALL_APPS] as AppType[],
+      });
+
+      console.log(`[ensureUserWithAllApps] Updated existing user ${email} to all apps`);
+
+      return {
+        success: true,
+        action: "updated",
+        email,
+        subscriptionStatus: existingUser.subscriptionStatus,
+        entitledApps: [...ALL_APPS],
+      };
+    }
+
+    // User doesn't exist - create them
+    const status = (args.subscriptionStatus || "active") as SubscriptionStatus;
+
+    const userId = await ctx.db.insert("users", {
+      email,
+      name: args.name,
+      subscriptionStatus: status,
+      entitledApps: [...ALL_APPS] as AppType[],
+      onboardingCompleted: {
+        safetunes: false,
+        safetube: false,
+        safereads: false,
+      },
+      createdAt: now,
+      lastLoginAt: now,
+    });
+
+    console.log(`[ensureUserWithAllApps] Created new user ${email} with status ${status} and all apps`);
+
+    return {
+      success: true,
+      action: "created",
+      userId,
+      email,
+      subscriptionStatus: status,
+      entitledApps: [...ALL_APPS],
+    };
+  },
+});
+
+/**
+ * Create or update a central user from Stripe webhook
+ *
+ * This is called by the webhook when a user completes checkout WITHOUT
+ * first creating a central account (legacy flow). It creates a user record
+ * in the central database so their subscription can be tracked.
+ *
+ * NOTE: This does NOT create an authAccounts entry because the user
+ * hasn't set a password yet. They will need to use "Forgot Password"
+ * or sign up again with email/password to set one.
+ *
+ * @param email - User's email from Stripe
+ * @param name - User's name from Stripe (optional)
+ * @param subscriptionStatus - active, trial, lifetime
+ * @param entitledApps - Which apps the user has access to
+ * @param stripeCustomerId - Stripe customer ID
+ * @param subscriptionId - Stripe subscription ID
+ */
+export const createOrUpdateUserFromWebhook = internalMutation({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+    subscriptionStatus: v.union(
+      v.literal("trial"),
+      v.literal("active"),
+      v.literal("lifetime")
+    ),
+    entitledApps: v.array(
+      v.union(
+        v.literal("safetunes"),
+        v.literal("safetube"),
+        v.literal("safereads")
+      )
+    ),
+    stripeCustomerId: v.optional(v.string()),
+    subscriptionId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+    const now = Date.now();
+
+    // Check if user already exists
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (existingUser) {
+      // User exists - update their subscription info
+      await ctx.db.patch(existingUser._id, {
+        subscriptionStatus: args.subscriptionStatus,
+        entitledApps: args.entitledApps as AppType[],
+        stripeCustomerId: args.stripeCustomerId,
+        stripeSubscriptionId: args.subscriptionId,
+        // Clear trial fields if now active/lifetime
+        ...(args.subscriptionStatus !== "trial" && {
+          trialStartedAt: undefined,
+          trialExpiresAt: undefined,
+        }),
+      });
+
+      // Log the event
+      await ctx.db.insert("subscriptionEvents", {
+        userId: existingUser._id,
+        email,
+        eventType: "subscription.updated",
+        eventData: JSON.stringify({
+          source: "webhook",
+          subscriptionStatus: args.subscriptionStatus,
+          entitledApps: args.entitledApps,
+        }),
+        subscriptionStatus: args.subscriptionStatus,
+        stripeCustomerId: args.stripeCustomerId,
+        stripeSubscriptionId: args.subscriptionId,
+        timestamp: now,
+      });
+
+      console.log(
+        `[createOrUpdateUserFromWebhook] Updated existing user: ${email} to ${args.subscriptionStatus}`
+      );
+
+      return {
+        success: true,
+        action: "updated",
+        userId: existingUser._id,
+        email,
+        subscriptionStatus: args.subscriptionStatus,
+        entitledApps: args.entitledApps,
+      };
+    }
+
+    // User doesn't exist - create them
+    // Note: No authAccounts entry since they haven't set a password
+    const userId = await ctx.db.insert("users", {
+      email,
+      name: args.name,
+      subscriptionStatus: args.subscriptionStatus,
+      // Trial gets trial timestamps
+      ...(args.subscriptionStatus === "trial" && {
+        trialStartedAt: now,
+        trialExpiresAt: now + TRIAL_DURATION_MS,
+      }),
+      entitledApps: args.entitledApps as AppType[],
+      onboardingCompleted: {
+        safetunes: false,
+        safetube: false,
+        safereads: false,
+      },
+      stripeCustomerId: args.stripeCustomerId,
+      stripeSubscriptionId: args.subscriptionId,
+      createdAt: now,
+    });
+
+    // Log the event
+    await ctx.db.insert("subscriptionEvents", {
+      userId,
+      email,
+      eventType: "signup.from_webhook",
+      eventData: JSON.stringify({
+        source: "webhook",
+        subscriptionStatus: args.subscriptionStatus,
+        entitledApps: args.entitledApps,
+      }),
+      subscriptionStatus: args.subscriptionStatus,
+      stripeCustomerId: args.stripeCustomerId,
+      stripeSubscriptionId: args.subscriptionId,
+      timestamp: now,
+    });
+
+    console.log(
+      `[createOrUpdateUserFromWebhook] Created new user: ${email} with ${args.subscriptionStatus}`
+    );
+
+    return {
+      success: true,
+      action: "created",
+      userId,
+      email,
+      subscriptionStatus: args.subscriptionStatus,
+      entitledApps: args.entitledApps,
+      trialExpiresAt:
+        args.subscriptionStatus === "trial"
+          ? now + TRIAL_DURATION_MS
+          : undefined,
     };
   },
 });

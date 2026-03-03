@@ -1626,6 +1626,131 @@ http.route({
   }),
 });
 
+/**
+ * Create Or Update User From Webhook Endpoint
+ *
+ * Creates or updates a user in the central database when they complete checkout.
+ * This is called by the Stripe webhook to ensure users are tracked centrally
+ * even when using the legacy flow (direct Stripe checkout without signup form).
+ *
+ * POST /createOrUpdateUser?key=API_KEY
+ * Body: {
+ *   email: string,
+ *   name?: string,
+ *   subscriptionStatus: "trial" | "active" | "lifetime",
+ *   entitledApps: string[],
+ *   stripeCustomerId?: string,
+ *   subscriptionId?: string
+ * }
+ */
+http.route({
+  path: "/createOrUpdateUser",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key from query params
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+    const expectedKey = process.env.ADMIN_KEY;
+
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    try {
+      const body = await request.json();
+
+      // Validate required fields
+      if (!body.email || typeof body.email !== "string") {
+        return new Response(
+          JSON.stringify({ success: false, error: "Email is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      if (!body.subscriptionStatus) {
+        return new Response(
+          JSON.stringify({ success: false, error: "subscriptionStatus is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      const validStatuses = ["trial", "active", "lifetime"];
+      if (!validStatuses.includes(body.subscriptionStatus)) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: `Invalid subscriptionStatus. Must be one of: ${validStatuses.join(", ")}`,
+          }),
+          { status: 400, headers }
+        );
+      }
+
+      if (!body.entitledApps || !Array.isArray(body.entitledApps)) {
+        return new Response(
+          JSON.stringify({ success: false, error: "entitledApps array is required" }),
+          { status: 400, headers }
+        );
+      }
+
+      const validApps = ["safetunes", "safetube", "safereads"];
+      if (!body.entitledApps.every((a: string) => validApps.includes(a))) {
+        return new Response(
+          JSON.stringify({ success: false, error: "entitledApps contains invalid app names" }),
+          { status: 400, headers }
+        );
+      }
+
+      const { internal } = await import("./_generated/api");
+
+      const result = await ctx.runMutation(internal.signupInternal.createOrUpdateUserFromWebhook, {
+        email: body.email,
+        name: body.name,
+        subscriptionStatus: body.subscriptionStatus,
+        entitledApps: body.entitledApps,
+        stripeCustomerId: body.stripeCustomerId,
+        subscriptionId: body.subscriptionId,
+      });
+
+      return new Response(JSON.stringify(result), {
+        status: result.success ? 200 : 400,
+        headers,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      console.error("[createOrUpdateUser] Error:", error);
+      return new Response(
+        JSON.stringify({ success: false, error: message }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/createOrUpdateUser",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
 // Debug endpoint to check env vars - TEMPORARY
 http.route({
   path: "/debugEnv",

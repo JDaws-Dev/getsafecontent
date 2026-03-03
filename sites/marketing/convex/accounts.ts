@@ -1177,3 +1177,72 @@ export const markProvisioned = internalMutation({
     return { success: true };
   },
 });
+
+/**
+ * Grant all apps to a user or create them if they don't exist
+ *
+ * Used to upgrade early adopters to have access to all apps.
+ * Keeps their current subscription status if they exist.
+ */
+export const grantAllAppsToUser = mutation({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+    subscriptionStatus: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+    const now = Date.now();
+
+    // Check if user exists
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (existingUser) {
+      // User exists - just update entitledApps
+      await ctx.db.patch(existingUser._id, {
+        entitledApps: [...ALL_APPS] as AppType[],
+      });
+
+      console.log(`[grantAllAppsToUser] Updated existing user ${email} to all apps`);
+
+      return {
+        success: true,
+        action: "updated",
+        email,
+        subscriptionStatus: existingUser.subscriptionStatus,
+        entitledApps: [...ALL_APPS],
+      };
+    }
+
+    // User doesn't exist - create them
+    const status = (args.subscriptionStatus || "active") as SubscriptionStatus;
+
+    const userId = await ctx.db.insert("users", {
+      email,
+      name: args.name,
+      subscriptionStatus: status,
+      entitledApps: [...ALL_APPS] as AppType[],
+      onboardingCompleted: {
+        safetunes: false,
+        safetube: false,
+        safereads: false,
+      },
+      createdAt: now,
+      lastLoginAt: now,
+    });
+
+    console.log(`[grantAllAppsToUser] Created new user ${email} with status ${status} and all apps`);
+
+    return {
+      success: true,
+      action: "created",
+      userId,
+      email,
+      subscriptionStatus: status,
+      entitledApps: [...ALL_APPS],
+    };
+  },
+});

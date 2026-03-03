@@ -8,30 +8,30 @@ export function RevenueCard({ stats }: RevenueStatsCardProps) {
   const { mrr, arr, breakdown, totalPaying, totalFree, trialConversionRate } = stats;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-      <div className="px-5 py-4 border-b border-gray-100">
-        <h2 className="font-semibold text-gray-900">Revenue Dashboard</h2>
-        <p className="text-sm text-gray-500">Monthly and annual recurring revenue</p>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+        <h2 className="font-semibold text-gray-900 dark:text-white">Revenue Dashboard</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Monthly and annual recurring revenue</p>
       </div>
 
       <div className="p-5 space-y-6">
         {/* Primary metrics */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-            <p className="text-sm text-green-600 font-medium">MRR</p>
-            <p className="text-3xl font-bold text-green-700">${mrr.toFixed(2)}</p>
-            <p className="text-xs text-green-600 mt-1">Monthly Recurring Revenue</p>
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl p-4 border border-green-100 dark:border-green-800/50">
+            <p className="text-sm text-green-600 dark:text-green-400 font-medium">MRR</p>
+            <p className="text-3xl font-bold text-green-700 dark:text-green-300">${mrr.toFixed(2)}</p>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-1">Monthly Recurring Revenue</p>
           </div>
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-            <p className="text-sm text-blue-600 font-medium">ARR</p>
-            <p className="text-3xl font-bold text-blue-700">${arr.toFixed(2)}</p>
-            <p className="text-xs text-blue-600 mt-1">Annual Recurring Revenue</p>
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl p-4 border border-blue-100 dark:border-blue-800/50">
+            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">ARR</p>
+            <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">${arr.toFixed(2)}</p>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Annual Recurring Revenue</p>
           </div>
         </div>
 
         {/* Subscriber breakdown */}
         <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Revenue by Plan</h3>
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Revenue by Plan</h3>
           <div className="space-y-2">
             <BreakdownRow
               label="3-App Bundle (Monthly)"
@@ -73,29 +73,29 @@ export function RevenueCard({ stats }: RevenueStatsCardProps) {
         </div>
 
         {/* Non-revenue users */}
-        <div className="pt-4 border-t border-gray-100">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">User Breakdown</h3>
+        <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">User Breakdown</h3>
           <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-xl font-bold text-green-600">{totalPaying}</p>
-              <p className="text-xs text-gray-500">Paying</p>
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">{totalPaying}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Paying</p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-xl font-bold text-purple-600">{breakdown.lifetime}</p>
-              <p className="text-xs text-gray-500">Lifetime</p>
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+              <p className="text-xl font-bold text-purple-600 dark:text-purple-400">{breakdown.lifetime}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Lifetime</p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-xl font-bold text-blue-600">{breakdown.trial}</p>
-              <p className="text-xs text-gray-500">Trial</p>
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{breakdown.trial}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Trial</p>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-sm">
-            <span className="text-gray-500">Expired trials</span>
-            <span className="font-medium text-red-600">{breakdown.expired}</span>
+            <span className="text-gray-500 dark:text-gray-400">Expired trials</span>
+            <span className="font-medium text-red-600 dark:text-red-400">{breakdown.expired}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Trial conversion rate</span>
-            <span className="font-medium text-green-600">{trialConversionRate.toFixed(1)}%</span>
+            <span className="text-gray-500 dark:text-gray-400">Trial conversion rate</span>
+            <span className="font-medium text-green-600 dark:text-green-400">{trialConversionRate.toFixed(1)}%</span>
           </div>
         </div>
       </div>
@@ -121,12 +121,12 @@ function BreakdownRow({
     <div className="flex items-center justify-between py-1">
       <div className="flex items-center gap-2">
         <span className={`w-2 h-2 rounded-full ${color}`} />
-        <span className="text-sm text-gray-600">{label}</span>
-        <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+        <span className="text-sm text-gray-600 dark:text-gray-300">{label}</span>
+        <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
           {count}
         </span>
       </div>
-      <span className="text-sm font-medium text-gray-900">
+      <span className="text-sm font-medium text-gray-900 dark:text-white">
         ${mrr.toFixed(2)}/mo
       </span>
     </div>

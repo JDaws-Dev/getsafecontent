@@ -57,14 +57,14 @@ export function NewsletterCard() {
     .slice(0, 5);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">Newsletter Subscribers</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <h2 className="font-semibold text-gray-900 dark:text-white">Newsletter Subscribers</h2>
         <a
           href="https://resend.com/audiences"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-indigo-600 hover:text-indigo-700"
+          className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
         >
           Manage in Resend →
         </a>
@@ -72,40 +72,40 @@ export function NewsletterCard() {
 
       <div className="p-5">
         {loading ? (
-          <div className="text-center py-4 text-gray-500">Loading...</div>
+          <div className="text-center py-4 text-gray-500 dark:text-gray-400">Loading...</div>
         ) : error ? (
-          <div className="text-center py-4 text-red-500">{error}</div>
+          <div className="text-center py-4 text-red-500 dark:text-red-400">{error}</div>
         ) : (
           <>
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-indigo-50 rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-indigo-600">{activeSubscribers.length}</p>
-                <p className="text-sm text-indigo-600/70">Active Subscribers</p>
+              <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{activeSubscribers.length}</p>
+                <p className="text-sm text-indigo-600/70 dark:text-indigo-400/70">Active Subscribers</p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-gray-600">{total}</p>
-                <p className="text-sm text-gray-500">Total Signups</p>
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold text-gray-600 dark:text-gray-300">{total}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Total Signups</p>
               </div>
             </div>
 
             {/* Recent Subscribers */}
             {recentSubscribers.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Recent Signups</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recent Signups</p>
                 <div className="space-y-2">
                   {recentSubscribers.map((sub) => (
                     <div
                       key={sub.id}
-                      className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                      className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0"
                     >
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
                           {sub.firstName || "—"}{" "}
-                          <span className="text-gray-500 font-normal">{sub.email}</span>
+                          <span className="text-gray-500 dark:text-gray-400 font-normal">{sub.email}</span>
                         </p>
                       </div>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
                         {new Date(sub.createdAt).toLocaleDateString()}
                       </span>
                     </div>
@@ -115,7 +115,7 @@ export function NewsletterCard() {
             )}
 
             {subscribers.length === 0 && (
-              <p className="text-center text-gray-500 py-4">No subscribers yet</p>
+              <p className="text-center text-gray-500 dark:text-gray-400 py-4">No subscribers yet</p>
             )}
           </>
         )}

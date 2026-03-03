@@ -20,6 +20,7 @@ import type * as migrations from "../migrations.js";
 import type * as passwordReset from "../passwordReset.js";
 import type * as sendEmail from "../sendEmail.js";
 import type * as signupInternal from "../signupInternal.js";
+import type * as tempMigration from "../tempMigration.js";
 import type * as testEnv from "../testEnv.js";
 import type * as verifyCentralCredentials from "../verifyCentralCredentials.js";
 
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   passwordReset: typeof passwordReset;
   sendEmail: typeof sendEmail;
   signupInternal: typeof signupInternal;
+  tempMigration: typeof tempMigration;
   testEnv: typeof testEnv;
   verifyCentralCredentials: typeof verifyCentralCredentials;
 }>;

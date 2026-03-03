@@ -17,14 +17,14 @@ const appIcons = {
 };
 
 const statusColors: Record<string, string> = {
-  active: "bg-green-100 text-green-700",
-  trial: "bg-blue-100 text-blue-700",
-  lifetime: "bg-purple-100 text-purple-700",
-  cancelled: "bg-gray-100 text-gray-600",
-  canceled: "bg-gray-100 text-gray-600",
-  expired: "bg-red-100 text-red-700",
-  past_due: "bg-orange-100 text-orange-700",
-  unknown: "bg-gray-100 text-gray-600",
+  active: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+  trial: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+  lifetime: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300",
+  cancelled: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
+  canceled: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
+  expired: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+  past_due: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300",
+  unknown: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
 };
 
 function formatDate(timestamp: number | null): string {
@@ -46,20 +46,20 @@ export function RecentSignups({ users }: RecentSignupsProps) {
   const recentUsers = users.slice(0, 10);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-      <div className="px-5 py-4 border-b border-gray-100">
-        <h2 className="font-semibold text-gray-900">Recent Signups</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+        <h2 className="font-semibold text-gray-900 dark:text-white">Recent Signups</h2>
       </div>
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-gray-100 dark:divide-gray-700">
         {recentUsers.length === 0 ? (
-          <div className="px-5 py-8 text-center text-gray-500">
+          <div className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
             No users found
           </div>
         ) : (
           recentUsers.map((user) => (
             <div
               key={`${user.app}-${user.email}`}
-              className="px-5 py-3 flex items-center gap-3 hover:bg-gray-50"
+              className="px-5 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
             >
               <div
                 className={`w-8 h-8 rounded-lg ${appColors[user.app]} flex items-center justify-center text-white text-sm flex-shrink-0`}
@@ -67,10 +67,10 @@ export function RecentSignups({ users }: RecentSignupsProps) {
                 {appIcons[user.app]}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">
+                <p className="font-medium text-gray-900 dark:text-white truncate">
                   {user.name || user.email}
                 </p>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span
@@ -78,7 +78,7 @@ export function RecentSignups({ users }: RecentSignupsProps) {
                 >
                   {user.subscriptionStatus}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 dark:text-gray-500">
                   {formatDate(user.createdAt)}
                 </span>
               </div>
