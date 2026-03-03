@@ -122,18 +122,20 @@ export default httpAction(async (ctx, request) => {
           console.error("[Webhook] Failed to send confirmation email:", emailErr);
         }
 
-        try {
-          await ctx.runAction(api.emails.sendAdminNotification, {
-            userEmail: customerEmail,
-            userName: session.customer_details?.name || customerEmail.split('@')[0],
-            subscriptionType: isTrial ? "trial" : "paid",
-            subscriptionId: session.subscription as string,
-            stripeCustomerId: session.customer as string,
-            amountPaid: session.amount_total,
-          });
-        } catch (emailErr) {
-          console.error("[Webhook] Failed to send admin notification:", emailErr);
-        }
+        // Admin notification now handled centrally by Marketing webhook
+        // See sites/marketing/src/app/api/stripe/webhook/route.ts
+        // try {
+        //   await ctx.runAction(api.emails.sendAdminNotification, {
+        //     userEmail: customerEmail,
+        //     userName: session.customer_details?.name || customerEmail.split('@')[0],
+        //     subscriptionType: isTrial ? "trial" : "paid",
+        //     subscriptionId: session.subscription as string,
+        //     stripeCustomerId: session.customer as string,
+        //     amountPaid: session.amount_total,
+        //   });
+        // } catch (emailErr) {
+        //   console.error("[Webhook] Failed to send admin notification:", emailErr);
+        // }
         break;
       }
 

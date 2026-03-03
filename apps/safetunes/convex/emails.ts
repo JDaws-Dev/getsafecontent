@@ -624,19 +624,21 @@ export const sendTrialSignupEmails = action({
 
     const results = { admin: false, user: false };
 
-    try {
-      // Send admin notification
-      const adminResult = await resend.emails.send({
-        from: "SafeTunes Admin <notifications@getsafetunes.com>",
-        to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
-        subject: `🎉 New Trial: ${args.userName}`,
-        html: adminEmailContent,
-      });
-      console.log(`Admin notification sent for ${args.userEmail}:`, adminResult);
-      results.admin = true;
-    } catch (error) {
-      console.error("Failed to send admin notification:", error);
-    }
+    // Admin notification now handled centrally by Marketing webhook
+    // See sites/marketing/src/app/api/stripe/webhook/route.ts
+    // try {
+    //   const adminResult = await resend.emails.send({
+    //     from: "SafeTunes Admin <notifications@getsafetunes.com>",
+    //     to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
+    //     subject: `🎉 New Trial: ${args.userName}`,
+    //     html: adminEmailContent,
+    //   });
+    //   console.log(`Admin notification sent for ${args.userEmail}:`, adminResult);
+    //   results.admin = true;
+    // } catch (error) {
+    //   console.error("Failed to send admin notification:", error);
+    // }
+    results.admin = true; // Skip admin notification, handled centrally
 
     try {
       // Send welcome email to user
