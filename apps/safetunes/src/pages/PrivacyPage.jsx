@@ -122,7 +122,7 @@ function PrivacyPage() {
                 <li>Withdraw consent for data processing</li>
               </ul>
               <p className="text-gray-700 mb-4">
-                To exercise these rights, contact us at <a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}`} className="text-purple-600 hover:text-purple-700 font-medium">{import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}</a>
+                To exercise these rights, contact us at <a href="mailto:jeremiah@getsafefamily.com" className="text-purple-600 hover:text-purple-700 font-medium">jeremiah@getsafefamily.com</a>
               </p>
             </section>
 
@@ -199,7 +199,7 @@ function PrivacyPage() {
                 <li><strong>Right to Lodge a Complaint:</strong> File a complaint with your local data protection authority</li>
               </ul>
               <p className="text-gray-700 mb-4">
-                To exercise any of these rights, contact us at <a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}`} className="text-purple-600 hover:text-purple-700 font-medium">{import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}</a>. We will respond to your request within 30 days.
+                To exercise any of these rights, contact us at <a href="mailto:jeremiah@getsafefamily.com" className="text-purple-600 hover:text-purple-700 font-medium">jeremiah@getsafefamily.com</a>. We will respond to your request within 30 days.
               </p>
             </section>
 
@@ -243,7 +243,7 @@ function PrivacyPage() {
 
               <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">How to Exercise Your California Rights</h3>
               <p className="text-gray-700 mb-4">
-                To exercise your California privacy rights, send a verifiable consumer request to <a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}`} className="text-purple-600 hover:text-purple-700 font-medium">{import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}</a> with "California Privacy Request" in the subject line. We will verify your identity and respond within 45 days. You may designate an authorized agent to make requests on your behalf.
+                To exercise your California privacy rights, send a verifiable consumer request to <a href="mailto:jeremiah@getsafefamily.com" className="text-purple-600 hover:text-purple-700 font-medium">jeremiah@getsafefamily.com</a> with "California Privacy Request" in the subject line. We will verify your identity and respond within 45 days. You may designate an authorized agent to make requests on your behalf.
               </p>
 
               <p className="text-gray-700 mb-4">
@@ -280,7 +280,7 @@ function PrivacyPage() {
               </p>
               <div className="bg-gray-50 rounded-lg p-4 mb-4">
                 <p className="text-gray-700 mb-2">
-                  <strong>Email:</strong> <a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}`} className="text-purple-600 hover:text-purple-700 font-medium">{import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}</a>
+                  <strong>Email:</strong> <a href="mailto:jeremiah@getsafefamily.com" className="text-purple-600 hover:text-purple-700 font-medium">jeremiah@getsafefamily.com</a>
                 </p>
                 <p className="text-gray-700 mb-2">
                   <strong>Response Time:</strong> We aim to respond to all privacy inquiries within 30 days (45 days for California residents)

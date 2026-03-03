@@ -331,7 +331,7 @@ function TermsPage() {
 
               <h3 className="text-xl font-semibold text-gray-900 mb-3">17.1 Informal Dispute Resolution</h3>
               <p className="text-gray-700 mb-4">
-                Before filing a claim, you agree to contact us at <a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}`} className="text-purple-600 hover:text-purple-700 font-medium">{import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}</a> to attempt to resolve the dispute informally. We will attempt to resolve any disputes within 60 days of receiving notice.
+                Before filing a claim, you agree to contact us at <a href="mailto:jeremiah@getsafefamily.com" className="text-purple-600 hover:text-purple-700 font-medium">jeremiah@getsafefamily.com</a> to attempt to resolve the dispute informally. We will attempt to resolve any disputes within 60 days of receiving notice.
               </p>
 
               <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">17.2 Binding Arbitration</h3>
@@ -362,7 +362,7 @@ function TermsPage() {
 
               <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">17.5 Opt-Out Right</h3>
               <p className="text-gray-700 mb-4">
-                You may opt out of this arbitration agreement by sending written notice to <a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}`} className="text-purple-600 hover:text-purple-700 font-medium">{import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}</a> within 30 days of first accepting these Terms. Your notice must include your name, email address, and a clear statement that you wish to opt out of this arbitration agreement. Opting out does not affect any other terms.
+                You may opt out of this arbitration agreement by sending written notice to <a href="mailto:jeremiah@getsafefamily.com" className="text-purple-600 hover:text-purple-700 font-medium">jeremiah@getsafefamily.com</a> within 30 days of first accepting these Terms. Your notice must include your name, email address, and a clear statement that you wish to opt out of this arbitration agreement. Opting out does not affect any other terms.
               </p>
             </section>
 
@@ -435,7 +435,7 @@ function TermsPage() {
               </p>
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-gray-700 mb-2">
-                  <strong>Email:</strong> <a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}`} className="text-purple-600 hover:text-purple-700 font-medium">{import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}</a>
+                  <strong>Email:</strong> <a href="mailto:jeremiah@getsafefamily.com" className="text-purple-600 hover:text-purple-700 font-medium">jeremiah@getsafefamily.com</a>
                 </p>
                 <p className="text-gray-700 mb-2">
                   <strong>Legal Notices:</strong> For formal legal notices, use "Legal Notice" in the subject line

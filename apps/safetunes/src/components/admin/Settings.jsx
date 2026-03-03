@@ -1520,7 +1520,7 @@ function Settings({ user, onLogout, initialSection }) {
                     If you're having trouble or have questions, we're here to help!
                   </p>
                   <a
-                    href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}`}
+                    href="mailto:jeremiah@getsafefamily.com"
                     className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
