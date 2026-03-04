@@ -5,6 +5,34 @@ This file maintains context between autonomous iterations.
 
 ---
 
+## Recent Completions
+
+### safecontent-dlf.1: Fix Stripe webhook not updating Marketing Central status (Mar 4, 2026)
+
+**Status:** Complete
+
+**Root Cause:**
+The Stripe webhook handler was updating individual app access (via `grantAppAccess`/`revokeAppAccess`) but NOT updating the Marketing Central `users` table subscription status. This caused:
+- Jolene Bryan paid $4.99 for SafeTunes on Feb 23
+- SafeTunes app showed "active" (via legacy setSubscriptionStatus)
+- Marketing Central showed "expired" (never updated)
+- Apps verify JWT against Marketing Central → user blocked
+
+**Fix:**
+Added `updateCentralUserSubscription()` helper function that calls Marketing Central's `/updateSubscription` endpoint. Now called in:
+1. `customer.subscription.updated` - When subscription becomes active/canceled/past_due
+2. `customer.subscription.deleted` - When subscription is fully deleted (sets to expired)
+
+**Files changed:**
+- `sites/marketing/src/app/api/stripe/webhook/route.ts` (added helper + updated handlers)
+
+**Key decisions:**
+- Used existing `/updateSubscription` endpoint in Marketing Central HTTP routes
+- Keep `subscriptionEndsAt` optional - uses `cancel_at` when available
+- Continue with app provisioning even if central update fails (don't block)
+
+---
+
 ## ⚠️ CRITICAL: Browser Testing Required
 
 **DO NOT close beads without actually running browser tests.**
