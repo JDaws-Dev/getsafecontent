@@ -32,6 +32,16 @@ const APP_TO_PRICE: Record<string, string> = {
 type AppName = "safetunes" | "safetube" | "safereads";
 const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
 
+/**
+ * Normalize email to lowercase and trim whitespace.
+ * Prevents duplicate Stripe customers caused by case differences
+ * (e.g., "Jolene_Bryan@yahoo.com" vs "jolene_bryan@yahoo.com").
+ */
+function normalizeEmail(email: string | null | undefined): string | null {
+  if (!email) return null;
+  return email.toLowerCase().trim();
+}
+
 export async function POST(req: Request) {
   // Track apps for error reporting
   let errorContextApps: AppName[] | undefined;
@@ -51,14 +61,15 @@ export async function POST(req: Request) {
     const { email: bodyEmail, priceId, apps, selectedApps, isYearly } = await req.json();
 
     // Get email from request body OR from authenticated session (for OAuth users)
-    let email = bodyEmail;
+    // IMPORTANT: Normalize email to lowercase to prevent duplicate Stripe customers
+    let email = normalizeEmail(bodyEmail);
     if (!email) {
       try {
         const token = await convexAuthNextjsToken();
         if (token) {
           const user = await fetchQuery(api.accounts.getCurrentUser, {}, { token });
           if (user?.email) {
-            email = user.email;
+            email = normalizeEmail(user.email);
             console.log("[Checkout] Got email from authenticated session:", email);
           }
         }

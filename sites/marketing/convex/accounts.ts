@@ -47,7 +47,9 @@ export const createAccount = mutation({
     couponCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { email, name, selectedApps, couponCode } = args;
+    const { name, selectedApps, couponCode } = args;
+    // Normalize email to lowercase to prevent duplicates
+    const email = args.email.toLowerCase().trim();
     const now = Date.now();
 
     // Check if account already exists
@@ -163,9 +165,11 @@ export const getAccountByEmail = query({
     email: v.string(),
   },
   handler: async (ctx, args) => {
+    // Normalize email to lowercase
+    const email = args.email.toLowerCase().trim();
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", email))
       .first();
 
     if (!user) {
@@ -595,6 +599,8 @@ export const updateSubscription = mutation({
   },
   handler: async (ctx, args) => {
     const now = Date.now();
+    // Normalize email to lowercase
+    const email = args.email.toLowerCase().trim();
 
     // Check for duplicate webhook event
     if (args.stripeEventId) {
@@ -612,7 +618,7 @@ export const updateSubscription = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", email))
       .first();
 
     if (!user) {
@@ -914,10 +920,12 @@ export const grantLifetimeAccess = mutation({
     }
 
     const now = Date.now();
+    // Normalize email to lowercase
+    const email = args.email.toLowerCase().trim();
 
     let user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", email))
       .first();
 
     const appsToGrant = args.apps ?? ([...ALL_APPS] as AppType[]);
@@ -925,7 +933,7 @@ export const grantLifetimeAccess = mutation({
     if (!user) {
       // Create the user with lifetime access
       const userId = await ctx.db.insert("users", {
-        email: args.email,
+        email,
         subscriptionStatus: "lifetime",
         entitledApps: appsToGrant,
         onboardingCompleted: {
