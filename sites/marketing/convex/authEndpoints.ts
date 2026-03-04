@@ -94,6 +94,9 @@ function getJwtSecret(): Uint8Array {
  * Returns on user needs password reset (403):
  * { success: false, error: "...", code: "PASSWORD_RESET_REQUIRED" }
  *
+ * Returns on incomplete signup (403):
+ * { success: false, error: "...", code: "INCOMPLETE_SIGNUP" }
+ *
  * Returns on rate limit (429):
  * { success: false, error: "Too many requests..." }
  */
@@ -176,15 +179,41 @@ export const login = httpAction(async (ctx, request): Promise<Response> => {
       );
     }
 
-    if (!credentials.hasPasswordAuth) {
-      // User exists but uses OAuth, not password
-      console.log(`[login] User ${email} has no password auth (OAuth only)`);
+    // Check for incomplete signup (user exists but has no auth method at all)
+    if (credentials.incompleteSignup) {
+      console.log(`[login] Incomplete signup detected for: ${email}`);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error:
+            "Your account setup is incomplete. Please click 'Forgot password?' to set your password and complete your account.",
+          code: "INCOMPLETE_SIGNUP",
+        }),
+        { status: 403, headers }
+      );
+    }
+
+    // Check if user uses OAuth (Google sign-in)
+    if (!credentials.hasPasswordAuth && credentials.hasOAuthAuth) {
+      console.log(`[login] User ${email} uses OAuth (Google sign-in)`);
       return new Response(
         JSON.stringify({
           success: false,
           error:
             "This account uses Google sign-in. Please use the Google sign-in option.",
           code: "OAUTH_ONLY",
+        }),
+        { status: 401, headers }
+      );
+    }
+
+    if (!credentials.hasPasswordAuth) {
+      // Shouldn't happen - but just in case
+      console.log(`[login] User ${email} has no auth method`);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Invalid email or password",
         }),
         { status: 401, headers }
       );
@@ -398,6 +427,9 @@ function generateOTP(): string {
  * This endpoint is called by app frontends when a user wants to reset their password.
  * It generates an OTP, stores it, and sends an email.
  *
+ * For users with incomplete signups (no authAccount), this allows them to set their
+ * initial password. The password will be set via the /completeSignup endpoint.
+ *
  * POST /requestPasswordReset
  * Body: { email: string }
  *
@@ -469,24 +501,28 @@ export const requestPasswordReset = httpAction(async (ctx, request): Promise<Res
   const normalizedEmail = email.toLowerCase().trim();
 
   try {
-    // Check if user exists and has password auth
-    console.log(`[requestPasswordReset] [v3] Looking up: ${normalizedEmail}`);
+    // Check if user exists
+    console.log(`[requestPasswordReset] Looking up: ${normalizedEmail}`);
     const credentials = await ctx.runQuery(
       internal.signupInternal.getUserCredentials,
       { email: normalizedEmail }
     );
-    console.log(`[requestPasswordReset] Credentials: exists=${credentials.exists}, hasPasswordAuth=${credentials.hasPasswordAuth}`);
+    console.log(`[requestPasswordReset] Credentials: exists=${credentials.exists}, hasPasswordAuth=${credentials.hasPasswordAuth}, hasOAuthAuth=${credentials.hasOAuthAuth}, incompleteSignup=${credentials.incompleteSignup}`);
 
     if (!credentials.exists) {
       console.log(`[requestPasswordReset] No account found for: ${normalizedEmail}`);
-      // DEBUG: Return actual status
+      // Return success to not reveal if email exists
       return new Response(
-        JSON.stringify({ success: true, debug: "user_not_found" }),
+        JSON.stringify({
+          success: true,
+          message: "If an account exists with this email, a password reset code has been sent.",
+        }),
         { status: 200, headers }
       );
     }
 
-    if (!credentials.hasPasswordAuth) {
+    // Check if user uses OAuth (can't reset password for OAuth users)
+    if (!credentials.hasPasswordAuth && credentials.hasOAuthAuth) {
       console.log(`[requestPasswordReset] OAuth-only account: ${normalizedEmail}`);
       return new Response(
         JSON.stringify({
@@ -498,8 +534,15 @@ export const requestPasswordReset = httpAction(async (ctx, request): Promise<Res
       );
     }
 
+    // For incomplete signups OR existing password users, allow password reset
+    // This enables incomplete signups to set their initial password
+    const isIncompleteSignup = credentials.incompleteSignup === true;
+    if (isIncompleteSignup) {
+      console.log(`[requestPasswordReset] Incomplete signup - will allow setting initial password: ${normalizedEmail}`);
+    }
+
     // Generate OTP and store it
-    console.log(`[requestPasswordReset] [v3] Generating OTP for ${normalizedEmail}`);
+    console.log(`[requestPasswordReset] Generating OTP for ${normalizedEmail}`);
     const otp = generateOTP();
     const now = Date.now();
     const expiresAt = now + OTP_EXPIRY_MS;
@@ -516,7 +559,7 @@ export const requestPasswordReset = httpAction(async (ctx, request): Promise<Res
       console.error(`[requestPasswordReset] Delete failed:`, deleteErr);
     }
 
-    // Store the new token
+    // Store the new token (include flag if this is for completing signup)
     console.log(`[requestPasswordReset] Creating new token: ${otp}`);
     let createResult;
     try {
@@ -528,15 +571,14 @@ export const requestPasswordReset = httpAction(async (ctx, request): Promise<Res
       console.log(`[requestPasswordReset] Token created: ${createResult?.tokenId}`);
     } catch (createErr) {
       console.error(`[requestPasswordReset] Create failed:`, createErr);
-      // Return error for debugging
       return new Response(
-        JSON.stringify({ success: false, debug: "create_failed", error: String(createErr) }),
+        JSON.stringify({ success: false, error: "Failed to create reset token" }),
         { status: 500, headers }
       );
     }
 
-    // Send email via internal action (actions have proper env var access)
-    console.log(`[requestPasswordReset] Sending email to: ${normalizedEmail}, OTP: ${otp}`);
+    // Send email via internal action
+    console.log(`[requestPasswordReset] Sending email to: ${normalizedEmail}`);
     let emailSent = false;
     let emailError = "";
 
@@ -569,15 +611,13 @@ export const requestPasswordReset = httpAction(async (ctx, request): Promise<Res
       { status: 200, headers }
     );
   } catch (error) {
-    console.error("[requestPasswordReset] FATAL Error:", error);
-    // TEMPORARILY return error for debugging
+    console.error("[requestPasswordReset] Error:", error);
     return new Response(
       JSON.stringify({
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-        debug: true,
+        success: true,
+        message: "If an account exists with this email, a password reset code has been sent.",
       }),
-      { status: 500, headers }
+      { status: 200, headers }
     );
   }
 });
@@ -587,6 +627,8 @@ export const requestPasswordReset = httpAction(async (ctx, request): Promise<Res
  *
  * This endpoint verifies the OTP and updates the user's password.
  * On success, it returns a JWT token so the user is automatically logged in.
+ *
+ * For users with incomplete signups, this creates the authAccount entry.
  *
  * POST /resetPassword
  * Body: {
@@ -705,23 +747,7 @@ export const resetPassword = httpAction(async (ctx, request): Promise<Response> 
       );
     }
 
-    // Hash the new password
-    const passwordHash = await scrypt.hash(newPassword);
-
-    // Update the password in authAccounts
-    const updateResult = await ctx.runMutation(internal.signupInternal.updatePassword, {
-      email: normalizedEmail,
-      passwordHash,
-    });
-
-    if (!updateResult.success) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to update password" }),
-        { status: 500, headers }
-      );
-    }
-
-    // Get fresh user data for JWT
+    // Check if this is an incomplete signup
     const credentials = await ctx.runQuery(
       internal.signupInternal.getUserCredentials,
       { email: normalizedEmail }
@@ -734,14 +760,66 @@ export const resetPassword = httpAction(async (ctx, request): Promise<Response> 
       );
     }
 
+    // Hash the new password
+    const passwordHash = await scrypt.hash(newPassword);
+
+    // Handle incomplete signup vs existing password reset
+    if (credentials.incompleteSignup) {
+      // Create authAccount for incomplete signup
+      console.log(`[resetPassword] Completing incomplete signup for: ${normalizedEmail}`);
+      const completeResult = await ctx.runMutation(
+        internal.signupInternal.completeIncompleteSignup,
+        {
+          email: normalizedEmail,
+          passwordHash,
+        }
+      );
+
+      if (!completeResult.success) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: completeResult.message || "Failed to complete account setup",
+          }),
+          { status: 500, headers }
+        );
+      }
+    } else {
+      // Normal password update for existing user
+      const updateResult = await ctx.runMutation(internal.signupInternal.updatePassword, {
+        email: normalizedEmail,
+        passwordHash,
+      });
+
+      if (!updateResult.success) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Failed to update password" }),
+          { status: 500, headers }
+        );
+      }
+    }
+
+    // Get fresh user data for JWT
+    const freshCredentials = await ctx.runQuery(
+      internal.signupInternal.getUserCredentials,
+      { email: normalizedEmail }
+    );
+
+    if (!freshCredentials.exists) {
+      return new Response(
+        JSON.stringify({ success: false, error: "User not found" }),
+        { status: 404, headers }
+      );
+    }
+
     // Generate JWT token for auto-login
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = now + JWT_EXPIRY_SECONDS;
 
     const token = await new SignJWT({
-      sub: credentials.userId as string,
-      email: credentials.email,
-      entitledApps: credentials.entitledApps || [],
+      sub: freshCredentials.userId as string,
+      email: freshCredentials.email,
+      entitledApps: freshCredentials.entitledApps || [],
     })
       .setProtectedHeader({ alg: JWT_ALGORITHM })
       .setIssuedAt(now)
@@ -757,10 +835,10 @@ export const resetPassword = httpAction(async (ctx, request): Promise<Response> 
         token,
         expiresAt,
         user: {
-          email: credentials.email,
-          name: credentials.name || null,
-          subscriptionStatus: credentials.subscriptionStatus || "trial",
-          entitledApps: credentials.entitledApps || [],
+          email: freshCredentials.email,
+          name: freshCredentials.name || null,
+          subscriptionStatus: freshCredentials.subscriptionStatus || "trial",
+          entitledApps: freshCredentials.entitledApps || [],
         },
       }),
       { status: 200, headers }

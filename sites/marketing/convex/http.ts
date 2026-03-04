@@ -1791,4 +1791,79 @@ http.route({
   }),
 });
 
+/**
+ * Incomplete Signups Endpoint
+ *
+ * Admin endpoint to list users with incomplete signups.
+ * These are users who have a 'users' record but no 'authAccounts' record.
+ *
+ * GET /incompleteSignups?key=API_KEY
+ *
+ * Returns:
+ * {
+ *   total: number,
+ *   users: Array<{
+ *     userId: string,
+ *     email: string,
+ *     name: string | null,
+ *     subscriptionStatus: string,
+ *     entitledApps: string[],
+ *     createdAt: number
+ *   }>
+ * }
+ */
+http.route({
+  path: "/incompleteSignups",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key
+    const expectedKey = process.env.ADMIN_KEY;
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    try {
+      const { internal } = await import("./_generated/api");
+
+      const result = await ctx.runQuery(internal.signupInternal.findIncompleteSignups, {});
+
+      return new Response(JSON.stringify(result), { status: 200, headers });
+    } catch (error) {
+      console.error("[incompleteSignups] Error:", error);
+      return new Response(
+        JSON.stringify({ error: "Internal server error" }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/incompleteSignups",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
 export default http;

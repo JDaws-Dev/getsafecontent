@@ -7,6 +7,53 @@ This file maintains context between autonomous iterations.
 
 ## Recent Completions
 
+### safecontent-dlf.3: Fix incomplete signups leaving users without authAccount (Mar 4, 2026)
+
+**Status:** Complete
+
+**Problem:**
+Users who start but don't complete signup get a `users` record but no `authAccounts` record. This leaves them:
+- Unable to log in (no password auth)
+- Unable to use password reset (shown misleading "OAuth only" error)
+
+**Root Cause:**
+Multiple code paths create users without authAccounts:
+1. `createOrUpdateUserFromWebhook` - Stripe webhook legacy flow
+2. `ensureUserWithAllApps` - Admin migration tool
+3. `grantLifetimeAccess` - Admin granting access
+
+The signup page (`/api/auth/signup` -> `/createUserWithPassword`) does create both atomically, so the issue is with these other code paths.
+
+**Fix:**
+1. Enhanced `getUserCredentials` to distinguish three states:
+   - `hasPasswordAuth: true` - Normal user with password
+   - `hasPasswordAuth: false, hasOAuthAuth: true` - Google OAuth user
+   - `hasPasswordAuth: false, hasOAuthAuth: false, incompleteSignup: true` - Orphaned user
+
+2. Updated `/login` endpoint to return clear `INCOMPLETE_SIGNUP` error code with message directing user to password reset
+
+3. Updated `/requestPasswordReset` to allow users with incomplete signups to set initial password
+
+4. Updated `/resetPassword` to call `completeIncompleteSignup` for orphaned users (creates authAccount)
+
+5. Added new functions:
+   - `completeIncompleteSignup` - Creates authAccount for orphaned users
+   - `findIncompleteSignups` - Admin utility to find orphaned users
+
+6. Added `/incompleteSignups` HTTP endpoint for admin monitoring
+
+**Files changed:**
+- `sites/marketing/convex/signupInternal.ts` (enhanced getUserCredentials, added new functions)
+- `sites/marketing/convex/authEndpoints.ts` (updated login, requestPasswordReset, resetPassword)
+- `sites/marketing/convex/http.ts` (added /incompleteSignups endpoint)
+
+**Key decisions:**
+- Use password reset flow to complete incomplete signups (no new UI needed)
+- Don't modify the code paths that create orphans - just handle the case gracefully
+- Add admin endpoint to monitor and identify orphans
+
+---
+
 ### safecontent-dlf.1: Fix Stripe webhook not updating Marketing Central status (Mar 4, 2026)
 
 **Status:** Complete

@@ -214,6 +214,12 @@ export const createUserWithPassword = internalMutation({
  *
  * Returns the password hash so the API can verify the password
  * before creating a session.
+ *
+ * Returns different states for users:
+ * - exists: false - No user with this email
+ * - hasPasswordAuth: true - User has password auth, can log in
+ * - hasPasswordAuth: false, hasOAuthAuth: true - User uses Google sign-in
+ * - hasPasswordAuth: false, hasOAuthAuth: false - Incomplete signup, no auth method
  */
 export const getUserCredentials = internalQuery({
   args: { email: v.string() },
@@ -231,30 +237,64 @@ export const getUserCredentials = internalQuery({
     }
 
     // Get auth account for password
-    const authAccount = await ctx.db
+    const passwordAuthAccount = await ctx.db
       .query("authAccounts")
       .withIndex("providerAndAccountId", (q) =>
         q.eq("provider", "password").eq("providerAccountId", email)
       )
       .first();
 
-    if (!authAccount) {
-      // User exists but doesn't have password auth (maybe OAuth only)
+    if (passwordAuthAccount) {
+      // User has password auth
       return {
         exists: true,
-        hasPasswordAuth: false,
+        hasPasswordAuth: true,
+        hasOAuthAuth: false, // Not relevant if they have password
         userId: user._id,
         email: user.email,
+        name: user.name || null,
+        passwordHash: passwordAuthAccount.secret,
+        subscriptionStatus: user.subscriptionStatus,
+        entitledApps: user.entitledApps,
       };
     }
 
+    // No password auth - check if they have OAuth auth
+    // OAuth accounts use the user's ID as providerAccountId (from Convex Auth)
+    // Note: Must filter by userId in the filter since there's no userId-only index
+    const oauthAuthAccount = await ctx.db
+      .query("authAccounts")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("userId"), user._id),
+          q.neq(q.field("provider"), "password")
+        )
+      )
+      .first();
+
+    if (oauthAuthAccount) {
+      // User has OAuth auth (e.g., Google sign-in)
+      return {
+        exists: true,
+        hasPasswordAuth: false,
+        hasOAuthAuth: true,
+        userId: user._id,
+        email: user.email,
+        name: user.name || null,
+        subscriptionStatus: user.subscriptionStatus,
+        entitledApps: user.entitledApps,
+      };
+    }
+
+    // User exists but has NO auth method at all - incomplete signup
     return {
       exists: true,
-      hasPasswordAuth: true,
+      hasPasswordAuth: false,
+      hasOAuthAuth: false,
+      incompleteSignup: true,
       userId: user._id,
       email: user.email,
       name: user.name || null,
-      passwordHash: authAccount.secret,
       subscriptionStatus: user.subscriptionStatus,
       entitledApps: user.entitledApps,
     };
@@ -769,6 +809,173 @@ export const updatePassword = internalMutation({
       success: true,
       updated: true,
       email,
+    };
+  },
+});
+
+/**
+ * Complete signup for a user with an incomplete account
+ *
+ * This is used when a user has a `users` record but no `authAccounts` record.
+ * This can happen when:
+ * 1. User was created via Stripe webhook (legacy flow)
+ * 2. Admin granted lifetime access without creating auth
+ * 3. Any other code path that creates users without auth
+ *
+ * This function creates the authAccounts entry so the user can log in.
+ *
+ * @param email - User's email address
+ * @param passwordHash - Scrypt hash of the password
+ * @returns Success status and user info
+ */
+export const completeIncompleteSignup = internalMutation({
+  args: {
+    email: v.string(),
+    passwordHash: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+
+    // Find the existing user
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+
+    if (!user) {
+      return {
+        success: false,
+        error: "USER_NOT_FOUND",
+        message: `No user found with email: ${email}`,
+      };
+    }
+
+    // Check if they already have a password authAccount
+    const existingPasswordAuth = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", "password").eq("providerAccountId", email)
+      )
+      .first();
+
+    if (existingPasswordAuth) {
+      return {
+        success: false,
+        error: "AUTH_ALREADY_EXISTS",
+        message: "This account already has password authentication set up. Please use the login page.",
+      };
+    }
+
+    // Check if they have an OAuth authAccount (in which case they should use Google sign-in)
+    const oauthAuth = await ctx.db
+      .query("authAccounts")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("userId"), user._id),
+          q.neq(q.field("provider"), "password")
+        )
+      )
+      .first();
+
+    if (oauthAuth) {
+      return {
+        success: false,
+        error: "OAUTH_ACCOUNT",
+        message: "This account uses Google sign-in. Please sign in with Google instead.",
+      };
+    }
+
+    // Create the authAccounts entry
+    const authAccountId = await ctx.db.insert("authAccounts", {
+      userId: user._id,
+      provider: "password",
+      providerAccountId: email,
+      secret: args.passwordHash,
+    });
+
+    // Log the event
+    await ctx.db.insert("subscriptionEvents", {
+      userId: user._id,
+      email,
+      eventType: "signup.completed",
+      eventData: JSON.stringify({
+        action: "authAccount_created",
+        previousState: "incomplete_signup",
+      }),
+      subscriptionStatus: user.subscriptionStatus || "trial",
+      timestamp: Date.now(),
+    });
+
+    console.log(
+      `[completeIncompleteSignup] Created authAccount for ${email}, userId: ${user._id}`
+    );
+
+    return {
+      success: true,
+      userId: user._id,
+      authAccountId,
+      email,
+      name: user.name || null,
+      subscriptionStatus: user.subscriptionStatus || "trial",
+      entitledApps: user.entitledApps || [],
+    };
+  },
+});
+
+/**
+ * Find users with incomplete signups (users without authAccounts)
+ *
+ * Admin utility to identify orphaned user records.
+ */
+export const findIncompleteSignups = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    // Get all users
+    const users = await ctx.db.query("users").collect();
+
+    const incompleteUsers = [];
+
+    for (const user of users) {
+      // Skip users without email (shouldn't happen but be safe)
+      if (!user.email) continue;
+
+      // Check for password auth using the providerAndAccountId index
+      const passwordAuth = await ctx.db
+        .query("authAccounts")
+        .withIndex("providerAndAccountId", (q) =>
+          q.eq("provider", "password").eq("providerAccountId", user.email!)
+        )
+        .first();
+
+      if (passwordAuth) continue;
+
+      // Check for OAuth auth using a filter (no userId-only index)
+      const oauthAuth = await ctx.db
+        .query("authAccounts")
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("userId"), user._id),
+            q.neq(q.field("provider"), "password")
+          )
+        )
+        .first();
+
+      if (oauthAuth) continue;
+
+      // No auth at all - this is an incomplete signup
+      incompleteUsers.push({
+        userId: user._id,
+        email: user.email,
+        name: user.name || null,
+        subscriptionStatus: user.subscriptionStatus || "unknown",
+        entitledApps: user.entitledApps || [],
+        createdAt: user.createdAt,
+      });
+    }
+
+    return {
+      total: incompleteUsers.length,
+      users: incompleteUsers,
     };
   },
 });
