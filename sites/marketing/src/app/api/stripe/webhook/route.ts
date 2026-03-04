@@ -197,6 +197,84 @@ async function createOrUpdateCentralUser(
   }
 }
 
+/**
+ * Update subscription status in Marketing Central database.
+ * Called by customer.subscription.updated and customer.subscription.deleted webhooks
+ * to keep Marketing Central in sync with Stripe subscription state.
+ *
+ * Maps Stripe subscription statuses to Marketing Central statuses:
+ * - active, trialing -> active (or trial if no payment made)
+ * - canceled, unpaid, past_due, incomplete, incomplete_expired -> canceled/expired
+ */
+async function updateCentralUserSubscription(
+  email: string,
+  options: {
+    subscriptionStatus: "trial" | "active" | "lifetime" | "canceled" | "past_due" | "incomplete" | "expired";
+    apps?: AppName[];
+    stripeCustomerId?: string | null;
+    subscriptionId?: string | null;
+    subscriptionEndsAt?: number | null;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  if (!ADMIN_KEY) {
+    console.warn("[updateCentralUserSubscription] ADMIN_API_KEY not set");
+    return { success: false, error: "ADMIN_API_KEY not configured" };
+  }
+
+  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const url = `${MARKETING_ENDPOINT}/updateSubscription`;
+
+  const body: Record<string, unknown> = {
+    email,
+    subscriptionStatus: options.subscriptionStatus,
+  };
+
+  // Only include optional fields if they're provided
+  if (options.apps) {
+    body.entitledApps = options.apps;
+  }
+  if (options.stripeCustomerId) {
+    body.stripeCustomerId = options.stripeCustomerId;
+  }
+  if (options.subscriptionId) {
+    body.stripeSubscriptionId = options.subscriptionId;
+  }
+  if (options.subscriptionEndsAt) {
+    body.subscriptionEndsAt = options.subscriptionEndsAt;
+  }
+
+  try {
+    const response = await fetchWithTimeout(
+      url,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-key": ADMIN_KEY,
+        },
+        body: JSON.stringify(body),
+      },
+      PROVISION_TIMEOUT_MS
+    );
+
+    if (!response.ok) {
+      const responseBody = await response.text().catch(() => "");
+      console.error(`[updateCentralUserSubscription] Failed for ${email}: HTTP ${response.status} - ${responseBody}`);
+      return { success: false, error: `HTTP ${response.status}` };
+    }
+
+    console.log(`[updateCentralUserSubscription] Updated central user subscription: ${email} -> ${options.subscriptionStatus}`);
+    return { success: true };
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      console.error(`[updateCentralUserSubscription] Timeout for ${email}`);
+      return { success: false, error: `Timeout after ${PROVISION_TIMEOUT_MS}ms` };
+    }
+    console.error(`[updateCentralUserSubscription] Error for ${email}:`, err);
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
 // Helper to fetch with timeout using AbortController
 async function fetchWithTimeout(
   url: string,
@@ -934,7 +1012,29 @@ export async function POST(req: Request) {
           webhookContext.customerName = customer.name || null;
 
           if (email) {
+            // Extract Stripe IDs for central update
+            const stripeCustomerId = typeof subscription.customer === "string" ? subscription.customer : null;
+            const subscriptionId = subscription.id;
+            // Get subscription end date from cancel_at if set, otherwise null
+            // Note: Stripe's current_period_end is not always available in the type definitions
+            const subscriptionEndsAt = subscription.cancel_at ? subscription.cancel_at * 1000 : null;
+
             if (subscription.status === "active") {
+              // CRITICAL: Update Marketing Central subscription status
+              // This ensures the central database stays in sync with Stripe
+              const centralResult = await updateCentralUserSubscription(email, {
+                subscriptionStatus: "active",
+                apps: newApps,
+                stripeCustomerId,
+                subscriptionId,
+                subscriptionEndsAt,
+              });
+
+              if (!centralResult.success) {
+                console.error(`[customer.subscription.updated] Failed to update central user for ${email}:`, centralResult.error);
+                // Continue with app provisioning even if central update fails
+              }
+
               // Check if apps changed by comparing with previous state
               // The previous_attributes field contains the old metadata if it changed
               const previousAttributes = (event.data as Stripe.Event.Data & {
@@ -959,12 +1059,37 @@ export async function POST(req: Request) {
                 }
               }
             } else if (subscription.status === "canceled" || subscription.status === "unpaid") {
+              // CRITICAL: Update Marketing Central subscription status to canceled
+              const centralResult = await updateCentralUserSubscription(email, {
+                subscriptionStatus: "canceled",
+                stripeCustomerId,
+                subscriptionId,
+                subscriptionEndsAt,
+              });
+
+              if (!centralResult.success) {
+                console.error(`[customer.subscription.updated] Failed to update central user for ${email}:`, centralResult.error);
+              }
+
               // Revoke access if subscription is canceled or unpaid
               const result = await revokeAppAccess(email, newApps);
               if (!result.success) {
                 webhookContext.errors = result.errors;
                 webhookContext.status = "partial_failure";
               }
+            } else if (subscription.status === "past_due") {
+              // CRITICAL: Update Marketing Central subscription status to past_due
+              const centralResult = await updateCentralUserSubscription(email, {
+                subscriptionStatus: "past_due",
+                stripeCustomerId,
+                subscriptionId,
+                subscriptionEndsAt,
+              });
+
+              if (!centralResult.success) {
+                console.error(`[customer.subscription.updated] Failed to update central user for ${email}:`, centralResult.error);
+              }
+              // Don't revoke access yet - verifyAppAccess handles grace period
             }
           }
         }
@@ -997,6 +1122,19 @@ export async function POST(req: Request) {
           webhookContext.customerName = customer.name || null;
 
           if (email) {
+            const stripeCustomerId = typeof subscription.customer === "string" ? subscription.customer : null;
+
+            // CRITICAL: Update Marketing Central subscription status to expired
+            const centralResult = await updateCentralUserSubscription(email, {
+              subscriptionStatus: "expired",
+              stripeCustomerId,
+              subscriptionId: subscription.id,
+            });
+
+            if (!centralResult.success) {
+              console.error(`[customer.subscription.deleted] Failed to update central user for ${email}:`, centralResult.error);
+            }
+
             const result = await revokeAppAccess(email, apps);
             if (!result.success) {
               console.error(`Failed to revoke apps for ${email}:`, result.errors);
