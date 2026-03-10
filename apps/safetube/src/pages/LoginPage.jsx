@@ -78,6 +78,12 @@ export default function LoginPage() {
       if (!result.success) {
         haptic.error();
 
+        if (result.code === 'PASSWORD_RESET_REQUIRED' || result.code === 'INCOMPLETE_SIGNUP') {
+          setShowPasswordResetPrompt(true);
+          setLoading(false);
+          return;
+        }
+
         // Handle specific error codes
         if (result.code === 'NOT_ENTITLED') {
           // User exists but doesn't have SafeTube - show upgrade prompt
@@ -89,8 +95,11 @@ export default function LoginPage() {
           return;
         }
 
-        // Generic error
-        setError(result.error || 'Invalid email or password. Please try again.');
+        if (result.code === 'OAUTH_ONLY') {
+          setError('This account uses Google sign-in. Please use the Google sign-in option.');
+        } else {
+          setError(result.error || 'Invalid email or password. Please try again.');
+        }
         emailInputRef.current?.focus();
         setLoading(false);
         return;
@@ -122,22 +131,19 @@ export default function LoginPage() {
   // Handle sending password reset email (uses central auth)
   const handleSendResetEmail = async () => {
     setSendingResetEmail(true);
+    const normalizedEmail = formData.email.toLowerCase().trim();
     try {
-      const result = await requestPasswordReset(formData.email);
+      const result = await requestPasswordReset(normalizedEmail);
       if (result.success) {
         setResetEmailSent(true);
-        localStorage.setItem('safetube_reset_email', formData.email);
+        localStorage.setItem('safetube_reset_email', normalizedEmail);
         haptic.success();
       } else {
-        // Still show success for security (don't reveal if email exists)
-        setResetEmailSent(true);
-        localStorage.setItem('safetube_reset_email', formData.email);
+        setError(result.error || 'Failed to send password reset email.');
       }
     } catch (err) {
       console.error('[LoginPage] Password reset error:', err);
-      // Still show success for security (don't reveal if email exists)
-      setResetEmailSent(true);
-      localStorage.setItem('safetube_reset_email', formData.email);
+      setError('Something went wrong. Please try again.');
     } finally {
       setSendingResetEmail(false);
     }

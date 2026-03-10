@@ -81,7 +81,7 @@ function LoginPage() {
       if (!result.success) {
         haptic.error();
 
-        if (result.code === 'PASSWORD_RESET_REQUIRED') {
+        if (result.code === 'PASSWORD_RESET_REQUIRED' || result.code === 'INCOMPLETE_SIGNUP') {
           // User was migrated from old auth system - show password reset prompt
           setShowPasswordResetPrompt(true);
           setLoading(false);
@@ -135,16 +135,19 @@ function LoginPage() {
   // Handle sending password reset email
   const handleSendResetEmail = async () => {
     setSendingResetEmail(true);
+    const normalizedEmail = formData.email.toLowerCase().trim();
     try {
-      await requestPasswordReset(formData.email);
+      const result = await requestPasswordReset(normalizedEmail);
+      if (!result.success) {
+        setError(result.error || 'Failed to send password reset email.');
+        return;
+      }
       setResetEmailSent(true);
-      localStorage.setItem('safetunes_reset_email', formData.email);
+      localStorage.setItem('safetunes_reset_email', normalizedEmail);
       haptic.success();
     } catch (err) {
       console.error('[LoginPage] Password reset error:', err);
-      // Still show success for security (don't reveal if email exists)
-      setResetEmailSent(true);
-      localStorage.setItem('safetunes_reset_email', formData.email);
+      setError('Something went wrong. Please try again.');
     } finally {
       setSendingResetEmail(false);
     }
