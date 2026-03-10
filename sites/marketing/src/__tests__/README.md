@@ -37,12 +37,6 @@ Playwright browser tests that verify:
 
    ```bash
    # Required for API tests
-   # Central auth admin key for marketing Convex endpoints
-   export CENTRAL_ADMIN_KEY='your_central_admin_key_here'
-
-   # Optional fallback name used by older scripts
-   export ADMIN_API_KEY="$CENTRAL_ADMIN_KEY"
-
    # App provisioning key for app Convex /provisionUser endpoints
    export APP_ADMIN_KEY='your_app_admin_key_here'
 
@@ -51,13 +45,7 @@ Playwright browser tests that verify:
 
    # Optional - override deployed defaults
    export TEST_MARKETING_URL='https://getsafefamily.com'
-   export TEST_CENTRAL_AUTH_URL='https://adamant-crow-705.convex.site'
    export TEST_BASE_URL='https://getsafefamily.com'
-   ```
-
-   To get the central auth admin key:
-   ```bash
-   CONVEX_DEPLOYMENT=prod:adamant-crow-705 npx convex env list | grep ADMIN_KEY
    ```
 
    The app provisioning key currently defaults to the fallback used in the app HTTP handlers.
@@ -181,8 +169,8 @@ curl "https://exuberant-puffin-838.convex.site/deleteUser?email=EMAIL&key=$KEY"
 
 ## Troubleshooting
 
-### "CENTRAL_ADMIN_KEY or ADMIN_API_KEY not set"
-Set the central auth admin key before running tests.
+### "APP_ADMIN_KEY not set"
+Set the app provisioning key before running tests.
 
 ### "Cannot find module 'lucia'"
 Run `npm install` to install dependencies.

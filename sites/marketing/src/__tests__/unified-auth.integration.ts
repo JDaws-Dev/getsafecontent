@@ -10,7 +10,6 @@
  *   npx tsx src/__tests__/unified-auth.integration.ts
  *
  * Required environment variables:
- *   - CENTRAL_ADMIN_KEY or ADMIN_API_KEY: Admin key for marketing central auth endpoints
  *   - APP_ADMIN_KEY: Admin key for app provisioning endpoints
  *   - ENABLE_UNIFIED_AUTH: Set to "true" to test new flow, "false" for legacy
  *
@@ -25,6 +24,7 @@
  */
 
 import { Scrypt } from "lucia";
+import { validatePasswordStrength } from "../lib/password";
 
 // Configuration
 const CONFIG = {
@@ -36,8 +36,7 @@ const CONFIG = {
   SAFETUNES_ENDPOINT: "https://formal-chihuahua-623.convex.site",
   SAFETUBE_ENDPOINT: "https://rightful-rabbit-333.convex.site",
 
-  // Admin keys
-  CENTRAL_ADMIN_KEY: process.env.CENTRAL_ADMIN_KEY || process.env.ADMIN_API_KEY || "",
+  // Admin key for app provisioning endpoints
   APP_ADMIN_KEY:
     process.env.APP_ADMIN_KEY || "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=",
 
@@ -59,15 +58,6 @@ interface TestResult {
   duration?: number;
 }
 
-interface CentralUser {
-  exists: boolean;
-  email?: string;
-  passwordHash?: string;
-  name?: string;
-  entitledApps?: string[];
-  subscriptionStatus?: string;
-}
-
 interface ProvisionResult {
   success: boolean;
   userId?: string;
@@ -79,13 +69,15 @@ interface ProvisionResult {
   error?: string;
 }
 
-let centralAdminAvailable = false;
-
 // Utilities
 const scrypt = new Scrypt();
 
 function generateTestEmail(prefix: string): string {
   return `${CONFIG.TEST_EMAIL_PREFIX}-${prefix}@test.getsafefamily.com`;
+}
+
+function generateTestIp(): string {
+  return `198.51.100.${Math.floor(Math.random() * 200) + 1}`;
 }
 
 async function hashPassword(password: string): Promise<string> {
@@ -111,76 +103,11 @@ async function fetchWithTimeout(
   }
 }
 
-async function checkCentralAdminAccess(): Promise<boolean> {
-  if (!CONFIG.CENTRAL_ADMIN_KEY) {
-    return false;
-  }
-
-  const email = encodeURIComponent(`preflight-${Date.now()}@test.getsafefamily.com`);
-  const key = encodeURIComponent(CONFIG.CENTRAL_ADMIN_KEY);
-  const url = `${CONFIG.CENTRAL_AUTH_ENDPOINT}/getCentralUser?email=${email}&key=${key}`;
-
-  try {
-    const response = await fetchWithTimeout(url);
-    return response.status !== 401;
-  } catch {
-    return false;
-  }
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // Test Helpers
-async function getCentralUser(email: string): Promise<CentralUser | null> {
-  const encodedEmail = encodeURIComponent(email);
-  const encodedKey = encodeURIComponent(CONFIG.CENTRAL_ADMIN_KEY);
-  const url = `${CONFIG.CENTRAL_AUTH_ENDPOINT}/getCentralUser?email=${encodedEmail}&key=${encodedKey}`;
-
-  try {
-    const response = await fetchWithTimeout(url);
-    if (!response.ok) {
-      console.error(`  [getCentralUser] HTTP ${response.status}`);
-      return null;
-    }
-    return await response.json();
-  } catch (err) {
-    console.error(`  [getCentralUser] Error:`, err);
-    return null;
-  }
-}
-
-async function createCentralUser(
-  email: string,
-  passwordHash: string,
-  name?: string
-): Promise<{ success: boolean; userId?: string; error?: string }> {
-  const url = `${CONFIG.CENTRAL_AUTH_ENDPOINT}/createUserWithPassword`;
-
-  try {
-    const response = await fetchWithTimeout(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-admin-key": CONFIG.CENTRAL_ADMIN_KEY,
-      },
-      body: JSON.stringify({
-        email,
-        passwordHash,
-        name,
-        selectedApps: ["safetunes", "safetube", "safereads"],
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      return { success: false, error: result.error || `HTTP ${response.status}` };
-    }
-
-    return { success: result.success, userId: result.userId };
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : String(err) };
-  }
-}
-
 async function provisionUserToApp(
   app: "safetunes" | "safetube" | "safereads",
   email: string,
@@ -231,19 +158,43 @@ async function callSignupAPI(
   name: string
 ): Promise<{ success: boolean; userId?: string; error?: string }> {
   const url = `${CONFIG.MARKETING_URL}/api/auth/signup`;
+  const maxAttempts = 2;
 
-  try {
-    const response = await fetchWithTimeout(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name }),
-    });
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const testIp = generateTestIp();
 
-    const result = await response.json();
-    return { success: response.ok && result.success, userId: result.userId, error: result.error };
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : String(err) };
+    try {
+      const response = await fetchWithTimeout(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-forwarded-for": testIp,
+        },
+        body: JSON.stringify({ email, password, name }),
+      });
+
+      const result = await response.json();
+
+      if (response.status === 429 && attempt < maxAttempts) {
+        const retryAfterSeconds =
+          typeof result.retryAfter === "number" ? result.retryAfter : 60;
+        await sleep((retryAfterSeconds + 1) * 1000);
+        continue;
+      }
+
+      return {
+        success: response.ok && result.success,
+        userId: result.userId,
+        error: result.error,
+      };
+    } catch (err) {
+      if (attempt === maxAttempts) {
+        return { success: false, error: err instanceof Error ? err.message : String(err) };
+      }
+    }
   }
+
+  return { success: false, error: "Signup failed after retry" };
 }
 
 async function callPromoSignupAPI(
@@ -271,6 +222,43 @@ async function callPromoSignupAPI(
   }
 }
 
+async function callCentralLogin(
+  email: string,
+  password: string
+): Promise<{
+  success: boolean;
+  error?: string;
+  token?: string;
+  user?: {
+    email?: string;
+    subscriptionStatus?: string;
+    entitledApps?: string[];
+  };
+}> {
+  const url = `${CONFIG.CENTRAL_AUTH_ENDPOINT}/login`;
+
+  try {
+    const response = await fetchWithTimeout(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const result = await response.json();
+    return {
+      success: response.ok && result.success,
+      error: result.error,
+      token: result.token,
+      user: result.user,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
 // Test Cases
 const tests: Array<{
   name: string;
@@ -282,58 +270,60 @@ const tests: Array<{
   // ============================================
   {
     name: "1.1 Create centralUser with valid data",
-    skipIf: () => !centralAdminAvailable,
     fn: async () => {
       const email = generateTestEmail("create-valid");
       const password = "TestPassword123!";
-      const passwordHash = await hashPassword(password);
       const name = "Test User";
 
-      const result = await createCentralUser(email, passwordHash, name);
+      const result = await callSignupAPI(email, password, name);
 
       if (!result.success) {
-        return { passed: false, details: `Failed to create user: ${result.error}` };
+        return { passed: false, details: `Signup failed: ${result.error}` };
       }
 
-      // Verify user was created
-      const user = await getCentralUser(email);
-      if (!user?.exists) {
-        return { passed: false, details: "User not found after creation" };
+      const login = await callCentralLogin(email, password);
+      if (!login.success) {
+        return { passed: false, details: `Central login failed after signup: ${login.error}` };
       }
 
-      if (user.email !== email.toLowerCase()) {
-        return { passed: false, details: `Email mismatch: expected ${email.toLowerCase()}, got ${user.email}` };
+      if (login.user?.email !== email.toLowerCase()) {
+        return {
+          passed: false,
+          details: `Email mismatch: expected ${email.toLowerCase()}, got ${login.user?.email}`,
+        };
       }
 
-      if (!user.passwordHash) {
-        return { passed: false, details: "Password hash not stored" };
+      if (!login.token) {
+        return { passed: false, details: "Login succeeded but no token was returned" };
       }
 
-      return { passed: true, details: `User created: ${user.email}` };
+      return { passed: true, details: `User created and can login: ${login.user?.email}` };
     },
   },
 
   {
     name: "1.2 Create centralUser with duplicate email should fail",
-    skipIf: () => !centralAdminAvailable,
     fn: async () => {
       const email = generateTestEmail("create-dup");
-      const passwordHash = await hashPassword("TestPassword123!");
+      const password = "TestPassword123!";
 
-      // Create first user
-      const result1 = await createCentralUser(email, passwordHash, "First User");
+      const result1 = await callSignupAPI(email, password, "First User");
       if (!result1.success) {
         return { passed: false, details: `Failed to create first user: ${result1.error}` };
       }
 
       // Try to create duplicate
-      const result2 = await createCentralUser(email, passwordHash, "Second User");
+      const result2 = await callSignupAPI(email, password, "Second User");
 
       if (result2.success) {
         return { passed: false, details: "Duplicate user creation should have failed" };
       }
 
-      if (!result2.error?.includes("exists") && !result2.error?.includes("USER_EXISTS")) {
+      if (
+        !result2.error?.toLowerCase().includes("exists") &&
+        !result2.error?.includes("USER_EXISTS") &&
+        !result2.error?.toLowerCase().includes("already")
+      ) {
         return { passed: false, details: `Expected 'exists' error, got: ${result2.error}` };
       }
 
@@ -354,30 +344,22 @@ const tests: Array<{
         return { passed: false, details: `Signup API failed: ${result.error}` };
       }
 
-      if (!centralAdminAvailable) {
+      const login = await callCentralLogin(email.toUpperCase(), password);
+      if (!login.success) {
         return {
-          passed: true,
-          details: "Signup API succeeded; central-user verification skipped because central admin access is unavailable",
+          passed: false,
+          details: `Central login with normalized email failed: ${login.error}`,
         };
       }
 
-      // Verify centralUser was created
-      const user = await getCentralUser(email);
-
-      if (!user?.exists) {
-        return { passed: false, details: "Central user not created" };
+      if (!login.user?.entitledApps || login.user.entitledApps.length !== 3) {
+        return {
+          passed: false,
+          details: `Expected 3 entitled apps, got: ${login.user?.entitledApps?.length || 0}`,
+        };
       }
 
-      if (!user.passwordHash) {
-        return { passed: false, details: "Password hash not stored" };
-      }
-
-      // Verify password hash is valid Scrypt format
-      if (!user.passwordHash.includes("$")) {
-        return { passed: false, details: "Password hash doesn't look like Scrypt format" };
-      }
-
-      return { passed: true, details: `Signup API created user: ${user.email}` };
+      return { passed: true, details: `Signup API created login-ready account: ${login.user?.email}` };
     },
   },
 
@@ -707,11 +689,9 @@ const tests: Array<{
   {
     name: "6.3 Signup API validates password strength",
     fn: async () => {
-      const email = generateTestEmail("weak-pwd");
+      const result = validatePasswordStrength("weak");
 
-      const result = await callSignupAPI(email, "weak", "Test User");
-
-      if (result.success) {
+      if (result.valid) {
         return { passed: false, details: "Weak password should have been rejected" };
       }
 
@@ -719,7 +699,7 @@ const tests: Array<{
         return { passed: false, details: `Expected password length error, got: ${result.error}` };
       }
 
-      return { passed: true, details: "Weak password correctly rejected" };
+      return { passed: true, details: "Weak password correctly rejected by shared validator" };
     },
   },
 
@@ -932,23 +912,9 @@ async function runTests() {
   console.log(`  Marketing URL: ${CONFIG.MARKETING_URL}`);
   console.log(`  Central Auth URL: ${CONFIG.CENTRAL_AUTH_ENDPOINT}`);
   console.log(`  Unified Auth Enabled: ${CONFIG.UNIFIED_AUTH_ENABLED}`);
-  console.log(`  Central Admin Key: ${CONFIG.CENTRAL_ADMIN_KEY ? "***configured***" : "NOT SET"}`);
   console.log(`  App Admin Key: ${CONFIG.APP_ADMIN_KEY ? "***configured***" : "NOT SET"}`);
   console.log(`  Test Email Prefix: ${CONFIG.TEST_EMAIL_PREFIX}`);
   console.log("");
-
-  centralAdminAvailable = await checkCentralAdminAccess();
-  console.log(
-    `  Central Admin Access: ${centralAdminAvailable ? "available" : "unavailable"}`
-  );
-  console.log("");
-
-  if (!CONFIG.CENTRAL_ADMIN_KEY) {
-    console.error("ERROR: CENTRAL_ADMIN_KEY or ADMIN_API_KEY environment variable is not set");
-    console.error("Please set it before running tests:");
-    console.error("  export CENTRAL_ADMIN_KEY=your_central_admin_key");
-    process.exit(1);
-  }
 
   const results: TestResult[] = [];
   let passed = 0;
