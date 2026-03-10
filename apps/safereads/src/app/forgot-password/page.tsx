@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
       }
 
       // Success - store email for reset page and show confirmation
-      localStorage.setItem("safereads_reset_email", email);
+      localStorage.setItem("safereads_reset_email", emailToSend);
       setSubmitted(true);
       setLoading(false);
     } catch (err) {

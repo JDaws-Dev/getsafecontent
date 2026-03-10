@@ -35,7 +35,7 @@ function ForgotPasswordPage() {
       }
 
       // Success - store email for reset page and show confirmation
-      localStorage.setItem('safetube_reset_email', email);
+      localStorage.setItem('safetube_reset_email', emailToSend);
       setSubmitted(true);
       setLoading(false);
     } catch (err) {

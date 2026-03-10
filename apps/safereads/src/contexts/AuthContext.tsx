@@ -266,13 +266,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const data = await response.json();
 
-      // The endpoint always returns success for security (don't reveal if email exists)
-      // But it may return OAUTH_ONLY code if the user uses Google sign-in
       if (data.code === "OAUTH_ONLY") {
         return {
           success: false,
           error: data.error,
           code: "OAUTH_ONLY",
+        };
+      }
+
+      if (!response.ok || !data.success) {
+        return {
+          success: false,
+          error: data.error || "Failed to send password reset email",
+          code: data.code,
         };
       }
 
