@@ -248,11 +248,20 @@ export const setSubscriptionStatusByEmailInternal = internalMutation({
       .first();
 
     // Map status to valid subscription status type
-    type SubscriptionStatus = "trial" | "active" | "lifetime" | "canceled" | "past_due" | "incomplete";
-    const validStatuses: SubscriptionStatus[] = ["trial", "active", "lifetime", "canceled", "past_due", "incomplete"];
-    const mappedStatus: SubscriptionStatus = validStatuses.includes(args.status as SubscriptionStatus)
-      ? (args.status as SubscriptionStatus)
-      : "active";
+    // IMPORTANT: Include "expired", "inactive", and "cancelled" (British spelling from webhook) to properly handle revocation
+    type SubscriptionStatus = "trial" | "active" | "lifetime" | "canceled" | "past_due" | "incomplete" | "expired" | "inactive";
+    const validStatuses: SubscriptionStatus[] = ["trial", "active", "lifetime", "canceled", "past_due", "incomplete", "expired", "inactive"];
+
+    // Handle both American "canceled" and British "cancelled" spellings
+    let normalizedStatus = args.status;
+    if (normalizedStatus === "cancelled") {
+      normalizedStatus = "canceled";
+    }
+
+    // Default to "inactive" (not "active"!) for unrecognized statuses to prevent unauthorized access
+    const mappedStatus: SubscriptionStatus = validStatuses.includes(normalizedStatus as SubscriptionStatus)
+      ? (normalizedStatus as SubscriptionStatus)
+      : "inactive";
 
     if (!user) {
       // Create new user with the specified status

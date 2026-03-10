@@ -1,9 +1,120 @@
 import { httpRouter } from "convex/server";
-import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { httpAction, action } from "./_generated/server";
+import { api, internal } from "./_generated/api";
 import { auth } from "./auth";
 import verifyCentralCredentials from "./verifyCentralCredentials";
-import { login, verifyToken, requestPasswordReset, resetPassword, generateOAuthToken } from "./authEndpoints";
+import { verifyToken, resetPassword, generateOAuthToken } from "./authEndpoints";
+import { Scrypt } from "lucia";
+import { SignJWT } from "jose";
+import { v } from "convex/values";
+
+const scrypt = new Scrypt();
+const JWT_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
+const OTP_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
+ * Public action to process password reset
+ * This is defined here to ensure it's bundled with http.ts
+ * Must be public (not internal) for httpAction to call via api.xxx
+ */
+export const processPasswordResetAction = action({
+  args: {
+    email: v.string(),
+  },
+  handler: async (
+    ctx,
+    args
+  ): Promise<{
+    success: boolean;
+    emailSent?: boolean;
+    error?: string;
+    code?: string;
+  }> => {
+    const email = args.email.toLowerCase().trim();
+    console.log(`[processPasswordResetAction] Processing for: ${email}`);
+
+    // Get user credentials
+    const credentials = await ctx.runQuery(
+      internal.signupInternal.getUserCredentials,
+      { email }
+    );
+
+    console.log(
+      `[processPasswordResetAction] Credentials: exists=${credentials.exists}, hasPasswordAuth=${credentials.hasPasswordAuth}`
+    );
+
+    if (!credentials.exists) {
+      console.log(`[processPasswordResetAction] No user found for: ${email}`);
+      return { success: true, emailSent: false };
+    }
+
+    // Check if user uses OAuth
+    if (!credentials.hasPasswordAuth && credentials.hasOAuthAuth) {
+      console.log(`[processPasswordResetAction] OAuth-only account: ${email}`);
+      return {
+        success: false,
+        code: "OAUTH_ONLY",
+        error:
+          "This account uses Google sign-in. Please use the Google sign-in option instead.",
+      };
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const now = Date.now();
+    const expiresAt = now + OTP_EXPIRY_MS;
+
+    // Delete existing tokens
+    try {
+      await ctx.runMutation(internal.passwordReset.deleteExistingTokens, {
+        email,
+      });
+    } catch (err) {
+      console.error(`[processPasswordResetAction] Delete tokens failed:`, err);
+    }
+
+    // Create new token
+    try {
+      await ctx.runMutation(internal.passwordReset.createToken, {
+        email,
+        token: otp,
+        expiresAt,
+      });
+    } catch (err) {
+      console.error(`[processPasswordResetAction] Create token failed:`, err);
+      return { success: false, error: "Failed to create reset token" };
+    }
+
+    // Send email
+    const emailResult = await ctx.runAction(
+      internal.emails.sendPasswordResetEmail,
+      { email, otp }
+    );
+
+    if (!emailResult.success) {
+      console.error(`[processPasswordResetAction] Email failed: ${emailResult.error}`);
+      return {
+        success: false,
+        error: "Failed to send password reset email. Please try again later.",
+      };
+    }
+
+    console.log(`[processPasswordResetAction] Email sent successfully`);
+    return { success: true, emailSent: true };
+  },
+});
+
+function getJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET || process.env.ADMIN_KEY;
+  if (!secret) {
+    throw new Error("JWT_SECRET or ADMIN_KEY environment variable is required");
+  }
+  return new TextEncoder().encode(secret);
+}
 
 const http = httpRouter();
 
@@ -11,23 +122,151 @@ const http = httpRouter();
 auth.addHttpRoutes(http);
 
 /**
- * Login Endpoint - Public-facing JWT authentication
- *
- * This is the primary authentication endpoint for all Safe Family apps.
- * Users call this endpoint directly (no admin key required).
- *
- * POST /login
- * Body: { email: string, password: string }
- *
- * Returns:
- * - JWT token for authentication
- * - User info (email, name, subscriptionStatus, entitledApps)
- * - Token expiration timestamp
+ * Login Endpoint - Inline implementation to bypass bundler caching issues
  */
 http.route({
   path: "/login",
   method: "POST",
-  handler: login,
+  handler: httpAction(async (ctx, request): Promise<Response> => {
+    const headers = {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "X-Api-Version": "14",
+    };
+
+    // Handle CORS preflight
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers });
+    }
+
+    // Parse request body
+    let body: { email?: string; password?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid JSON body" }),
+        { status: 400, headers }
+      );
+    }
+
+    const { email, password } = body;
+
+    // Validate inputs
+    if (!email || typeof email !== "string") {
+      return new Response(
+        JSON.stringify({ success: false, error: "Email is required" }),
+        { status: 400, headers }
+      );
+    }
+
+    if (!password || typeof password !== "string") {
+      return new Response(
+        JSON.stringify({ success: false, error: "Password is required" }),
+        { status: 400, headers }
+      );
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    try {
+      // Use ACTION to bypass database caching in httpActions
+      // Actions run in a separate Node.js environment with fresh database access
+      const loginResult = await ctx.runAction(api.loginHelper.performLogin, {
+        email: normalizedEmail,
+        password,
+      });
+
+      // Check result from the action
+      if (!loginResult.success) {
+        // Map action error codes to HTTP responses
+        switch (loginResult.error) {
+          case "USER_NOT_FOUND":
+          case "INVALID_PASSWORD":
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: "Invalid email or password",
+              }),
+              { status: 401, headers }
+            );
+          case "OAUTH_ONLY":
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: "This account uses Google sign-in. Please use the Google sign-in option.",
+                code: "OAUTH_ONLY",
+              }),
+              { status: 401, headers }
+            );
+          case "INCOMPLETE_SIGNUP":
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: "Please complete your account setup by clicking 'Forgot password?'.",
+                code: "INCOMPLETE_SIGNUP",
+              }),
+              { status: 403, headers }
+            );
+          case "PASSWORD_RESET_REQUIRED":
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: "Please reset your password by clicking 'Forgot password?'.",
+                code: "PASSWORD_RESET_REQUIRED",
+              }),
+              { status: 403, headers }
+            );
+          default:
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: "Invalid email or password",
+              }),
+              { status: 401, headers }
+            );
+        }
+      }
+
+      // Generate JWT token
+      const now = Math.floor(Date.now() / 1000);
+      const expiresAt = now + JWT_EXPIRY_SECONDS;
+
+      const token = await new SignJWT({
+        sub: loginResult.userId,
+        email: loginResult.email,
+        entitledApps: loginResult.entitledApps || [],
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt(now)
+        .setExpirationTime(expiresAt)
+        .setIssuer("getsafefamily.com")
+        .sign(getJwtSecret());
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          token,
+          expiresAt,
+          user: {
+            email: loginResult.email,
+            name: loginResult.name || null,
+            subscriptionStatus: loginResult.subscriptionStatus || "trial",
+            entitledApps: loginResult.entitledApps || [],
+          },
+        }),
+        { status: 200, headers }
+      );
+    } catch (error) {
+      console.error("[login] Error:", error);
+      return new Response(
+        JSON.stringify({ success: false, error: "Internal server error" }),
+        { status: 500, headers }
+      );
+    }
+  }),
 });
 
 http.route({
@@ -80,23 +319,118 @@ http.route({
 });
 
 /**
- * Request Password Reset Endpoint - Send OTP via email
+ * Request Password Reset Endpoint - Inline implementation to bypass bundler issues
  *
- * This endpoint is called by app frontends when a user wants to reset their password.
- * It generates an OTP, stores it, and sends an email.
+ * IMPORTANT: This endpoint uses an internal action (processPasswordResetAction)
+ * to handle the actual work. Actions run in a separate Node.js environment with
+ * fresh database access, bypassing the httpAction database visibility issues.
  *
  * POST /requestPasswordReset
  * Body: { email: string }
- *
- * Returns:
- * - Always success for security (don't reveal if email exists)
- * - OTP email is sent if user exists with password auth
- * - Returns OAUTH_ONLY code if user uses Google sign-in
  */
 http.route({
   path: "/requestPasswordReset",
   method: "POST",
-  handler: requestPasswordReset,
+  handler: httpAction(async (ctx, request): Promise<Response> => {
+    const headers = {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "X-Api-Version": "5",
+    };
+
+    // Handle CORS preflight
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers });
+    }
+
+    // Parse request body
+    let body: { email?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid JSON body" }),
+        { status: 400, headers }
+      );
+    }
+
+    const { email } = body;
+
+    if (!email || typeof email !== "string") {
+      return new Response(
+        JSON.stringify({ success: false, error: "Email is required" }),
+        { status: 400, headers }
+      );
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    try {
+      // Use action to process password reset
+      // Actions run with fresh database access, bypassing httpAction isolation issues
+      console.log(`[requestPasswordReset] Calling processPasswordResetAction for: ${normalizedEmail}`);
+      let result;
+      try {
+        result = await ctx.runAction(api.http.processPasswordResetAction, {
+          email: normalizedEmail,
+        });
+      } catch (actionErr) {
+        console.error("[requestPasswordReset] Action call failed:", actionErr);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Password reset service temporarily unavailable.",
+          }),
+          { status: 500, headers }
+        );
+      }
+
+      console.log(`[requestPasswordReset] Action result:`, result);
+
+      // Handle OAuth-only accounts
+      if (!result.success && result.code === "OAUTH_ONLY") {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            code: "OAUTH_ONLY",
+            error: result.error,
+          }),
+          { status: 200, headers }
+        );
+      }
+
+      // Handle errors
+      if (!result.success && result.error) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: result.error,
+          }),
+          { status: 500, headers }
+        );
+      }
+
+      // Success (whether email was sent or not - we don't reveal if user exists)
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "If an account exists with this email, a password reset code has been sent.",
+        }),
+        { status: 200, headers }
+      );
+    } catch (error) {
+      console.error("[requestPasswordReset] Error:", error);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "An error occurred. Please try again later.",
+        }),
+        { status: 500, headers }
+      );
+    }
+  }),
 });
 
 http.route({
@@ -1189,94 +1523,6 @@ http.route({
 });
 
 /**
- * Update Central Password Endpoint
- *
- * Updates a user's password in the central auth database.
- * Called by sync-password API route when a user changes password on any app.
- *
- * POST /updateCentralPassword?key=API_KEY
- * Body: { email, passwordHash, sourceApp }
- */
-http.route({
-  path: "/updateCentralPassword",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const headers = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Content-Type": "application/json",
-    };
-
-    // Verify API key from query params
-    const url = new URL(request.url);
-    const key = url.searchParams.get("key");
-    const expectedKey = process.env.ADMIN_KEY;
-
-    if (!expectedKey || key !== expectedKey) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Unauthorized" }),
-        { status: 401, headers }
-      );
-    }
-
-    try {
-      const body = await request.json();
-
-      if (!body.email || typeof body.email !== "string") {
-        return new Response(
-          JSON.stringify({ success: false, error: "Email is required" }),
-          { status: 400, headers }
-        );
-      }
-
-      if (!body.passwordHash || typeof body.passwordHash !== "string") {
-        return new Response(
-          JSON.stringify({ success: false, error: "Password hash is required" }),
-          { status: 400, headers }
-        );
-      }
-
-      console.log(`[updateCentralPassword] Updating for ${body.email} (source: ${body.sourceApp || "unknown"})`);
-
-      const { internal } = await import("./_generated/api");
-
-      const result = await ctx.runMutation(internal.signupInternal.updatePassword, {
-        email: body.email,
-        passwordHash: body.passwordHash,
-      });
-
-      return new Response(JSON.stringify(result), {
-        status: result.success ? 200 : 404,
-        headers,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Internal server error";
-      console.error("[updateCentralPassword] Error:", error);
-      return new Response(
-        JSON.stringify({ success: false, error: message }),
-        { status: 500, headers }
-      );
-    }
-  }),
-});
-
-http.route({
-  path: "/updateCentralPassword",
-  method: "OPTIONS",
-  handler: httpAction(async () => {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-      },
-    });
-  }),
-});
-
-/**
  * Get Central User Credentials Endpoint
  *
  * Returns user data including password hash for provisioning to apps.
@@ -1863,6 +2109,64 @@ http.route({
         "Access-Control-Allow-Headers": "Content-Type",
       },
     });
+  }),
+});
+
+/**
+ * Delete User By ID Endpoint
+ *
+ * Admin endpoint to delete a user by their exact ID.
+ * Used to clean up duplicate users.
+ *
+ * GET /deleteUserById?userId=xxx&key=API_KEY&reason=optional_reason
+ */
+http.route({
+  path: "/deleteUserById",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    const userId = url.searchParams.get("userId");
+    const key = url.searchParams.get("key");
+    const reason = url.searchParams.get("reason") || "Admin deletion by ID";
+
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
+    };
+
+    // Verify API key
+    const expectedKey = process.env.ADMIN_KEY;
+    if (!expectedKey || key !== expectedKey) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "userId is required" }),
+        { status: 400, headers }
+      );
+    }
+
+    try {
+      const result = await ctx.runMutation(api.accounts.deleteUserById, {
+        userId: userId as any,
+        reason,
+      });
+
+      return new Response(JSON.stringify(result), { status: 200, headers });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Internal server error";
+      console.error("[deleteUserById] Error:", error);
+      return new Response(
+        JSON.stringify({ error: message }),
+        { status: 500, headers }
+      );
+    }
   }),
 });
 

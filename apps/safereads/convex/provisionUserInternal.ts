@@ -43,12 +43,14 @@ export const provisionUserInternal = internalMutation({
       : "inactive";
 
     // Map subscription status to SafeReads typed union
-    const validStatuses = ["trial", "active", "lifetime", "canceled", "past_due", "incomplete"] as const;
+    // IMPORTANT: Include "inactive" and "expired" to properly handle revocation
+    const validStatuses = ["trial", "active", "lifetime", "canceled", "past_due", "incomplete", "inactive", "expired"] as const;
     type SubscriptionStatus = (typeof validStatuses)[number];
 
+    // Default to "inactive" (not "active"!) for unrecognized statuses to prevent unauthorized access
     const mappedStatus = validStatuses.includes(effectiveStatus as SubscriptionStatus)
       ? (effectiveStatus as SubscriptionStatus)
-      : "active";
+      : "inactive";
 
     if (existingUser) {
       userId = existingUser._id;
