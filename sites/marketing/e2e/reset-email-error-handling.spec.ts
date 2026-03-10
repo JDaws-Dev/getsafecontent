@@ -34,6 +34,9 @@ for (const app of APPS) {
         await route.fulfill({
           status: 500,
           contentType: "application/json",
+          headers: {
+            "access-control-allow-origin": "*",
+          },
           body: JSON.stringify({
             success: false,
             error: "Failed to send password reset email. Please try again later.",
@@ -52,7 +55,11 @@ for (const app of APPS) {
       ).toBeVisible();
 
       await expect(
-        page.getByText(/check your email|6-digit code|code has been sent/i)
+        page.getByRole("heading", { name: /check your email/i })
+      ).not.toBeVisible();
+
+      await expect(
+        page.getByRole("button", { name: /enter reset code/i })
       ).not.toBeVisible();
 
       const storedEmail = await page.evaluate((storageKey) => {

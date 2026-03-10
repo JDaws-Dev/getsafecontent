@@ -37,7 +37,7 @@ Playwright browser tests that verify:
 - `e2e/login-edge-states.spec.ts`
 - `e2e/safetube-forgot-password.spec.ts`
 
-`e2e/reset-email-error-handling.spec.ts` is currently excluded from that gate because the production forgot-password flow is not using the mocked request path this repo expects, so the spec is red for contract drift rather than a confirmed user-facing bug.
+`e2e/reset-email-error-handling.spec.ts` is currently excluded from that gate because the live apps still transition to the success UI after an intercepted `500` from `/requestPasswordReset`. The source fix is on `codex-auth-cleanup`, but it is not yet verified in a deployed environment.
 
 ## Prerequisites
 
