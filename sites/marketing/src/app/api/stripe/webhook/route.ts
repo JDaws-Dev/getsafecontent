@@ -561,11 +561,7 @@ async function revokeAppAccess(
   const revokePromises = apps.map(async (app) => {
     const endpoint = APP_ENDPOINTS[app];
 
-    // SafeReads doesn't have setSubscriptionStatus yet
-    if (app === "safereads") {
-      console.log(`SafeReads revocation for ${email} requires manual handling`);
-      return { app, success: true, note: "manual handling required" };
-    }
+    // SafeReads uses the same setSubscriptionStatus endpoint as other apps
 
     const url = `${endpoint}/setSubscriptionStatus?email=${encodedEmail}&status=expired&key=${encodedKey}`;
 

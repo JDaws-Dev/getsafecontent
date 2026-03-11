@@ -185,7 +185,7 @@ export const deleteUserByEmail = internalMutation({
     // Find the user
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
       .first();
 
     if (!user) {
