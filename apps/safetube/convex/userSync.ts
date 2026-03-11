@@ -83,14 +83,16 @@ export const applyCouponCode = mutation({
 });
 
 /**
- * Get SafeTube user data by email
+ * Get SafeTube user data by email.
+ * Email is normalized to lowercase for consistent lookups.
  */
 export const getSafeTubeUserByEmail = query({
   args: { email: v.string() },
   handler: async (ctx, args) => {
+    const normalizedEmail = args.email.toLowerCase();
     return await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", normalizedEmail))
       .first();
   },
 });
@@ -105,10 +107,12 @@ export const ensureSafeTubeUser = mutation({
     name: v.string(),
   },
   handler: async (ctx, args) => {
+    const normalizedEmail = args.email.toLowerCase();
+
     // Check if SafeTube user already exists
     const existing = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", normalizedEmail))
       .first();
 
     if (existing) {
@@ -117,7 +121,7 @@ export const ensureSafeTubeUser = mutation({
     }
 
     // User doesn't exist locally, create them
-    console.warn(`[ensureSafeTubeUser] Creating missing user: ${args.email}`);
+    console.warn(`[ensureSafeTubeUser] Creating missing user: ${normalizedEmail}`);
 
     // Generate a unique family code
     let familyCode = "";
@@ -136,9 +140,9 @@ export const ensureSafeTubeUser = mutation({
       codeExists = !!existingCode;
     }
 
-    // Create the missing user with trial status
+    // Create the missing user with trial status (always store lowercase email)
     const userId = await ctx.db.insert("users", {
-      email: args.email,
+      email: normalizedEmail,
       name: args.name,
       familyCode: familyCode,
       createdAt: Date.now(),
@@ -146,7 +150,7 @@ export const ensureSafeTubeUser = mutation({
     });
 
     console.log(
-      `[ensureSafeTubeUser] Created missing user: ${args.email} -> ${userId}`
+      `[ensureSafeTubeUser] Created missing user: ${normalizedEmail} -> ${userId}`
     );
 
     return { userId, wasCreated: true };
@@ -167,7 +171,7 @@ export const updateSafeTubeUserSubscription = mutation({
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
       .first();
 
     if (!user) {
