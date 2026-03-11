@@ -15,18 +15,20 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+    return localStorage.getItem("safefamily_reset_email") || "";
+  });
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Get email from localStorage (set during forgot password flow)
   useEffect(() => {
-    const storedEmail = localStorage.getItem("safefamily_reset_email") || "";
-    if (!storedEmail) {
+    if (!email) {
       router.push("/forgot-password");
-    } else {
-      setEmail(storedEmail);
     }
-  }, [router]);
+  }, [email, router]);
 
   // Handle individual code digit input
   const handleCodeChange = (index: number, value: string) => {
@@ -105,34 +107,6 @@ export default function ResetPasswordPage() {
         newPassword: password,
         flow: "reset-verification",
       });
-
-      // Sync password to other apps via API endpoint (fire and forget)
-      // This runs in the background after the password reset succeeds
-      fetch("/api/auth/trigger-sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            console.log(
-              "[ResetPasswordPage] Password synced to other apps:",
-              result
-            );
-          } else {
-            console.warn(
-              "[ResetPasswordPage] Password sync failed (user may need to reset on other apps):",
-              result.error
-            );
-          }
-        })
-        .catch((err) => {
-          console.warn(
-            "[ResetPasswordPage] Password sync error (user may need to reset on other apps):",
-            err
-          );
-        });
 
       // Success!
       setSuccess(true);

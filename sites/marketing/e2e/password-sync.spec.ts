@@ -1,8 +1,8 @@
 /**
- * Password Sync E2E Tests
+ * Central Password Update E2E Tests
  *
- * Verifies that changing password on one app syncs to all other apps
- * via the central auth system.
+ * Verifies that password changes are enforced consistently across apps
+ * because Marketing is the central auth system for the suite.
  *
  * Usage:
  *   npx playwright test e2e/password-sync.spec.ts
@@ -231,11 +231,11 @@ test.describe("Password Change UI - SafeReads", () => {
   });
 });
 
-test.describe("Password Sync Flow", () => {
-  test("7. [FULL FLOW] Password change syncs across apps", async ({ page }) => {
-    // This test creates a user, changes password on SafeTunes,
-    // and verifies it works on other apps
-    const email = generateEmail("password-sync");
+test.describe("Central Password Update Flow", () => {
+  test("7. [FULL FLOW] Password change is honored across apps", async ({ page }) => {
+    // This test creates a user, changes the password in one app,
+    // and verifies central auth enforces the new password everywhere.
+    const email = generateEmail("password-update");
     console.log(`
   Test email: ${email}
   Original password: ${ORIGINAL_PASSWORD}
@@ -246,7 +246,7 @@ test.describe("Password Sync Flow", () => {
     await page.goto(`${MARKETING_URL}/signup`);
     await page.waitForLoadState("networkidle");
 
-    await page.locator('input[name="name"]').fill("Password Sync Test");
+    await page.locator('input[name="name"]').fill("Central Password Update Test");
     await page.locator('input[name="email"]').fill(email);
     await page.locator('input[name="password"]').fill(ORIGINAL_PASSWORD);
     await page.locator('input[name="confirmPassword"]').fill(ORIGINAL_PASSWORD);
@@ -396,7 +396,7 @@ test.describe("Password Sync Flow", () => {
   - New password works on SafeTube
   - New password works on SafeReads
   - Old password rejected on all apps
-  - Central auth (Marketing) has new hash
+  - Marketing central auth is the source of truth
     `);
 
     // Pause for manual verification
@@ -440,8 +440,8 @@ test.describe("Password Sync Flow", () => {
   });
 });
 
-test.describe("Central Auth Update Verification", () => {
-  test("9. [ADMIN] Verify central auth has updated password hash", async ({
+test.describe("Central Auth Verification", () => {
+  test("9. [ADMIN] Verify central auth reflects the updated password", async ({
     page,
   }) => {
     test.skip(
@@ -462,8 +462,9 @@ test.describe("Central Auth Update Verification", () => {
      - Should have updated password hash
      - Hash format: Scrypt (not $2a$/$2b$ bcrypt)
 
-  3. Check audit logs:
-     /admin/audit-logs should show password_sync action
+  3. Verify app logins:
+     - New password works everywhere
+     - Old password is rejected everywhere
     `);
 
     await page.pause();

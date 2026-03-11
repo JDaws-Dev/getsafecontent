@@ -20,7 +20,6 @@ let checkoutLimiter: Ratelimit | null = null;
 let demoLimiter: Ratelimit | null = null;
 let newsletterLimiter: Ratelimit | null = null;
 let signupLimiter: Ratelimit | null = null;
-let syncPasswordLimiter: Ratelimit | null = null;
 
 function getCheckoutLimiter(): Ratelimit | null {
   if (!checkoutLimiter) {
@@ -86,23 +85,7 @@ function getSignupLimiter(): Ratelimit | null {
   return signupLimiter;
 }
 
-function getSyncPasswordLimiter(): Ratelimit | null {
-  if (!syncPasswordLimiter) {
-    const r = getRedis();
-    if (r) {
-      // 10 requests per minute for password sync (app-to-app internal calls)
-      syncPasswordLimiter = new Ratelimit({
-        redis: r,
-        limiter: Ratelimit.slidingWindow(10, "1 m"),
-        prefix: "ratelimit:sync-password:",
-        analytics: true,
-      });
-    }
-  }
-  return syncPasswordLimiter;
-}
-
-export type RateLimitType = "checkout" | "demo" | "newsletter" | "signup" | "sync-password";
+export type RateLimitType = "checkout" | "demo" | "newsletter" | "signup";
 
 /**
  * Check rate limit for a request
@@ -128,9 +111,6 @@ export async function checkRateLimit(
       break;
     case "signup":
       limiter = getSignupLimiter();
-      break;
-    case "sync-password":
-      limiter = getSyncPasswordLimiter();
       break;
   }
 
@@ -193,11 +173,6 @@ export async function getRateLimitHeaders(
     case "signup":
       limiter = getSignupLimiter();
       break;
-    case "sync-password":
-      limiter = getSyncPasswordLimiter();
-      break;
-    default:
-      limiter = null;
   }
 
   if (!limiter) {
