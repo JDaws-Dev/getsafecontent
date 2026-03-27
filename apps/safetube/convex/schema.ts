@@ -39,6 +39,8 @@ export default defineSchema({
 
     // Central accounts sync
     centralAccessCacheExpiry: v.optional(v.number()), // When central access cache expires (for 5-min caching)
+    // Trial expiration tracking
+    trialWarningEmailSent: v.optional(v.boolean()), // Whether trial expiring warning email was sent
   })
     .index("email", ["email"]) // Required by Convex Auth
     .index("phone", ["phone"]) // Required by Convex Auth
