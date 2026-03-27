@@ -51,6 +51,8 @@ export default defineSchema({
     redeemedCoupon: v.optional(v.string()), // Coupon code that was redeemed
     // Central accounts sync
     centralAccessCacheExpiry: v.optional(v.number()), // When central access cache expires (for 5-min caching)
+    // Trial expiration tracking
+    trialWarningEmailSent: v.optional(v.boolean()), // Whether trial expiring warning email was sent
 
     // === Central accounts fields (for marketing site /account page) ===
     trialStartedAt: v.optional(v.number()), // Unix timestamp when trial started

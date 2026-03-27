@@ -717,6 +717,57 @@ async function sendBundleSignupNotification(
   }
 }
 
+// Helper to send admin notification when a trial converts to paid subscription
+async function sendTrialConversionNotification(
+  email: string,
+  customerName: string | null,
+  apps: AppName[],
+  subscriptionId: string
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const appNames = apps.map((a) => {
+    switch (a) {
+      case "safetunes": return "SafeTunes";
+      case "safetube": return "SafeTube";
+      case "safereads": return "SafeReads";
+    }
+  });
+
+  const emailContent = `
+    <h1>💰 Trial Converted to Paid!</h1>
+
+    <p>A trial user just made their first payment.</p>
+
+    <h2>Customer Details:</h2>
+    <ul>
+      <li><strong>Name:</strong> ${customerName || "Not provided"}</li>
+      <li><strong>Email:</strong> ${email}</li>
+      <li><strong>Apps:</strong> ${appNames.join(", ")}</li>
+      <li><strong>Subscription:</strong> ${subscriptionId}</li>
+      <li><strong>Date:</strong> ${new Date().toLocaleString()}</li>
+    </ul>
+
+    <p><a href="https://dashboard.stripe.com/search?query=${encodeURIComponent(email)}" style="background: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin: 16px 0;">View in Stripe →</a></p>
+
+    <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
+    <p style="color: #6b7280; font-size: 14px;">Automated trial conversion alert — Safe Family</p>
+  `;
+
+  try {
+    await resend.emails.send({
+      from: "Safe Family <notifications@getsafefamily.com>",
+      to: process.env.ADMIN_EMAIL || "jeremiah@getsafefamily.com",
+      subject: `💰 Conversion: ${customerName || email} — trial → paid (${appNames.join("+")})`,
+      html: emailContent,
+    });
+    console.log(`Trial conversion notification sent for ${email}`);
+  } catch (error) {
+    console.error("Failed to send trial conversion notification:", error);
+  }
+}
+
 // Helper to send URGENT alert email for failed provisioning
 async function sendProvisioningFailureAlert(
   email: string,
@@ -1035,11 +1086,24 @@ export async function POST(req: Request) {
                 // Continue with app provisioning even if central update fails
               }
 
+              // Check if this is a trial→active conversion (first real payment)
+              const prevAttrs = (event.data as Stripe.Event.Data & {
+                previous_attributes?: { status?: string; metadata?: Stripe.Metadata };
+              }).previous_attributes;
+
+              if (prevAttrs?.status === "trialing") {
+                // Trial just converted to paid! Send admin conversion notification
+                await sendTrialConversionNotification(
+                  email,
+                  customer.name || null,
+                  newApps,
+                  subscriptionId
+                );
+              }
+
               // Check if apps changed by comparing with previous state
               // The previous_attributes field contains the old metadata if it changed
-              const previousAttributes = (event.data as Stripe.Event.Data & {
-                previous_attributes?: { metadata?: Stripe.Metadata };
-              }).previous_attributes;
+              const previousAttributes = prevAttrs;
 
               if (previousAttributes?.metadata) {
                 // Apps metadata changed - sync access

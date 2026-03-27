@@ -8,15 +8,18 @@
  * @module
  */
 
+import type * as addChannelAdmin from "../addChannelAdmin.js";
 import type * as admin from "../admin.js";
 import type * as adminDashboard from "../adminDashboard.js";
 import type * as ai_channelReview from "../ai/channelReview.js";
 import type * as blockedSearches from "../blockedSearches.js";
 import type * as channelRequests from "../channelRequests.js";
 import type * as channels from "../channels.js";
+import type * as crons from "../crons.js";
 import type * as deleteUser from "../deleteUser.js";
 import type * as emails from "../emails.js";
 import type * as extensionApi from "../extensionApi.js";
+import type * as fixUserData from "../fixUserData.js";
 import type * as grantLifetime from "../grantLifetime.js";
 import type * as http from "../http.js";
 import type * as httpRateLimit from "../httpRateLimit.js";
@@ -29,6 +32,8 @@ import type * as stripe from "../stripe.js";
 import type * as stripeActions from "../stripeActions.js";
 import type * as subscriptionEvents from "../subscriptionEvents.js";
 import type * as timeLimits from "../timeLimits.js";
+import type * as trialExpiration from "../trialExpiration.js";
+import type * as trialExpirationActions from "../trialExpirationActions.js";
 import type * as userSync from "../userSync.js";
 import type * as users from "../users.js";
 import type * as videoRequests from "../videoRequests.js";
@@ -43,15 +48,18 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  addChannelAdmin: typeof addChannelAdmin;
   admin: typeof admin;
   adminDashboard: typeof adminDashboard;
   "ai/channelReview": typeof ai_channelReview;
   blockedSearches: typeof blockedSearches;
   channelRequests: typeof channelRequests;
   channels: typeof channels;
+  crons: typeof crons;
   deleteUser: typeof deleteUser;
   emails: typeof emails;
   extensionApi: typeof extensionApi;
+  fixUserData: typeof fixUserData;
   grantLifetime: typeof grantLifetime;
   http: typeof http;
   httpRateLimit: typeof httpRateLimit;
@@ -64,6 +72,8 @@ declare const fullApi: ApiFromModules<{
   stripeActions: typeof stripeActions;
   subscriptionEvents: typeof subscriptionEvents;
   timeLimits: typeof timeLimits;
+  trialExpiration: typeof trialExpiration;
+  trialExpirationActions: typeof trialExpirationActions;
   userSync: typeof userSync;
   users: typeof users;
   videoRequests: typeof videoRequests;
