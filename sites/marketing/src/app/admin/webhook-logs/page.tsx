@@ -8,6 +8,7 @@ const EVENT_LABELS: Record<WebhookEventType, string> = {
   "checkout.session.completed": "Checkout Completed",
   "customer.subscription.updated": "Subscription Updated",
   "customer.subscription.deleted": "Subscription Deleted",
+  "invoice.paid": "Payment Received",
   "invoice.payment_failed": "Payment Failed",
   unknown: "Unknown",
 };

@@ -865,6 +865,109 @@ ${failedApps.map(f => {
   }
 }
 
+// Helper to send payment receipt email to user
+async function sendPaymentReceiptEmail(
+  email: string,
+  customerName: string | null,
+  amountPaid: number,
+  invoiceUrl: string | null,
+  periodEnd: Date | null
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const name = customerName || "there";
+  const amount = `$${(amountPaid / 100).toFixed(2)}`;
+  const nextBillingDate = periodEnd
+    ? periodEnd.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+    : "your next billing date";
+
+  const emailContent = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h1 style="color: #1a1a1a;">Payment Receipt</h1>
+
+      <p>Hi ${name},</p>
+
+      <p>Thanks for your continued subscription to Safe Family! Here's your receipt:</p>
+
+      <div style="background: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 4px 0;"><strong>Amount:</strong> ${amount}</p>
+        <p style="margin: 4px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</p>
+        <p style="margin: 4px 0;"><strong>Next billing date:</strong> ${nextBillingDate}</p>
+      </div>
+
+      ${invoiceUrl ? `<p><a href="${invoiceUrl}" style="color: #2563eb;">View full invoice →</a></p>` : ""}
+
+      <p>If you have any questions about your subscription, just reply to this email.</p>
+
+      <p>— Jeremiah, Safe Family</p>
+
+      <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
+      <p style="color: #9ca3af; font-size: 12px;">Safe Family · <a href="https://getsafefamily.com" style="color: #9ca3af;">getsafefamily.com</a></p>
+    </div>
+  `;
+
+  try {
+    await resend.emails.send({
+      from: "Safe Family <notifications@getsafefamily.com>",
+      replyTo: "jeremiah@getsafefamily.com",
+      to: email,
+      subject: `Your Safe Family receipt — ${amount}`,
+      html: emailContent,
+    });
+    console.log(`Payment receipt sent to ${email} for ${amount}`);
+  } catch (error) {
+    console.error(`Failed to send payment receipt to ${email}:`, error);
+  }
+}
+
+// Helper to send re-engagement email after cancellation
+async function sendCancellationReengagementEmail(
+  email: string,
+  customerName: string | null
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const name = customerName || "there";
+
+  const emailContent = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h1 style="color: #1a1a1a;">We're sorry to see you go</h1>
+
+      <p>Hi ${name},</p>
+
+      <p>Your Safe Family subscription has ended. Your kids' approved music, videos, and books are still saved — if you ever want to come back, everything will be right where you left it.</p>
+
+      <p>If there's anything we could have done better, I'd genuinely love to hear about it. Just reply to this email.</p>
+
+      <p>And if you change your mind, you can resubscribe anytime:</p>
+
+      <p><a href="https://getsafefamily.com/signup" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Resubscribe →</a></p>
+
+      <p>Thanks for giving Safe Family a try.</p>
+
+      <p>— Jeremiah, Safe Family</p>
+
+      <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
+      <p style="color: #9ca3af; font-size: 12px;">Safe Family · <a href="https://getsafefamily.com" style="color: #9ca3af;">getsafefamily.com</a></p>
+    </div>
+  `;
+
+  try {
+    await resend.emails.send({
+      from: "Jeremiah at Safe Family <jeremiah@getsafefamily.com>",
+      replyTo: "jeremiah@getsafefamily.com",
+      to: email,
+      subject: "Your Safe Family subscription has ended",
+      html: emailContent,
+    });
+    console.log(`Cancellation re-engagement email sent to ${email}`);
+  } catch (error) {
+    console.error(`Failed to send re-engagement email to ${email}:`, error);
+  }
+}
+
 export async function POST(req: Request) {
   const startTime = Date.now();
   const body = await req.text();
@@ -1205,7 +1308,66 @@ export async function POST(req: Request) {
               webhookContext.errors = result.errors;
               webhookContext.status = "partial_failure";
             }
+
+            // Send re-engagement email (skip lifetime users — they shouldn't be cancelled)
+            await sendCancellationReengagementEmail(email, webhookContext.customerName);
           }
+        }
+        break;
+      }
+
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const email = invoice.customer_email;
+
+        // Skip the first invoice (checkout.session.completed already handles initial signup)
+        // billing_reason "subscription_cycle" = recurring payment
+        if (invoice.billing_reason !== "subscription_cycle") {
+          console.log(`Skipping invoice.paid for ${email} (billing_reason: ${invoice.billing_reason})`);
+          break;
+        }
+
+        console.log(`Recurring payment received from ${email}, amount: ${invoice.amount_paid}, invoice: ${invoice.id}`);
+
+        webhookContext.email = email;
+        webhookContext.amountCents = invoice.amount_paid;
+        webhookContext.metadata = {
+          invoiceId: invoice.id,
+          billingReason: invoice.billing_reason,
+        };
+
+        if (email) {
+          const customer = typeof invoice.customer === "string"
+            ? await getStripe().customers.retrieve(invoice.customer) as Stripe.Customer
+            : null;
+          const customerName = customer?.name || null;
+          webhookContext.customerName = customerName;
+
+          // Get next billing date from subscription
+          let periodEnd: Date | null = null;
+          const invoiceAny = invoice as unknown as { subscription?: string | null };
+          const subscriptionId = typeof invoiceAny.subscription === "string"
+            ? invoiceAny.subscription
+            : null;
+          if (subscriptionId) {
+            try {
+              const sub = await getStripe().subscriptions.retrieve(subscriptionId);
+              const periodEndTs = (sub as unknown as { current_period_end?: number }).current_period_end;
+              if (periodEndTs) {
+                periodEnd = new Date(periodEndTs * 1000);
+              }
+            } catch {
+              // Non-critical
+            }
+          }
+
+          await sendPaymentReceiptEmail(
+            email,
+            customerName,
+            invoice.amount_paid,
+            invoice.hosted_invoice_url || null,
+            periodEnd
+          );
         }
         break;
       }
