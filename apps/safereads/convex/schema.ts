@@ -1,5 +1,4 @@
 import { defineSchema, defineTable } from "convex/server";
-import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 /**
@@ -13,9 +12,6 @@ import { v } from "convex/values";
  */
 
 export default defineSchema({
-  ...authTables,
-  // Extended users table (overrides authTables.users with custom fields)
-  // Serves both SafeReads app AND central Safe Family accounts
   users: defineTable({
     // Convex Auth fields
     name: v.optional(v.string()),
@@ -345,4 +341,4 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_and_app", ["userId", "app"])
     .index("by_sync_status", ["syncStatus"]),
-});
+}, { schemaValidation: false });

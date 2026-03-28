@@ -70,26 +70,6 @@ export const getUserByEmailInternal = internalQuery({
 });
 
 /**
- * Public query to check if a user has an authAccounts entry.
- * Used by forgot password page to show helpful message if user doesn't exist.
- * NOTE: This is legacy - with JWT auth, passwords are managed in Marketing.
- */
-export const checkAuthAccountExistsPublic = query({
-  args: { email: v.string() },
-  handler: async (ctx, args) => {
-    const authAccount = await ctx.db
-      .query("authAccounts")
-      .withIndex("providerAndAccountId", (q) =>
-        q.eq("provider", "password").eq("providerAccountId", args.email.toLowerCase())
-      )
-      .first();
-
-    // Only return exists boolean - don't leak any other info
-    return { exists: !!authAccount, email: args.email };
-  },
-});
-
-/**
  * Mark onboarding as complete for a user by email.
  */
 export const completeOnboarding = mutation({

@@ -1,12 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
-import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  // Spread Convex Auth tables (authAccounts, authRefreshTokens, authSessions, authVerificationCodes, authVerifiers, etc.)
-  ...authTables,
-
-  // Override the users table with Convex Auth fields + SafeTunes custom fields
   users: defineTable({
     // Convex Auth required fields
     name: v.optional(v.string()),

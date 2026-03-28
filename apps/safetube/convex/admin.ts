@@ -299,25 +299,6 @@ export const deleteUserByEmail = internalMutation({
       await ctx.db.delete(e._id);
     }
 
-    // Delete Convex Auth data for this user
-    // Delete auth accounts (OAuth, password, etc.)
-    const authAccounts = await ctx.db
-      .query("authAccounts")
-      .withIndex("userIdAndProvider", (q) => q.eq("userId", user._id))
-      .collect();
-    for (const a of authAccounts) {
-      await ctx.db.delete(a._id);
-    }
-
-    // Delete auth sessions
-    const authSessions = await ctx.db
-      .query("authSessions")
-      .withIndex("userId", (q) => q.eq("userId", user._id))
-      .collect();
-    for (const s of authSessions) {
-      await ctx.db.delete(s._id);
-    }
-
     // Delete the user
     await ctx.db.delete(user._id);
 
@@ -463,24 +444,6 @@ export const deleteOwnAccount = mutation({
       for (const e of events) {
         await ctx.db.delete(e._id);
       }
-    }
-
-    // Delete auth accounts
-    const authAccounts = await ctx.db
-      .query("authAccounts")
-      .withIndex("userIdAndProvider", (q) => q.eq("userId", user._id))
-      .collect();
-    for (const a of authAccounts) {
-      await ctx.db.delete(a._id);
-    }
-
-    // Delete auth sessions (will effectively log them out everywhere)
-    const authSessions = await ctx.db
-      .query("authSessions")
-      .withIndex("userId", (q) => q.eq("userId", user._id))
-      .collect();
-    for (const s of authSessions) {
-      await ctx.db.delete(s._id);
     }
 
     // Delete the user record

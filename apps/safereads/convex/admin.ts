@@ -393,23 +393,6 @@ export const deleteOwnAccount = mutation({
       deletedReports++;
     }
 
-    // Delete auth accounts and sessions for this user (legacy cleanup)
-    const authAccounts = await ctx.db
-      .query("authAccounts")
-      .withIndex("userIdAndProvider", (q) => q.eq("userId", user._id))
-      .collect();
-    for (const account of authAccounts) {
-      await ctx.db.delete(account._id);
-    }
-
-    const authSessions = await ctx.db
-      .query("authSessions")
-      .withIndex("userId", (q) => q.eq("userId", user._id))
-      .collect();
-    for (const session of authSessions) {
-      await ctx.db.delete(session._id);
-    }
-
     // Finally, delete the user
     await ctx.db.delete(user._id);
 

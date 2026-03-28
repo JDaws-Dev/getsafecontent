@@ -424,7 +424,7 @@ async function generateUniqueFamilyCodeInternal(ctx: any): Promise<string> {
 export const provisionUserInternal = internalMutation({
   args: {
     email: v.string(),
-    passwordHash: v.string(), // Scrypt hash from central auth
+    passwordHash: v.optional(v.union(v.string(), v.null())), // Accepted but ignored (auth handled by Marketing)
     name: v.union(v.string(), v.null()),
     subscriptionStatus: v.string(),
     entitledToThisApp: v.boolean(),
@@ -477,77 +477,16 @@ export const provisionUserInternal = internalMutation({
       console.log(`[provisionUser] Created new user: ${args.email} with familyCode: ${familyCode}`);
     }
 
-    // 2. Check if authAccounts entry exists for password provider
-    // Query authAccounts using the providerAndAccountId index
-    const existingAuthAccount = await ctx.db
-      .query("authAccounts")
-      .withIndex("providerAndAccountId", (q) =>
-        q.eq("provider", "password").eq("providerAccountId", args.email.toLowerCase())
-      )
-      .first();
-
-    let authAccountCreated = false;
-    let authAccountUpdated = false;
-
-    if (!existingAuthAccount) {
-      // Create authAccounts entry for password authentication
-      // This is the KEY step that allows login to work
-      await ctx.db.insert("authAccounts", {
-        userId,
-        provider: "password",
-        providerAccountId: args.email.toLowerCase(),
-        secret: args.passwordHash, // The Scrypt hash from central
-      });
-      authAccountCreated = true;
-
-      console.log(`[provisionUser] Created authAccount for: ${args.email}`);
-    } else if (args.passwordHash !== existingAuthAccount.secret) {
-      // Update password hash if different (password was changed centrally)
-      await ctx.db.patch(existingAuthAccount._id, {
-        secret: args.passwordHash,
-      });
-      authAccountUpdated = true;
-
-      console.log(`[provisionUser] Updated password hash for: ${args.email}`);
-    } else {
-      console.log(`[provisionUser] authAccount already exists with same hash for: ${args.email}`);
-    }
+    // Auth is handled centrally by Marketing (JWT). No local authAccounts needed.
 
     return {
       success: true,
       userId: userId,
       provisioned: wasCreated,
       updated: !wasCreated,
-      authAccountCreated,
-      authAccountUpdated,
+      authAccountCreated: false,
+      authAccountUpdated: false,
     };
   },
 });
 
-/**
- * Query to check if a user has an authAccounts entry (for debugging).
- */
-export const checkAuthAccountExists = internalQuery({
-  args: { email: v.string() },
-  handler: async (ctx, args) => {
-    const authAccount = await ctx.db
-      .query("authAccounts")
-      .withIndex("providerAndAccountId", (q) =>
-        q.eq("provider", "password").eq("providerAccountId", args.email.toLowerCase())
-      )
-      .first();
-
-    if (!authAccount) {
-      return { exists: false, email: args.email };
-    }
-
-    // Don't return the actual secret, just confirm it exists
-    return {
-      exists: true,
-      email: args.email,
-      userId: authAccount.userId,
-      provider: authAccount.provider,
-      hasSecret: !!authAccount.secret,
-    };
-  },
-});
