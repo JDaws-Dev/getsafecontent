@@ -381,6 +381,8 @@ export default function KidSearch() {
   const [sections, setSections] = useState([]);
   const [funFacts, setFunFacts] = useState([]);
   const [relatedQuestions, setRelatedQuestions] = useState([]);
+  const [searchTime, setSearchTime] = useState(null);
+  const searchStartRef = useRef(null);
 
   // Random suggestions (pick 6 from the pool)
   const randomSuggestions = useMemo(() => {
@@ -478,6 +480,8 @@ export default function KidSearch() {
       return;
     }
 
+    searchStartRef.current = Date.now();
+    setSearchTime(null);
     setSearching(true);
     setBlocked(false);
     setBlockedMessage('');
@@ -512,6 +516,9 @@ export default function KidSearch() {
       setBlocked(true);
     } finally {
       setSearching(false);
+      if (searchStartRef.current) {
+        setSearchTime(((Date.now() - searchStartRef.current) / 1000).toFixed(1));
+      }
       startCooldown();
     }
   };
@@ -996,6 +1003,14 @@ export default function KidSearch() {
         {/* Results: Learn Mode */}
         {results && !searching && !blocked && searchMode === 'learn' && (
           <div className="space-y-5">
+            {/* Search timing */}
+            {searchTime && (
+              <p className="text-xs text-gray-400 flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                Found answer in {searchTime}s{images.length > 0 ? ` · ${images.length} images` : ''}
+              </p>
+            )}
+
             {/* AI Answer — hero card with expandable summary */}
             {aiSummary && (
               <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-5 shadow-lg text-white">
@@ -1074,7 +1089,7 @@ export default function KidSearch() {
                   {relatedQuestions.map((q, index) => (
                     <button
                       key={index}
-                      onClick={() => { setQuery(q); }}
+                      onClick={() => handleSuggestionClick(q)}
                       className="text-left bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all duration-200 active:scale-[0.98] flex items-center gap-3 group"
                     >
                       <div className="w-8 h-8 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
