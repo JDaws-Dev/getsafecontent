@@ -453,11 +453,14 @@ export default function KidSearch() {
     }
   };
 
-  const handleSuggestionClick = (suggestion) => {
+  const handleSuggestionClick = useCallback((suggestion) => {
     setQuery(suggestion);
-    // Auto-submit
-    searchInputRef.current?.focus();
-  };
+    // Auto-submit the search
+    setTimeout(() => {
+      const form = searchInputRef.current?.closest('form');
+      if (form) form.requestSubmit();
+    }, 50);
+  }, []);
 
   const handleImageClick = (index) => {
     setLightboxIndex(index);
@@ -692,25 +695,29 @@ export default function KidSearch() {
                 {searchesRemaining} left
               </span>
             )}
-            <button
-              onClick={() => setSelectedProfile(null)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-all duration-200 active:scale-[0.98]"
-            >
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100">
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ${getColorClass(selectedProfile.color)}`}
               >
                 {selectedProfile.name?.charAt(0).toUpperCase()}
               </div>
               <span className="text-sm font-medium text-gray-700">{selectedProfile.name}</span>
-            </button>
+              <button
+                onClick={() => setSelectedProfile(null)}
+                className="text-xs text-gray-400 hover:text-blue-500 ml-1 transition-colors"
+                aria-label="Switch profile"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+              </button>
+            </div>
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className={`p-2 rounded-xl transition-all duration-200 active:scale-[0.98] ${
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 active:scale-[0.98] ${
                 showHistory ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
               }`}
-              aria-label="Search history"
             >
-              <History className="w-5 h-5" />
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">History</span>
             </button>
           </div>
         </div>
@@ -741,13 +748,15 @@ export default function KidSearch() {
                   >
                     {searching ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : cooldown ? 'Wait...' : 'Search'}
+                    ) : cooldown ? (
+                      <Loader2 className="w-4 h-4 animate-spin opacity-50" />
+                    ) : 'Search'}
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Mode toggle below input */}
+            {/* Mode toggle below input — only show Images tab when images exist */}
             <div className="flex items-center gap-1 mt-2.5">
               <button
                 type="button"
@@ -761,7 +770,7 @@ export default function KidSearch() {
                 <Sparkles className="w-4 h-4" />
                 Learn
               </button>
-              <button
+              {images.length > 0 && <button
                 type="button"
                 onClick={() => setSearchMode('images')}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
@@ -771,8 +780,8 @@ export default function KidSearch() {
                 }`}
               >
                 <ImageIcon className="w-4 h-4" />
-                Images
-              </button>
+                Images ({images.length})
+              </button>}
             </div>
           </form>
         </div>
@@ -932,14 +941,12 @@ export default function KidSearch() {
           <div className="space-y-5">
             {/* AI Answer — hero card */}
             {aiSummary && (
-              <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-6 shadow-lg text-white">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-white" />
-                  </div>
-                  <h2 className="font-bold text-lg">Here's what I found!</h2>
+              <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-5 shadow-lg text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-5 h-5 text-white/80" />
+                  <h2 className="font-bold text-base">Quick Answer</h2>
                 </div>
-                <p className="text-white/95 leading-relaxed text-[15px]">{stripMarkdown(aiSummary)}</p>
+                <p className="text-white/95 leading-relaxed text-[15px] line-clamp-4">{stripMarkdown(aiSummary)}</p>
               </div>
             )}
 
@@ -1034,21 +1041,26 @@ export default function KidSearch() {
           </div>
         )}
 
-        {/* Empty state - suggestions */}
+        {/* Empty state - personalized greeting + suggestions */}
         {!results && !searching && !blocked && (
-          <div className="text-center pt-12">
-            <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="w-10 h-10 text-blue-400" />
+          <div className="text-center pt-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+              <Search className="w-9 h-9 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">What are you curious about?</h2>
-            <p className="text-gray-500 mb-8 text-sm">Type a question or try one of these:</p>
-            <div className="flex flex-wrap justify-center gap-2.5 max-w-lg mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">
+              Hi {selectedProfile.name}! What do you want to learn?
+            </h2>
+            <p className="text-gray-400 mb-8 text-sm">Ask me anything or try one of these</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-lg mx-auto">
               {randomSuggestions.map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="bg-white border border-gray-200 text-gray-700 px-5 py-2.5 rounded-full text-sm hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 active:scale-[0.98]"
+                  className="text-left bg-white border border-gray-200 text-gray-700 px-4 py-3 rounded-xl text-sm hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 active:scale-[0.98] flex items-center gap-3"
                 >
+                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Search className="w-4 h-4 text-blue-400" />
+                  </div>
                   {suggestion}
                 </button>
               ))}
