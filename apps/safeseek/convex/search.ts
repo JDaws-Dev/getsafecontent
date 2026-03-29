@@ -99,7 +99,8 @@ export const performSearch = internalAction({
     const ageMax = kidProfile.ageRange.max;
     const strictness = kidProfile.contentStrictness;
     const blockedTopics = kidProfile.blockedTopics;
-    const customInstructions = searchSettings?.customInstructions || "";
+    const allowedTopics = kidProfile.allowedTopics || [];
+    const customInstructions = kidProfile.customInstructions || searchSettings?.customInstructions || "";
     const ageGroup = getAgeGroup(ageMin);
 
     // --- Step 1: Check cache ---
@@ -200,6 +201,7 @@ Use this reference to ground your answer in facts. Summarize it in a way appropr
 CHILD'S AGE RANGE: ${ageMin}-${ageMax} years old
 CONTENT STRICTNESS: ${strictness}
 ${blockedTopics.length > 0 ? `BLOCKED TOPICS (never discuss these): ${blockedTopics.join(", ")}` : ""}
+${allowedTopics.length > 0 ? `ALLOWED TOPICS (parent has explicitly whitelisted these — override blocked topics if there's a conflict): ${allowedTopics.join(", ")}` : ""}
 ${customInstructions ? `PARENT INSTRUCTIONS: ${customInstructions}` : ""}
 ${wikiSection}
 

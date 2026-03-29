@@ -73,6 +73,8 @@ export const updateProfile = mutation({
     })),
     contentStrictness: v.optional(v.string()),
     blockedTopics: v.optional(v.array(v.string())),
+    allowedTopics: v.optional(v.array(v.string())),
+    customInstructions: v.optional(v.string()),
     allowImageSearch: v.optional(v.boolean()),
     allowFollowUp: v.optional(v.boolean()),
   },
@@ -90,6 +92,8 @@ export const updateProfile = mutation({
     if (args.ageRange !== undefined) updates.ageRange = args.ageRange;
     if (args.contentStrictness !== undefined) updates.contentStrictness = args.contentStrictness;
     if (args.blockedTopics !== undefined) updates.blockedTopics = args.blockedTopics;
+    if (args.allowedTopics !== undefined) updates.allowedTopics = args.allowedTopics;
+    if (args.customInstructions !== undefined) updates.customInstructions = args.customInstructions;
     if (args.allowImageSearch !== undefined) updates.allowImageSearch = args.allowImageSearch;
     if (args.allowFollowUp !== undefined) updates.allowFollowUp = args.allowFollowUp;
 

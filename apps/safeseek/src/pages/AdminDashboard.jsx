@@ -5,6 +5,7 @@ import { api } from '../../convex/_generated/api';
 import { useAuth } from '../contexts/AuthContext';
 import TimeLimits from '../components/admin/TimeLimits';
 import KidProfileEditor from '../components/admin/KidProfileEditor';
+import KidProfileCustomize from '../components/admin/KidProfileCustomize';
 import Toast from '../components/common/Toast';
 import ConfirmModal from '../components/common/ConfirmModal';
 import {
@@ -464,7 +465,7 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles }) {
 }
 
 // --- Profiles Tab ---
-function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editingProfile, setEditingProfile, onDeleteProfile, showToast }) {
+function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editingProfile, setEditingProfile, customizingProfile, setCustomizingProfile, onDeleteProfile, showToast }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -595,6 +596,15 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
                     )}
                   </div>
                 )}
+
+                {/* Customize button */}
+                <button
+                  onClick={() => setCustomizingProfile(profile)}
+                  className="w-full mt-3 pt-3 border-t border-gray-100 text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center justify-center gap-1 py-2 hover:bg-blue-50 rounded-lg transition"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  Customize search settings
+                </button>
               </div>
             );
           })}
@@ -614,6 +624,16 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
             setShowEditor(false);
             setEditingProfile(null);
             showToast(editingProfile ? 'Profile updated!' : 'Profile created!');
+          }}
+        />
+      )}
+
+      {customizingProfile && (
+        <KidProfileCustomize
+          profile={customizingProfile}
+          onClose={() => {
+            setCustomizingProfile(null);
+            showToast('Settings saved!');
           }}
         />
       )}
@@ -774,6 +794,7 @@ export default function AdminDashboard() {
   // Editor state
   const [showEditor, setShowEditor] = useState(false);
   const [editingProfile, setEditingProfile] = useState(null);
+  const [customizingProfile, setCustomizingProfile] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   // Convex mutations
@@ -1073,6 +1094,8 @@ export default function AdminDashboard() {
             setShowEditor={setShowEditor}
             editingProfile={editingProfile}
             setEditingProfile={setEditingProfile}
+            customizingProfile={customizingProfile}
+            setCustomizingProfile={setCustomizingProfile}
             onDeleteProfile={handleDeleteProfile}
             showToast={showToast}
           />

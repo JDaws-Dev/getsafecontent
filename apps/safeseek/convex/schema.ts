@@ -36,6 +36,8 @@ export default defineSchema({
     }),
     contentStrictness: v.string(), // "strict", "moderate", "light"
     blockedTopics: v.array(v.string()),
+    allowedTopics: v.optional(v.array(v.string())), // whitelist overrides
+    customInstructions: v.optional(v.string()), // parent notes to AI
     allowImageSearch: v.boolean(),
     allowFollowUp: v.boolean(),
     createdAt: v.optional(v.number()),

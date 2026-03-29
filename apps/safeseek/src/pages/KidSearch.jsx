@@ -60,8 +60,12 @@ function getColorClass(color) {
 }
 
 // Age range label helper
-function getAgeRangeLabel(profile) {
-  if (profile.ageRange) return `Ages ${profile.ageRange.min}-${profile.ageRange.max}`;
+function getAgeLabel(profile) {
+  if (profile.ageRange) {
+    return profile.ageRange.min === profile.ageRange.max
+      ? `Age ${profile.ageRange.min}`
+      : `Ages ${profile.ageRange.min}-${profile.ageRange.max}`;
+  }
   if (profile.age) return `Age ${profile.age}`;
   return null;
 }
@@ -756,7 +760,7 @@ export default function KidSearch() {
               </div>
             </div>
 
-            {/* Mode toggle below input — only show Images tab when images exist */}
+            {/* Mode toggle */}
             <div className="flex items-center gap-1 mt-2.5">
               <button
                 type="button"
@@ -770,7 +774,7 @@ export default function KidSearch() {
                 <Sparkles className="w-4 h-4" />
                 Learn
               </button>
-              {images.length > 0 && <button
+              <button
                 type="button"
                 onClick={() => setSearchMode('images')}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
@@ -780,8 +784,8 @@ export default function KidSearch() {
                 }`}
               >
                 <ImageIcon className="w-4 h-4" />
-                Images ({images.length})
-              </button>}
+                Images
+              </button>
             </div>
           </form>
         </div>
