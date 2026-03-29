@@ -4,7 +4,8 @@ import {
   Search, Shield, Clock, Eye, Brain, Sparkles, CheckCircle2,
   ArrowRight, Users, Lock, Zap, BookOpen, AlertTriangle, X,
   ChevronDown, ChevronUp, Globe, Ban, Monitor, MessageCircle,
-  Image, Fingerprint
+  Image, Fingerprint, Mic, Volume2, GraduationCap, Accessibility,
+  RefreshCw, Moon, ImageIcon
 } from 'lucide-react';
 
 const features = [
@@ -14,9 +15,24 @@ const features = [
     description: 'No links, no browsing. Kids get direct, age-appropriate explanations written at their reading level.',
   },
   {
-    icon: Users,
-    title: 'Age-Appropriate Content',
-    description: 'AI adjusts vocabulary and depth based on each child\'s age. A 6-year-old and a 12-year-old get different answers.',
+    icon: Mic,
+    title: 'Voice Search',
+    description: 'Kids can speak their questions out loud. Perfect for younger children who can\'t type yet or anyone who prefers talking.',
+  },
+  {
+    icon: Volume2,
+    title: 'Read Aloud',
+    description: 'SafeSeek reads answers out loud with text-to-speech. Great for early readers and kids who learn better by listening.',
+  },
+  {
+    icon: GraduationCap,
+    title: 'Reading Level by Grade',
+    description: 'Parents set K-12 reading levels per kid. Answers match their exact comprehension level, not just a rough age range.',
+  },
+  {
+    icon: Accessibility,
+    title: 'Accessibility Built In',
+    description: 'Adaptations for dyslexia, ADHD, ESL learners, and low vision. Every child can use SafeSeek comfortably.',
   },
   {
     icon: Eye,
@@ -24,19 +40,34 @@ const features = [
     description: 'See every search your child makes. Flagged queries are highlighted so you can follow up on anything concerning.',
   },
   {
-    icon: Clock,
-    title: 'Time Limits',
-    description: 'Set daily search caps and allowed hours. No more late-night research spirals.',
+    icon: RefreshCw,
+    title: 'Flexible Answer Styles',
+    description: '"Make it simpler," "More details," or "Tell me a story" — kids can change how answers are delivered with one tap.',
   },
   {
     icon: Ban,
-    title: 'Blocked Topic Filtering',
-    description: 'Block entire categories: violence, drugs, explicit content, and more. Customize per kid.',
+    title: 'Topic Controls & Requests',
+    description: 'Block or allow topics per kid. Kids can request access to blocked topics, and parents approve or deny from the dashboard.',
+  },
+  {
+    icon: ImageIcon,
+    title: 'Safe Image Results',
+    description: 'Google Images with SafeSearch built in. Real image results, filtered for kids. Visual diagrams for concepts like the water cycle.',
   },
   {
     icon: BookOpen,
     title: 'Wikipedia Integration',
     description: 'Answers are grounded in real facts from trusted sources. No hallucinations, no made-up information.',
+  },
+  {
+    icon: Moon,
+    title: 'Dark Mode',
+    description: 'Easy on the eyes for nighttime research sessions. Kids can switch between light and dark themes.',
+  },
+  {
+    icon: Clock,
+    title: 'Time Limits',
+    description: 'Set daily search caps and allowed hours. No more late-night research spirals.',
   },
 ];
 
@@ -67,6 +98,10 @@ const comparisonRows = [
   { feature: 'Daily time limits', safeseek: true, google: false, googleKids: false },
   { feature: 'Per-kid profiles', safeseek: true, google: false, googleKids: true },
   { feature: 'AI-powered answers', safeseek: true, google: 'Partial', googleKids: false },
+  { feature: 'Voice search', safeseek: true, google: true, googleKids: false },
+  { feature: 'Read aloud (text-to-speech)', safeseek: true, google: false, googleKids: false },
+  { feature: 'Accessibility adaptations', safeseek: true, google: false, googleKids: false },
+  { feature: 'Grade-level reading adjustment', safeseek: true, google: false, googleKids: false },
 ];
 
 const faqs = [
@@ -87,8 +122,20 @@ const faqs = [
     answer: 'SafeSeek is a standalone search experience at its own URL. Your child uses SafeSeek instead of Google. You can block Google and other search engines using Screen Time (Apple), Family Link (Google), or your router settings. SafeSeek becomes their only way to search the internet.',
   },
   {
+    question: 'Can my child talk to SafeSeek?',
+    answer: 'Yes! SafeSeek includes voice search so kids can speak their questions instead of typing. This is especially helpful for younger children who are still learning to type, or anyone who prefers asking questions out loud. SafeSeek can also read answers aloud using text-to-speech, making it a truly hands-free research experience.',
+  },
+  {
+    question: 'Does it work for kids with learning differences?',
+    answer: 'Absolutely. SafeSeek includes built-in accessibility adaptations for dyslexia (OpenDyslexic font, increased spacing), ADHD (reduced distractions, focused layouts), ESL learners (simplified language), and low vision (larger text, high contrast). These can be enabled per kid profile so each child gets an experience tailored to how they learn best.',
+  },
+  {
+    question: 'Can I set a specific reading level?',
+    answer: 'Yes. Parents can set a specific grade level (K through 12) for each kid profile. SafeSeek adjusts vocabulary, sentence complexity, and explanation depth to match. A kindergartner gets simple words and short sentences, while a 10th grader gets detailed, nuanced explanations. Kids can also tap "Make it simpler" or "More details" to adjust answers on the fly.',
+  },
+  {
     question: 'What about images? Can they search for images?',
-    answer: 'SafeSeek focuses on text-based answers and explanations. We don\'t show image search results, which eliminates one of the biggest risks of traditional search engines. When relevant, answers may reference educational diagrams from trusted sources.',
+    answer: 'Yes! SafeSeek includes Google Images integration with SafeSearch filtering built in, so kids see real image results that are filtered for safety. Answers also include visual diagrams and flowcharts for concepts like the water cycle or how volcanoes work, making learning more visual and engaging.',
   },
   {
     question: 'How is this different from Google SafeSearch?',
@@ -247,10 +294,14 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
-                Your kids ask questions. SafeSeek gives them age-appropriate answers — no links, no ads, no rabbit holes. You control the boundaries.
+                Your kids type or speak their questions. SafeSeek gives them age-appropriate answers — no links, no ads, no rabbit holes. You control the boundaries.
               </p>
 
               <div className="flex flex-col sm:flex-row flex-wrap justify-center lg:justify-start gap-2 sm:gap-x-6 text-sm text-gray-500 mb-8">
+                <span className="flex items-center justify-center lg:justify-start gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  Voice search & read aloud
+                </span>
                 <span className="flex items-center justify-center lg:justify-start gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-green-500" />
                   Direct answers, no external links
@@ -261,7 +312,7 @@ export default function LandingPage() {
                 </span>
                 <span className="flex items-center justify-center lg:justify-start gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  AI filters everything first
+                  Grade-level reading adjustment
                 </span>
               </div>
 
@@ -406,8 +457,8 @@ export default function LandingPage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
               Everything parents need
             </h2>
-            <p className="text-gray-600 text-lg max-w-xl mx-auto">
-              Powerful controls, zero hassle. You set the rules, AI does the work.
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Voice search, read aloud, accessibility, grade-level answers, and full parent controls. You set the rules, AI does the work.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -436,7 +487,7 @@ export default function LandingPage() {
           <div className="text-center mb-10 sm:mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">See it in action</h2>
             <p className="text-gray-600 text-lg max-w-xl mx-auto">
-              Here's what happens when your kid searches "How do volcanoes erupt?"
+              Here's what happens when your kid types or asks "How do volcanoes erupt?" — then taps Read Aloud to hear the answer.
             </p>
           </div>
 
@@ -458,8 +509,11 @@ export default function LandingPage() {
               {/* Search bar */}
               <div className="relative mb-6">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <div className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-12 pr-4 py-4 text-gray-700 text-lg font-medium">
+                <div className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-12 pr-12 py-4 text-gray-700 text-lg font-medium">
                   How do volcanoes erupt?
+                </div>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center" title="Voice search">
+                  <Mic className="w-4 h-4 text-blue-600" />
                 </div>
               </div>
 
@@ -487,6 +541,23 @@ export default function LandingPage() {
                       volcanoes also release ash and gases into the air.
                     </p>
                   </div>
+                </div>
+              </div>
+
+              {/* Answer controls */}
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <div className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:bg-blue-200 transition">
+                  <Volume2 className="w-3.5 h-3.5" />
+                  Read Aloud
+                </div>
+                <div className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-medium">
+                  Make it simpler
+                </div>
+                <div className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-medium">
+                  More details
+                </div>
+                <div className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-medium">
+                  Tell me a story
                 </div>
               </div>
 
@@ -615,6 +686,9 @@ export default function LandingPage() {
                   'Unlimited kid profiles',
                   'Unlimited searches',
                   'AI-filtered answers',
+                  'Voice search & read aloud',
+                  'Grade-level reading adjustment',
+                  'Accessibility adaptations',
                   'Parent search dashboard',
                   'Blocked topic controls',
                   'Daily time limits',

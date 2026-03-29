@@ -93,13 +93,15 @@ export default defineSchema({
   // Search result cache — avoids redundant AI calls for identical queries
   searchCache: defineTable({
     normalizedQuery: v.string(),
-    ageGroup: v.string(), // "4-6", "7-9", "10-12", "13-15", "16-18"
-    strictness: v.string(), // "strict", "moderate", "light"
-    response: v.string(), // JSON stringified full response
+    ageGroup: v.string(),
+    strictness: v.string(),
+    profileKey: v.optional(v.string()), // hash of lexile+accessibility for cache differentiation
+    response: v.string(),
     cachedAt: v.number(),
     expiresAt: v.number(),
     timesReused: v.number(),
   })
     .index("by_query", ["normalizedQuery", "ageGroup", "strictness"])
+    .index("by_query_full", ["normalizedQuery", "profileKey"])
     .index("by_expires", ["expiresAt"]),
 }, { schemaValidation: false });

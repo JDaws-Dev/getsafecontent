@@ -32,17 +32,28 @@ export const checkCache = query({
     normalizedQuery: v.string(),
     ageGroup: v.string(),
     strictness: v.string(),
+    profileKey: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const cached = await ctx.db
-      .query("searchCache")
-      .withIndex("by_query", (q) =>
-        q
-          .eq("normalizedQuery", args.normalizedQuery)
-          .eq("ageGroup", args.ageGroup)
-          .eq("strictness", args.strictness)
-      )
-      .first();
+    // Match on full profile key (includes reading level + accessibility)
+    const cached = args.profileKey
+      ? await ctx.db
+          .query("searchCache")
+          .withIndex("by_query_full", (q) =>
+            q
+              .eq("normalizedQuery", args.normalizedQuery)
+              .eq("profileKey", args.profileKey)
+          )
+          .first()
+      : await ctx.db
+          .query("searchCache")
+          .withIndex("by_query", (q) =>
+            q
+              .eq("normalizedQuery", args.normalizedQuery)
+              .eq("ageGroup", args.ageGroup)
+              .eq("strictness", args.strictness)
+          )
+          .first();
 
     if (!cached) return null;
     if (cached.expiresAt < Date.now()) return null;
@@ -79,6 +90,7 @@ export const writeCache = internalMutation({
     normalizedQuery: v.string(),
     ageGroup: v.string(),
     strictness: v.string(),
+    profileKey: v.optional(v.string()),
     response: v.string(),
   },
   handler: async (ctx, args) => {
@@ -87,9 +99,10 @@ export const writeCache = internalMutation({
       normalizedQuery: args.normalizedQuery,
       ageGroup: args.ageGroup,
       strictness: args.strictness,
+      profileKey: args.profileKey,
       response: args.response,
       cachedAt: now,
-      expiresAt: now + 24 * 60 * 60 * 1000, // 24 hours
+      expiresAt: now + 24 * 60 * 60 * 1000,
       timesReused: 0,
     });
   },

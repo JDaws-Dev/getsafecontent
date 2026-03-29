@@ -107,10 +107,13 @@ export const performSearch = internalAction({
 
     // --- Step 1: Check cache ---
     const normalized = normalizeQuery(args.query);
+    // profileKey captures all settings that affect the response
+    const profileKey = [ageGroup, strictness, lexileLevel, ...accessibilityNeeds.sort()].join("|");
     const cacheResult = await ctx.runQuery(api.searchCache.checkCache, {
       normalizedQuery: normalized,
       ageGroup,
       strictness,
+      profileKey,
     });
 
     if (cacheResult) {
@@ -166,7 +169,11 @@ Use this reference to ground your answer in facts. Summarize it in a way appropr
 
 CHILD'S AGE RANGE: ${ageMin}-${ageMax} years old
 CONTENT STRICTNESS: ${strictness}
-${lexileLevel !== "auto" ? `READING LEVEL: ${lexileLevel} grade — write at a ${lexileLevel} grade reading level.` : `Write at the natural reading level for a ${ageMin}-${ageMax} year old.`}
+${lexileLevel !== "auto" ? `CRITICAL — READING LEVEL: ${lexileLevel} grade. You MUST write at a ${lexileLevel} grade reading level. This means:
+- Use vocabulary and sentence structure appropriate for ${lexileLevel} grade
+- A 2nd grader should use very simple words and short sentences (5-8 words)
+- A 12th grader can handle advanced vocabulary, complex ideas, and longer explanations
+- This setting overrides the age-based default. Match the grade level EXACTLY.` : `Write at the natural reading level for a ${ageMin}-${ageMax} year old.`}
 ${accessibilityNeeds.length > 0 ? `ACCESSIBILITY NEEDS: ${accessibilityNeeds.join(", ")}. Adapt your response:
 ${accessibilityNeeds.includes("dyslexia") ? "- DYSLEXIA: Use short sentences (under 15 words). Avoid complex word structures. Use simple, common words. Break paragraphs into small chunks." : ""}
 ${accessibilityNeeds.includes("low-vision") ? "- LOW VISION: Keep answers very concise. The UI will handle large text display." : ""}
@@ -374,6 +381,7 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
       normalizedQuery: normalized,
       ageGroup,
       strictness,
+      profileKey,
       response: JSON.stringify(finalResponse),
     });
 
