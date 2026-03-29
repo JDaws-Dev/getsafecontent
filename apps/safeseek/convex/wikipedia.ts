@@ -193,59 +193,47 @@ async function fetchWikimediaImages(
 }
 
 /**
- * Fetch images from Google Custom Search API.
- * Gracefully returns empty array if API keys are not configured.
+ * Fetch images from Pexels API.
+ * Free, beautiful stock photos with built-in safety.
  */
-export const fetchGoogleImages = internalAction({
+export const fetchPexelsImages = internalAction({
   args: {
     query: v.string(),
-    safeSearch: v.string(),
   },
   handler: async (_ctx, args) => {
-    const GOOGLE_API_KEY = process.env.GOOGLE_SEARCH_API_KEY;
-    const SEARCH_ENGINE_ID = process.env.GOOGLE_SEARCH_ENGINE_ID;
-
-    if (!GOOGLE_API_KEY || !SEARCH_ENGINE_ID) {
-      return [];
-    }
+    const PEXELS_KEY = process.env.PEXELS_API_KEY;
+    if (!PEXELS_KEY) return [];
 
     try {
       const params = new URLSearchParams({
-        key: GOOGLE_API_KEY,
-        cx: SEARCH_ENGINE_ID,
-        q: args.query,
-        searchType: "image",
-        safe: "active",
-        imgSize: "medium",
-        num: "4",
+        query: args.query,
+        per_page: "4",
+        orientation: "landscape",
       });
 
       const response = await fetch(
-        `https://www.googleapis.com/customsearch/v1?${params}`
+        `https://api.pexels.com/v1/search?${params}`,
+        { headers: { Authorization: PEXELS_KEY } }
       );
 
       if (!response.ok) {
-        console.error(
-          "[fetchGoogleImages] Google API error:",
-          response.status,
-          await response.text()
-        );
+        console.error("[fetchPexelsImages] Pexels API error:", response.status);
         return [];
       }
 
       const data = await response.json();
-      const items = data.items || [];
+      const photos = data.photos || [];
 
-      return items.map((item: any) => ({
-        url: item.link,
-        thumbnail: item.image?.thumbnailLink || item.link,
-        title: item.title || "",
-        width: item.image?.width || 0,
-        height: item.image?.height || 0,
-        source: "google",
+      return photos.map((photo: any) => ({
+        url: photo.src?.large || photo.src?.medium || photo.src?.original,
+        thumbnail: photo.src?.medium || photo.src?.small,
+        title: photo.alt || "",
+        width: photo.width || 0,
+        height: photo.height || 0,
+        source: "pexels",
       }));
     } catch (err) {
-      console.error("[fetchGoogleImages] Error:", err);
+      console.error("[fetchPexelsImages] Error:", err);
       return [];
     }
   },

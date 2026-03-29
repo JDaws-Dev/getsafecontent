@@ -286,11 +286,12 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
       };
     }
 
-    // --- Step 6: Collect images (fast — already fetched with Wikipedia) ---
+    // --- Step 6: Collect images from Wikipedia + Pexels ---
     let allImages: ImageResult[] = [];
 
-    if (kidProfile.allowImageSearch && wikiContext) {
-      if (wikiContext.images) {
+    if (kidProfile.allowImageSearch) {
+      // Wikipedia images (already fetched, no extra latency)
+      if (wikiContext?.images) {
         for (const img of wikiContext.images) {
           allImages.push({
             url: img.url,
@@ -301,13 +302,35 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
           });
         }
       }
-      if (allImages.length < 4 && wikiContext.thumbnail) {
+      if (allImages.length < 4 && wikiContext?.thumbnail) {
         const thumbUrl = wikiContext.thumbnail;
         if (!allImages.some((img) => img.url === thumbUrl)) {
           allImages.push({ url: thumbUrl, title: wikiContext.title || "", source: "wikipedia" });
         }
       }
-      allImages = deduplicateImages(allImages, 6);
+
+      // Pexels images (beautiful stock photos to supplement Wikipedia)
+      try {
+        const pexelsImages = await ctx.runAction(internal.wikipedia.fetchPexelsImages, {
+          query: args.query,
+        });
+        if (Array.isArray(pexelsImages)) {
+          for (const img of pexelsImages) {
+            allImages.push({
+              url: img.url,
+              thumbnail: img.thumbnail,
+              title: img.title || "",
+              source: "pexels",
+              width: img.width,
+              height: img.height,
+            });
+          }
+        }
+      } catch {
+        // Pexels fetch failed, continue with Wikipedia images only
+      }
+
+      allImages = deduplicateImages(allImages, 8);
     }
 
     // --- Step 7: Build final response ---
