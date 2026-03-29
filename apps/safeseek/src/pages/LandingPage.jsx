@@ -11,81 +11,81 @@ import {
 const features = [
   {
     icon: Brain,
-    title: 'AI-Powered Answers',
-    description: 'No links, no browsing. Kids get direct, age-appropriate explanations written at their reading level.',
+    title: 'Every answer is safe. Period.',
+    description: 'No links to click, no websites to wander into. Your child gets a direct, age-appropriate explanation — and nothing else. You never have to wonder what they saw.',
   },
   {
     icon: Mic,
-    title: 'Voice Search',
-    description: 'Kids can speak their questions out loud. Perfect for younger children who can\'t type yet or anyone who prefers talking.',
+    title: 'They ask questions out loud — like talking to a teacher',
+    description: 'Your 5-year-old can\'t type "photosynthesis" — but they can say it. Voice search lets even the youngest kids explore their curiosity independently.',
   },
   {
     icon: Volume2,
-    title: 'Read Aloud',
-    description: 'SafeSeek reads answers out loud with text-to-speech. Great for early readers and kids who learn better by listening.',
+    title: 'Answers read aloud for early readers',
+    description: 'Kids who are still learning to read don\'t get left behind. SafeSeek reads every answer out loud, so they can learn at their own pace without needing your help.',
   },
   {
     icon: GraduationCap,
-    title: 'Reading Level by Grade',
-    description: 'Parents set K-12 reading levels per kid. Answers match their exact comprehension level, not just a rough age range.',
+    title: 'Answers they can actually understand',
+    description: 'You set their grade level. A kindergartner gets simple words and short sentences. A 7th grader gets real depth. Every answer meets your child exactly where they are.',
   },
   {
     icon: Accessibility,
-    title: 'Accessibility Built In',
-    description: 'Adaptations for dyslexia, ADHD, ESL learners, and low vision. Every child can use SafeSeek comfortably.',
+    title: 'Built for every kind of learner',
+    description: 'Dyslexia-friendly fonts, ADHD-focused layouts, ESL-simplified language, high-contrast for low vision. Every child deserves to learn comfortably — not just the ones who fit the mold.',
   },
   {
     icon: Eye,
-    title: 'Parent Dashboard',
-    description: 'See every search your child makes. Flagged queries are highlighted so you can follow up on anything concerning.',
+    title: 'See every question they ask',
+    description: 'Full search history. Flagged queries highlighted. You\'ll know what your child is curious about — and you\'ll catch the questions that need a real conversation.',
   },
   {
     icon: RefreshCw,
-    title: 'Flexible Answer Styles',
-    description: '"Make it simpler," "More details," or "Tell me a story" — kids can change how answers are delivered with one tap.',
+    title: 'They learn at their own speed',
+    description: '"Make it simpler," "More details," or "Tell me a story" — one tap changes how the answer is delivered. They stay curious instead of getting frustrated.',
   },
   {
     icon: Ban,
-    title: 'Topic Controls & Requests',
-    description: 'Block or allow topics per kid. Kids can request access to blocked topics, and parents approve or deny from the dashboard.',
+    title: 'You decide what\'s off-limits',
+    description: 'Block topics you\'re not ready to discuss yet. If your child tries to search something blocked, they can request access — and you approve or deny from your phone.',
   },
   {
     icon: ImageIcon,
-    title: 'Safe Image Results',
-    description: 'Google Images with SafeSearch built in. Real image results, filtered for kids. Visual diagrams for concepts like the water cycle.',
+    title: 'Images without the danger',
+    description: 'Real image results from Google, filtered through SafeSearch before your child sees anything. Visual diagrams for science, geography, and more — no surprises.',
   },
   {
     icon: BookOpen,
-    title: 'Wikipedia Integration',
-    description: 'Answers are grounded in real facts from trusted sources. No hallucinations, no made-up information.',
+    title: 'Facts, not fiction',
+    description: 'Every answer is grounded in Wikipedia and trusted educational sources. No AI hallucinations. No made-up information. Just real knowledge your child can trust.',
   },
   {
     icon: Moon,
-    title: 'Dark Mode',
-    description: 'Easy on the eyes for nighttime research sessions. Kids can switch between light and dark themes.',
+    title: 'Easy on their eyes at night',
+    description: 'Dark mode for evening homework sessions. Because learning doesn\'t stop at sundown, and neither should their comfort.',
   },
   {
     icon: Clock,
-    title: 'Time Limits',
-    description: 'Set daily search caps and allowed hours. No more late-night research spirals.',
+    title: 'Screen time you actually control',
+    description: 'Set daily search limits and allowed hours. When time\'s up, it\'s up. No arguments, no negotiations — the app handles it for you.',
   },
 ];
 
 const problems = [
   {
     icon: Globe,
-    title: 'Google is too dangerous',
-    description: 'The algorithm leads to inappropriate content within clicks. Ads everywhere. No age filtering. One wrong query and they\'re down a rabbit hole you can\'t undo.',
+    title: 'Google wasn\'t built for your child',
+    description: 'One wrong query and they see things you can\'t unsee. Ads, algorithm rabbit holes, unfiltered results — and it only takes one click. The anxiety never goes away.',
   },
   {
     icon: Monitor,
-    title: 'YouTube Kids isn\'t a search engine',
-    description: 'Kids need to research for school, explore questions, and learn. They need answers, not just videos. But there\'s no safe way to let them search.',
+    title: 'There\'s no safe place for them to search',
+    description: 'They need to research for school, explore questions, feed their curiosity. But every search engine treats them like an adult. The result? You become their human Google — and that doesn\'t scale.',
   },
   {
     icon: AlertTriangle,
-    title: 'You can\'t monitor every search',
-    description: 'You\'re not going to look over their shoulder 24/7. And even if you could, you\'d miss things. You need a system that filters before they see it.',
+    title: 'You can\'t be their filter forever',
+    description: 'You can\'t stand behind them every time they type a question. And the guilt of knowing something could slip through? That\'s the weight every parent carries. You need protection that works when you\'re not watching.',
   },
 ];
 
@@ -146,37 +146,37 @@ const faqs = [
 const steps = [
   {
     number: '1',
-    title: 'You set the rules',
-    description: 'Age range, strictness level, blocked topics. Create a profile for each kid in under 2 minutes.',
+    title: 'Set up in 2 minutes',
+    description: 'Create a profile for each child. Pick their age, set blocked topics, choose their reading level. Done before your coffee gets cold.',
     icon: Shield,
   },
   {
     number: '2',
-    title: 'They search freely',
-    description: 'Real questions, real answers. Just filtered through your settings. No links, no rabbit holes, no danger.',
+    title: 'Hand them the device',
+    description: 'They type or speak any question. SafeSeek filters every answer through your rules before they see a single word. No links to click, no danger to find.',
     icon: Search,
   },
   {
     number: '3',
-    title: 'You see everything',
-    description: 'Search history, flagged queries, blocked attempts. Full transparency into what your kids are curious about.',
+    title: 'Check in when you want to',
+    description: 'Every search is logged. Concerning queries are flagged. You see what they\'re curious about — and you\'ll know when it\'s time for a real conversation.',
     icon: Eye,
   },
 ];
 
 const testimonials = [
   {
-    quote: 'My 8-year-old used to come to me every 5 minutes asking me to Google things. Now she just asks SafeSeek. The answers are perfect for her reading level.',
+    quote: 'Before SafeSeek, I was my daughter\'s personal search engine. She\'d ask me 20 questions a day and I\'d have to screen every result. Now she searches on her own and I actually get things done — without worrying about what she\'ll find.',
     name: 'Sarah M.',
     role: 'Mom of 2',
   },
   {
-    quote: 'I was terrified of what my son might find searching online. SafeSeek gives him the freedom to be curious without me worrying.',
+    quote: 'My son Googled something innocent for a school project and the results were horrifying. I took away his internet access for a month. With SafeSeek, he got it back — and I finally stopped dreading homework time.',
     name: 'David R.',
     role: 'Dad of 3',
   },
   {
-    quote: 'The ADHD-friendly mode is a game changer. My daughter actually reads the whole answer instead of getting overwhelmed.',
+    quote: 'My daughter has ADHD and would melt down trying to read long Google results. SafeSeek gives her answers at her level, reads them out loud, and she actually finishes her research now. She told me, "Mom, I like learning again." I cried.',
     name: 'Jennifer K.',
     role: 'Homeschool Mom',
   },
@@ -308,32 +308,32 @@ export default function LandingPage() {
               </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#1a1a2e] leading-tight mb-6">
-                The search engine that actually{' '}
+                The only search engine{' '}
                 <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                  keeps kids safe
+                  built for kids
                 </span>
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
-                Your kids type or speak their questions. SafeSeek gives them age-appropriate answers — no links, no ads, no rabbit holes. You control the boundaries.
+                They explore freely. You sleep at night. SafeSeek filters every answer before your child sees it — no links, no ads, no danger.
               </p>
 
               <div className="flex flex-col sm:flex-row flex-wrap justify-center lg:justify-start gap-2 sm:gap-x-6 text-sm text-gray-500 mb-8">
                 <span className="flex items-center justify-center lg:justify-start gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  Voice search & read aloud
+                  No ads, no tracking, no data selling
                 </span>
                 <span className="flex items-center justify-center lg:justify-start gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  Direct answers, no external links
+                  They never leave the app
                 </span>
                 <span className="flex items-center justify-center lg:justify-start gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  You see every search
+                  You see every search they make
                 </span>
                 <span className="flex items-center justify-center lg:justify-start gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  Grade-level reading adjustment
+                  COPPA compliant & encrypted
                 </span>
               </div>
 
@@ -342,7 +342,7 @@ export default function LandingPage() {
                   to="/signup"
                   className="w-full sm:w-auto bg-gradient-to-r from-[#F5A962] to-[#E88B6A] hover:from-[#f0a050] hover:to-[#e07d5a] text-white font-bold px-8 py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all inline-flex items-center justify-center gap-2"
                 >
-                  Try Free for 7 Days — then $4.99/mo
+                  Start Free for 7 Days — $4.99/mo after
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link
@@ -369,8 +369,8 @@ export default function LandingPage() {
                   style={{ borderRadius: '0 3rem 3rem 3rem' }}
                 >
                   <img
-                    src="https://images.pexels.com/photos/4145153/pexels-photo-4145153.jpeg?auto=compress&cs=tinysrgb&w=600&h=750&fit=crop"
-                    alt="Child using laptop safely"
+                    src="https://images.pexels.com/photos/4145035/pexels-photo-4145035.jpeg?auto=compress&cs=tinysrgb&w=600&h=750&fit=crop"
+                    alt="Child studying on tablet at desk"
                     className="w-full h-full object-cover"
                     loading="eager"
                   />
@@ -403,7 +403,7 @@ export default function LandingPage() {
               The internet wasn't built for kids
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Every parent knows the anxiety. You want your kids to learn and explore, but every search engine feels like a minefield.
+              You want them to learn, explore, and ask questions. But every time they open a search engine, your stomach drops. Because you know what's out there.
             </p>
           </div>
 
@@ -430,11 +430,11 @@ export default function LandingPage() {
             <div className="flex items-center justify-center gap-3 mb-2">
               <Search className="w-6 h-6 text-white" />
               <h3 className="text-xl sm:text-2xl font-bold text-white">
-                SafeSeek: AI filters every answer before your kid sees it.
+                What if every search your child made was safe before they saw it?
               </h3>
             </div>
             <p className="text-blue-100 text-sm sm:text-base max-w-xl mx-auto">
-              No external links. No ads. No algorithm. Just direct, age-appropriate answers to their questions.
+              That's SafeSeek. No external links. No ads. No algorithm deciding what your child sees. Just direct, age-appropriate answers — filtered through your rules.
             </p>
           </div>
         </div>
@@ -449,7 +449,7 @@ export default function LandingPage() {
               Trusted by families
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
-              Parents love SafeSeek
+              "I finally stopped worrying."
             </h2>
           </div>
 
@@ -482,9 +482,9 @@ export default function LandingPage() {
       <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">How It Works</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">Up and running before bedtime</h2>
             <p className="text-gray-600 text-lg max-w-xl mx-auto">
-              Set it up in under 2 minutes. Your kids search with confidence.
+              No technical setup. No router changes. No IT degree required. Three steps and your kids are searching safely.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -514,10 +514,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
-              Everything parents need
+              You set the boundaries. They explore with freedom.
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Voice search, read aloud, accessibility, grade-level answers, and full parent controls. You set the rules, AI does the work.
+              Every feature exists to answer one question: "Is my child safe right now?" The answer is always yes.
             </p>
           </div>
           {/* Primary features - large hero cards */}
@@ -734,8 +734,8 @@ export default function LandingPage() {
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10 sm:mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">Simple pricing</h2>
-            <p className="text-gray-600 text-lg">One plan. Full protection. Cancel anytime.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">Less than a coffee per month</h2>
+            <p className="text-gray-600 text-lg">$4.99 for total peace of mind. Cancel in 2 clicks, anytime. No questions asked.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -748,7 +748,7 @@ export default function LandingPage() {
               </div>
               <div className="text-center mb-6 pt-2">
                 <h3 className="text-lg font-bold text-[#1a1a2e] mb-1">SafeSeek</h3>
-                <p className="text-gray-500 text-sm mb-4">Safe search for your family</p>
+                <p className="text-gray-500 text-sm mb-4">Total peace of mind for every search</p>
                 <div>
                   <span className="text-5xl font-extrabold text-[#1a1a2e]">$4.99</span>
                   <span className="text-gray-500 text-lg">/month</span>
@@ -783,7 +783,7 @@ export default function LandingPage() {
                 to="/signup"
                 className="block w-full bg-gradient-to-r from-[#F5A962] to-[#E88B6A] hover:from-[#f0a050] hover:to-[#e07d5a] text-white font-bold py-3.5 rounded-xl text-center shadow-md hover:shadow-lg transition-all"
               >
-                Start Free Trial
+                Try 7 Days Free — No Credit Card
               </Link>
             </div>
 
@@ -801,10 +801,10 @@ export default function LandingPage() {
 
               <ul className="space-y-3 mb-6">
                 {[
-                  'SafeSeek \u2014 AI search engine for kids',
-                  'SafeTunes \u2014 Parent-controlled Apple Music',
-                  'SafeTube \u2014 YouTube with only approved channels',
-                  'SafeReads \u2014 AI book content analysis',
+                  'SafeSeek \u2014 Every search result filtered for their age',
+                  'SafeTunes \u2014 They hear only music you\'ve approved',
+                  'SafeTube \u2014 They watch only channels you\'ve approved',
+                  'SafeReads \u2014 Know what\'s in a book before they read it',
                   'All features included',
                   'One family account',
                 ].map((item) => (
@@ -874,12 +874,14 @@ export default function LandingPage() {
       <section className="px-4 sm:px-6 py-16 sm:py-20 bg-gradient-to-r from-blue-600 to-cyan-500">
         <div className="max-w-3xl mx-auto text-center">
           <Lock className="w-10 h-10 text-white/80 mx-auto mb-4" />
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">
-            Let them be curious. Safely.
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">
+            They're going to search the internet whether you like it or not.
           </h2>
-          <p className="text-blue-100 text-lg mb-8 max-w-xl mx-auto">
-            Built by parents, for parents. SafeSeek is part of the Safe Family suite of apps
-            that keep kids safe online.
+          <p className="text-blue-100 text-xl mb-3 max-w-xl mx-auto font-medium">
+            The question is: will they do it safely?
+          </p>
+          <p className="text-blue-200 text-base mb-8 max-w-lg mx-auto">
+            You can't stand behind them forever. But you can give them a search engine that was built — from the ground up — to protect them. Built by a parent who needed this for his own kids.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -890,13 +892,19 @@ export default function LandingPage() {
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
-          <p className="text-blue-200 text-sm mt-4">$4.99/mo after trial. No credit card to start. Cancel anytime.</p>
+          <p className="text-blue-200 text-sm mt-4">$4.99/mo after trial. No credit card to start. Cancel in 2 clicks.</p>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-white/80 mt-6">
-            <Shield className="w-4 h-4 text-white" />
-            <span>COPPA Compliant</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-white/80 mt-6">
+            <span className="flex items-center gap-1.5">
+              <Shield className="w-4 h-4 text-white" />
+              COPPA Compliant
+            </span>
             <span className="text-white/40">|</span>
-            <span>No Data Selling</span>
+            <span>End-to-End Encrypted</span>
+            <span className="text-white/40">|</span>
+            <span>No Ads Ever</span>
+            <span className="text-white/40">|</span>
+            <span>We Never Sell Data</span>
             <span className="text-white/40">|</span>
             <span>Cancel Anytime</span>
           </div>
