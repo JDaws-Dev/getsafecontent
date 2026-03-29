@@ -5,8 +5,9 @@ import { api } from '../../convex/_generated/api';
 import {
   Search, Sparkles, ArrowLeft, Clock, History, ChevronRight,
   Shield, AlertCircle, Loader2, X, ChevronLeft, ChevronRight as ChevronRightIcon,
-  Image as ImageIcon, Camera
+  Image as ImageIcon, Camera, Mic, Sun, Moon
 } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 
 // Fun placeholder suggestions for kids
 const SUGGESTIONS = [
@@ -41,6 +42,11 @@ const LOADING_MESSAGES = [
 ];
 
 const SEARCH_COOLDOWN_MS = 2000;
+
+// Check if browser supports speech recognition
+const SpeechRecognition = typeof window !== 'undefined'
+  ? (window.SpeechRecognition || window.webkitSpeechRecognition)
+  : null;
 
 // Get Tailwind color class
 function getColorClass(color) {
@@ -265,7 +271,7 @@ function ImageGallery({ images, onImageClick }) {
             <button
               key={index}
               onClick={() => onImageClick(index)}
-              className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 active:scale-[0.98]"
+              className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 active:scale-[0.98]"
             >
               <div className="aspect-[4/3] overflow-hidden">
                 <img
@@ -281,16 +287,16 @@ function ImageGallery({ images, onImageClick }) {
               {image.source && (
                 <span className={`absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded font-semibold shadow-sm ${
                   image.source === 'wikipedia'
-                    ? 'bg-white/90 text-blue-700'
-                    : 'bg-white/90 text-cyan-700'
+                    ? 'bg-white/90 text-blue-700 dark:bg-gray-800/90 dark:text-blue-300'
+                    : 'bg-white/90 text-cyan-700 dark:bg-gray-800/90 dark:text-cyan-300'
                 }`}>
                   {image.source === 'wikipedia' ? 'Wiki' : 'Google'}
                 </span>
               )}
               {/* Title caption */}
               {image.title && (
-                <div className="px-2 py-1.5 bg-white">
-                  <p className="text-xs text-gray-600 truncate leading-tight">{image.title}</p>
+                <div className="px-2 py-1.5 bg-white dark:bg-gray-800">
+                  <p className="text-xs text-gray-600 dark:text-gray-300 truncate leading-tight">{image.title}</p>
                 </div>
               )}
             </button>
@@ -340,7 +346,7 @@ function SearchSkeleton() {
       {/* Image thumbnails skeleton */}
       <div className="grid grid-cols-3 gap-3">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="relative rounded-xl aspect-[4/3] bg-gray-200 animate-pulse overflow-hidden">
+          <div key={i} className="relative rounded-xl aspect-[4/3] bg-gray-200 dark:bg-gray-700 animate-pulse overflow-hidden">
             <div className="absolute inset-0 animate-shimmer" />
           </div>
         ))}
@@ -353,7 +359,7 @@ function SearchSkeleton() {
           'from-blue-400/60 to-indigo-400/60',
         ];
         return (
-          <div key={i} className="relative rounded-2xl h-24 bg-gray-100 animate-pulse overflow-hidden">
+          <div key={i} className="relative rounded-2xl h-24 bg-gray-100 dark:bg-gray-800 animate-pulse overflow-hidden">
             <div className="absolute inset-0 animate-shimmer" />
             <div className={`h-10 rounded-t-2xl bg-gradient-to-r ${gradients[i]}`}>
               <div className="flex items-center gap-2 px-5 py-2.5">
@@ -362,27 +368,27 @@ function SearchSkeleton() {
               </div>
             </div>
             <div className="px-5 py-3">
-              <div className="h-3 w-full rounded bg-gray-200" />
+              <div className="h-3 w-full rounded bg-gray-200 dark:bg-gray-700" />
             </div>
           </div>
         );
       })}
 
       {/* Did you know skeleton */}
-      <div className="relative rounded-2xl h-20 bg-amber-50 animate-pulse overflow-hidden">
+      <div className="relative rounded-2xl h-20 bg-amber-50 dark:bg-amber-900/30 animate-pulse overflow-hidden">
         <div className="absolute inset-0 animate-shimmer" />
         <div className="p-5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-amber-200/60" />
+          <div className="w-8 h-8 rounded-full bg-amber-200/60 dark:bg-amber-700/60" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 w-28 rounded bg-amber-200/60" />
-            <div className="h-3 w-3/4 rounded bg-amber-200/40" />
+            <div className="h-4 w-28 rounded bg-amber-200/60 dark:bg-amber-700/60" />
+            <div className="h-3 w-3/4 rounded bg-amber-200/40 dark:bg-amber-700/40" />
           </div>
         </div>
       </div>
 
       {/* Rotating text messages */}
       <div className="text-center pt-2">
-        <p className="text-gray-500 text-sm font-medium transition-opacity duration-300">
+        <p className="text-gray-500 dark:text-gray-400 text-sm font-medium transition-opacity duration-300">
           {LOADING_MESSAGES[msgIndex]}
         </p>
       </div>
@@ -395,6 +401,7 @@ export default function KidSearch() {
   const { familyCode: urlFamilyCode } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { resolvedTheme, setTheme } = useTheme();
 
   // State
   const [familyCode, setFamilyCode] = useState(urlFamilyCode || '');
@@ -427,6 +434,11 @@ export default function KidSearch() {
   // Debounce state
   const [cooldown, setCooldown] = useState(false);
   const cooldownTimerRef = useRef(null);
+
+  // Voice search state
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const silenceTimerRef = useRef(null);
 
   const searchInputRef = useRef(null);
   const performSearch = useAction(api.search.searchFromKid);
@@ -509,6 +521,10 @@ export default function KidSearch() {
   useEffect(() => {
     return () => {
       if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current);
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+      }
     };
   }, []);
 
@@ -721,25 +737,111 @@ export default function KidSearch() {
     searchInputRef.current?.focus();
   };
 
+  // ========== Voice Search Handlers ==========
+  const stopListening = useCallback(() => {
+    setIsListening(false);
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch {}
+    }
+  }, []);
+
+  const startListening = useCallback(() => {
+    if (!SpeechRecognition) return;
+
+    // Stop any existing session
+    stopListening();
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognitionRef.current = recognition;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      // Reset silence timer on each result
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setQuery(transcript);
+
+      // Start 5-second silence timer
+      silenceTimerRef.current = setTimeout(() => {
+        recognition.stop();
+      }, 5000);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+      // Auto-submit if there is text
+      setTimeout(() => {
+        const form = searchInputRef.current?.closest('form');
+        if (form && searchInputRef.current?.value?.trim()) {
+          form.requestSubmit();
+        }
+      }, 100);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('[VoiceSearch] Error:', event.error);
+      setIsListening(false);
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+    };
+
+    recognition.start();
+  }, [stopListening]);
+
+  const toggleListening = useCallback(() => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  }, [isListening, startListening, stopListening]);
+
+  // ========== Dark Mode Toggle ==========
+  const toggleDarkMode = useCallback(() => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  }, [resolvedTheme, setTheme]);
+
   // Compute remaining searches status
   const searchesRemaining = canSearchStatus?.remainingSearches;
   const hasSearchLimit = searchesRemaining !== undefined && searchesRemaining !== null;
   const isSearchLimitLow = hasSearchLimit && searchesRemaining <= 5;
 
+  const isDark = resolvedTheme === 'dark';
+
   // ========== FAMILY CODE ENTRY ==========
   if (!familyCode || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center px-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-900 dark:to-slate-900 flex items-center justify-center px-6">
         <div className="w-full max-w-sm text-center">
           {/* Logo */}
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Search className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">SafeSeek</h1>
-          <p className="text-gray-500 mb-8 text-sm">Enter your family code to start searching</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">SafeSeek</h1>
+          <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">Enter your family code to start searching</p>
 
           {error && (
-            <div className={`bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-4 ${codeShake ? 'animate-shake' : ''}`}>
+            <div className={`bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-sm mb-4 ${codeShake ? 'animate-shake' : ''}`}>
               {error}
             </div>
           )}
@@ -750,20 +852,20 @@ export default function KidSearch() {
               value={codeInput}
               onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
               maxLength={6}
-              className="w-full text-center text-2xl font-mono font-bold tracking-widest bg-white border-2 border-gray-200 rounded-xl px-4 py-4 text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 uppercase transition-all duration-200"
+              className="w-full text-center text-2xl font-mono font-bold tracking-widest bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-4 text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 uppercase transition-all duration-200"
               placeholder="------"
               autoFocus
             />
             <button
               type="submit"
               disabled={codeInput.length < 4}
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-300 disabled:to-gray-400 text-white py-3 rounded-xl font-semibold text-lg shadow-md transition-all duration-200 disabled:cursor-not-allowed disabled:shadow-none active:scale-[0.98]"
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-300 disabled:to-gray-400 dark:disabled:from-gray-700 dark:disabled:to-gray-600 text-white py-3 rounded-xl font-semibold text-lg shadow-md transition-all duration-200 disabled:cursor-not-allowed disabled:shadow-none active:scale-[0.98]"
             >
               Start Searching
             </button>
           </form>
 
-          <p className="text-xs text-gray-400 mt-6">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-6">
             Ask your parent for the family code
           </p>
         </div>
@@ -774,32 +876,41 @@ export default function KidSearch() {
   // ========== PROFILE SELECTION ==========
   if (!selectedProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-cyan-50 to-purple-50 animate-gradient-shift flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-cyan-50 to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-gray-900 animate-gradient-shift flex flex-col">
         {/* Header */}
         <header className="px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
               <Search className="w-6 h-6 text-white" />
             </div>
-            <span className="font-bold text-gray-900 text-lg">SafeSeek</span>
+            <span className="font-bold text-gray-900 dark:text-white text-lg">SafeSeek</span>
           </div>
-          <button
-            onClick={() => {
-              setFamilyCode('');
-              setCodeInput('');
-              navigate('/search');
-            }}
-            className="text-gray-500 hover:text-gray-700 text-sm transition flex items-center gap-1"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Change Code
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-200/60 dark:hover:bg-gray-700/60 transition-colors"
+              aria-label="Toggle dark mode"
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button
+              onClick={() => {
+                setFamilyCode('');
+                setCodeInput('');
+                navigate('/search');
+              }}
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm transition flex items-center gap-1"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Change Code
+            </button>
+          </div>
         </header>
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Who's Searching?</h1>
-          <p className="text-gray-600 mb-8">Select your profile</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Who's Searching?</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-8">Select your profile</p>
 
           {kidProfiles && kidProfiles.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-6 max-w-2xl">
@@ -807,38 +918,38 @@ export default function KidSearch() {
                 <button
                   key={profile._id}
                   onClick={() => setSelectedProfile(profile)}
-                  className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/90 backdrop-blur-sm shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-200 transition transform hover:scale-105 active:scale-[0.98]"
+                  className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-500 transition transform hover:scale-105 active:scale-[0.98]"
                 >
                   <div
                     className={`w-20 h-20 rounded-full shadow-md flex items-center justify-center text-white text-2xl font-bold ${getColorClass(profile.color)}`}
                   >
                     {profile.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-gray-900 font-semibold text-lg">{profile.name}</span>
+                  <span className="text-gray-900 dark:text-white font-semibold text-lg">{profile.name}</span>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="text-center bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-sm border border-gray-100 max-w-sm">
-              <div className="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                <Search className="w-10 h-10 text-blue-600" />
+            <div className="text-center bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 max-w-sm">
+              <div className="w-20 h-20 mx-auto mb-4 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center">
+                <Search className="w-10 h-10 text-blue-600 dark:text-blue-400" />
               </div>
-              <p className="text-gray-700 font-medium mb-2">No profiles found for this family code.</p>
-              <p className="text-gray-500 text-sm">Ask your parent to create a profile for you.</p>
+              <p className="text-gray-700 dark:text-gray-200 font-medium mb-2">No profiles found for this family code.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Ask your parent to create a profile for you.</p>
             </div>
           )}
 
           {/* Family Code Display */}
           <div className="mt-12 text-center">
-            <p className="text-gray-500 text-sm">Family Code</p>
-            <p className="text-gray-400 font-mono text-lg tracking-widest">{familyCode}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">Family Code</p>
+            <p className="text-gray-400 dark:text-gray-500 font-mono text-lg tracking-widest">{familyCode}</p>
           </div>
 
           {/* Parent Login Link */}
-          <div className="mt-8 pt-8 border-t border-gray-200/60">
-            <p className="text-center text-gray-500 text-sm">
+          <div className="mt-8 pt-8 border-t border-gray-200/60 dark:border-gray-700/60">
+            <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
               Are you a parent?{' '}
-              <a href="/login" className="text-blue-500 hover:text-blue-600 font-medium">
+              <a href="/login" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
                 Log in here &rarr;
               </a>
             </p>
@@ -853,38 +964,38 @@ export default function KidSearch() {
     const isOutsideHours = canSearchStatus?.reason === 'outside_allowed_hours';
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6">
-        <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-xl">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full text-center shadow-xl">
           {/* Icon */}
           <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 ${
-            isOutsideHours ? 'bg-blue-100' : 'bg-orange-100'
+            isOutsideHours ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-orange-100 dark:bg-orange-900/40'
           }`}>
             <Clock className={`w-8 h-8 ${isOutsideHours ? 'text-blue-500' : 'text-orange-500'}`} />
           </div>
 
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             {isOutsideHours ? 'Not Search Time Yet' : "Time's Up!"}
           </h2>
 
-          <p className="text-gray-600 mb-2">
+          <p className="text-gray-600 dark:text-gray-300 mb-2">
             {isOutsideHours
               ? "It's outside your allowed search hours right now."
               : "You've used all your searches for today."}
           </p>
 
           {isOutsideHours && canSearchStatus?.allowedHoursStart !== undefined && canSearchStatus?.allowedHoursEnd !== undefined && (
-            <p className="text-sm text-blue-600 font-medium mb-6">
+            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-6">
               Come back between {formatHour(canSearchStatus.allowedHoursStart)} and {formatHour(canSearchStatus.allowedHoursEnd)}!
             </p>
           )}
 
           {!isOutsideHours && canSearchStatus?.dailyLimit !== undefined && (
-            <p className="text-sm text-orange-600 font-medium mb-6">
+            <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mb-6">
               You've done {canSearchStatus.dailyLimit} searches today. Come back tomorrow!
             </p>
           )}
 
           {!isOutsideHours && canSearchStatus?.dailyLimit === undefined && (
-            <p className="text-sm text-gray-500 mb-6">Come back tomorrow for more exploring!</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Come back tomorrow for more exploring!</p>
           )}
 
           <button
@@ -903,7 +1014,7 @@ export default function KidSearch() {
 
   // ========== MAIN SEARCH INTERFACE ==========
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white dark:from-gray-900 dark:to-slate-900">
       {/* Lightbox */}
       {lightboxIndex !== null && images.length > 0 && (
         <ImageLightbox
@@ -914,47 +1025,56 @@ export default function KidSearch() {
       )}
 
       {/* Sticky Header */}
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-md shadow-sm">
+      <header className="sticky top-0 z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm dark:shadow-gray-950/30">
         <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-3">
           {/* Left: logo + brand */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
               <Search className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-gray-900 text-lg hidden sm:inline">SafeSeek</span>
+            <span className="font-bold text-gray-900 dark:text-white text-lg hidden sm:inline">SafeSeek</span>
           </div>
 
-          {/* Right: search count + profile + history */}
+          {/* Right: search count + profile + dark mode + history */}
           <div className="flex items-center gap-3">
             {hasSearchLimit && (
               <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
                 isSearchLimitLow
-                  ? 'bg-orange-100 text-orange-700'
-                  : 'bg-green-100 text-green-700'
+                  ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400'
+                  : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400'
               }`}>
                 <Clock className="w-3 h-3" />
                 {searchesRemaining} left
               </span>
             )}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ${getColorClass(selectedProfile.color)}`}
               >
                 {selectedProfile.name?.charAt(0).toUpperCase()}
               </div>
-              <span className="text-sm font-medium text-gray-700">{selectedProfile.name}</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{selectedProfile.name}</span>
               <button
                 onClick={() => setSelectedProfile(null)}
-                className="text-xs text-gray-400 hover:text-blue-500 ml-1 transition-colors"
+                className="text-xs text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 ml-1 transition-colors"
                 aria-label="Switch profile"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
               </button>
             </div>
             <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+              aria-label="Toggle dark mode"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <button
               onClick={() => setShowHistory(!showHistory)}
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 active:scale-[0.98] ${
-                showHistory ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                showHistory
+                  ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               <History className="w-4 h-4" />
@@ -965,11 +1085,11 @@ export default function KidSearch() {
       </header>
 
       {/* Sticky Search Bar */}
-      <div className="sticky top-[52px] z-10 bg-white/95 backdrop-blur-md py-3 px-4 border-b border-gray-100/50">
+      <div className="sticky top-[52px] z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md py-3 px-4 border-b border-gray-100/50 dark:border-gray-800/50">
         <div className="max-w-3xl mx-auto">
           <form onSubmit={handleSearch} className="relative">
             <div className="relative flex items-center">
-              <Search className="absolute left-4 w-5 h-5 text-gray-400 pointer-events-none" />
+              <Search className="absolute left-4 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -981,21 +1101,35 @@ export default function KidSearch() {
                     setShowSuggestions(true);
                   }
                 }}
-                placeholder="What do you want to learn about?"
-                className="w-full text-[16px] bg-gray-50 border-2 border-gray-200 rounded-2xl pl-12 pr-32 py-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200"
+                placeholder={isListening ? 'Listening...' : 'What do you want to learn about?'}
+                className="w-full text-[16px] bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-2xl pl-12 pr-36 py-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 focus:border-blue-400 dark:focus:border-blue-500 transition-all duration-200"
                 autoFocus
                 autoComplete="off"
               />
-              {/* Clear button + submit inside search bar */}
+              {/* Clear button + mic + submit inside search bar */}
               <div className="absolute right-2 flex items-center gap-1">
                 {query && !searching && (
                   <button
                     type="button"
                     onClick={handleClearSearch}
-                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
                     aria-label="Clear search"
                   >
                     <X className="w-4 h-4" />
+                  </button>
+                )}
+                {SpeechRecognition && (
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    className={`p-2 rounded-xl transition-all duration-200 ${
+                      isListening
+                        ? 'text-blue-500 bg-blue-100 dark:bg-blue-900/40 animate-pulse'
+                        : 'text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                    aria-label={isListening ? 'Stop listening' : 'Voice search'}
+                  >
+                    <Mic className="w-4 h-4" />
                   </button>
                 )}
                 {query && (
@@ -1018,7 +1152,7 @@ export default function KidSearch() {
             {showSuggestions && filteredSuggestions.length > 0 && (
               <div
                 ref={suggestionsRef}
-                className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden"
+                className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden"
               >
                 {filteredSuggestions.map((item, index) => (
                   <button
@@ -1027,18 +1161,18 @@ export default function KidSearch() {
                     onClick={() => handleSuggestionClick(item.text)}
                     className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors text-sm ${
                       index === selectedSuggestionIndex
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-700 hover:bg-blue-50'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20'
                     }`}
                   >
                     {item.type === 'recent' ? (
-                      <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                     ) : (
-                      <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <Search className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                     )}
                     <span className="truncate">{item.text}</span>
                     {item.type === 'recent' && (
-                      <span className="ml-auto text-[10px] text-gray-400 flex-shrink-0">Recent</span>
+                      <span className="ml-auto text-[10px] text-gray-400 dark:text-gray-500 flex-shrink-0">Recent</span>
                     )}
                   </button>
                 ))}
@@ -1052,8 +1186,8 @@ export default function KidSearch() {
                 onClick={() => handleModeToggle('learn')}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
                   searchMode === 'learn'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-500 hover:bg-gray-100'
+                    ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                    : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
               >
                 <Sparkles className="w-4 h-4" />
@@ -1064,8 +1198,8 @@ export default function KidSearch() {
                 onClick={() => handleModeToggle('images')}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
                   searchMode === 'images'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-500 hover:bg-gray-100'
+                    ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                    : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
               >
                 <ImageIcon className="w-4 h-4" />
@@ -1079,15 +1213,15 @@ export default function KidSearch() {
       <div className="max-w-3xl mx-auto px-4 py-6">
         {/* Search History Panel */}
         {showHistory && kidSearchHistory && kidSearchHistory.length > 0 && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                 <History className="w-4 h-4" />
                 Recent Searches
               </h3>
               <button
                 onClick={() => setShowHistory(false)}
-                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 Close
               </button>
@@ -1100,12 +1234,12 @@ export default function KidSearch() {
                     handleSuggestionClick(entry.query);
                     setShowHistory(false);
                   }}
-                  className="w-full text-left px-3 py-2.5 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-xl transition-all duration-200 flex items-center gap-2 active:scale-[0.98]"
+                  className="w-full text-left px-3 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300 rounded-xl transition-all duration-200 flex items-center gap-2 active:scale-[0.98]"
                 >
-                  <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                  <Clock className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                   <span className="truncate flex-1">{entry.query}</span>
                   {entry._creationTime && (
-                    <span className="text-xs text-gray-400 flex-shrink-0">
+                    <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
                       {formatRelativeTime(entry._creationTime)}
                     </span>
                   )}
@@ -1121,18 +1255,18 @@ export default function KidSearch() {
         {/* Blocked Message */}
         {blocked && !searching && (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="w-8 h-8 text-orange-500" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Oops!</h2>
-            <p className="text-gray-600 text-lg max-w-md mx-auto">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Oops!</h2>
+            <p className="text-gray-600 dark:text-gray-300 text-lg max-w-md mx-auto">
               {blockedMessage}
             </p>
 
             {/* Related questions as suggestion buttons when blocked */}
             {relatedQuestions.length > 0 && (
               <div className="mt-6 max-w-md mx-auto">
-                <p className="text-sm font-medium text-gray-500 mb-3">Try one of these instead:</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Try one of these instead:</p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {relatedQuestions.map((q, index) => (
                     <button
@@ -1144,7 +1278,7 @@ export default function KidSearch() {
                         setRelatedQuestions([]);
                         searchInputRef.current?.focus();
                       }}
-                      className="text-sm bg-white border border-blue-200 rounded-full px-5 py-2.5 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm active:scale-[0.98]"
+                      className="text-sm bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-full px-5 py-2.5 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 shadow-sm active:scale-[0.98]"
                     >
                       {q}
                     </button>
@@ -1160,7 +1294,7 @@ export default function KidSearch() {
                   setBlocked(false);
                   searchInputRef.current?.focus();
                 }}
-                className="mt-6 text-blue-600 hover:text-blue-700 font-medium py-3 transition-colors"
+                className="mt-6 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium py-3 transition-colors"
               >
                 Try a different search
               </button>
@@ -1178,7 +1312,7 @@ export default function KidSearch() {
                     <button
                       key={index}
                       onClick={() => setLightboxIndex(index)}
-                      className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 aspect-[4/3] active:scale-[0.98]"
+                      className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 aspect-[4/3] active:scale-[0.98]"
                     >
                       <img
                         src={image.thumbnail || image.url}
@@ -1197,11 +1331,11 @@ export default function KidSearch() {
                 </div>
                 {/* Brief AI summary below images */}
                 {aiSummary && (
-                  <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
-                    <p className="text-sm text-blue-800 leading-relaxed line-clamp-3">{stripMarkdown(aiSummary)}</p>
+                  <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded-2xl p-4">
+                    <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed line-clamp-3">{stripMarkdown(aiSummary)}</p>
                     <button
                       onClick={() => handleModeToggle('learn')}
-                      className="text-xs text-blue-600 font-medium mt-2 hover:underline py-1"
+                      className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-2 hover:underline py-1"
                     >
                       Read full answer &rarr;
                     </button>
@@ -1211,16 +1345,16 @@ export default function KidSearch() {
             ) : (
               /* Empty state for Images mode — friendly, not dead-end */
               <div className="text-center py-16">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/40 dark:to-cyan-900/40 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
                   <Camera className="w-10 h-10 text-blue-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Images will appear here when you search!</h3>
-                <p className="text-gray-400 text-sm max-w-xs mx-auto mb-5">
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">Images will appear here when you search!</h3>
+                <p className="text-gray-400 dark:text-gray-500 text-sm max-w-xs mx-auto mb-5">
                   Try searching for animals, planets, volcanoes, or anything you're curious about.
                 </p>
                 <button
                   onClick={() => handleModeToggle('learn')}
-                  className="text-sm text-blue-600 font-medium hover:underline py-1 inline-flex items-center gap-1"
+                  className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline py-1 inline-flex items-center gap-1"
                 >
                   Switch to Learn mode <ChevronRight className="w-3.5 h-3.5" />
                 </button>
@@ -1234,7 +1368,7 @@ export default function KidSearch() {
           <div className="space-y-5">
             {/* Search timing */}
             {searchTime && (
-              <p className="text-xs text-gray-400 flex items-center gap-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                 Found answer in {searchTime}s{images.length > 0 ? ` · ${images.length} images` : ''}
               </p>
@@ -1270,7 +1404,7 @@ export default function KidSearch() {
                   const gradient = sectionColors[index % sectionColors.length];
                   const borderColor = getBorderColorClass(index);
                   return (
-                    <div key={index} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div key={index} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
                       <div className={`bg-gradient-to-r ${gradient} px-5 py-3 rounded-t-xl`}>
                         <h3 className="font-bold text-white flex items-center gap-2">
                           <span className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center text-sm font-bold">
@@ -1280,7 +1414,7 @@ export default function KidSearch() {
                         </h3>
                       </div>
                       <div className={`px-5 py-4 border-l-4 ${borderColor}`}>
-                        <p className="text-gray-700 leading-relaxed">{stripMarkdown(section.content)}</p>
+                        <p className="text-gray-700 dark:text-gray-200 leading-relaxed">{stripMarkdown(section.content)}</p>
                       </div>
                     </div>
                   );
@@ -1290,7 +1424,7 @@ export default function KidSearch() {
 
             {/* Fun Facts — standout card with pulsing lightbulb */}
             {funFacts.length > 0 && (
-              <div className="bg-gradient-to-br from-amber-400 to-orange-400 rounded-2xl p-5 shadow-md text-white">
+              <div className="bg-gradient-to-br from-amber-400 to-orange-400 dark:from-amber-500 dark:to-orange-500 rounded-2xl p-5 shadow-md text-white">
                 <p className="font-bold text-lg mb-3 flex items-center gap-2">
                   <span className="text-2xl animate-pulse-glow">💡</span> Did you know?
                 </p>
@@ -1310,7 +1444,7 @@ export default function KidSearch() {
             {/* Related Questions — cards, not pills */}
             {relatedQuestions.length > 0 && (
               <div>
-                <p className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <p className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                   <Search className="w-4 h-4 text-blue-500" />
                   Keep exploring
                 </p>
@@ -1319,10 +1453,10 @@ export default function KidSearch() {
                     <button
                       key={index}
                       onClick={() => handleSuggestionClick(q)}
-                      className="text-left bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-gray-700 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all duration-200 active:scale-[0.98] flex items-center gap-3 group"
+                      className="text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-600 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 active:scale-[0.98] flex items-center gap-3 group"
                     >
-                      <div className="w-8 h-8 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
-                        <Search className="w-4 h-4 text-blue-500" />
+                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/60 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors">
+                        <Search className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                       </div>
                       <span className="text-sm font-medium">{q}</span>
                     </button>
@@ -1334,8 +1468,8 @@ export default function KidSearch() {
             {/* No content */}
             {!aiSummary && sections.length === 0 && (
               <div className="text-center py-12">
-                <AlertCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">
+                <AlertCircle className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-500 dark:text-gray-400">
                   No results found. Try searching for something different!
                 </p>
               </div>
@@ -1349,18 +1483,18 @@ export default function KidSearch() {
             <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
               <Search className="w-9 h-9 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
               Hi {selectedProfile.name}! What do you want to learn?
             </h2>
-            <p className="text-gray-400 mb-8 text-sm">Ask me anything or try one of these</p>
+            <p className="text-gray-400 dark:text-gray-500 mb-8 text-sm">Ask me anything or try one of these</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-lg mx-auto">
               {randomSuggestions.map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="text-left bg-white border border-gray-200 text-gray-700 px-4 py-3 rounded-xl text-sm hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 active:scale-[0.98] flex items-center gap-3"
+                  className="text-left bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 px-4 py-3 rounded-xl text-sm hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 active:scale-[0.98] flex items-center gap-3"
                 >
-                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
                     <Search className="w-4 h-4 text-blue-400" />
                   </div>
                   {suggestion}
