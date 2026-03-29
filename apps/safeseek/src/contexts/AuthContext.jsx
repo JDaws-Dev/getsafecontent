@@ -59,7 +59,6 @@ export function AuthProvider({ children }) {
   const handleOAuthCallback = useCallback((tokenParam, expiresAtParam) => {
     if (!tokenParam) return false;
 
-    console.log('[AuthContext] Handling OAuth callback token');
 
     // Store the token
     localStorage.setItem(JWT_KEY, tokenParam);
@@ -89,7 +88,6 @@ export function AuthProvider({ children }) {
       );
 
       if (!response.ok) {
-        console.log('[AuthContext] Token verification failed:', response.status);
         localStorage.removeItem(JWT_KEY);
         localStorage.removeItem(USER_KEY);
         setToken(null);
@@ -100,7 +98,6 @@ export function AuthProvider({ children }) {
       const data = await response.json();
 
       if (!data.valid) {
-        console.log('[AuthContext] Token invalid:', data.error);
         localStorage.removeItem(JWT_KEY);
         localStorage.removeItem(USER_KEY);
         setToken(null);
@@ -110,7 +107,6 @@ export function AuthProvider({ children }) {
 
       // Check if user is entitled to SafeSeek
       if (!data.user.entitledApps?.includes('safeseek')) {
-        console.log('[AuthContext] User not entitled to SafeSeek');
         // Still set the user but they will be redirected by protected routes
       }
 
@@ -210,7 +206,6 @@ export function AuthProvider({ children }) {
       setToken(data.token);
       setUser(data.user);
 
-      console.log('[AuthContext] Login successful for:', email);
 
       return { success: true, user: data.user };
     } catch (error) {
@@ -230,7 +225,6 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(USER_KEY);
     setToken(null);
     setUser(null);
-    console.log('[AuthContext] Logged out');
   }, []);
 
   /**
@@ -243,7 +237,6 @@ export function AuthProvider({ children }) {
     oauthUrl.searchParams.set('returnTo', returnTo);
     oauthUrl.searchParams.set('app', 'SafeSeek');
 
-    console.log('[AuthContext] Redirecting to Marketing OAuth:', oauthUrl.toString());
     window.location.href = oauthUrl.toString();
   }, []);
 
@@ -306,7 +299,6 @@ export function AuthProvider({ children }) {
       setToken(data.token);
       setUser(data.user);
 
-      console.log('[AuthContext] Password reset successful for:', email);
 
       return { success: true, user: data.user };
     } catch (error) {
