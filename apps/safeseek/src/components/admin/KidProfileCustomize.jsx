@@ -205,6 +205,10 @@ export default function KidProfileCustomize({ profile, onClose }) {
               <option value="6th">6th Grade</option>
               <option value="7th">7th Grade</option>
               <option value="8th">8th Grade</option>
+              <option value="9th">9th Grade</option>
+              <option value="10th">10th Grade</option>
+              <option value="11th">11th Grade</option>
+              <option value="12th">12th Grade</option>
             </select>
           </div>
 
