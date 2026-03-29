@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import TimeLimits from '../components/admin/TimeLimits';
 import KidProfileEditor from '../components/admin/KidProfileEditor';
 import KidProfileCustomize from '../components/admin/KidProfileCustomize';
+import OnboardingWizard from '../components/admin/OnboardingWizard';
 import Toast from '../components/common/Toast';
 import ConfirmModal from '../components/common/ConfirmModal';
 import {
@@ -885,6 +886,28 @@ export default function AdminDashboard() {
           <p className="text-gray-500">Loading profile...</p>
         </div>
       </div>
+    );
+  }
+
+  // Show onboarding wizard for first-time users
+  const showOnboarding = kidProfiles && kidProfiles.length === 0
+    && !localStorage.getItem('safeseek_onboarding_complete');
+
+  if (showOnboarding) {
+    return (
+      <OnboardingWizard
+        userId={userData._id}
+        familyCode={userData.familyCode}
+        onComplete={(action) => {
+          localStorage.setItem('safeseek_onboarding_complete', 'true');
+          if (action === 'trySearch') {
+            navigate(`/search/${userData.familyCode}`);
+          } else if (action === 'addKid') {
+            setShowEditor(true);
+          }
+          // 'dashboard' just falls through to normal render
+        }}
+      />
     );
   }
 

@@ -5,7 +5,7 @@ import { api } from '../../convex/_generated/api';
 import {
   Search, Sparkles, ArrowLeft, Clock, History, ChevronRight,
   Shield, AlertCircle, Loader2, X, ChevronLeft, ChevronRight as ChevronRightIcon,
-  Image as ImageIcon
+  Image as ImageIcon, Camera
 } from 'lucide-react';
 
 // Fun placeholder suggestions for kids
@@ -59,6 +59,18 @@ function getColorClass(color) {
   return colors[color] || 'bg-blue-500';
 }
 
+// Left-border color mapping for section cards
+function getBorderColorClass(index) {
+  const borders = [
+    'border-l-violet-500',
+    'border-l-blue-500',
+    'border-l-teal-500',
+    'border-l-orange-500',
+    'border-l-pink-500',
+  ];
+  return borders[index % borders.length];
+}
+
 // Age range label helper
 function getAgeLabel(profile) {
   if (profile.ageRange) {
@@ -83,6 +95,44 @@ function stripMarkdown(text) {
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links
     .replace(/^[-*]\s/gm, '')          // list items
     .trim();
+}
+
+// ========== Expandable Summary Component ==========
+function ExpandableSummary({ text, className = '' }) {
+  const [expanded, setExpanded] = useState(false);
+  const [needsTruncation, setNeedsTruncation] = useState(false);
+  const textRef = useRef(null);
+
+  useEffect(() => {
+    if (textRef.current) {
+      // Check if text exceeds 3 lines (approx 4.5em at current line-height)
+      const lineHeight = parseFloat(getComputedStyle(textRef.current).lineHeight);
+      const maxHeight = lineHeight * 3;
+      setNeedsTruncation(textRef.current.scrollHeight > maxHeight + 4);
+    }
+  }, [text]);
+
+  const strippedText = stripMarkdown(text);
+
+  return (
+    <div className={className}>
+      <p
+        ref={textRef}
+        className={`text-white/95 leading-relaxed text-[15px] ${!expanded && needsTruncation ? 'line-clamp-3' : ''}`}
+      >
+        {strippedText}
+      </p>
+      {needsTruncation && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="mt-2 text-white/70 hover:text-white text-sm font-medium transition-colors flex items-center gap-1"
+        >
+          {expanded ? 'Show less' : 'Show more'}
+          <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`} />
+        </button>
+      )}
+    </div>
+  );
 }
 
 // ========== Image Lightbox Component ==========
@@ -274,11 +324,20 @@ function LoadingDots() {
       <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-6 animate-pulse">
         <Search className="w-8 h-8 text-blue-500" />
       </div>
-      <p className="text-gray-600 text-lg font-medium">{LOADING_MESSAGES[msgIndex]}</p>
-      <div className="flex items-center gap-1.5 mt-3">
-        <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      <p className="text-gray-600 text-lg font-medium transition-opacity duration-300">{LOADING_MESSAGES[msgIndex]}</p>
+      <div className="flex items-center gap-2 mt-4">
+        <span
+          className="w-3 h-3 bg-blue-400 rounded-full"
+          style={{ animation: 'bounce-dot 1.4s infinite ease-in-out both', animationDelay: '-0.32s' }}
+        />
+        <span
+          className="w-3 h-3 bg-cyan-400 rounded-full"
+          style={{ animation: 'bounce-dot 1.4s infinite ease-in-out both', animationDelay: '-0.16s' }}
+        />
+        <span
+          className="w-3 h-3 bg-blue-400 rounded-full"
+          style={{ animation: 'bounce-dot 1.4s infinite ease-in-out both' }}
+        />
       </div>
     </div>
   );
@@ -492,9 +551,9 @@ export default function KidSearch() {
           <p className="text-gray-500 mb-8 text-sm">Enter your family code to start searching</p>
 
           {error && (
-            <p className={`text-red-500 text-sm mb-4 ${codeShake ? 'animate-shake' : ''}`}>
+            <div className={`bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-4 ${codeShake ? 'animate-shake' : ''}`}>
               {error}
-            </p>
+            </div>
           )}
 
           <form onSubmit={handleCodeSubmit} className="space-y-4">
@@ -503,7 +562,7 @@ export default function KidSearch() {
               value={codeInput}
               onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
               maxLength={6}
-              className="w-full text-center text-2xl font-mono font-bold tracking-widest bg-white border-2 border-gray-200 rounded-xl px-4 py-4 text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 uppercase transition-all duration-200"
+              className="w-full text-center text-2xl font-mono font-bold tracking-widest bg-white border-2 border-gray-200 rounded-xl px-4 py-4 text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 uppercase transition-all duration-200"
               placeholder="------"
               autoFocus
             />
@@ -520,16 +579,6 @@ export default function KidSearch() {
             Ask your parent for the family code
           </p>
         </div>
-
-        {/* Shake animation */}
-        <style>{`
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-            20%, 40%, 60%, 80% { transform: translateX(4px); }
-          }
-          .animate-shake { animation: shake 0.5s ease-in-out; }
-        `}</style>
       </div>
     );
   }
@@ -537,7 +586,7 @@ export default function KidSearch() {
   // ========== PROFILE SELECTION ==========
   if (!selectedProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-cyan-50 to-purple-50 animate-gradient-shift flex flex-col">
         {/* Header */}
         <header className="px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -570,7 +619,7 @@ export default function KidSearch() {
                 <button
                   key={profile._id}
                   onClick={() => setSelectedProfile(profile)}
-                  className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-200 transition transform hover:scale-105 active:scale-[0.98]"
+                  className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/90 backdrop-blur-sm shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-200 transition transform hover:scale-105 active:scale-[0.98]"
                 >
                   <div
                     className={`w-20 h-20 rounded-full shadow-md flex items-center justify-center text-white text-2xl font-bold ${getColorClass(profile.color)}`}
@@ -582,7 +631,7 @@ export default function KidSearch() {
               ))}
             </div>
           ) : (
-            <div className="text-center bg-white rounded-2xl p-8 shadow-sm border border-gray-100 max-w-sm">
+            <div className="text-center bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-sm border border-gray-100 max-w-sm">
               <div className="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
                 <Search className="w-10 h-10 text-blue-600" />
               </div>
@@ -598,11 +647,11 @@ export default function KidSearch() {
           </div>
 
           {/* Parent Login Link */}
-          <div className="mt-8 pt-8 border-t border-gray-200">
+          <div className="mt-8 pt-8 border-t border-gray-200/60">
             <p className="text-center text-gray-500 text-sm">
               Are you a parent?{' '}
               <a href="/login" className="text-blue-500 hover:text-blue-600 font-medium">
-                Log in here →
+                Log in here &rarr;
               </a>
             </p>
           </div>
@@ -739,7 +788,7 @@ export default function KidSearch() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="What do you want to learn about?"
-                className="w-full text-[16px] bg-gray-50 border-2 border-gray-200 rounded-2xl pl-12 pr-32 py-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200"
+                className="w-full text-[16px] bg-gray-50 border-2 border-gray-200 rounded-2xl pl-12 pr-32 py-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200"
                 autoFocus
               />
               {/* Mode toggle pills inside search bar */}
@@ -924,16 +973,20 @@ export default function KidSearch() {
                 )}
               </>
             ) : (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ImageIcon className="w-8 h-8 text-gray-300" />
+              /* Empty state for Images mode — friendly, not dead-end */
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                  <Camera className="w-10 h-10 text-blue-400" />
                 </div>
-                <p className="text-gray-500">No images found for this search.</p>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">Images will appear here when you search!</h3>
+                <p className="text-gray-400 text-sm max-w-xs mx-auto mb-5">
+                  Try searching for animals, planets, volcanoes, or anything you're curious about.
+                </p>
                 <button
                   onClick={() => setSearchMode('learn')}
-                  className="text-sm text-blue-600 font-medium mt-3 hover:underline py-1"
+                  className="text-sm text-blue-600 font-medium hover:underline py-1 inline-flex items-center gap-1"
                 >
-                  Switch to Learn mode &rarr;
+                  Switch to Learn mode <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
@@ -943,14 +996,14 @@ export default function KidSearch() {
         {/* Results: Learn Mode */}
         {results && !searching && !blocked && searchMode === 'learn' && (
           <div className="space-y-5">
-            {/* AI Answer — hero card */}
+            {/* AI Answer — hero card with expandable summary */}
             {aiSummary && (
               <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-5 shadow-lg text-white">
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="w-5 h-5 text-white/80" />
                   <h2 className="font-bold text-base">Quick Answer</h2>
                 </div>
-                <p className="text-white/95 leading-relaxed text-[15px] line-clamp-4">{stripMarkdown(aiSummary)}</p>
+                <ExpandableSummary text={aiSummary} />
               </div>
             )}
 
@@ -959,7 +1012,7 @@ export default function KidSearch() {
               <ImageGallery images={images} onImageClick={handleImageClick} />
             )}
 
-            {/* Sections — individual cards */}
+            {/* Sections — individual cards with rounded-t-xl headers and left border */}
             {sections.length > 0 && (
               <div className="space-y-3">
                 {sections.map((section, index) => {
@@ -971,9 +1024,10 @@ export default function KidSearch() {
                     'from-pink-500 to-rose-500',
                   ];
                   const gradient = sectionColors[index % sectionColors.length];
+                  const borderColor = getBorderColorClass(index);
                   return (
                     <div key={index} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                      <div className={`bg-gradient-to-r ${gradient} px-5 py-3`}>
+                      <div className={`bg-gradient-to-r ${gradient} px-5 py-3 rounded-t-xl`}>
                         <h3 className="font-bold text-white flex items-center gap-2">
                           <span className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center text-sm font-bold">
                             {index + 1}
@@ -981,7 +1035,7 @@ export default function KidSearch() {
                           {section.heading}
                         </h3>
                       </div>
-                      <div className="px-5 py-4">
+                      <div className={`px-5 py-4 border-l-4 ${borderColor}`}>
                         <p className="text-gray-700 leading-relaxed">{stripMarkdown(section.content)}</p>
                       </div>
                     </div>
@@ -990,11 +1044,11 @@ export default function KidSearch() {
               </div>
             )}
 
-            {/* Fun Facts — standout card */}
+            {/* Fun Facts — standout card with pulsing lightbulb */}
             {funFacts.length > 0 && (
               <div className="bg-gradient-to-br from-amber-400 to-orange-400 rounded-2xl p-5 shadow-md text-white">
                 <p className="font-bold text-lg mb-3 flex items-center gap-2">
-                  <span className="text-2xl">💡</span> Did you know?
+                  <span className="text-2xl animate-pulse-glow">💡</span> Did you know?
                 </p>
                 <ul className="space-y-3">
                   {funFacts.map((fact, index) => (
