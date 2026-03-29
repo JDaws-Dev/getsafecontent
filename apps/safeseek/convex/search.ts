@@ -200,6 +200,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
   ],
   "funFacts": ["A fun or surprising fact related to the topic"],
   "relatedQuestions": ["A follow-up question the kid might want to ask next", "Another related question"],
+  "diagram": "Optional Mermaid.js diagram code for concepts that benefit from a visual. Use for processes (water cycle, food chain), hierarchies (animal kingdom), timelines (history), or systems (solar system). Use emojis in node labels to make it kid-friendly. Use graph TD for top-down flowcharts, graph LR for left-to-right. Example: graph TD\\n  A[Sun heats water] --> B[Evaporation]\\n  B --> C[Clouds form]\\n  C --> D[Rain falls]\\n  D --> A. Only include if the topic genuinely benefits from a diagram. Set to null if not applicable.",
   "flagged": boolean,
   "flagReason": "Optional reason if flagged for parent review"
 }
@@ -340,6 +341,7 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
       sections: parsed.sections || [],
       funFacts: parsed.funFacts || [],
       relatedQuestions: parsed.relatedQuestions || [],
+      diagram: parsed.diagram || null,
       flagged: parsed.flagged || false,
       flagReason: parsed.flagReason,
       images: allImages,

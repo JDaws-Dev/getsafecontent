@@ -5,9 +5,13 @@ import { api } from '../../convex/_generated/api';
 import {
   Search, Sparkles, ArrowLeft, Clock, History, ChevronRight,
   Shield, AlertCircle, Loader2, X, ChevronLeft, ChevronRight as ChevronRightIcon,
-  Image as ImageIcon, Camera, Mic, Sun, Moon
+  Image as ImageIcon, Camera, Mic, Sun, Moon, Volume2, VolumeX, GitBranch
 } from 'lucide-react';
+import mermaid from 'mermaid';
 import { useTheme } from '../contexts/ThemeContext';
+
+// Initialize mermaid once
+mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'strict' });
 
 // Fun placeholder suggestions for kids
 const SUGGESTIONS = [
@@ -314,6 +318,107 @@ function ImageGallery({ images, onImageClick }) {
   );
 }
 
+// ========== Diagram Card Component ==========
+let diagramCounter = 0;
+function DiagramCard({ code }) {
+  const containerRef = useRef(null);
+  const [svgHtml, setSvgHtml] = useState(null);
+  const [error, setError] = useState(false);
+  const { resolvedTheme } = useTheme();
+
+  useEffect(() => {
+    if (!code || !containerRef.current) return;
+
+    // Update mermaid theme based on dark mode
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: resolvedTheme === 'dark' ? 'dark' : 'default',
+      securityLevel: 'strict',
+    });
+
+    const id = 'diagram-' + (++diagramCounter);
+    let cancelled = false;
+
+    mermaid.render(id, code).then(({ svg }) => {
+      if (!cancelled) setSvgHtml(svg);
+    }).catch(() => {
+      if (!cancelled) setError(true);
+    });
+
+    return () => { cancelled = true; };
+  }, [code, resolvedTheme]);
+
+  if (error || !code) return null;
+  if (!svgHtml) return null;
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
+      <div className="px-5 py-3 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700">
+        <GitBranch className="w-5 h-5 text-blue-500" />
+        <h3 className="font-bold text-gray-900 dark:text-white text-sm">Visual Diagram</h3>
+      </div>
+      <div
+        ref={containerRef}
+        className="p-4 flex justify-center [&>svg]:max-w-full [&>svg]:h-auto"
+        dangerouslySetInnerHTML={{ __html: svgHtml }}
+      />
+    </div>
+  );
+}
+
+// ========== Read Aloud Button Component ==========
+function ReadAloudButton({ text, className = '', iconSize = 'w-4 h-4' }) {
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+
+  const handleToggle = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const stripped = stripMarkdown(text);
+    if (!stripped) return;
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(stripped);
+    utterance.rate = 0.9;
+    utterance.pitch = 1.1;
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleToggle}
+      className={`transition-colors ${className}`}
+      aria-label={isSpeaking ? 'Stop reading' : 'Read aloud'}
+      title={isSpeaking ? 'Stop reading' : 'Read aloud'}
+    >
+      {isSpeaking ? (
+        <VolumeX className={iconSize} />
+      ) : (
+        <Volume2 className={iconSize} />
+      )}
+    </button>
+  );
+}
+
 // ========== Skeleton Loading State ==========
 function SearchSkeleton() {
   const [msgIndex, setMsgIndex] = useState(0);
@@ -451,6 +556,7 @@ export default function KidSearch() {
   const [funFacts, setFunFacts] = useState([]);
   const [relatedQuestions, setRelatedQuestions] = useState([]);
   const [searchTime, setSearchTime] = useState(null);
+  const [diagram, setDiagram] = useState(null);
   const searchStartRef = useRef(null);
 
   // Random suggestions (pick 6 from the pool)
@@ -525,6 +631,7 @@ export default function KidSearch() {
       if (recognitionRef.current) {
         try { recognitionRef.current.abort(); } catch {}
       }
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     };
   }, []);
 
@@ -642,6 +749,8 @@ export default function KidSearch() {
     setFunFacts([]);
     setRelatedQuestions([]);
     setImages([]);
+    setDiagram(null);
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
     try {
       const data = await performSearch({
@@ -659,6 +768,7 @@ export default function KidSearch() {
         setFunFacts(data.funFacts || []);
         setRelatedQuestions(data.relatedQuestions || []);
         setImages(data.images || []);
+        setDiagram(data.diagram || null);
         setResults(data.sections || []);
       }
     } catch (err) {
@@ -730,8 +840,10 @@ export default function KidSearch() {
     setFunFacts([]);
     setRelatedQuestions([]);
     setImages([]);
+    setDiagram(null);
     setBlocked(false);
     setBlockedMessage('');
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     // Clear URL params
     navigate(`/search/${familyCode}`, { replace: true });
     searchInputRef.current?.focus();
@@ -1380,6 +1492,11 @@ export default function KidSearch() {
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="w-5 h-5 text-white/80" />
                   <h2 className="font-bold text-base">Quick Answer</h2>
+                  <ReadAloudButton
+                    text={aiSummary}
+                    className="ml-auto p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/15"
+                    iconSize="w-4 h-4"
+                  />
                 </div>
                 <ExpandableSummary text={aiSummary} />
               </div>
@@ -1388,6 +1505,11 @@ export default function KidSearch() {
             {/* Image Gallery */}
             {images.length > 0 && (
               <ImageGallery images={images} onImageClick={handleImageClick} />
+            )}
+
+            {/* Visual Diagram */}
+            {diagram && diagram !== 'null' && (
+              <DiagramCard code={diagram} />
             )}
 
             {/* Sections — individual cards with rounded-t-xl headers and left border */}
@@ -1411,6 +1533,11 @@ export default function KidSearch() {
                             {index + 1}
                           </span>
                           {section.heading}
+                          <ReadAloudButton
+                            text={section.content}
+                            className="ml-auto p-1 rounded-lg text-white/60 hover:text-white hover:bg-white/15"
+                            iconSize="w-3.5 h-3.5"
+                          />
                         </h3>
                       </div>
                       <div className={`px-5 py-4 border-l-4 ${borderColor}`}>
