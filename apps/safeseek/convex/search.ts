@@ -101,6 +101,8 @@ export const performSearch = internalAction({
     const blockedTopics = kidProfile.blockedTopics;
     const allowedTopics = kidProfile.allowedTopics || [];
     const customInstructions = kidProfile.customInstructions || searchSettings?.customInstructions || "";
+    const lexileLevel = kidProfile.lexileLevel || "auto";
+    const accessibilityNeeds = kidProfile.accessibilityNeeds || [];
     const ageGroup = getAgeGroup(ageMin);
 
     // --- Step 1: Check cache ---
@@ -164,6 +166,12 @@ Use this reference to ground your answer in facts. Summarize it in a way appropr
 
 CHILD'S AGE RANGE: ${ageMin}-${ageMax} years old
 CONTENT STRICTNESS: ${strictness}
+${lexileLevel !== "auto" ? `LEXILE READING LEVEL: ${lexileLevel} — write at this exact reading level.` : `Write at the natural reading level for a ${ageMin}-${ageMax} year old.`}
+${accessibilityNeeds.length > 0 ? `ACCESSIBILITY NEEDS: ${accessibilityNeeds.join(", ")}. Adapt your response:
+${accessibilityNeeds.includes("dyslexia") ? "- DYSLEXIA: Use short sentences (under 15 words). Avoid complex word structures. Use simple, common words. Break paragraphs into small chunks." : ""}
+${accessibilityNeeds.includes("low-vision") ? "- LOW VISION: Keep answers very concise. The UI will handle large text display." : ""}
+${accessibilityNeeds.includes("adhd") ? "- ADHD: Lead with the most interesting/exciting fact. Keep sections very short (2-3 sentences max). Use lots of fun facts to maintain engagement." : ""}
+${accessibilityNeeds.includes("esl") ? "- ESL/ELL: Use simple vocabulary. Avoid idioms, slang, and cultural references. Define any technical terms in parentheses." : ""}` : ""}
 ${blockedTopics.length > 0 ? `BLOCKED TOPICS (never discuss these): ${blockedTopics.join(", ")}` : ""}
 ${allowedTopics.length > 0 ? `ALLOWED TOPICS (parent has explicitly whitelisted these — override blocked topics if there's a conflict): ${allowedTopics.join(", ")}` : ""}
 ${customInstructions ? `PARENT INSTRUCTIONS: ${customInstructions}` : ""}
@@ -200,7 +208,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
   ],
   "funFacts": ["A fun or surprising fact related to the topic"],
   "relatedQuestions": ["A follow-up question the kid might want to ask next", "Another related question"],
-  "diagram": "Optional Mermaid.js diagram code for concepts that benefit from a visual. Use for processes (water cycle, food chain), hierarchies (animal kingdom), timelines (history), or systems (solar system). Use emojis in node labels to make it kid-friendly. Use graph TD for top-down flowcharts, graph LR for left-to-right. Example: graph TD\\n  A[Sun heats water] --> B[Evaporation]\\n  B --> C[Clouds form]\\n  C --> D[Rain falls]\\n  D --> A. Only include if the topic genuinely benefits from a diagram. Set to null if not applicable.",
+  "diagram": "Mermaid.js diagram code OR null. ALWAYS include a diagram for: processes, cycles, chains, systems, hierarchies, timelines, comparisons, cause-and-effect. Use graph TD (top-down). Use emojis in labels. Keep it simple (4-8 nodes max). Example: graph TD\\n  A[Sun heats water] --> B[Evaporation]\\n  B --> C[Clouds form]\\n  C --> D[Rain falls]\\n  D --> A. Set to null ONLY for simple factual questions like 'what color is the sky'.",
   "flagged": boolean,
   "flagReason": "Optional reason if flagged for parent review"
 }

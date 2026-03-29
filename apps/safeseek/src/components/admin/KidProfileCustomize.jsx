@@ -30,6 +30,12 @@ export default function KidProfileCustomize({ profile, onClose }) {
   const [allowImageSearch, setAllowImageSearch] = useState(
     profile.allowImageSearch ?? true
   );
+  const [lexileLevel, setLexileLevel] = useState(
+    profile.lexileLevel || 'auto'
+  );
+  const [accessibilityNeeds, setAccessibilityNeeds] = useState(
+    profile.accessibilityNeeds || []
+  );
 
   const toggleTopic = (topicId) => {
     setBlockedTopics((prev) =>
@@ -54,6 +60,8 @@ export default function KidProfileCustomize({ profile, onClose }) {
         allowedTopics: allowedArray,
         customInstructions: customInstructions.trim() || undefined,
         allowImageSearch,
+        lexileLevel: lexileLevel || 'auto',
+        accessibilityNeeds,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -171,6 +179,76 @@ export default function KidProfileCustomize({ profile, onClose }) {
                 }`}
               />
             </button>
+          </div>
+
+          {/* Lexile Reading Level */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <BookOpen className="w-4 h-4 text-purple-500" />
+              <h3 className="font-semibold text-gray-900 text-sm">Reading Level (Lexile)</h3>
+            </div>
+            <p className="text-xs text-gray-500 mb-2">
+              Set a specific reading level, or let SafeSeek adjust automatically based on age.
+            </p>
+            <select
+              value={lexileLevel}
+              onChange={(e) => { setLexileLevel(e.target.value); setSaved(false); }}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-[16px]"
+            >
+              <option value="auto">Auto (based on age)</option>
+              <option value="200L">200L — Beginning reader (K-1st)</option>
+              <option value="400L">400L — Early reader (2nd-3rd)</option>
+              <option value="600L">600L — Developing (3rd-4th)</option>
+              <option value="800L">800L — Intermediate (5th-6th)</option>
+              <option value="1000L">1000L — Advanced (7th-8th)</option>
+              <option value="1200L">1200L — High school level</option>
+            </select>
+          </div>
+
+          {/* Accessibility Needs */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="w-4 h-4 text-indigo-500" />
+              <h3 className="font-semibold text-gray-900 text-sm">Accessibility</h3>
+            </div>
+            <p className="text-xs text-gray-500 mb-3">
+              SafeSeek adapts answers for different learning needs.
+            </p>
+            <div className="grid grid-cols-1 gap-1.5">
+              {[
+                { id: 'dyslexia', label: 'Dyslexia-friendly', desc: 'Shorter sentences, simpler words' },
+                { id: 'low-vision', label: 'Low vision', desc: 'Concise answers, works with large text' },
+                { id: 'adhd', label: 'ADHD-friendly', desc: 'Engaging hooks, short sections, more fun facts' },
+                { id: 'esl', label: 'English learner (ESL)', desc: 'Simple vocabulary, no idioms or slang' },
+              ].map((need) => (
+                <label
+                  key={need.id}
+                  className={`flex items-start gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition ${
+                    accessibilityNeeds.includes(need.id)
+                      ? 'bg-indigo-50 border border-indigo-200'
+                      : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={accessibilityNeeds.includes(need.id)}
+                    onChange={() => {
+                      setAccessibilityNeeds((prev) =>
+                        prev.includes(need.id)
+                          ? prev.filter((n) => n !== need.id)
+                          : [...prev, need.id]
+                      );
+                      setSaved(false);
+                    }}
+                    className="w-4 h-4 mt-0.5 text-indigo-500 border-gray-300 rounded focus:ring-indigo-500"
+                  />
+                  <div>
+                    <span className="text-sm text-gray-900 font-medium">{need.label}</span>
+                    <p className="text-xs text-gray-500">{need.desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* Save */}

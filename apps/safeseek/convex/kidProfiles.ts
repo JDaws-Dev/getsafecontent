@@ -75,6 +75,8 @@ export const updateProfile = mutation({
     blockedTopics: v.optional(v.array(v.string())),
     allowedTopics: v.optional(v.array(v.string())),
     customInstructions: v.optional(v.string()),
+    lexileLevel: v.optional(v.string()),
+    accessibilityNeeds: v.optional(v.array(v.string())),
     allowImageSearch: v.optional(v.boolean()),
     allowFollowUp: v.optional(v.boolean()),
   },
@@ -94,6 +96,8 @@ export const updateProfile = mutation({
     if (args.blockedTopics !== undefined) updates.blockedTopics = args.blockedTopics;
     if (args.allowedTopics !== undefined) updates.allowedTopics = args.allowedTopics;
     if (args.customInstructions !== undefined) updates.customInstructions = args.customInstructions;
+    if (args.lexileLevel !== undefined) updates.lexileLevel = args.lexileLevel;
+    if (args.accessibilityNeeds !== undefined) updates.accessibilityNeeds = args.accessibilityNeeds;
     if (args.allowImageSearch !== undefined) updates.allowImageSearch = args.allowImageSearch;
     if (args.allowFollowUp !== undefined) updates.allowFollowUp = args.allowFollowUp;
 

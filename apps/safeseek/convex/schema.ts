@@ -38,6 +38,8 @@ export default defineSchema({
     blockedTopics: v.array(v.string()),
     allowedTopics: v.optional(v.array(v.string())), // whitelist overrides
     customInstructions: v.optional(v.string()), // parent notes to AI
+    lexileLevel: v.optional(v.string()), // e.g., "200L", "800L", or "auto"
+    accessibilityNeeds: v.optional(v.array(v.string())), // ["dyslexia", "low-vision", "adhd", "esl"]
     allowImageSearch: v.boolean(),
     allowFollowUp: v.boolean(),
     createdAt: v.optional(v.number()),
