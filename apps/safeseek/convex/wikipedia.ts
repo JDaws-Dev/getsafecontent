@@ -77,8 +77,9 @@ export const fetchWikipediaContent = internalAction({
       return null;
     }
 
-    // Fetch images from Wikimedia Commons using the clean topic
-    const images = await fetchWikimediaImages(topic);
+    // Fetch images from the actual Wikipedia article (use resolved title, not our guess)
+    const resolvedTitle = summaryData.title as string;
+    const images = await fetchWikimediaImages(resolvedTitle);
 
     return {
       title: summaryData.title as string,
@@ -109,114 +110,83 @@ async function fetchWikiSummary(url: string): Promise<any | null> {
 }
 
 async function fetchWikimediaImages(
-  query: string
+  topic: string
 ): Promise<Array<{ url: string; width: number; height: number }>> {
   const images: Array<{ url: string; width: number; height: number }> = [];
+  const UA = { "User-Agent": "SafeSeek/1.0 (kid-safe search engine)" };
 
-  // Method 1: Search Wikimedia Commons directly for the topic
+  // Step 1: Get image file names from the Wikipedia article itself
   try {
-    const searchParams = new URLSearchParams({
+    const params = new URLSearchParams({
       action: "query",
-      list: "search",
-      srsearch: query,
-      srnamespace: "6", // File namespace
-      srlimit: "8",
+      titles: topic,
+      prop: "images",
+      imlimit: "20",
       format: "json",
     });
 
-    const searchResp = await fetch(
-      `https://commons.wikimedia.org/w/api.php?${searchParams}`,
-      { headers: { "User-Agent": "SafeSeek/1.0 (kid-safe search engine)" } }
-    );
+    const resp = await fetch(`https://en.wikipedia.org/w/api.php?${params}`, { headers: UA });
+    if (!resp.ok) return images;
 
-    if (searchResp.ok) {
-      const searchData = await searchResp.json();
-      const titles = (searchData.query?.search || [])
-        .map((s: any) => s.title as string)
-        .filter((t: string) => /\.(jpg|jpeg|png)$/i.test(t));
+    const data = await resp.json();
+    const pages = data.query?.pages;
+    if (!pages) return images;
 
-      if (titles.length > 0) {
-        // Get image info for found files
-        const infoParams = new URLSearchParams({
-          action: "query",
-          titles: titles.slice(0, 6).join("|"),
-          prop: "imageinfo",
-          iiprop: "url|size|mime|thumburl",
-          iiurlwidth: "400",
-          format: "json",
-        });
-
-        const infoResp = await fetch(
-          `https://commons.wikimedia.org/w/api.php?${infoParams}`,
-          { headers: { "User-Agent": "SafeSeek/1.0 (kid-safe search engine)" } }
-        );
-
-        if (infoResp.ok) {
-          const infoData = await infoResp.json();
-          const pages = infoData.query?.pages;
-          if (pages) {
-            for (const page of Object.values(pages) as any[]) {
-              const info = page.imageinfo?.[0];
-              if (!info) continue;
-              const mime = info.mime as string;
-              if (mime !== "image/jpeg" && mime !== "image/png") continue;
-              if (info.width < 300 || info.height < 200) continue;
-
-              images.push({
-                url: info.thumburl || info.url,
-                width: info.thumburl ? 400 : info.width,
-                height: info.thumburl ? Math.round(400 * info.height / info.width) : info.height,
-              });
-            }
-          }
+    // Collect image file titles (only jpg/png)
+    const fileTitles: string[] = [];
+    for (const page of Object.values(pages) as any[]) {
+      for (const img of page.images || []) {
+        const title = img.title as string;
+        if (/\.(jpg|jpeg|png)$/i.test(title)) {
+          fileTitles.push(title);
         }
       }
     }
-  } catch {
-    // Search failed, continue
-  }
 
-  // Method 2: Fall back to page images if search returned nothing
-  if (images.length === 0) {
-    try {
-      const params = new URLSearchParams({
-        action: "query",
-        generator: "images",
-        titles: query,
-        prop: "imageinfo",
-        iiprop: "url|size|mime|thumburl",
-        iiurlwidth: "400",
-        format: "json",
-        gimlimit: "5",
+    if (fileTitles.length === 0) return images;
+
+    // Step 2: Get actual image URLs and thumbnails from Commons (where files live)
+    const infoParams = new URLSearchParams({
+      action: "query",
+      titles: fileTitles.slice(0, 8).join("|"),
+      prop: "imageinfo",
+      iiprop: "url|size|mime|thumburl",
+      iiurlwidth: "500",
+      format: "json",
+    });
+
+    const infoResp = await fetch(`https://commons.wikimedia.org/w/api.php?${infoParams}`, { headers: UA });
+    if (!infoResp.ok) return images;
+
+    const infoData = await infoResp.json();
+    const infoPages = infoData.query?.pages;
+    if (!infoPages) return images;
+
+    // Filter: skip icons, logos, tiny images, SVGs
+    const skipPatterns = /flag|icon|logo|symbol|button|arrow|edit|commons-logo|wiki|stub|lock|question/i;
+
+    for (const page of Object.values(infoPages) as any[]) {
+      const info = page.imageinfo?.[0];
+      if (!info) continue;
+
+      const mime = info.mime as string;
+      if (mime !== "image/jpeg" && mime !== "image/png") continue;
+      if (info.width < 300 || info.height < 200) continue;
+
+      // Skip UI elements and icons
+      const title = (page.title || "") as string;
+      if (skipPatterns.test(title)) continue;
+
+      images.push({
+        url: info.thumburl || info.url,
+        width: info.thumburl ? 500 : info.width,
+        height: info.thumburl ? Math.round(500 * info.height / info.width) : info.height,
       });
 
-      const response = await fetch(
-        `https://commons.wikimedia.org/w/api.php?${params}`,
-        { headers: { "User-Agent": "SafeSeek/1.0 (kid-safe search engine)" } }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const pages = data.query?.pages;
-        if (pages) {
-          for (const page of Object.values(pages) as any[]) {
-            const info = page.imageinfo?.[0];
-            if (!info) continue;
-            const mime = info.mime as string;
-            if (mime !== "image/jpeg" && mime !== "image/png") continue;
-            if (info.width < 300 || info.height < 200) continue;
-
-            images.push({
-              url: info.thumburl || info.url,
-              width: info.thumburl ? 400 : info.width,
-              height: info.thumburl ? Math.round(400 * info.height / info.width) : info.height,
-            });
-          }
-        }
-      }
-    } catch {
-      // Fallback failed
+      if (images.length >= 6) break;
     }
+  } catch {
+    // Failed to fetch article images
   }
 
   return images;

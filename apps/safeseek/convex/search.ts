@@ -150,34 +150,61 @@ export const performSearch = internalAction({
     let allImages: ImageResult[] = [];
 
     if (kidProfile.allowImageSearch) {
-      // Google Images is primary (better visual quality for kids)
-      // Append "for kids" to get more kid-friendly, colorful results
-      const googleImages = await ctx.runAction(internal.wikipedia.fetchGoogleImages, {
-        query: args.query + " for kids",
-        safeSearch: "active",
-      }).catch(() => []);
-
-      // Add Google images first (better quality)
-      if (Array.isArray(googleImages)) {
-        for (const img of googleImages) {
+      // Wikipedia article images are the primary source (free, relevant, educational)
+      // The fetchWikipediaContent already fetched images from the article
+      if (wikiContext?.images) {
+        for (const img of wikiContext.images) {
           allImages.push({
             url: img.url,
-            thumbnail: img.thumbnail,
-            title: img.title || "",
-            source: "google",
+            title: wikiContext.title || "",
+            source: "wikipedia",
             width: img.width,
             height: img.height,
           });
         }
       }
 
-      // Add Wikipedia thumbnail only as fallback if we have < 3 Google images
-      if (allImages.length < 3 && wikiContext?.thumbnail) {
-        allImages.push({
-          url: wikiContext.thumbnail,
-          title: wikiContext.title || "",
-          source: "wikipedia",
-        });
+      // Add the Wikipedia thumbnail if we still need more
+      if (allImages.length < 4 && wikiContext?.thumbnail) {
+        // Check it's not already in the list
+        const thumbUrl = wikiContext.thumbnail;
+        if (!allImages.some((img) => img.url === thumbUrl)) {
+          allImages.push({
+            url: thumbUrl,
+            title: wikiContext.title || "",
+            source: "wikipedia",
+          });
+        }
+      }
+
+      // If we didn't get wiki context earlier (creative query), fetch images now
+      if (allImages.length === 0) {
+        try {
+          const imgContext = await ctx.runAction(internal.wikipedia.fetchWikipediaContent, {
+            query: args.query,
+            ageGroup,
+          });
+          if (imgContext?.images) {
+            for (const img of imgContext.images) {
+              allImages.push({
+                url: img.url,
+                title: imgContext.title || "",
+                source: "wikipedia",
+                width: img.width,
+                height: img.height,
+              });
+            }
+          }
+          if (allImages.length < 4 && imgContext?.thumbnail) {
+            allImages.push({
+              url: imgContext.thumbnail,
+              title: imgContext.title || "",
+              source: "wikipedia",
+            });
+          }
+        } catch {
+          // Image fetch failed
+        }
       }
 
       allImages = deduplicateImages(allImages, 6);
