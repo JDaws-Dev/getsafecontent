@@ -193,47 +193,50 @@ async function fetchWikimediaImages(
 }
 
 /**
- * Fetch images from Pexels API.
- * Free, beautiful stock photos with built-in safety.
+ * Fetch images from Serper.dev (Google Images with SafeSearch).
+ * $1/1K queries. Returns actual Google Image results.
  */
-export const fetchPexelsImages = internalAction({
+export const fetchSerperImages = internalAction({
   args: {
     query: v.string(),
   },
   handler: async (_ctx, args) => {
-    const PEXELS_KEY = process.env.PEXELS_API_KEY;
-    if (!PEXELS_KEY) return [];
+    const SERPER_KEY = process.env.SERPER_API_KEY;
+    if (!SERPER_KEY) return [];
 
     try {
-      const params = new URLSearchParams({
-        query: args.query,
-        per_page: "4",
-        orientation: "landscape",
+      const response = await fetch("https://google.serper.dev/images", {
+        method: "POST",
+        headers: {
+          "X-API-KEY": SERPER_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          q: args.query,
+          gl: "us",
+          num: 8,
+          safe: "active",
+        }),
       });
 
-      const response = await fetch(
-        `https://api.pexels.com/v1/search?${params}`,
-        { headers: { Authorization: PEXELS_KEY } }
-      );
-
       if (!response.ok) {
-        console.error("[fetchPexelsImages] Pexels API error:", response.status);
+        console.error("[fetchSerperImages] Serper API error:", response.status);
         return [];
       }
 
       const data = await response.json();
-      const photos = data.photos || [];
+      const images = data.images || [];
 
-      return photos.map((photo: any) => ({
-        url: photo.src?.large || photo.src?.medium || photo.src?.original,
-        thumbnail: photo.src?.medium || photo.src?.small,
-        title: photo.alt || "",
-        width: photo.width || 0,
-        height: photo.height || 0,
-        source: "pexels",
+      return images.map((img: any) => ({
+        url: img.imageUrl,
+        thumbnail: img.thumbnailUrl || img.imageUrl,
+        title: img.title || "",
+        width: img.imageWidth || 0,
+        height: img.imageHeight || 0,
+        source: "google",
       }));
     } catch (err) {
-      console.error("[fetchPexelsImages] Error:", err);
+      console.error("[fetchSerperImages] Error:", err);
       return [];
     }
   },

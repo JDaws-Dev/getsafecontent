@@ -242,7 +242,7 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
     });
 
     const pexelsPromise = kidProfile.allowImageSearch
-      ? ctx.runAction(internal.wikipedia.fetchPexelsImages, { query: args.query }).catch(() => [])
+      ? ctx.runAction(internal.wikipedia.fetchSerperImages, { query: args.query }).catch(() => [])
       : Promise.resolve([]);
 
     // Wait for both
@@ -323,7 +323,7 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
             url: img.url,
             thumbnail: img.thumbnail,
             title: img.title || "",
-            source: "pexels",
+            source: "google",
             width: img.width,
             height: img.height,
           });
