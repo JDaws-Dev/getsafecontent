@@ -166,7 +166,7 @@ Use this reference to ground your answer in facts. Summarize it in a way appropr
 
 CHILD'S AGE RANGE: ${ageMin}-${ageMax} years old
 CONTENT STRICTNESS: ${strictness}
-${lexileLevel !== "auto" ? `LEXILE READING LEVEL: ${lexileLevel} — write at this exact reading level.` : `Write at the natural reading level for a ${ageMin}-${ageMax} year old.`}
+${lexileLevel !== "auto" ? `READING LEVEL: ${lexileLevel} grade — write at a ${lexileLevel} grade reading level.` : `Write at the natural reading level for a ${ageMin}-${ageMax} year old.`}
 ${accessibilityNeeds.length > 0 ? `ACCESSIBILITY NEEDS: ${accessibilityNeeds.join(", ")}. Adapt your response:
 ${accessibilityNeeds.includes("dyslexia") ? "- DYSLEXIA: Use short sentences (under 15 words). Avoid complex word structures. Use simple, common words. Break paragraphs into small chunks." : ""}
 ${accessibilityNeeds.includes("low-vision") ? "- LOW VISION: Keep answers very concise. The UI will handle large text display." : ""}

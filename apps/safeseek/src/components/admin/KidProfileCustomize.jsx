@@ -185,10 +185,10 @@ export default function KidProfileCustomize({ profile, onClose }) {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <BookOpen className="w-4 h-4 text-purple-500" />
-              <h3 className="font-semibold text-gray-900 text-sm">Reading Level (Lexile)</h3>
+              <h3 className="font-semibold text-gray-900 text-sm">Reading Level</h3>
             </div>
             <p className="text-xs text-gray-500 mb-2">
-              Set a specific reading level, or let SafeSeek adjust automatically based on age.
+              What grade does your child read at? SafeSeek adjusts answers to match.
             </p>
             <select
               value={lexileLevel}
@@ -196,12 +196,15 @@ export default function KidProfileCustomize({ profile, onClose }) {
               className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-[16px]"
             >
               <option value="auto">Auto (based on age)</option>
-              <option value="200L">200L — Beginning reader (K-1st)</option>
-              <option value="400L">400L — Early reader (2nd-3rd)</option>
-              <option value="600L">600L — Developing (3rd-4th)</option>
-              <option value="800L">800L — Intermediate (5th-6th)</option>
-              <option value="1000L">1000L — Advanced (7th-8th)</option>
-              <option value="1200L">1200L — High school level</option>
+              <option value="K">Kindergarten</option>
+              <option value="1st">1st Grade</option>
+              <option value="2nd">2nd Grade</option>
+              <option value="3rd">3rd Grade</option>
+              <option value="4th">4th Grade</option>
+              <option value="5th">5th Grade</option>
+              <option value="6th">6th Grade</option>
+              <option value="7th">7th Grade</option>
+              <option value="8th">8th Grade</option>
             </select>
           </div>
 
