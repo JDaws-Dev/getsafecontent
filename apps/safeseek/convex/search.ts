@@ -217,13 +217,14 @@ If the query is not safe, return:
 
 Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search engine.`;
 
-    // --- Step 5: Call OpenAI API ---
+    // --- Step 5: Call OpenAI + Pexels IN PARALLEL for speed ---
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) {
       throw new Error("OPENAI_API_KEY not configured");
     }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Fire both requests simultaneously
+    const openaiPromise = fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -239,6 +240,13 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
         max_tokens: 1000,
       }),
     });
+
+    const pexelsPromise = kidProfile.allowImageSearch
+      ? ctx.runAction(internal.wikipedia.fetchPexelsImages, { query: args.query }).catch(() => [])
+      : Promise.resolve([]);
+
+    // Wait for both
+    const [response, pexelsImages] = await Promise.all([openaiPromise, pexelsPromise]);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -266,7 +274,6 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
     const now = Date.now();
 
     if (!parsed.safe) {
-      // Store in blocked searches
       await ctx.runMutation(internal.searchQueries.insertBlockedSearch, {
         kidProfileId: args.kidProfileId,
         query: args.query,
@@ -286,11 +293,11 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
       };
     }
 
-    // --- Step 6: Collect images from Wikipedia + Pexels ---
+    // --- Step 6: Collect images (Wikipedia already fetched, Pexels already fetched in parallel) ---
     let allImages: ImageResult[] = [];
 
     if (kidProfile.allowImageSearch) {
-      // Wikipedia images (already fetched, no extra latency)
+      // Wikipedia images (from wikiContext, no extra latency)
       if (wikiContext?.images) {
         for (const img of wikiContext.images) {
           allImages.push({
@@ -309,25 +316,18 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
         }
       }
 
-      // Pexels images (beautiful stock photos to supplement Wikipedia)
-      try {
-        const pexelsImages = await ctx.runAction(internal.wikipedia.fetchPexelsImages, {
-          query: args.query,
-        });
-        if (Array.isArray(pexelsImages)) {
-          for (const img of pexelsImages) {
-            allImages.push({
-              url: img.url,
-              thumbnail: img.thumbnail,
-              title: img.title || "",
-              source: "pexels",
-              width: img.width,
-              height: img.height,
-            });
-          }
+      // Pexels images (already fetched in parallel with OpenAI)
+      if (Array.isArray(pexelsImages)) {
+        for (const img of pexelsImages as any[]) {
+          allImages.push({
+            url: img.url,
+            thumbnail: img.thumbnail,
+            title: img.title || "",
+            source: "pexels",
+            width: img.width,
+            height: img.height,
+          });
         }
-      } catch {
-        // Pexels fetch failed, continue with Wikipedia images only
       }
 
       allImages = deduplicateImages(allImages, 8);
