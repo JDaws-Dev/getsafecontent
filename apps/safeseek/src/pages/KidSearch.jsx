@@ -3,9 +3,9 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import {
-  Search, Sparkles, ArrowLeft, Clock, History, ChevronRight,
+  Search, Sparkles, Clock, History, ChevronRight,
   Shield, AlertCircle, Loader2, X, ChevronLeft, ChevronRight as ChevronRightIcon,
-  Image as ImageIcon, Camera, Mic, Sun, Moon, Volume2, VolumeX, GitBranch
+  Image as ImageIcon, Camera, Mic, Sun, Moon, Volume2, VolumeX, GitBranch, Users, ArrowLeft
 } from 'lucide-react';
 import mermaid from 'mermaid';
 import { useTheme } from '../contexts/ThemeContext';
@@ -231,7 +231,7 @@ function ImageLightbox({ images, initialIndex, onClose }) {
                   ? 'bg-white/15 text-blue-200'
                   : 'bg-white/15 text-cyan-200'
               }`}>
-                {image.source === 'wikipedia' ? 'Wikipedia' : 'Google'}
+                {image.source === 'wikipedia' ? 'Wikipedia' : 'SafeSeek'}
               </span>
             )}
             <span className="text-white/50 text-xs">
@@ -294,7 +294,7 @@ function ImageGallery({ images, onImageClick }) {
                     ? 'bg-white/90 text-blue-700 dark:bg-gray-800/90 dark:text-blue-300'
                     : 'bg-white/90 text-cyan-700 dark:bg-gray-800/90 dark:text-cyan-300'
                 }`}>
-                  {image.source === 'wikipedia' ? 'Wiki' : 'Google'}
+                  {image.source === 'wikipedia' ? 'Wiki' : 'SafeSeek'}
                 </span>
               )}
               {/* Title caption */}
@@ -678,10 +678,16 @@ export default function KidSearch() {
     const lowerQuery = query.toLowerCase();
     const matched = [];
 
-    // Recent searches first (with type marker)
+    // Recent searches first (with type marker), deduplicated by query text
     if (kidSearchHistory) {
+      const seen = new Set();
       const recentMatches = kidSearchHistory
-        .filter((entry) => entry.query.toLowerCase().includes(lowerQuery))
+        .filter((entry) => {
+          const lower = entry.query.toLowerCase();
+          if (seen.has(lower) || !lower.includes(lowerQuery)) return false;
+          seen.add(lower);
+          return true;
+        })
         .slice(0, 3)
         .map((entry) => ({ text: entry.query, type: 'recent' }));
       matched.push(...recentMatches);
@@ -1021,7 +1027,8 @@ export default function KidSearch() {
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Who's Searching?</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Who's Searching?</h1>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mb-1">AI-powered search, built for kids</p>
           <p className="text-gray-600 dark:text-gray-400 mb-8">Select your profile</p>
 
           {kidProfiles && kidProfiles.length > 0 ? (
@@ -1053,8 +1060,8 @@ export default function KidSearch() {
 
           {/* Family Code Display */}
           <div className="mt-12 text-center">
-            <p className="text-gray-500 dark:text-gray-400 text-sm">Family Code</p>
-            <p className="text-gray-400 dark:text-gray-500 font-mono text-lg tracking-widest">{familyCode}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">Your family's secret code</p>
+            <span className="inline-block mt-1 px-4 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-mono text-lg tracking-widest rounded-full border border-gray-200 dark:border-gray-700">{familyCode}</span>
           </div>
 
           {/* Parent Login Link */}
@@ -1145,6 +1152,10 @@ export default function KidSearch() {
               <Search className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-gray-900 dark:text-white text-lg hidden sm:inline">SafeSeek</span>
+            <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
+              <Shield className="w-3 h-3" />
+              <span className="hidden sm:inline">SafeSearch On</span>
+            </div>
           </div>
 
           {/* Right: search count + profile + dark mode + history */}
@@ -1170,8 +1181,9 @@ export default function KidSearch() {
                 onClick={() => setSelectedProfile(null)}
                 className="text-xs text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 ml-1 transition-colors"
                 aria-label="Switch profile"
+                title="Switch profile"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
+                <Users className="w-3.5 h-3.5" />
               </button>
             </div>
             <button
@@ -1299,7 +1311,7 @@ export default function KidSearch() {
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
                   searchMode === 'learn'
                     ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
-                    : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    : 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
               >
                 <Sparkles className="w-4 h-4" />
@@ -1311,7 +1323,7 @@ export default function KidSearch() {
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
                   searchMode === 'images'
                     ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
-                    : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    : 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
               >
                 <ImageIcon className="w-4 h-4" />
@@ -1339,7 +1351,10 @@ export default function KidSearch() {
               </button>
             </div>
             <div className="space-y-1">
-              {kidSearchHistory.map((entry) => (
+              {kidSearchHistory.filter((entry, index, arr) => {
+                // Deduplicate by query text, keeping only the most recent (first) occurrence
+                return arr.findIndex((e) => e.query.toLowerCase() === entry.query.toLowerCase()) === index;
+              }).map((entry) => (
                 <button
                   key={entry._id}
                   onClick={() => {

@@ -5,7 +5,7 @@ import { api } from '../../convex/_generated/api';
 import { useAuth } from '../contexts/AuthContext';
 import TimeLimits from '../components/admin/TimeLimits';
 import KidProfileEditor from '../components/admin/KidProfileEditor';
-import KidProfileCustomize from '../components/admin/KidProfileCustomize';
+// KidProfileCustomize merged into KidProfileEditor
 import OnboardingWizard from '../components/admin/OnboardingWizard';
 import Toast from '../components/common/Toast';
 import ConfirmModal from '../components/common/ConfirmModal';
