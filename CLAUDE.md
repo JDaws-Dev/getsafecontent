@@ -7,6 +7,7 @@
 | SafeTunes | getsafetunes.com | `formal-chihuahua-623` | React + Vite |
 | SafeTube | getsafetube.com | `rightful-rabbit-333` | React + Vite |
 | SafeReads | getsafereads.com | `exuberant-puffin-838` | Next.js |
+| SafeSeek | getsafeseek.com (TBD) | `quaint-shepherd-776` (dev) | React + Vite + OpenAI |
 | Marketing | getsafefamily.com | `adamant-crow-705` | Next.js |
 | Blog | getsafefamily.com/blog | N/A (shares Marketing) | MDX + Velite |
 
@@ -23,6 +24,7 @@
 - SafeTunes: `~/safecontent/apps/safetunes`
 - SafeTube: `~/safecontent/apps/safetube`
 - SafeReads: `~/safecontent/apps/safereads`
+- SafeSeek: `~/safecontent/apps/safeseek`
 - Marketing: `~/safecontent/sites/marketing`
 
 **For implementation history, see:** `docs/BUILD-HISTORY.md`

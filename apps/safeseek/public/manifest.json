@@ -1,0 +1,10 @@
+{
+  "name": "SafeSeek",
+  "short_name": "SafeSeek",
+  "description": "Kid-safe AI search engine",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDF8F3",
+  "theme_color": "#3B82F6",
+  "icons": []
+}
