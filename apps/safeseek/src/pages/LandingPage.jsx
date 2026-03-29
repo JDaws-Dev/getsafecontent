@@ -5,7 +5,7 @@ import {
   ArrowRight, Users, Lock, Zap, BookOpen, AlertTriangle, X,
   ChevronDown, ChevronUp, Globe, Ban, Monitor, MessageCircle,
   Image, Fingerprint, Mic, Volume2, GraduationCap, Accessibility,
-  RefreshCw, Moon, ImageIcon
+  RefreshCw, Moon, ImageIcon, Star, Quote
 } from 'lucide-react';
 
 const features = [
@@ -164,6 +164,27 @@ const steps = [
   },
 ];
 
+const testimonials = [
+  {
+    quote: 'My 8-year-old used to come to me every 5 minutes asking me to Google things. Now she just asks SafeSeek. The answers are perfect for her reading level.',
+    name: 'Sarah M.',
+    role: 'Mom of 2',
+  },
+  {
+    quote: 'I was terrified of what my son might find searching online. SafeSeek gives him the freedom to be curious without me worrying.',
+    name: 'David R.',
+    role: 'Dad of 3',
+  },
+  {
+    quote: 'The ADHD-friendly mode is a game changer. My daughter actually reads the whole answer instead of getting overwhelmed.',
+    name: 'Jennifer K.',
+    role: 'Homeschool Mom',
+  },
+];
+
+const primaryFeatures = features.slice(0, 4);
+const secondaryFeatures = features.slice(4);
+
 function FaqItem({ faq, isOpen, onToggle }) {
   return (
     <div className="border border-gray-200 rounded-2xl overflow-hidden transition-all hover:border-blue-200">
@@ -210,7 +231,7 @@ function ComparisonCell({ value }) {
 }
 
 export default function LandingPage() {
-  const [openFaq, setOpenFaq] = useState(null);
+  const [openFaqs, setOpenFaqs] = useState(new Set([0, 1, 2]));
 
   useEffect(() => {
     const faqSchema = {
@@ -321,7 +342,7 @@ export default function LandingPage() {
                   to="/signup"
                   className="w-full sm:w-auto bg-gradient-to-r from-[#F5A962] to-[#E88B6A] hover:from-[#f0a050] hover:to-[#e07d5a] text-white font-bold px-8 py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all inline-flex items-center justify-center gap-2"
                 >
-                  Start 7-Day Free Trial
+                  Try Free for 7 Days — then $4.99/mo
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link
@@ -334,9 +355,9 @@ export default function LandingPage() {
               </div>
 
               <div className="flex items-center justify-center lg:justify-start gap-3 text-sm text-gray-500">
-                <span className="font-semibold text-[#1a1a2e]">$4.99/mo</span>
-                <span className="text-gray-300">|</span>
                 <span>No credit card required</span>
+                <span className="text-gray-300">|</span>
+                <span>Cancel anytime</span>
               </div>
             </div>
 
@@ -419,6 +440,44 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ========== TESTIMONIALS ========== */}
+      <section className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-1.5 rounded-full text-sm font-medium mb-4 border border-green-100">
+              <Users className="w-4 h-4" />
+              Trusted by families
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
+              Parents love SafeSeek
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
+            {testimonials.map((t) => (
+              <div
+                key={t.name}
+                className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm hover:shadow-md transition-all"
+              >
+                <div className="flex gap-0.5 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  ))}
+                </div>
+                <Quote className="w-6 h-6 text-blue-200 mb-3" />
+                <p className="text-gray-700 leading-relaxed mb-6 text-sm">
+                  "{t.quote}"
+                </p>
+                <div className="border-t border-gray-100 pt-4">
+                  <p className="font-semibold text-[#1a1a2e] text-sm">{t.name}</p>
+                  <p className="text-gray-500 text-xs">{t.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ========== HOW IT WORKS ========== */}
       <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">
         <div className="max-w-5xl mx-auto">
@@ -461,19 +520,39 @@ export default function LandingPage() {
               Voice search, read aloud, accessibility, grade-level answers, and full parent controls. You set the rules, AI does the work.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature) => {
+          {/* Primary features - large hero cards */}
+          <div className="grid sm:grid-cols-2 gap-6 mb-8">
+            {primaryFeatures.map((feature) => {
               const Icon = feature.icon;
               return (
                 <div
                   key={feature.title}
-                  className="bg-[#FDF8F3] rounded-2xl p-6 border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all group"
+                  className="bg-[#FDF8F3] rounded-2xl p-8 border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all group"
                 >
-                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-100 transition">
-                    <Icon className="w-6 h-6 text-blue-600" />
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
+                    <Icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-[#1a1a2e] mb-2">{feature.title}</h3>
-                  <p className="text-gray-600 leading-relaxed text-sm">{feature.description}</p>
+                  <h3 className="text-xl font-bold text-[#1a1a2e] mb-3">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Secondary features - smaller row */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {secondaryFeatures.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={feature.title}
+                  className="bg-[#FDF8F3] rounded-xl p-4 border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all group"
+                >
+                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-100 transition">
+                    <Icon className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <h3 className="text-sm font-bold text-[#1a1a2e] mb-1">{feature.title}</h3>
+                  <p className="text-gray-500 leading-relaxed text-xs">{feature.description}</p>
                 </div>
               );
             })}
@@ -722,10 +801,10 @@ export default function LandingPage() {
 
               <ul className="space-y-3 mb-6">
                 {[
-                  'SafeSeek - Safe search',
-                  'SafeTunes - Clean music',
-                  'SafeTube - YouTube controls',
-                  'SafeReads - Curated books',
+                  'SafeSeek \u2014 AI search engine for kids',
+                  'SafeTunes \u2014 Parent-controlled Apple Music',
+                  'SafeTube \u2014 YouTube with only approved channels',
+                  'SafeReads \u2014 AI book content analysis',
                   'All features included',
                   'One family account',
                 ].map((item) => (
@@ -764,8 +843,18 @@ export default function LandingPage() {
               <FaqItem
                 key={i}
                 faq={faq}
-                isOpen={openFaq === i}
-                onToggle={() => setOpenFaq(openFaq === i ? null : i)}
+                isOpen={openFaqs.has(i)}
+                onToggle={() => {
+                  setOpenFaqs((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(i)) {
+                      next.delete(i);
+                    } else {
+                      next.add(i);
+                    }
+                    return next;
+                  });
+                }}
               />
             ))}
           </div>
@@ -773,7 +862,7 @@ export default function LandingPage() {
           <div className="text-center mt-8">
             <p className="text-gray-500 text-sm">
               Still have questions?{' '}
-              <a href="mailto:jeremiah@getsafefamily.com" className="text-blue-600 hover:text-blue-700 font-medium">
+              <a href="mailto:support@getsafefamily.com" className="text-blue-600 hover:text-blue-700 font-medium">
                 Email us anytime
               </a>
             </p>
@@ -838,8 +927,8 @@ export default function LandingPage() {
 
             {/* Contact */}
             <div className="text-sm text-center md:text-right">
-              <a href="mailto:jeremiah@getsafefamily.com" className="hover:text-white transition">
-                jeremiah@getsafefamily.com
+              <a href="mailto:support@getsafefamily.com" className="hover:text-white transition">
+                support@getsafefamily.com
               </a>
             </div>
           </div>
