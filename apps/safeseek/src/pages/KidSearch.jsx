@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import {
@@ -308,8 +308,8 @@ function ImageGallery({ images, onImageClick }) {
   );
 }
 
-// ========== Animated Loading Dots ==========
-function LoadingDots() {
+// ========== Skeleton Loading State ==========
+function SearchSkeleton() {
   const [msgIndex, setMsgIndex] = useState(0);
 
   useEffect(() => {
@@ -320,24 +320,71 @@ function LoadingDots() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center py-20">
-      <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-6 animate-pulse">
-        <Search className="w-8 h-8 text-blue-500" />
+    <div className="space-y-5 py-4">
+      {/* Quick Answer skeleton */}
+      <div className="relative rounded-2xl h-32 bg-gradient-to-br from-blue-400/60 to-cyan-400/60 animate-pulse overflow-hidden">
+        <div className="absolute inset-0 animate-shimmer" />
+        <div className="p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-5 h-5 rounded bg-white/30" />
+            <div className="h-4 w-28 rounded bg-white/30" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 w-full rounded bg-white/20" />
+            <div className="h-3 w-5/6 rounded bg-white/20" />
+            <div className="h-3 w-3/4 rounded bg-white/20" />
+          </div>
+        </div>
       </div>
-      <p className="text-gray-600 text-lg font-medium transition-opacity duration-300">{LOADING_MESSAGES[msgIndex]}</p>
-      <div className="flex items-center gap-2 mt-4">
-        <span
-          className="w-3 h-3 bg-blue-400 rounded-full"
-          style={{ animation: 'bounce-dot 1.4s infinite ease-in-out both', animationDelay: '-0.32s' }}
-        />
-        <span
-          className="w-3 h-3 bg-cyan-400 rounded-full"
-          style={{ animation: 'bounce-dot 1.4s infinite ease-in-out both', animationDelay: '-0.16s' }}
-        />
-        <span
-          className="w-3 h-3 bg-blue-400 rounded-full"
-          style={{ animation: 'bounce-dot 1.4s infinite ease-in-out both' }}
-        />
+
+      {/* Image thumbnails skeleton */}
+      <div className="grid grid-cols-3 gap-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="relative rounded-xl aspect-[4/3] bg-gray-200 animate-pulse overflow-hidden">
+            <div className="absolute inset-0 animate-shimmer" />
+          </div>
+        ))}
+      </div>
+
+      {/* Section card skeletons */}
+      {[0, 1].map((i) => {
+        const gradients = [
+          'from-violet-400/60 to-purple-400/60',
+          'from-blue-400/60 to-indigo-400/60',
+        ];
+        return (
+          <div key={i} className="relative rounded-2xl h-24 bg-gray-100 animate-pulse overflow-hidden">
+            <div className="absolute inset-0 animate-shimmer" />
+            <div className={`h-10 rounded-t-2xl bg-gradient-to-r ${gradients[i]}`}>
+              <div className="flex items-center gap-2 px-5 py-2.5">
+                <div className="w-7 h-7 rounded-lg bg-white/20" />
+                <div className="h-4 w-32 rounded bg-white/30" />
+              </div>
+            </div>
+            <div className="px-5 py-3">
+              <div className="h-3 w-full rounded bg-gray-200" />
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Did you know skeleton */}
+      <div className="relative rounded-2xl h-20 bg-amber-50 animate-pulse overflow-hidden">
+        <div className="absolute inset-0 animate-shimmer" />
+        <div className="p-5 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-amber-200/60" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-28 rounded bg-amber-200/60" />
+            <div className="h-3 w-3/4 rounded bg-amber-200/40" />
+          </div>
+        </div>
+      </div>
+
+      {/* Rotating text messages */}
+      <div className="text-center pt-2">
+        <p className="text-gray-500 text-sm font-medium transition-opacity duration-300">
+          {LOADING_MESSAGES[msgIndex]}
+        </p>
       </div>
     </div>
   );
@@ -347,6 +394,7 @@ function LoadingDots() {
 export default function KidSearch() {
   const { familyCode: urlFamilyCode } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // State
   const [familyCode, setFamilyCode] = useState(urlFamilyCode || '');
@@ -364,11 +412,17 @@ export default function KidSearch() {
   const [codeShake, setCodeShake] = useState(false);
 
   // Search mode: 'learn' (text answers) or 'images' (image grid)
-  const [searchMode, setSearchMode] = useState('learn');
+  const [searchMode, setSearchMode] = useState(searchParams.get('mode') || 'learn');
 
   // Image state
   const [images, setImages] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  // Autocomplete state
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const suggestionsRef = useRef(null);
 
   // Debounce state
   const [cooldown, setCooldown] = useState(false);
@@ -376,6 +430,9 @@ export default function KidSearch() {
 
   const searchInputRef = useRef(null);
   const performSearch = useAction(api.search.searchFromKid);
+
+  // Track whether we already auto-searched from URL params
+  const autoSearchedRef = useRef(false);
 
   // Additional state for new response format
   const [sections, setSections] = useState([]);
@@ -455,6 +512,75 @@ export default function KidSearch() {
     };
   }, []);
 
+  // Auto-search from URL query params on mount
+  useEffect(() => {
+    if (selectedProfile && !autoSearchedRef.current) {
+      const qParam = searchParams.get('q');
+      if (qParam) {
+        autoSearchedRef.current = true;
+        setQuery(qParam);
+        // Trigger search after state settles
+        setTimeout(() => {
+          const form = searchInputRef.current?.closest('form');
+          if (form) form.requestSubmit();
+        }, 100);
+      }
+    }
+  }, [selectedProfile, searchParams]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(e.target) &&
+        searchInputRef.current &&
+        !searchInputRef.current.contains(e.target)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filter suggestions when query changes
+  useEffect(() => {
+    if (query.trim().length < 2) {
+      setFilteredSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    const matched = [];
+
+    // Recent searches first (with type marker)
+    if (kidSearchHistory) {
+      const recentMatches = kidSearchHistory
+        .filter((entry) => entry.query.toLowerCase().includes(lowerQuery))
+        .slice(0, 3)
+        .map((entry) => ({ text: entry.query, type: 'recent' }));
+      matched.push(...recentMatches);
+    }
+
+    // Then SUGGESTIONS
+    const suggestionMatches = SUGGESTIONS
+      .filter((s) => {
+        const lower = s.toLowerCase();
+        // Avoid duplicates with recent searches
+        return lower.includes(lowerQuery) && !matched.some((m) => m.text.toLowerCase() === lower);
+      })
+      .slice(0, 6 - matched.length)
+      .map((s) => ({ text: s, type: 'suggestion' }));
+    matched.push(...suggestionMatches);
+
+    const capped = matched.slice(0, 6);
+    setFilteredSuggestions(capped);
+    setShowSuggestions(capped.length > 0);
+    setSelectedSuggestionIndex(-1);
+  }, [query, kidSearchHistory]);
+
   const startCooldown = useCallback(() => {
     setCooldown(true);
     if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current);
@@ -474,11 +600,20 @@ export default function KidSearch() {
     e.preventDefault();
     if (!query.trim() || !selectedProfile || cooldown) return;
 
+    // Close suggestions
+    setShowSuggestions(false);
+
     // Check time limits before each search
     if (canSearchStatus && !canSearchStatus.canSearch) {
       setTimesUp(true);
       return;
     }
+
+    // Update URL with query params
+    const params = new URLSearchParams();
+    params.set('q', query.trim());
+    if (searchMode !== 'learn') params.set('mode', searchMode);
+    navigate(`/search/${familyCode}?${params.toString()}`, { replace: true });
 
     searchStartRef.current = Date.now();
     setSearchTime(null);
@@ -525,12 +660,32 @@ export default function KidSearch() {
 
   const handleSuggestionClick = useCallback((suggestion) => {
     setQuery(suggestion);
+    setShowSuggestions(false);
     // Auto-submit the search
     setTimeout(() => {
       const form = searchInputRef.current?.closest('form');
       if (form) form.requestSubmit();
     }, 50);
   }, []);
+
+  const handleInputKeyDown = (e) => {
+    if (!showSuggestions || filteredSuggestions.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedSuggestionIndex((prev) =>
+        prev < filteredSuggestions.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedSuggestionIndex((prev) => (prev > 0 ? prev - 1 : -1));
+    } else if (e.key === 'Enter' && selectedSuggestionIndex >= 0) {
+      e.preventDefault();
+      handleSuggestionClick(filteredSuggestions[selectedSuggestionIndex].text);
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
+  };
 
   const handleImageClick = (index) => {
     setLightboxIndex(index);
@@ -539,6 +694,32 @@ export default function KidSearch() {
   const closeLightbox = useCallback(() => {
     setLightboxIndex(null);
   }, []);
+
+  const handleModeToggle = (mode) => {
+    setSearchMode(mode);
+    // Update URL mode param if there is a current query
+    if (query.trim()) {
+      const params = new URLSearchParams();
+      params.set('q', query.trim());
+      if (mode !== 'learn') params.set('mode', mode);
+      navigate(`/search/${familyCode}?${params.toString()}`, { replace: true });
+    }
+  };
+
+  const handleClearSearch = () => {
+    setQuery('');
+    setResults(null);
+    setAiSummary('');
+    setSections([]);
+    setFunFacts([]);
+    setRelatedQuestions([]);
+    setImages([]);
+    setBlocked(false);
+    setBlockedMessage('');
+    // Clear URL params
+    navigate(`/search/${familyCode}`, { replace: true });
+    searchInputRef.current?.focus();
+  };
 
   // Compute remaining searches status
   const searchesRemaining = canSearchStatus?.remainingSearches;
@@ -794,12 +975,29 @@ export default function KidSearch() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleInputKeyDown}
+                onFocus={() => {
+                  if (query.trim().length >= 2 && filteredSuggestions.length > 0) {
+                    setShowSuggestions(true);
+                  }
+                }}
                 placeholder="What do you want to learn about?"
                 className="w-full text-[16px] bg-gray-50 border-2 border-gray-200 rounded-2xl pl-12 pr-32 py-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200"
                 autoFocus
+                autoComplete="off"
               />
-              {/* Mode toggle pills inside search bar */}
+              {/* Clear button + submit inside search bar */}
               <div className="absolute right-2 flex items-center gap-1">
+                {query && !searching && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
                 {query && (
                   <button
                     type="submit"
@@ -816,11 +1014,42 @@ export default function KidSearch() {
               </div>
             </div>
 
+            {/* Autocomplete Dropdown */}
+            {showSuggestions && filteredSuggestions.length > 0 && (
+              <div
+                ref={suggestionsRef}
+                className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden"
+              >
+                {filteredSuggestions.map((item, index) => (
+                  <button
+                    key={`${item.type}-${item.text}`}
+                    type="button"
+                    onClick={() => handleSuggestionClick(item.text)}
+                    className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors text-sm ${
+                      index === selectedSuggestionIndex
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-blue-50'
+                    }`}
+                  >
+                    {item.type === 'recent' ? (
+                      <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    ) : (
+                      <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    )}
+                    <span className="truncate">{item.text}</span>
+                    {item.type === 'recent' && (
+                      <span className="ml-auto text-[10px] text-gray-400 flex-shrink-0">Recent</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Mode toggle */}
             <div className="flex items-center gap-1 mt-2.5">
               <button
                 type="button"
-                onClick={() => setSearchMode('learn')}
+                onClick={() => handleModeToggle('learn')}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
                   searchMode === 'learn'
                     ? 'bg-blue-100 text-blue-700'
@@ -832,7 +1061,7 @@ export default function KidSearch() {
               </button>
               <button
                 type="button"
-                onClick={() => setSearchMode('images')}
+                onClick={() => handleModeToggle('images')}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
                   searchMode === 'images'
                     ? 'bg-blue-100 text-blue-700'
@@ -886,8 +1115,8 @@ export default function KidSearch() {
           </div>
         )}
 
-        {/* Loading State */}
-        {searching && <LoadingDots />}
+        {/* Loading State - Skeleton */}
+        {searching && <SearchSkeleton />}
 
         {/* Blocked Message */}
         {blocked && !searching && (
@@ -971,7 +1200,7 @@ export default function KidSearch() {
                   <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
                     <p className="text-sm text-blue-800 leading-relaxed line-clamp-3">{stripMarkdown(aiSummary)}</p>
                     <button
-                      onClick={() => setSearchMode('learn')}
+                      onClick={() => handleModeToggle('learn')}
                       className="text-xs text-blue-600 font-medium mt-2 hover:underline py-1"
                     >
                       Read full answer &rarr;
@@ -990,7 +1219,7 @@ export default function KidSearch() {
                   Try searching for animals, planets, volcanoes, or anything you're curious about.
                 </p>
                 <button
-                  onClick={() => setSearchMode('learn')}
+                  onClick={() => handleModeToggle('learn')}
                   className="text-sm text-blue-600 font-medium hover:underline py-1 inline-flex items-center gap-1"
                 >
                   Switch to Learn mode <ChevronRight className="w-3.5 h-3.5" />
