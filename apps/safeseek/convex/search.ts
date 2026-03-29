@@ -123,7 +123,8 @@ export const performSearch = internalAction({
       }
     }
 
-    // --- Step 2: Classify query and fetch Wikipedia context ---
+    // --- Step 2: Fetch Wikipedia context (for factual queries) ---
+    // This runs BEFORE OpenAI so we can inject Wikipedia content into the prompt
     const queryType = classifyQuery(args.query);
     let wikiContext: {
       title: string;
@@ -146,71 +147,7 @@ export const performSearch = internalAction({
       }
     }
 
-    // --- Step 3: Fetch images if allowed ---
-    let allImages: ImageResult[] = [];
-
-    if (kidProfile.allowImageSearch) {
-      // Wikipedia article images are the primary source (free, relevant, educational)
-      // The fetchWikipediaContent already fetched images from the article
-      if (wikiContext?.images) {
-        for (const img of wikiContext.images) {
-          allImages.push({
-            url: img.url,
-            title: wikiContext.title || "",
-            source: "wikipedia",
-            width: img.width,
-            height: img.height,
-          });
-        }
-      }
-
-      // Add the Wikipedia thumbnail if we still need more
-      if (allImages.length < 4 && wikiContext?.thumbnail) {
-        // Check it's not already in the list
-        const thumbUrl = wikiContext.thumbnail;
-        if (!allImages.some((img) => img.url === thumbUrl)) {
-          allImages.push({
-            url: thumbUrl,
-            title: wikiContext.title || "",
-            source: "wikipedia",
-          });
-        }
-      }
-
-      // If we didn't get wiki context earlier (creative query), fetch images now
-      if (allImages.length === 0) {
-        try {
-          const imgContext = await ctx.runAction(internal.wikipedia.fetchWikipediaContent, {
-            query: args.query,
-            ageGroup,
-          });
-          if (imgContext?.images) {
-            for (const img of imgContext.images) {
-              allImages.push({
-                url: img.url,
-                title: imgContext.title || "",
-                source: "wikipedia",
-                width: img.width,
-                height: img.height,
-              });
-            }
-          }
-          if (allImages.length < 4 && imgContext?.thumbnail) {
-            allImages.push({
-              url: imgContext.thumbnail,
-              title: imgContext.title || "",
-              source: "wikipedia",
-            });
-          }
-        } catch {
-          // Image fetch failed
-        }
-      }
-
-      allImages = deduplicateImages(allImages, 6);
-    }
-
-    // --- Step 4: Build the system prompt with optional Wikipedia context ---
+    // --- Step 3: Build the system prompt with optional Wikipedia context ---
     let wikiSection = "";
     if (wikiContext) {
       wikiSection = `
@@ -299,7 +236,7 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
           { role: "user", content: args.query },
         ],
         temperature: 0.3,
-        max_tokens: 1500,
+        max_tokens: 1000,
       }),
     });
 
@@ -349,7 +286,31 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
       };
     }
 
-    // --- Step 6: Build final response with images ---
+    // --- Step 6: Collect images (fast — already fetched with Wikipedia) ---
+    let allImages: ImageResult[] = [];
+
+    if (kidProfile.allowImageSearch && wikiContext) {
+      if (wikiContext.images) {
+        for (const img of wikiContext.images) {
+          allImages.push({
+            url: img.url,
+            title: wikiContext.title || "",
+            source: "wikipedia",
+            width: img.width,
+            height: img.height,
+          });
+        }
+      }
+      if (allImages.length < 4 && wikiContext.thumbnail) {
+        const thumbUrl = wikiContext.thumbnail;
+        if (!allImages.some((img) => img.url === thumbUrl)) {
+          allImages.push({ url: thumbUrl, title: wikiContext.title || "", source: "wikipedia" });
+        }
+      }
+      allImages = deduplicateImages(allImages, 6);
+    }
+
+    // --- Step 7: Build final response ---
     const finalResponse = {
       safe: true,
       answer: parsed.answer || "",
@@ -375,7 +336,7 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
       searchedAt: now,
     });
 
-    // --- Step 7: Write to cache ---
+    // --- Step 8: Write to cache ---
     await ctx.runMutation(internal.searchCache.writeCache, {
       normalizedQuery: normalized,
       ageGroup,
