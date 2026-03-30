@@ -42,6 +42,7 @@ export default defineSchema({
     accessibilityNeeds: v.optional(v.array(v.string())), // ["dyslexia", "low-vision", "adhd", "esl"]
     allowImageSearch: v.boolean(),
     allowFollowUp: v.boolean(),
+    allowTopicRequests: v.optional(v.boolean()),
     createdAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"]),

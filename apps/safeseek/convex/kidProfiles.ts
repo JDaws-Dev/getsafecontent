@@ -79,6 +79,7 @@ export const updateProfile = mutation({
     accessibilityNeeds: v.optional(v.array(v.string())),
     allowImageSearch: v.optional(v.boolean()),
     allowFollowUp: v.optional(v.boolean()),
+    allowTopicRequests: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db.get(args.kidProfileId);
@@ -100,6 +101,7 @@ export const updateProfile = mutation({
     if (args.accessibilityNeeds !== undefined) updates.accessibilityNeeds = args.accessibilityNeeds;
     if (args.allowImageSearch !== undefined) updates.allowImageSearch = args.allowImageSearch;
     if (args.allowFollowUp !== undefined) updates.allowFollowUp = args.allowFollowUp;
+    if (args.allowTopicRequests !== undefined) updates.allowTopicRequests = args.allowTopicRequests;
 
     if (Object.keys(updates).length > 0) {
       await ctx.db.patch(args.kidProfileId, updates);
