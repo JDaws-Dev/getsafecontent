@@ -12,6 +12,7 @@ import type * as admin from "../admin.js";
 import type * as emails from "../emails.js";
 import type * as http from "../http.js";
 import type * as kidProfiles from "../kidProfiles.js";
+import type * as research from "../research.js";
 import type * as search from "../search.js";
 import type * as searchCache from "../searchCache.js";
 import type * as searchQueries from "../searchQueries.js";
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   emails: typeof emails;
   http: typeof http;
   kidProfiles: typeof kidProfiles;
+  research: typeof research;
   search: typeof search;
   searchCache: typeof searchCache;
   searchQueries: typeof searchQueries;

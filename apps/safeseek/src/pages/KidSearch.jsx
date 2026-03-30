@@ -5,7 +5,8 @@ import { api } from '../../convex/_generated/api';
 import {
   Search, Sparkles, Clock, History, ChevronRight, Check,
   Shield, AlertCircle, Loader2, X, ChevronLeft, ChevronRight as ChevronRightIcon,
-  Image as ImageIcon, Camera, Mic, Sun, Moon, Volume2, VolumeX, GitBranch, Users, ArrowLeft
+  Image as ImageIcon, Camera, Mic, Sun, Moon, Volume2, VolumeX, GitBranch, Users, ArrowLeft,
+  BookOpen
 } from 'lucide-react';
 import mermaid from 'mermaid';
 import { useTheme } from '../contexts/ThemeContext';
@@ -501,6 +502,138 @@ function SearchSkeleton() {
   );
 }
 
+// ========== Site Color Mapping for Research Cards ==========
+const SITE_COLORS = {
+  'nasa.gov': { bg: '#1B3A7A', text: 'white', accent: '#3B6FD4' },
+  'nationalgeographic.com': { bg: '#FFCC00', text: '#1a1a1a', accent: '#E6B800' },
+  'britannica.com': { bg: '#0A2240', text: 'white', accent: '#1A4270' },
+  'smithsonianmag.com': { bg: '#B91C1C', text: 'white', accent: '#DC2626' },
+  'sciencekids.co.nz': { bg: '#059669', text: 'white', accent: '#10B981' },
+  'natgeokids.com': { bg: '#F59E0B', text: '#1a1a1a', accent: '#D97706' },
+  'dkfindout.com': { bg: '#7C3AED', text: 'white', accent: '#8B5CF6' },
+  'khanacademy.org': { bg: '#14BF96', text: 'white', accent: '#10D4A6' },
+  'pbs.org': { bg: '#1B5299', text: 'white', accent: '#2563EB' },
+};
+
+function getResearchSiteColors(domain) {
+  return SITE_COLORS[domain] || { bg: '#4B5563', text: 'white', accent: '#6B7280' };
+}
+
+// ========== Research Source Card Component ==========
+function ResearchCard({ source }) {
+  const colors = getResearchSiteColors(source.siteDomain);
+  const initial = source.siteName.charAt(0).toUpperCase();
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+      {/* Header bar with site branding */}
+      <div
+        className="px-5 py-3 flex items-center gap-3"
+        style={{ backgroundColor: colors.bg }}
+      >
+        {/* Site icon (first letter fallback) */}
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0"
+          style={{
+            backgroundColor: colors.accent,
+            color: colors.text,
+          }}
+        >
+          {initial}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3
+            className="font-bold text-sm truncate"
+            style={{ color: colors.text }}
+          >
+            {source.title}
+          </h3>
+          <p
+            className="text-xs opacity-80"
+            style={{ color: colors.text }}
+          >
+            {source.siteName}
+          </p>
+        </div>
+        {/* Verified badge */}
+        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/20 flex-shrink-0">
+          <Shield className="w-3 h-3" style={{ color: colors.text }} />
+          <span className="text-[10px] font-semibold" style={{ color: colors.text }}>
+            Verified
+          </span>
+        </div>
+      </div>
+
+      {/* Article content */}
+      <div className="px-5 py-4">
+        <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-[15px] whitespace-pre-line">
+          {source.content}
+        </p>
+      </div>
+
+      {/* Footer with reading level and source */}
+      <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+            <BookOpen className="w-3 h-3" />
+            Written for {source.grade}
+          </span>
+        </div>
+        <span className="text-xs text-gray-400 dark:text-gray-500">
+          Source: {source.siteDomain}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ========== Research Skeleton Loading ==========
+function ResearchSkeleton() {
+  const [msgIndex, setMsgIndex] = useState(0);
+  const messages = ['Finding trusted sources...', 'Reading articles...', 'Rewriting for your level...'];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIndex((i) => (i + 1) % messages.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="space-y-4 py-4">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-pulse">
+          {/* Header skeleton */}
+          <div className="px-5 py-3 bg-gray-200 dark:bg-gray-700 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gray-300 dark:bg-gray-600" />
+            <div className="flex-1 space-y-1.5">
+              <div className="h-3.5 w-3/4 rounded bg-gray-300 dark:bg-gray-600" />
+              <div className="h-2.5 w-1/3 rounded bg-gray-300 dark:bg-gray-600" />
+            </div>
+          </div>
+          {/* Content skeleton */}
+          <div className="px-5 py-4 space-y-2.5">
+            <div className="h-3 w-full rounded bg-gray-100 dark:bg-gray-700" />
+            <div className="h-3 w-5/6 rounded bg-gray-100 dark:bg-gray-700" />
+            <div className="h-3 w-4/5 rounded bg-gray-100 dark:bg-gray-700" />
+            <div className="h-3 w-3/4 rounded bg-gray-100 dark:bg-gray-700" />
+          </div>
+          {/* Footer skeleton */}
+          <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 flex justify-between">
+            <div className="h-5 w-32 rounded-full bg-gray-100 dark:bg-gray-700" />
+            <div className="h-3 w-20 rounded bg-gray-100 dark:bg-gray-700" />
+          </div>
+        </div>
+      ))}
+      <div className="text-center pt-2">
+        <p className="text-gray-500 dark:text-gray-400 text-sm font-medium transition-opacity duration-300">
+          {messages[msgIndex]}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ========== Main Component ==========
 export default function KidSearch() {
   const { familyCode: urlFamilyCode } = useParams();
@@ -533,6 +666,10 @@ export default function KidSearch() {
   const [images, setImages] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
+  // Research state
+  const [researchResults, setResearchResults] = useState([]);
+  const [researchLoading, setResearchLoading] = useState(false);
+
   // Autocomplete state
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
@@ -550,6 +687,7 @@ export default function KidSearch() {
 
   const searchInputRef = useRef(null);
   const performSearch = useAction(api.search.searchFromKid);
+  const performResearch = useAction(api.research.researchFromKid);
   const createTopicRequest = useMutation(api.topicRequests.createRequest);
 
   // Track whether we already auto-searched from URL params
@@ -769,7 +907,14 @@ export default function KidSearch() {
     setRelatedQuestions([]);
     setImages([]);
     setDiagram(null);
+    setResearchResults([]);
+    setResearchLoading(false);
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+    // If in research mode, also trigger research search in parallel
+    if (searchMode === 'research') {
+      handleResearchSearch(query.trim());
+    }
 
     try {
       const data = await performSearch({
@@ -842,6 +987,23 @@ export default function KidSearch() {
     setLightboxIndex(null);
   }, []);
 
+  const handleResearchSearch = async (searchQuery) => {
+    if (!searchQuery?.trim() || !selectedProfile) return;
+    setResearchLoading(true);
+    setResearchResults([]);
+    try {
+      const data = await performResearch({
+        kidProfileId: selectedProfile._id,
+        query: searchQuery.trim(),
+      });
+      setResearchResults(data.sources || []);
+    } catch (err) {
+      console.error('[KidSearch] Research error:', err);
+    } finally {
+      setResearchLoading(false);
+    }
+  };
+
   const handleModeToggle = (mode) => {
     setSearchMode(mode);
     // Update URL mode param if there is a current query
@@ -850,6 +1012,10 @@ export default function KidSearch() {
       params.set('q', query.trim());
       if (mode !== 'learn') params.set('mode', mode);
       navigate(`/search/${familyCode}?${params.toString()}`, { replace: true });
+    }
+    // If switching to research and we have a query but no research results yet, trigger research
+    if (mode === 'research' && query.trim() && researchResults.length === 0 && !researchLoading && results) {
+      handleResearchSearch(query);
     }
   };
 
@@ -864,6 +1030,8 @@ export default function KidSearch() {
     setDiagram(null);
     setBlocked(false);
     setBlockedMessage('');
+    setResearchResults([]);
+    setResearchLoading(false);
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     // Clear URL params
     navigate(`/search/${familyCode}`, { replace: true });
@@ -1346,6 +1514,20 @@ export default function KidSearch() {
                   Images
                 </button>
               )}
+              {(results || searching) && (
+                <button
+                  type="button"
+                  onClick={() => handleModeToggle('research')}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
+                    searchMode === 'research'
+                      ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
+                      : 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Research
+                </button>
+              )}
             </div>
           </form>
         </div>
@@ -1533,6 +1715,52 @@ export default function KidSearch() {
                 >
                   Switch to Learn mode <ChevronRight className="w-3.5 h-3.5" />
                 </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Results: Research Mode */}
+        {searchMode === 'research' && !searching && !blocked && (
+          <div className="space-y-4">
+            {researchLoading && <ResearchSkeleton />}
+            {!researchLoading && researchResults.length > 0 && (
+              <div className="space-y-4">
+                <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                  <Shield className="w-3 h-3 text-emerald-500" />
+                  {researchResults.length} verified source{researchResults.length !== 1 ? 's' : ''} found
+                </p>
+                {researchResults.map((source, index) => (
+                  <ResearchCard key={index} source={source} />
+                ))}
+              </div>
+            )}
+            {!researchLoading && researchResults.length === 0 && results && (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                  <BookOpen className="w-10 h-10 text-emerald-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No articles found for this topic</h3>
+                <p className="text-gray-400 dark:text-gray-500 text-sm max-w-xs mx-auto mb-5">
+                  Try searching for a different topic like animals, space, history, or science.
+                </p>
+                <button
+                  onClick={() => handleModeToggle('learn')}
+                  className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline py-1 inline-flex items-center gap-1"
+                >
+                  Switch to Learn mode <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+            {!researchLoading && !results && (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                  <BookOpen className="w-10 h-10 text-emerald-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">Read real articles about any topic</h3>
+                <p className="text-gray-400 dark:text-gray-500 text-sm max-w-xs mx-auto">
+                  Search for a topic, then tap Research to read real articles about it.
+                </p>
               </div>
             )}
           </div>
