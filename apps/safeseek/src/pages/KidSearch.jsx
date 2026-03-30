@@ -668,6 +668,9 @@ export default function KidSearch() {
   const [researchResults, setResearchResults] = useState([]);
   const [researchLoading, setResearchLoading] = useState(false);
 
+  // Navigation history for back button
+  const [searchStack, setSearchStack] = useState([]);
+
   // Autocomplete state
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
@@ -889,6 +892,11 @@ export default function KidSearch() {
     params.set('q', query.trim());
     if (searchMode !== 'learn') params.set('mode', searchMode);
     navigate(`/search/${familyCode}?${params.toString()}`, { replace: true });
+
+    // Push current query to back stack (if we had a previous search)
+    if (query.trim() && results) {
+      setSearchStack((prev) => [...prev.slice(-10), query.trim()]);
+    }
 
     searchStartRef.current = Date.now();
     setSearchTime(null);
@@ -1327,8 +1335,25 @@ export default function KidSearch() {
       {/* Sticky Header */}
       <header className="sticky top-0 z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm dark:shadow-gray-950/30">
         <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-3">
-          {/* Left: logo + brand */}
-          <div className="flex items-center gap-3">
+          {/* Left: back button + logo + brand */}
+          <div className="flex items-center gap-2">
+            {searchStack.length > 0 && (
+              <button
+                onClick={() => {
+                  const prev = searchStack[searchStack.length - 1];
+                  setSearchStack((s) => s.slice(0, -1));
+                  setQuery(prev);
+                  setTimeout(() => {
+                    const form = searchInputRef.current?.closest('form');
+                    if (form) form.requestSubmit();
+                  }, 50);
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition active:scale-95"
+                title="Go back to previous search"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            )}
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
               <Search className="w-5 h-5 text-white" />
             </div>
@@ -1512,20 +1537,18 @@ export default function KidSearch() {
                   Images
                 </button>
               )}
-              {(results || searching) && (
-                <button
-                  type="button"
-                  onClick={() => handleModeToggle('research')}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
-                    searchMode === 'research'
-                      ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
-                      : 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <BookOpen className="w-4 h-4" />
-                  Research
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => handleModeToggle('research')}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
+                  searchMode === 'research'
+                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
+                    : 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                Research
+              </button>
             </div>
           </form>
         </div>
