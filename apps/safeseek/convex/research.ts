@@ -143,8 +143,10 @@ export const performResearch = internalAction({
 
     const serperData = await serperResponse.json();
     const organicResults = serperData.organic || [];
+    console.log(`[research] Serper returned ${organicResults.length} results for: ${args.query}`);
 
     if (organicResults.length === 0) {
+      console.log("[research] No organic results from Serper");
       return { sources: [] };
     }
 
@@ -166,6 +168,7 @@ export const performResearch = internalAction({
       if (!domain) continue;
 
       // Fetch the page HTML
+      console.log(`[research] Fetching: ${url}`);
       let textContent = "";
       try {
         const pageResponse = await fetch(url, {
@@ -186,7 +189,11 @@ export const performResearch = internalAction({
       }
 
       // Skip if too little content
-      if (textContent.length < 200) continue;
+      console.log(`[research] Extracted ${textContent.length} chars from ${domain}`);
+      if (textContent.length < 200) {
+        console.log(`[research] Skipping ${domain} — too little content`);
+        continue;
+      }
 
       // Step 3: Rewrite with OpenAI
       try {
