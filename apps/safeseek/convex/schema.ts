@@ -105,6 +105,16 @@ export default defineSchema({
     .index("by_user", ["userId", "status"])
     .index("by_kid", ["kidProfileId"]),
 
+  // Tutor session history — for parent dashboard visibility
+  tutorSessions: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    messages: v.array(v.object({ role: v.string(), content: v.string(), timestamp: v.number() })),
+    topic: v.optional(v.string()),
+    startedAt: v.number(),
+    lastMessageAt: v.number(),
+  })
+    .index("by_kid", ["kidProfileId"]),
+
   // Search result cache — avoids redundant AI calls for identical queries
   searchCache: defineTable({
     normalizedQuery: v.string(),

@@ -6,7 +6,7 @@ import {
   Search, Sparkles, Clock, History, ChevronRight, Check,
   Shield, AlertCircle, Loader2, X, ChevronLeft, ChevronRight as ChevronRightIcon,
   Image as ImageIcon, Camera, Mic, Sun, Moon, Volume2, VolumeX, GitBranch, Users, ArrowLeft,
-  BookOpen
+  BookOpen, GraduationCap, Send, ArrowUp
 } from 'lucide-react';
 import mermaid from 'mermaid';
 import { useTheme } from '../contexts/ThemeContext';
@@ -660,6 +660,13 @@ export default function KidSearch() {
   const [researchResults, setResearchResults] = useState([]);
   const [researchLoading, setResearchLoading] = useState(false);
 
+  // Tutor state
+  const [tutorMessages, setTutorMessages] = useState([]);
+  const [tutorLoading, setTutorLoading] = useState(false);
+  const [tutorInput, setTutorInput] = useState('');
+  const tutorEndRef = useRef(null);
+  const tutorInputRef = useRef(null);
+
   // Navigation history for back button
   const [searchStack, setSearchStack] = useState([]);
   // Root query — the original topic (prevents "walt disney early life family background family background")
@@ -683,6 +690,7 @@ export default function KidSearch() {
   const searchInputRef = useRef(null);
   const performSearch = useAction(api.search.searchFromKid);
   const performResearch = useAction(api.research.researchFromKid);
+  const sendTutorMessage = useAction(api.tutor.sendMessage);
   const expandSection = useAction(api.search.expandSection);
   const createTopicRequest = useMutation(api.topicRequests.createRequest);
 
@@ -1134,6 +1142,109 @@ export default function KidSearch() {
 
   const isDark = resolvedTheme === 'dark';
 
+  // ========== Tutor Handlers ==========
+
+  // Initialize tutor greeting when profile is selected
+  useEffect(() => {
+    if (selectedProfile && tutorMessages.length === 0) {
+      setTutorMessages([{
+        role: 'tutor',
+        content: `Hi ${selectedProfile.name}! I'm your tutor. What are you working on today?`,
+        timestamp: Date.now(),
+      }]);
+    }
+  }, [selectedProfile?._id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-scroll tutor chat to bottom
+  useEffect(() => {
+    if (tutorEndRef.current) {
+      tutorEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [tutorMessages, tutorLoading]);
+
+  const handleTutorSend = async (messageText) => {
+    const text = (messageText || tutorInput).trim();
+    if (!text || tutorLoading || !selectedProfile?._id) return;
+
+    setTutorInput('');
+
+    // Add kid message immediately
+    const kidMessage = { role: 'kid', content: text, timestamp: Date.now() };
+    const updatedMessages = [...tutorMessages, kidMessage];
+    setTutorMessages(updatedMessages);
+    setTutorLoading(true);
+
+    try {
+      // Build conversation history (exclude timestamps for the API)
+      const history = updatedMessages
+        .filter(m => m.role !== 'tutor' || updatedMessages.indexOf(m) > 0) // skip greeting for history
+        .map(m => ({ role: m.role, content: m.content }));
+
+      const result = await sendTutorMessage({
+        kidProfileId: selectedProfile._id,
+        messages: history.slice(0, -1), // all except the new message
+        newMessage: text,
+      });
+
+      if (result.blocked) {
+        setTutorMessages(prev => [...prev, {
+          role: 'tutor',
+          content: result.response,
+          timestamp: Date.now(),
+        }]);
+      } else {
+        setTutorMessages(prev => [...prev, {
+          role: 'tutor',
+          content: result.response,
+          timestamp: Date.now(),
+        }]);
+      }
+    } catch (err) {
+      console.error('[Tutor] Error:', err);
+      setTutorMessages(prev => [...prev, {
+        role: 'tutor',
+        content: "Oops, something went wrong. Try asking me again!",
+        timestamp: Date.now(),
+      }]);
+    } finally {
+      setTutorLoading(false);
+    }
+  };
+
+  // Voice input handler for tutor
+  const handleTutorVoice = useCallback(() => {
+    if (!SpeechRecognition) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setTutorInput(transcript);
+    };
+
+    recognition.onend = () => {
+      // Auto-submit after voice ends
+      setTimeout(() => {
+        const input = tutorInputRef.current;
+        if (input && input.value.trim()) {
+          handleTutorSend(input.value.trim());
+        }
+      }, 200);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('[TutorVoice] Error:', event.error);
+    };
+
+    recognition.start();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ========== FAMILY CODE ENTRY ==========
   if (!familyCode || !user) {
     return (
@@ -1544,6 +1655,18 @@ export default function KidSearch() {
                 <BookOpen className="w-3.5 h-3.5" />
                 Research
               </button>
+              <button
+                type="button"
+                onClick={() => handleModeToggle('tutor')}
+                className={`flex items-center gap-1.5 px-1 pb-2.5 text-sm font-medium transition-all duration-200 border-b-2 -mb-px ${
+                  searchMode === 'tutor'
+                    ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                <GraduationCap className="w-3.5 h-3.5" />
+                Tutor
+              </button>
             </div>
           </form>
         </div>
@@ -1776,6 +1899,105 @@ export default function KidSearch() {
           </div>
         )}
 
+        {/* Results: Tutor Mode */}
+        {searchMode === 'tutor' && (
+          <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 280px)' }}>
+            {/* Chat messages */}
+            <div className="flex-1 space-y-4 pb-4">
+              {tutorMessages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`flex items-end gap-2.5 ${msg.role === 'kid' ? 'justify-end' : 'justify-start'}`}
+                >
+                  {/* Tutor avatar */}
+                  {msg.role === 'tutor' && (
+                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
+                      <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                  )}
+
+                  <div className={`max-w-[80%] ${msg.role === 'kid' ? 'order-1' : ''}`}>
+                    <div
+                      className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                        msg.role === 'kid'
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-gray-900 dark:text-gray-100 rounded-br-md'
+                          : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-md'
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
+                    <p className={`text-[10px] text-gray-400 dark:text-gray-500 mt-1 ${msg.role === 'kid' ? 'text-right' : 'text-left'}`}>
+                      {formatRelativeTime(msg.timestamp)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Typing indicator */}
+              {tutorLoading && (
+                <div className="flex items-end gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
+                    <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-2xl rounded-bl-md">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-gray-400 dark:text-gray-500 mr-1">SafeStudy is thinking</span>
+                      <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div ref={tutorEndRef} />
+            </div>
+
+            {/* Tutor input — sticky at bottom */}
+            <div className="sticky bottom-0 pt-3 pb-2 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-2.5">
+                <input
+                  ref={tutorInputRef}
+                  type="text"
+                  value={tutorInput}
+                  onChange={(e) => setTutorInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleTutorSend();
+                    }
+                  }}
+                  placeholder="Ask your tutor..."
+                  className="flex-1 bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none"
+                  disabled={tutorLoading}
+                />
+                {SpeechRecognition && (
+                  <button
+                    type="button"
+                    onClick={handleTutorVoice}
+                    className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    title="Voice input"
+                  >
+                    <Mic className="w-4 h-4" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleTutorSend()}
+                  disabled={!tutorInput.trim() || tutorLoading}
+                  className={`p-1.5 rounded-full transition-all ${
+                    tutorInput.trim() && !tutorLoading
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
+                  }`}
+                >
+                  <ArrowUp className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Results: Learn Mode */}
         {results && !searching && !blocked && searchMode === 'learn' && (
           <div className="space-y-5">
@@ -1934,7 +2156,7 @@ export default function KidSearch() {
         )}
 
         {/* Empty state - clean, minimal */}
-        {!results && !searching && !blocked && (
+        {!results && !searching && !blocked && searchMode !== 'tutor' && (
           <div className="text-center pt-12">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
               Search anything
