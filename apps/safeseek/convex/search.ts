@@ -265,7 +265,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
         funFacts: [],
         relatedQuestions: parsed.relatedQuestions || [],
         flagged: true,
-        flagReason: parsed.flagReason,
+        flagReason: parsed.flagReason || undefined,
         images: [],
         canRequest,
         alreadyRequested,
@@ -321,7 +321,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
       relatedQuestions: parsed.relatedQuestions || [],
       diagram: parsed.diagram || null,
       flagged: parsed.flagged || false,
-      flagReason: parsed.flagReason,
+      flagReason: parsed.flagReason || undefined,
       images: allImages,
       wikiSource: wikiContext
         ? { title: wikiContext.title, source: wikiContext.source, pageUrl: wikiContext.pageUrl }
@@ -335,7 +335,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
       results: JSON.stringify(parsed.sections || []),
       aiSummary: parsed.answer || "",
       flagged: parsed.flagged || false,
-      flagReason: parsed.flagReason,
+      flagReason: parsed.flagReason || undefined,
       searchedAt: now,
     });
 
