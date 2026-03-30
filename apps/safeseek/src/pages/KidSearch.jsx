@@ -420,6 +420,60 @@ function ReadAloudButton({ text, className = '', iconSize = 'w-4 h-4' }) {
   );
 }
 
+// ========== Expandable Section — "Read more" expands inline ==========
+function ExpandableSection({ content, heading, rootQuery, borderColor, onDeepDive, performSearch, kidProfileId }) {
+  const [expanded, setExpanded] = useState(false);
+  const [expandedContent, setExpandedContent] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleReadMore = async () => {
+    if (expanded) {
+      setExpanded(false);
+      return;
+    }
+    if (expandedContent) {
+      setExpanded(true);
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await performSearch({
+        kidProfileId,
+        query: `${rootQuery} ${heading} - give a detailed explanation`,
+      });
+      if (result?.answer) {
+        setExpandedContent(stripMarkdown(result.answer));
+      } else if (result?.sections?.length > 0) {
+        setExpandedContent(result.sections.map(s => stripMarkdown(s.content)).join('\n\n'));
+      }
+      setExpanded(true);
+    } catch {
+      // Fallback — just navigate to new search
+      onDeepDive(rootQuery + ' ' + heading);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className={`px-5 py-4 border-l-4 ${borderColor}`}>
+      <p className="text-gray-700 dark:text-gray-200 leading-relaxed">{stripMarkdown(content)}</p>
+      {expanded && expandedContent && (
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+          <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm">{expandedContent}</p>
+        </div>
+      )}
+      <button
+        onClick={handleReadMore}
+        disabled={loading}
+        className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium disabled:opacity-50"
+      >
+        {loading ? 'Loading...' : expanded ? 'Show less ↑' : 'Read more ↓'}
+      </button>
+    </div>
+  );
+}
+
 // ========== Skeleton Loading State ==========
 function SearchSkeleton() {
   const [msgIndex, setMsgIndex] = useState(0);
@@ -1888,15 +1942,15 @@ export default function KidSearch() {
                           />
                         </h3>
                       </div>
-                      <div className={`px-5 py-4 border-l-4 ${borderColor}`}>
-                        <p className="text-gray-700 dark:text-gray-200 leading-relaxed">{stripMarkdown(section.content)}</p>
-                        <button
-                          onClick={() => handleSuggestionClick(rootQuery + ' ' + section.heading)}
-                          className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                        >
-                          Learn more about {section.heading} →
-                        </button>
-                      </div>
+                      <ExpandableSection
+                        content={section.content}
+                        heading={section.heading}
+                        rootQuery={rootQuery}
+                        borderColor={borderColor}
+                        onDeepDive={(q) => handleSuggestionClick(q)}
+                        performSearch={performSearch}
+                        kidProfileId={selectedProfile?._id}
+                      />
                     </div>
                   );
                 })}
