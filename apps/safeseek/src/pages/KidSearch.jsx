@@ -735,11 +735,13 @@ export default function KidSearch() {
     selectedProfile?._id ? { kidProfileId: selectedProfile._id, limit: 20 } : 'skip'
   );
 
-  // Recently approved topic requests
-  const approvedRequests = useQuery(
-    api.topicRequests.getRecentlyApproved,
+  // Kid's requests inbox
+  const kidRequests = useQuery(
+    api.topicRequests.getRequestsForKid,
     selectedProfile?._id ? { kidProfileId: selectedProfile._id } : 'skip'
   );
+  const [showRequestsInbox, setShowRequestsInbox] = useState(false);
+  const newApprovedCount = kidRequests?.filter(r => r.status === 'approved').length || 0;
 
   // Validate family code
   useEffect(() => {
@@ -1506,6 +1508,22 @@ export default function KidSearch() {
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             <button
+              onClick={() => setShowRequestsInbox(!showRequestsInbox)}
+              className={`relative p-2 rounded-xl transition-all duration-200 active:scale-[0.98] ${
+                showRequestsInbox
+                  ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+              aria-label="My requests"
+            >
+              <AlertCircle className="w-4 h-4" />
+              {newApprovedCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {newApprovedCount}
+                </span>
+              )}
+            </button>
+            <button
               onClick={() => setShowHistory(!showHistory)}
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 active:scale-[0.98] ${
                 showHistory
@@ -1673,6 +1691,50 @@ export default function KidSearch() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
+        {/* Requests Inbox */}
+        {showRequestsInbox && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">My Requests</h3>
+              <button onClick={() => setShowRequestsInbox(false)} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">Close</button>
+            </div>
+            {kidRequests && kidRequests.length > 0 ? (
+              <div className="space-y-2">
+                {kidRequests.map((req) => (
+                  <div
+                    key={req._id}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm ${
+                      req.status === 'approved'
+                        ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                        : req.status === 'denied'
+                        ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                        : 'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gray-800 dark:text-gray-200 truncate">{req.query}</p>
+                    </div>
+                    {req.status === 'approved' ? (
+                      <button
+                        onClick={() => { handleSuggestionClick(req.query); setShowRequestsInbox(false); }}
+                        className="text-xs font-medium text-green-600 dark:text-green-400 hover:underline flex-shrink-0"
+                      >
+                        Search now →
+                      </button>
+                    ) : req.status === 'denied' ? (
+                      <span className="text-xs text-red-500 dark:text-red-400 flex-shrink-0">Denied</span>
+                    ) : (
+                      <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">Waiting...</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">No requests yet</p>
+            )}
+          </div>
+        )}
+
         {/* Search History Panel */}
         {showHistory && kidSearchHistory && kidSearchHistory.length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-6">
@@ -2163,24 +2225,7 @@ export default function KidSearch() {
             </h2>
             <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">Explore topics, ask questions, discover new things</p>
 
-            {/* Approved request notifications */}
-            {approvedRequests && approvedRequests.length > 0 && (
-              <div className="mb-6 max-w-lg mx-auto space-y-2">
-                {approvedRequests.map((req) => (
-                  <button
-                    key={req._id}
-                    onClick={() => handleSuggestionClick(req.query)}
-                    className="w-full flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-4 py-3 text-left hover:bg-green-100 dark:hover:bg-green-900/30 transition"
-                  >
-                    <Check className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-green-800 dark:text-green-300">Approved: "{req.query}"</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-green-400 flex-shrink-0" />
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Approved notifications moved to inbox — see Bell icon in header */}
             <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
               {randomSuggestions.map((suggestion) => (
                 <button

@@ -197,3 +197,20 @@ export const getRecentlyApproved = query({
       .slice(0, 5);
   },
 });
+
+/**
+ * Get all requests for a specific kid (for kid-facing inbox)
+ */
+export const getRequestsForKid = query({
+  args: { kidProfileId: v.id("kidProfiles") },
+  handler: async (ctx, args) => {
+    const requests = await ctx.db
+      .query("topicRequests")
+      .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
+      .collect();
+
+    return requests
+      .sort((a, b) => (b.requestedAt || 0) - (a.requestedAt || 0))
+      .slice(0, 20);
+  },
+});
