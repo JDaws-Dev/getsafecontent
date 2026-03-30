@@ -4,17 +4,36 @@ import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 
-// Trusted educational domains for research
+// Trusted educational domains for research — any result from these sites is allowed
 const TRUSTED_DOMAINS = [
   "nasa.gov",
   "nationalgeographic.com",
   "britannica.com",
+  "kids.britannica.com",
   "smithsonianmag.com",
   "sciencekids.co.nz",
   "natgeokids.com",
   "dkfindout.com",
   "khanacademy.org",
   "pbs.org",
+  "education.com",
+  "wonderopolis.org",
+  "howstuffworks.com",
+  "livescience.com",
+  "sciencenewsforstudents.org",
+  "si.edu",
+  "amnh.org",
+  "worldwildlife.org",
+  "history.com",
+  "coolkidfacts.com",
+  "ducksters.com",
+  "kiddle.co",
+  "timeforkids.com",
+  "scholastic.com",
+  "funkidslive.com",
+  "bbc.co.uk",
+  "simple.wikipedia.org",
+  "en.wikipedia.org",
 ];
 
 // Map age range to approximate grade level
@@ -120,8 +139,8 @@ export const performResearch = internalAction({
       throw new Error("SERPER_API_KEY not configured");
     }
 
-    const siteFilter = TRUSTED_DOMAINS.map((d) => `site:${d}`).join(" OR ");
-    const searchQuery = `${args.query} ${siteFilter}`;
+    // Search the whole web with SafeSearch, then filter to trusted domains
+    const searchQuery = `${args.query} for kids educational`;
 
     const serperResponse = await fetch("https://google.serper.dev/search", {
       method: "POST",
@@ -131,7 +150,7 @@ export const performResearch = internalAction({
       },
       body: JSON.stringify({
         q: searchQuery,
-        num: 5,
+        num: 15,
         safe: "active",
       }),
     });
@@ -142,11 +161,19 @@ export const performResearch = internalAction({
     }
 
     const serperData = await serperResponse.json();
-    const organicResults = serperData.organic || [];
-    console.log(`[research] Serper returned ${organicResults.length} results for: ${args.query}`);
+    const allResults = serperData.organic || [];
+    console.log(`[research] Serper returned ${allResults.length} total results`);
+
+    // Filter to only trusted educational domains
+    const organicResults = allResults.filter((r: any) => {
+      const domain = extractDomain(r.link || "");
+      return domain && TRUSTED_DOMAINS.some((td) => domain.includes(td) || td.includes(domain));
+    });
+    console.log(`[research] ${organicResults.length} results from trusted domains`);
 
     if (organicResults.length === 0) {
-      console.log("[research] No organic results from Serper");
+      // If no trusted results, try again with more results
+      console.log("[research] No trusted domain results found");
       return { sources: [] };
     }
 

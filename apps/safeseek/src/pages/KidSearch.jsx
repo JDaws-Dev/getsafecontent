@@ -1845,7 +1845,13 @@ export default function KidSearch() {
                           <span className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center text-sm font-bold">
                             {index + 1}
                           </span>
-                          {section.heading}
+                          <button
+                            onClick={() => handleSuggestionClick(section.heading)}
+                            className="hover:underline text-left flex-1"
+                            title={`Search "${section.heading}"`}
+                          >
+                            {section.heading}
+                          </button>
                           <ReadAloudButton
                             text={section.content}
                             className="ml-auto p-1 rounded-lg text-white/60 hover:text-white hover:bg-white/15"
@@ -1855,6 +1861,12 @@ export default function KidSearch() {
                       </div>
                       <div className={`px-5 py-4 border-l-4 ${borderColor}`}>
                         <p className="text-gray-700 dark:text-gray-200 leading-relaxed">{stripMarkdown(section.content)}</p>
+                        <button
+                          onClick={() => handleSuggestionClick(section.heading)}
+                          className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                        >
+                          Learn more about {section.heading} →
+                        </button>
                       </div>
                     </div>
                   );
