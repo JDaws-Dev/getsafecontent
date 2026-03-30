@@ -12,8 +12,8 @@ import {
 const features = [
   {
     icon: MessageSquare,
-    title: 'An AI tutor that actually teaches',
-    description: 'Not a chatbot. A real AI tutor that uses the Socratic method — asking questions back, guiding your child to the answer, and celebrating when they get it. Back-and-forth conversations that feel like having a patient teacher in the room.',
+    title: 'An built-in tutor that actually teaches',
+    description: 'Not a chatbot. A real built-in tutor that uses the Socratic method — asking questions back, guiding your child to the answer, and celebrating when they get it. Back-and-forth conversations that feel like having a patient teacher in the room.',
   },
   {
     icon: Brain,
@@ -96,7 +96,7 @@ const problems = [
 ];
 
 const comparisonRows = [
-  { feature: 'AI Tutor (Socratic method)', safestudy: true, google: false, googleKids: false },
+  { feature: 'Built-in Tutor (Socratic method)', safestudy: true, google: false, googleKids: false },
   { feature: 'Age-appropriate filtering', safestudy: true, google: false, googleKids: 'Partial' },
   { feature: 'No ads', safestudy: true, google: false, googleKids: false },
   { feature: 'Direct answers (no links)', safestudy: true, google: false, googleKids: false },
@@ -118,10 +118,10 @@ const comparisonRows = [
 const faqs = [
   {
     question: 'What ages is SafeStudy designed for?',
-    answer: 'SafeStudy works for kids ages 4-16. The AI adjusts reading level and content depth based on each child\'s grade level (K-12). Younger kids get simpler explanations with basic vocabulary, while older kids get more detailed, nuanced answers. The AI Tutor adapts its teaching style to match — guiding a 6-year-old differently than a 14-year-old.',
+    answer: 'SafeStudy works for kids ages 4-16. The AI adjusts reading level and content depth based on each child\'s grade level (K-12). Younger kids get simpler explanations with basic vocabulary, while older kids get more detailed, nuanced answers. The Built-in Tutor adapts its teaching style to match — guiding a 6-year-old differently than a 14-year-old.',
   },
   {
-    question: 'How does the AI Tutor work?',
+    question: 'How does the Built-in Tutor work?',
     answer: 'Tutor Mode is like having a patient, encouraging teacher available 24/7. Your child types a question — like "I don\'t understand fractions" — and the tutor teaches the concept, shows an example, then asks a follow-up question to check understanding. It uses the Socratic method: guiding kids toward the answer rather than just handing it to them. It celebrates their wins, explains things a different way when they\'re confused, and keeps conversations short and focused. Every tutor session is saved so you can see what they\'re working on.',
   },
   {
@@ -146,7 +146,7 @@ const faqs = [
   },
   {
     question: 'Does it work for kids with learning differences?',
-    answer: 'Absolutely. SafeStudy includes built-in accessibility adaptations for dyslexia (OpenDyslexic font, increased spacing), ADHD (reduced distractions, focused layouts), ESL learners (simplified language), and low vision (larger text, high contrast). These can be enabled per kid profile. The AI Tutor also adapts — using shorter sentences for dyslexia, getting to the point faster for ADHD, and defining terms for ESL learners.',
+    answer: 'Absolutely. SafeStudy includes built-in accessibility adaptations for dyslexia (OpenDyslexic font, increased spacing), ADHD (reduced distractions, focused layouts), ESL learners (simplified language), and low vision (larger text, high contrast). These can be enabled per kid profile. The Built-in Tutor also adapts — using shorter sentences for dyslexia, getting to the point faster for ADHD, and defining terms for ESL learners.',
   },
   {
     question: 'Can I set a specific reading level?',
@@ -172,7 +172,7 @@ const steps = [
   {
     number: '2',
     title: 'They search, learn, and explore',
-    description: 'They type or speak any question. Search for answers. Ask the tutor for help. Dive into research articles from NASA and National Geographic. All filtered through your rules.',
+    description: 'They type or speak any question. Search for answers. Ask the tutor for help. Dive into research articles from NASA and National Geographic. All within the boundaries you set.',
     icon: Search,
   },
   {
@@ -185,7 +185,7 @@ const steps = [
 
 const testimonials = [
   {
-    quote: 'The AI tutor changed everything. My son used to come to me every 5 minutes for homework help. Now he works through problems with SafeStudy\'s tutor and only comes to me when he\'s genuinely stuck. His confidence has gone through the roof.',
+    quote: 'The built-in tutor changed everything. My son used to come to me every 5 minutes for homework help. Now he works through problems with SafeStudy\'s tutor and only comes to me when he\'s genuinely stuck. His confidence has gone through the roof.',
     name: 'Sarah M.',
     role: 'Mom of 2',
   },
@@ -323,25 +323,25 @@ export default function LandingPage() {
             <div className="flex-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-blue-100">
                 <Sparkles className="w-4 h-4" />
-                Safe search + AI tutor + research tool
+                Safe search + built-in tutor + research tool
               </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#1a1a2e] leading-tight mb-6">
                 The search engine{' '}
                 <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                  and AI tutor
+                  and built-in tutor
                 </span>{' '}
                 built for kids
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
-                They search safely, get homework help from an AI tutor, and research with real sources from NASA and National Geographic — all filtered for their age. You see everything.
+                They search safely, get homework help from an built-in tutor, and research with trusted educational sources — all within the boundaries you set. You see everything.
               </p>
 
               <div className="flex flex-col sm:flex-row flex-wrap justify-center lg:justify-start gap-2 sm:gap-x-6 text-sm text-gray-500 mb-8">
                 <span className="flex items-center justify-center lg:justify-start gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  AI Tutor with Socratic method
+                  Built-in Tutor with Socratic method
                 </span>
                 <span className="flex items-center justify-center lg:justify-start gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-green-500" />
@@ -401,7 +401,7 @@ export default function LandingPage() {
                     <MessageSquare className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">AI Tutor</p>
+                    <p className="text-xs text-gray-500">Built-in Tutor</p>
                     <p className="text-sm font-bold text-[#1a1a2e]">Homework help 24/7</p>
                   </div>
                 </div>
@@ -412,7 +412,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Every search</p>
-                    <p className="text-sm font-bold text-[#1a1a2e]">AI-filtered first</p>
+                    <p className="text-sm font-bold text-[#1a1a2e]">Parent-approved content</p>
                   </div>
                 </div>
               </div>
@@ -433,7 +433,7 @@ export default function LandingPage() {
               More than a search engine
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              SafeStudy is a safe search engine, AI tutor, and research tool — all in one. Each mode is built from the ground up for kids.
+              SafeStudy is a safe search engine, built-in tutor, and research tool — all in one. Each mode is built from the ground up for kids.
             </p>
           </div>
 
@@ -466,7 +466,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold text-[#1a1a2e] mb-2">Tutor Mode</h3>
               <p className="text-gray-600 leading-relaxed mb-4">
-                A patient AI tutor that uses the Socratic method. Real back-and-forth conversations that teach your child to think — not just memorize answers.
+                A patient built-in tutor that uses the Socratic method. Real back-and-forth conversations that teach your child to think — not just memorize answers.
               </p>
               <ul className="space-y-2 text-sm text-gray-500">
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-purple-500 flex-shrink-0" /> Homework help in every subject</li>
@@ -537,7 +537,7 @@ export default function LandingPage() {
               </h3>
             </div>
             <p className="text-blue-100 text-sm sm:text-base max-w-xl mx-auto">
-              That's SafeStudy. No external links. No ads. No unfiltered AI. Just safe answers, guided learning, and real research — filtered through your rules.
+              That's SafeStudy. No external links. No ads. No unfiltered AI. Just safe answers, guided learning, and real research — within the boundaries you set.
             </p>
           </div>
         </div>
@@ -552,7 +552,7 @@ export default function LandingPage() {
               Trusted by families
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
-              "The AI tutor changed everything."
+              "The built-in tutor changed everything."
             </h2>
           </div>
 
@@ -782,7 +782,7 @@ export default function LandingPage() {
               </div>
               <div className="flex-1 bg-white/20 rounded-lg px-4 py-1.5 flex items-center gap-2">
                 <Lock className="w-3.5 h-3.5 text-white/70" />
-                <span className="text-white/90 text-sm font-medium">safestudy.com/search</span>
+                <span className="text-white/90 text-sm font-medium">getsafestudy.com/search</span>
               </div>
             </div>
 
@@ -798,31 +798,17 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Age badge */}
-              <div className="flex items-center gap-2 mb-4">
-                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
-                  Age 8 - Grade 3 Level
-                </span>
-                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                  <Shield className="w-3 h-3" />
-                  Safe
-                </span>
-              </div>
-
-              {/* AI answer card */}
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 mb-4">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-blue-800 mb-2">SafeStudy Answer</p>
-                    <p className="text-sm text-blue-700 leading-relaxed">
-                      Volcanoes erupt when hot melted rock called <strong>magma</strong> rises up from deep inside the Earth.
-                      Think of it like shaking a soda bottle — pressure builds up until it has to escape!
-                      When the magma reaches the surface, it's called <strong>lava</strong>. Along with the lava,
-                      volcanoes also release ash and gases into the air.
-                    </p>
-                  </div>
+              {/* Answer card — matches current mature design */}
+              <div className="bg-white border-l-4 border-l-blue-500 rounded-xl p-5 mb-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-blue-500" />
+                  <p className="text-sm font-semibold text-gray-800">Quick Answer</p>
                 </div>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Volcanoes erupt when hot melted rock called <strong>magma</strong> rises up from deep inside the Earth.
+                  Think of it like shaking a soda bottle — pressure builds up until it has to escape!
+                  When the magma reaches the surface, it's called <strong>lava</strong>.
+                </p>
               </div>
 
               {/* Clickable sections */}
@@ -856,6 +842,18 @@ export default function LandingPage() {
                 <div className="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:bg-purple-200 transition">
                   <MessageSquare className="w-3.5 h-3.5" />
                   Ask Tutor
+                </div>
+              </div>
+
+              {/* Learning differences callout */}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Adapts to how your child learns</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-white border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full text-xs">Dyslexia-friendly</span>
+                  <span className="bg-white border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full text-xs">ADHD-friendly</span>
+                  <span className="bg-white border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full text-xs">ESL support</span>
+                  <span className="bg-white border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full text-xs">Low vision</span>
+                  <span className="bg-white border border-gray-200 text-gray-600 px-2.5 py-1 rounded-full text-xs">K-12 reading levels</span>
                 </div>
               </div>
 
@@ -954,7 +952,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10 sm:mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">Less than a coffee per month</h2>
-            <p className="text-gray-600 text-lg">$4.99 for a search engine, AI tutor, and research tool. Cancel in 2 clicks, anytime.</p>
+            <p className="text-gray-600 text-lg">$4.99 for a search engine, built-in tutor, and research tool. Cancel in 2 clicks, anytime.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -983,9 +981,9 @@ export default function LandingPage() {
                 {[
                   'Unlimited kid profiles',
                   'Unlimited searches',
-                  'AI Tutor (Socratic method)',
+                  'Built-in Tutor (Socratic method)',
                   'Research Mode (NASA, Nat Geo, PBS...)',
-                  'AI-filtered answers',
+                  'Safe, age-appropriate answers',
                   'Voice search & read aloud',
                   'Grade-level reading (K-12)',
                   'Accessibility adaptations',
@@ -1024,7 +1022,7 @@ export default function LandingPage() {
 
               <ul className="space-y-3 mb-6">
                 {[
-                  'SafeStudy \u2014 Safe search + AI tutor + research from trusted sources',
+                  'SafeStudy \u2014 Safe search + built-in tutor + research from trusted sources',
                   'SafeTunes \u2014 They hear only music you\'ve approved',
                   'SafeTube \u2014 They watch only channels you\'ve approved',
                   'SafeReads \u2014 Know what\'s in a book before they read it',
@@ -1104,7 +1102,7 @@ export default function LandingPage() {
             The question is: will they do it safely — and will they have help when they need it?
           </p>
           <p className="text-blue-200 text-base mb-8 max-w-lg mx-auto">
-            You can't stand behind them forever. But you can give them a search engine, AI tutor, and research library that was built — from the ground up — to protect them and help them learn. Built by a parent who needed this for his own kids.
+            You can't stand behind them forever. But you can give them a search engine, built-in tutor, and research library that was built — from the ground up — to protect them and help them learn. Built by a parent who needed this for his own kids.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
