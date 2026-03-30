@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
       }
 
       // Always show success for security
-      localStorage.setItem('safeseek_reset_email', email);
+      localStorage.setItem('safenet_reset_email', email);
       setSent(true);
     } catch (err) {
       console.error('[ForgotPassword] Error:', err);
@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
               <Search className="w-5 h-5 text-white" />
             </div>
-            <span className="font-semibold text-gray-900">SafeSeek</span>
+            <span className="font-semibold text-gray-900">SafeNet</span>
           </Link>
         </header>
 
@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
             <Search className="w-5 h-5 text-white" />
           </div>
-          <span className="font-semibold text-gray-900">SafeSeek</span>
+          <span className="font-semibold text-gray-900">SafeNet</span>
         </Link>
       </header>
 

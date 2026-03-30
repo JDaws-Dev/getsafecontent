@@ -231,7 +231,7 @@ function ImageLightbox({ images, initialIndex, onClose }) {
                   ? 'bg-white/15 text-blue-200'
                   : 'bg-white/15 text-cyan-200'
               }`}>
-                {image.source === 'wikipedia' ? 'Wikipedia' : 'SafeSeek'}
+                {image.source === 'wikipedia' ? 'Wikipedia' : 'SafeNet'}
               </span>
             )}
             <span className="text-white/50 text-xs">
@@ -294,7 +294,7 @@ function ImageGallery({ images, onImageClick }) {
                     ? 'bg-white/90 text-blue-700 dark:bg-gray-800/90 dark:text-blue-300'
                     : 'bg-white/90 text-cyan-700 dark:bg-gray-800/90 dark:text-cyan-300'
                 }`}>
-                  {image.source === 'wikipedia' ? 'Wiki' : 'SafeSeek'}
+                  {image.source === 'wikipedia' ? 'Wiki' : 'SafeNet'}
                 </span>
               )}
               {/* Title caption */}
@@ -955,7 +955,7 @@ export default function KidSearch() {
           <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Search className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">SafeSeek</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">SafeNet</h1>
           <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">Enter your family code to start searching</p>
 
           {error && (
@@ -1001,7 +1001,7 @@ export default function KidSearch() {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
               <Search className="w-6 h-6 text-white" />
             </div>
-            <span className="font-bold text-gray-900 dark:text-white text-lg">SafeSeek</span>
+            <span className="font-bold text-gray-900 dark:text-white text-lg">SafeNet</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -1151,7 +1151,7 @@ export default function KidSearch() {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
               <Search className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-gray-900 dark:text-white text-lg hidden sm:inline">SafeSeek</span>
+            <span className="font-bold text-gray-900 dark:text-white text-lg hidden sm:inline">SafeNet</span>
             <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
               <Shield className="w-3 h-3" />
               <span className="hidden sm:inline">SafeSearch On</span>

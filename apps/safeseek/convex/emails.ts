@@ -19,9 +19,9 @@ export const sendTrialSignupEmails = action({
 
     // Send admin notification
     const adminEmailContent = `
-      <h1>New SafeSeek Trial Signup!</h1>
+      <h1>New SafeNet Trial Signup!</h1>
 
-      <p>Someone just started a free trial for SafeSeek.</p>
+      <p>Someone just started a free trial for SafeNet.</p>
 
       <h2>Customer Details:</h2>
       <ul>
@@ -34,7 +34,7 @@ export const sendTrialSignupEmails = action({
 
       <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
 
-      <p style="color: #6b7280; font-size: 14px;">You're receiving this because you're the admin of SafeSeek.</p>
+      <p style="color: #6b7280; font-size: 14px;">You're receiving this because you're the admin of SafeNet.</p>
     `;
 
     // Send welcome email to user
@@ -49,8 +49,8 @@ export const sendTrialSignupEmails = action({
 
           <!-- Header -->
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #7c3aed; margin: 0 0 8px 0; font-size: 28px;">SafeSeek</h1>
-            <p style="color: #6b7280; margin: 0; font-size: 14px;">Welcome to SafeSeek!</p>
+            <h1 style="color: #7c3aed; margin: 0 0 8px 0; font-size: 28px;">SafeNet</h1>
+            <p style="color: #6b7280; margin: 0; font-size: 14px;">Welcome to SafeNet!</p>
           </div>
 
           <!-- Main Content -->
@@ -58,7 +58,7 @@ export const sendTrialSignupEmails = action({
             <h2 style="margin: 0 0 16px 0; color: #1f2937;">Hi ${args.userName}!</h2>
 
             <p style="margin: 0 0 16px 0; font-size: 16px;">
-              Your <strong>7-day free trial</strong> has started! You now have full access to SafeSeek.
+              Your <strong>7-day free trial</strong> has started! You now have full access to SafeNet.
             </p>
 
             <p style="margin: 0 0 16px 0; font-size: 16px;">Here's what you can do:</p>
@@ -79,7 +79,7 @@ export const sendTrialSignupEmails = action({
 
           <!-- CTA Button -->
           <div style="text-align: center; margin-bottom: 24px;">
-            <a href="https://getsafeseek.com"
+            <a href="https://getsafenet.com"
                style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
               Get Started
             </a>
@@ -102,7 +102,7 @@ export const sendTrialSignupEmails = action({
               Questions? Just reply to this email.
             </p>
             <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-              The SafeSeek Team
+              The SafeNet Team
             </p>
           </div>
 
@@ -115,9 +115,9 @@ export const sendTrialSignupEmails = action({
     try {
       // Send admin notification
       const adminResult = await resend.emails.send({
-        from: "SafeSeek Admin <notifications@getsafeseek.com>",
+        from: "SafeNet Admin <notifications@getsafenet.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
-        subject: `New SafeSeek Trial: ${args.userName}`,
+        subject: `New SafeNet Trial: ${args.userName}`,
         html: adminEmailContent,
       });
       console.log(`Admin notification sent for ${args.userEmail}:`, adminResult);
@@ -129,10 +129,10 @@ export const sendTrialSignupEmails = action({
     try {
       // Send welcome email to user
       const userResult = await resend.emails.send({
-        from: "SafeSeek <noreply@getsafeseek.com>",
+        from: "SafeNet <noreply@getsafenet.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.userEmail,
-        subject: "Welcome to SafeSeek! Your 7-Day Trial Has Started",
+        subject: "Welcome to SafeNet! Your 7-Day Trial Has Started",
         html: userEmailContent,
       });
       console.log(`Welcome email sent to ${args.userEmail}:`, userResult);
@@ -167,14 +167,14 @@ export const sendTrialExpiringWarning = internalAction({
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
 
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #7c3aed; margin: 0 0 8px 0; font-size: 28px;">SafeSeek</h1>
+            <h1 style="color: #7c3aed; margin: 0 0 8px 0; font-size: 28px;">SafeNet</h1>
           </div>
 
           <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
             <h2 style="margin: 0 0 16px 0; color: #1f2937;">Hi ${args.userName}!</h2>
 
             <p style="margin: 0 0 16px 0; font-size: 16px;">
-              Your SafeSeek free trial ends on <strong>${new Date(args.trialEndsAt).toLocaleDateString()}</strong> (in 2 days).
+              Your SafeNet free trial ends on <strong>${new Date(args.trialEndsAt).toLocaleDateString()}</strong> (in 2 days).
             </p>
 
             <p style="margin: 0 0 16px 0; font-size: 16px;">
@@ -182,14 +182,14 @@ export const sendTrialExpiringWarning = internalAction({
             </p>
 
             <div style="text-align: center; margin: 24px 0;">
-              <a href="https://getsafeseek.com/settings"
+              <a href="https://getsafenet.com/settings"
                  style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                 Upgrade Now
               </a>
             </div>
 
             <p style="margin: 16px 0 0 0; font-size: 14px; color: #6b7280;">
-              If you choose not to upgrade, your kids will lose access to SafeSeek when the trial ends.
+              If you choose not to upgrade, your kids will lose access to SafeNet when the trial ends.
             </p>
           </div>
 
@@ -198,7 +198,7 @@ export const sendTrialExpiringWarning = internalAction({
               Questions? Just reply to this email.
             </p>
             <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-              The SafeSeek Team
+              The SafeNet Team
             </p>
           </div>
 
@@ -208,10 +208,10 @@ export const sendTrialExpiringWarning = internalAction({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeSeek <noreply@getsafeseek.com>",
+        from: "SafeNet <noreply@getsafenet.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.userEmail,
-        subject: "Your SafeSeek trial ends in 2 days",
+        subject: "Your SafeNet trial ends in 2 days",
         html: emailContent,
       });
       console.log(`Trial warning email sent to ${args.userEmail}:`, result);
@@ -244,14 +244,14 @@ export const sendTrialExpiredEmail = internalAction({
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
 
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #7c3aed; margin: 0 0 8px 0; font-size: 28px;">SafeSeek</h1>
+            <h1 style="color: #7c3aed; margin: 0 0 8px 0; font-size: 28px;">SafeNet</h1>
           </div>
 
           <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
             <h2 style="margin: 0 0 16px 0; color: #1f2937;">Hi ${args.userName},</h2>
 
             <p style="margin: 0 0 16px 0; font-size: 16px;">
-              Your SafeSeek free trial has ended. Your kids no longer have access to safe, AI-powered search.
+              Your SafeNet free trial has ended. Your kids no longer have access to safe, AI-powered search.
             </p>
 
             <p style="margin: 0 0 16px 0; font-size: 16px;">
@@ -259,9 +259,9 @@ export const sendTrialExpiredEmail = internalAction({
             </p>
 
             <div style="text-align: center; margin: 24px 0;">
-              <a href="https://getsafeseek.com/settings"
+              <a href="https://getsafenet.com/settings"
                  style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Reactivate SafeSeek
+                Reactivate SafeNet
               </a>
             </div>
           </div>
@@ -271,7 +271,7 @@ export const sendTrialExpiredEmail = internalAction({
               Questions? Just reply to this email.
             </p>
             <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-              The SafeSeek Team
+              The SafeNet Team
             </p>
           </div>
 
@@ -281,10 +281,10 @@ export const sendTrialExpiredEmail = internalAction({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeSeek <noreply@getsafeseek.com>",
+        from: "SafeNet <noreply@getsafenet.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.userEmail,
-        subject: "Your SafeSeek trial has ended",
+        subject: "Your SafeNet trial has ended",
         html: emailContent,
       });
       console.log(`Trial expired email sent to ${args.userEmail}:`, result);
@@ -318,7 +318,7 @@ export const sendAdminTrialExpirationSummary = internalAction({
     if (totalActions === 0) return { success: true, skipped: true };
 
     const emailContent = `
-      <h1>SafeSeek Trial Expiration Summary</h1>
+      <h1>SafeNet Trial Expiration Summary</h1>
       <p>Daily trial expiration cron ran at ${new Date().toLocaleString()}</p>
 
       ${args.expiredUsers.length > 0 ? `
@@ -336,14 +336,14 @@ export const sendAdminTrialExpirationSummary = internalAction({
       ` : ''}
 
       <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
-      <p style="color: #6b7280; font-size: 14px;">SafeSeek Admin Notification</p>
+      <p style="color: #6b7280; font-size: 14px;">SafeNet Admin Notification</p>
     `;
 
     try {
       const result = await resend.emails.send({
-        from: "SafeSeek Admin <notifications@getsafeseek.com>",
+        from: "SafeNet Admin <notifications@getsafenet.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
-        subject: `SafeSeek Trials: ${args.expiredUsers.length} expired, ${args.warningUsers.length} warned`,
+        subject: `SafeNet Trials: ${args.expiredUsers.length} expired, ${args.warningUsers.length} warned`,
         html: emailContent,
       });
       console.log("Admin trial summary sent:", result);

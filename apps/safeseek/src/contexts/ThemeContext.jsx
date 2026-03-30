@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 
 const ThemeContext = createContext(undefined);
 
-const STORAGE_KEY = 'safeseek-theme';
+const STORAGE_KEY = 'safenet-theme';
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState('system');

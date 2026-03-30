@@ -22,7 +22,7 @@ function LoadingScreen() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        <div className="text-gray-600 text-lg">Loading SafeSeek...</div>
+        <div className="text-gray-600 text-lg">Loading SafeNet...</div>
       </div>
     </div>
   );

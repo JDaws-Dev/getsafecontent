@@ -13,7 +13,7 @@ export default function SignupPage() {
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
             <Search className="w-5 h-5 text-white" />
           </div>
-          <span className="font-semibold text-gray-900">SafeSeek</span>
+          <span className="font-semibold text-gray-900">SafeNet</span>
         </Link>
       </header>
 
@@ -27,12 +27,12 @@ export default function SignupPage() {
 
           <div className="space-y-4 mb-6">
             <p className="text-sm text-gray-600 text-center leading-relaxed">
-              SafeSeek is part of the Safe Family suite. Sign up at our central site to get started with all Safe Family apps.
+              SafeNet is part of the Safe Family suite. Sign up at our central site to get started with all Safe Family apps.
             </p>
           </div>
 
           <a
-            href="https://getsafefamily.com/signup?app=safeseek"
+            href="https://getsafefamily.com/signup?app=safenet"
             className="btn-brand w-full min-h-[48px] rounded-lg flex items-center justify-center gap-2 text-center"
           >
             {loading ? 'Redirecting...' : (

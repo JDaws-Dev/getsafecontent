@@ -1,5 +1,5 @@
 /**
- * Central JWT Authentication Context for SafeSeek
+ * Central JWT Authentication Context for SafeNet
  *
  * This context manages authentication state using JWT tokens from the central
  * Marketing auth system. No local Convex Auth is needed.
@@ -15,8 +15,8 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 const CENTRAL_AUTH_URL = 'https://adamant-crow-705.convex.site';
 
 // Storage keys
-const JWT_KEY = 'safeseek_jwt';
-const USER_KEY = 'safeseek_user';
+const JWT_KEY = 'safenet_jwt';
+const USER_KEY = 'safenet_user';
 
 /**
  * @typedef {Object} User
@@ -105,8 +105,8 @@ export function AuthProvider({ children }) {
         return false;
       }
 
-      // Check if user is entitled to SafeSeek
-      if (!data.user.entitledApps?.includes('safeseek')) {
+      // Check if user is entitled to SafeNet
+      if (!data.user.entitledApps?.includes('safenet')) {
         // Still set the user but they will be redirected by protected routes
       }
 
@@ -189,9 +189,9 @@ export function AuthProvider({ children }) {
         };
       }
 
-      // TODO: Check entitlement to SafeSeek once Marketing Central supports it
+      // TODO: Check entitlement to SafeNet once Marketing Central supports it
       // For now, allow all authenticated users during development
-      // if (!data.user.entitledApps?.includes('safeseek')) {
+      // if (!data.user.entitledApps?.includes('safenet')) {
       //   return {
       //     success: false,
       //     error: 'NOT_ENTITLED',
@@ -235,7 +235,7 @@ export function AuthProvider({ children }) {
     const returnTo = window.location.origin + '/login';
     const oauthUrl = new URL(MARKETING_OAUTH_URL);
     oauthUrl.searchParams.set('returnTo', returnTo);
-    oauthUrl.searchParams.set('app', 'SafeSeek');
+    oauthUrl.searchParams.set('app', 'SafeNet');
 
     window.location.href = oauthUrl.toString();
   }, []);

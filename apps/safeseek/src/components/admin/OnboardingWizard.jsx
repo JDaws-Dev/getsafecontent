@@ -54,7 +54,7 @@ function WelcomeStep({ onNext }) {
       </div>
 
       <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-        Welcome to SafeSeek!
+        Welcome to SafeNet!
       </h1>
       <p className="text-lg text-gray-600 max-w-md mb-2">
         Let's set up a safe search experience for your kids.
@@ -285,7 +285,7 @@ function FamilyCodeStep({ familyCode, onNext }) {
         <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-3">
           <ExternalLink className="w-4 h-4 text-blue-500 flex-shrink-0" />
           <code className="text-blue-600 font-mono font-semibold text-sm sm:text-base">
-            getsafeseek.com/search
+            getsafenet.com/search
           </code>
         </div>
         <p className="text-xs text-gray-400 mt-3">
@@ -318,7 +318,7 @@ function AllSetStep({ onComplete, onAddAnother, onTrySearch }) {
         You're all set!
       </h1>
       <p className="text-gray-500 mb-10 max-w-sm">
-        SafeSeek is ready. Your kids can now search the web safely with content filtered just for them.
+        SafeNet is ready. Your kids can now search the web safely with content filtered just for them.
       </p>
 
       {/* Quick Links */}
@@ -367,17 +367,17 @@ export default function OnboardingWizard({ userId, familyCode, onComplete }) {
   const TOTAL_STEPS = 4;
 
   const handleComplete = useCallback(() => {
-    localStorage.setItem('safeseek_onboarding_complete', 'true');
+    localStorage.setItem('safenet_onboarding_complete', 'true');
     onComplete?.('dashboard');
   }, [onComplete]);
 
   const handleAddAnother = useCallback(() => {
-    localStorage.setItem('safeseek_onboarding_complete', 'true');
+    localStorage.setItem('safenet_onboarding_complete', 'true');
     onComplete?.('addKid');
   }, [onComplete]);
 
   const handleTrySearch = useCallback(() => {
-    localStorage.setItem('safeseek_onboarding_complete', 'true');
+    localStorage.setItem('safenet_onboarding_complete', 'true');
     onComplete?.('trySearch');
   }, [onComplete]);
 

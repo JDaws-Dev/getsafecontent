@@ -27,7 +27,7 @@ export default function LoginPage() {
 
   // Load remembered email on mount
   useEffect(() => {
-    const rememberedEmail = localStorage.getItem('safeseek_remembered_email');
+    const rememberedEmail = localStorage.getItem('safenet_remembered_email');
     if (rememberedEmail) {
       setFormData(prev => ({ ...prev, email: rememberedEmail }));
     }
@@ -43,7 +43,7 @@ export default function LoginPage() {
 
       if (!result.success) {
         if (result.code === 'NOT_ENTITLED') {
-          setError('Your account does not include SafeSeek. Visit getsafefamily.com to upgrade your plan.');
+          setError('Your account does not include SafeNet. Visit getsafefamily.com to upgrade your plan.');
           setLoading(false);
           return;
         }
@@ -54,7 +54,7 @@ export default function LoginPage() {
         return;
       }
 
-      localStorage.setItem('safeseek_remembered_email', formData.email);
+      localStorage.setItem('safenet_remembered_email', formData.email);
       navigate('/admin');
     } catch (err) {
       console.error('[LoginPage] Login error:', err);
@@ -77,7 +77,7 @@ export default function LoginPage() {
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
             <Search className="w-5 h-5 text-white" />
           </div>
-          <span className="font-semibold text-gray-900">SafeSeek</span>
+          <span className="font-semibold text-gray-900">SafeNet</span>
         </Link>
       </header>
 
@@ -96,7 +96,7 @@ export default function LoginPage() {
             </div>
 
             <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">Welcome back</h1>
-            <p className="text-gray-500 text-center mb-8">Sign in to manage SafeSeek</p>
+            <p className="text-gray-500 text-center mb-8">Sign in to manage SafeNet</p>
 
             {error && (
               <div

@@ -1,4 +1,4 @@
-# SafeSeek Improvement Plan
+# SafeNet Improvement Plan
 
 ## Status: MVP working (Mar 28, 2026)
 Core search works — OpenAI gpt-4o-mini, kid profiles, time limits, family code entry.
@@ -86,13 +86,13 @@ Needs significant buildout before launch.
 - Safe Family brand: cream (#FDF8F3), navy (#1a1a2e), peach (#F5A962)
 - Peach for CTAs to match other apps
 - Hero image: Pexels (kid on laptop — IDs: 5632646, 5632632, 3807517)
-- Domain: getsafeseek.com (available, $11.25/yr, not yet purchased)
+- Domain: getsafenet.com (available, $11.25/yr, not yet purchased)
 
 ---
 
 ## Feature Parity Gaps vs SafeTunes/SafeTube
 
-| Feature | SafeTunes | SafeTube | SafeSeek |
+| Feature | SafeTunes | SafeTube | SafeNet |
 |---------|-----------|----------|----------|
 | Stripe webhooks | Yes | Yes | Missing |
 | Subscription sync | Yes | Yes | Missing |

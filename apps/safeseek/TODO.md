@@ -1,4 +1,4 @@
-# SafeSeek TODO
+# SafeNet TODO
 
 ## Code Quality (from audit)
 - [ ] Refactor KidSearch.jsx (1,659 lines) into sub-components: SearchInput, ResponseDisplay, ImageLightbox, DiagramRenderer, VoiceSearch
@@ -18,7 +18,7 @@
 - [ ] Add delete button (x) on individual history items in autocomplete dropdown
 - [ ] Add skip-navigation for accessibility
 - [ ] Add font-size control for differently-abled users
-- [ ] Clarify image attribution — "Filtered by SafeSeek" not just "Google"
+- [ ] Clarify image attribution — "Filtered by SafeNet" not just "Google"
 - [ ] Deduplicate search history entries
 
 ## Monetization (later)
