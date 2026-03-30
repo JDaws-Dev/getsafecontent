@@ -1052,6 +1052,74 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
   );
 }
 
+// --- Requests Tab ---
+function RequestsTab({ allRequests, pendingRequests, onApprove, onDeny }) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Topic Requests</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">When your kids search for a blocked topic, they can request permission.</p>
+      </div>
+
+      {pendingRequests && pendingRequests.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+            <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
+            Needs your attention ({pendingRequests.length})
+          </h3>
+          <div className="space-y-2">
+            {pendingRequests.map((req) => (
+              <div key={req._id} className="bg-white dark:bg-gray-800 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-white">{req.kidName || 'Unknown'}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">Wants to search: <strong>"{req.query}"</strong></p>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button onClick={() => onApprove(req._id)} className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-medium rounded-lg hover:bg-green-200 transition">Approve</button>
+                    <button onClick={() => onDeny(req._id)} className="px-3 py-1.5 bg-red-100 text-red-700 text-xs font-medium rounded-lg hover:bg-red-200 transition">Deny</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">All Requests</h3>
+        {allRequests && allRequests.length > 0 ? (
+          <div className="space-y-2">
+            {allRequests.map((req) => (
+              <div key={req._id} className={`bg-white dark:bg-gray-800 border rounded-xl px-4 py-3 flex items-center gap-3 ${
+                req.status === 'approved' ? 'border-green-200' : req.status === 'denied' ? 'border-red-200' : 'border-gray-200'
+              }`}>
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                  req.status === 'approved' ? 'bg-green-500' : req.status === 'denied' ? 'bg-red-500' : 'bg-orange-400'
+                }`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-800 dark:text-gray-200 truncate">
+                    <span className="font-medium">{req.kidName}</span>: "{req.query}"
+                  </p>
+                </div>
+                <span className={`text-xs font-medium ${
+                  req.status === 'approved' ? 'text-green-600' : req.status === 'denied' ? 'text-red-500' : 'text-orange-500'
+                }`}>
+                  {req.status === 'approved' ? 'Approved' : req.status === 'denied' ? 'Denied' : 'Pending'}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
+            <p className="text-gray-400">No requests yet. When your kids try to search for blocked topics, their requests will appear here.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // =============================================
 // Main AdminDashboard Component
 // =============================================

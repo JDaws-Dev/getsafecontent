@@ -329,9 +329,9 @@ export default function LandingPage() {
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#1a1a2e] leading-tight mb-6">
                 The search engine{' '}
                 <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-                  and built-in tutor
+                  with a tutor inside
                 </span>{' '}
-                built for kids
+                — made for kids
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
@@ -543,43 +543,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ========== TESTIMONIALS ========== */}
-      <section className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-1.5 rounded-full text-sm font-medium mb-4 border border-green-100">
-              <Users className="w-4 h-4" />
-              Trusted by families
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
-              "The built-in tutor changed everything."
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
-            {testimonials.map((t) => (
-              <div
-                key={t.name}
-                className="bg-[#FDF8F3] rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm hover:shadow-md transition-all"
-              >
-                <div className="flex gap-0.5 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  ))}
-                </div>
-                <Quote className="w-6 h-6 text-blue-200 mb-3" />
-                <p className="text-gray-700 leading-relaxed mb-6 text-sm">
-                  "{t.quote}"
-                </p>
-                <div className="border-t border-gray-100 pt-4">
-                  <p className="font-semibold text-[#1a1a2e] text-sm">{t.name}</p>
-                  <p className="text-gray-500 text-xs">{t.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Testimonials removed — will add real ones after beta testing */}
 
       {/* ========== HOW IT WORKS ========== */}
       <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">
