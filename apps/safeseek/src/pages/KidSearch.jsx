@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useAction, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import {
-  Search, Sparkles, Clock, History, ChevronRight,
+  Search, Sparkles, Clock, History, ChevronRight, Check,
   Shield, AlertCircle, Loader2, X, ChevronLeft, ChevronRight as ChevronRightIcon,
   Image as ImageIcon, Camera, Mic, Sun, Moon, Volume2, VolumeX, GitBranch, Users, ArrowLeft
 } from 'lucide-react';
@@ -591,6 +591,12 @@ export default function KidSearch() {
   const kidSearchHistory = useQuery(
     api.searchQueries.getSearchHistory,
     selectedProfile?._id ? { kidProfileId: selectedProfile._id, limit: 20 } : 'skip'
+  );
+
+  // Recently approved topic requests
+  const approvedRequests = useQuery(
+    api.topicRequests.getRecentlyApproved,
+    selectedProfile?._id ? { kidProfileId: selectedProfile._id } : 'skip'
   );
 
   // Validate family code
@@ -1694,7 +1700,29 @@ export default function KidSearch() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
               Hi {selectedProfile.name}! What do you want to learn?
             </h2>
-            <p className="text-gray-400 dark:text-gray-500 mb-8 text-sm">Ask me anything or try one of these</p>
+            <p className="text-gray-400 dark:text-gray-500 mb-6 text-sm">Ask me anything or try one of these</p>
+
+            {/* Approved request notifications */}
+            {approvedRequests && approvedRequests.length > 0 && (
+              <div className="mb-6 max-w-lg mx-auto space-y-2">
+                {approvedRequests.map((req) => (
+                  <button
+                    key={req._id}
+                    onClick={() => handleSuggestionClick(req.query)}
+                    className="w-full flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl px-4 py-3 text-left hover:bg-green-100 dark:hover:bg-green-900/30 transition active:scale-[0.98]"
+                  >
+                    <div className="w-8 h-8 bg-green-100 dark:bg-green-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-green-800 dark:text-green-300">Approved!</p>
+                      <p className="text-xs text-green-600 dark:text-green-400 truncate">You can now search for "{req.query}"</p>
+                    </div>
+                    <Search className="w-4 h-4 text-green-400 flex-shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-lg mx-auto">
               {randomSuggestions.map((suggestion) => (
                 <button

@@ -176,3 +176,24 @@ export const hasPendingRequest = query({
     return !!existing;
   },
 });
+
+/**
+ * Get recently approved requests for a kid (last 7 days)
+ * Used to show "Your parent approved!" notification on kid's search page
+ */
+export const getRecentlyApproved = query({
+  args: { kidProfileId: v.id("kidProfiles") },
+  handler: async (ctx, args) => {
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+    const requests = await ctx.db
+      .query("topicRequests")
+      .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
+      .collect();
+
+    return requests
+      .filter((r) => r.status === "approved" && (r.respondedAt || 0) > sevenDaysAgo)
+      .sort((a, b) => (b.respondedAt || 0) - (a.respondedAt || 0))
+      .slice(0, 5);
+  },
+});
