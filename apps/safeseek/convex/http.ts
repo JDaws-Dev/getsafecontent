@@ -11,7 +11,7 @@ const CORS_HEADERS = {
 
 // TEMPORARY WORKAROUND: Convex has a bug where env vars set via CLI don't propagate
 // to HTTP actions. Using a hardcoded key until Convex fixes this.
-const HARDCODED_ADMIN_KEY = "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=";
+// Admin key must be set via Convex env vars: npx convex env set ADMIN_KEY "your-key"
 
 // ==================== Admin Dashboard ====================
 
@@ -25,7 +25,7 @@ const adminDashboard = httpAction(async (ctx, request) => {
     const url = new URL(request.url);
     const secretKey = url.searchParams.get("key");
     const format = url.searchParams.get("format");
-    const ADMIN_SECRET = process.env.ADMIN_KEY || HARDCODED_ADMIN_KEY;
+    const ADMIN_SECRET = process.env.ADMIN_KEY || "";
 
     if (!secretKey || secretKey !== ADMIN_SECRET) {
       if (format === "json") {
@@ -222,7 +222,7 @@ const adminDashboard = httpAction(async (ctx, request) => {
 const provisionUser = httpAction(async (ctx, request) => {
   const url = new URL(request.url);
   const key = url.searchParams.get("key");
-  const ADMIN_KEY = process.env.ADMIN_KEY || HARDCODED_ADMIN_KEY;
+  const ADMIN_KEY = process.env.ADMIN_KEY || "";
 
   // Validate admin key
   if (!key || key !== ADMIN_KEY) {
@@ -284,7 +284,7 @@ const deleteUser = httpAction(async (ctx, request) => {
   const url = new URL(request.url);
   const email = url.searchParams.get("email");
   const key = url.searchParams.get("key");
-  const ADMIN_KEY = process.env.ADMIN_KEY || HARDCODED_ADMIN_KEY;
+  const ADMIN_KEY = process.env.ADMIN_KEY || "";
 
   // Validate admin key
   if (!key || key !== ADMIN_KEY) {
@@ -335,7 +335,7 @@ const setSubscriptionStatus = httpAction(async (ctx, request) => {
   const key = url.searchParams.get("key");
   const stripeCustomerId = url.searchParams.get("stripeCustomerId");
   const subscriptionId = url.searchParams.get("subscriptionId");
-  const ADMIN_KEY = process.env.ADMIN_KEY || HARDCODED_ADMIN_KEY;
+  const ADMIN_KEY = process.env.ADMIN_KEY || "";
 
   // Validate admin key
   if (!key || key !== ADMIN_KEY) {
