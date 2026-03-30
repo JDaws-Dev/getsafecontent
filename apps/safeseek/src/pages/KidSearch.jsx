@@ -439,12 +439,21 @@ function ExpandableSection({ content, heading, rootQuery, borderColor, onDeepDiv
     try {
       const result = await performSearch({
         kidProfileId,
-        query: `${rootQuery} ${heading} - give a detailed explanation`,
+        query: `Tell me everything about ${rootQuery} ${heading}. Give a very detailed, comprehensive answer with specific facts, dates, names, and examples. Be thorough.`,
       });
-      if (result?.answer) {
-        setExpandedContent(stripMarkdown(result.answer));
-      } else if (result?.sections?.length > 0) {
-        setExpandedContent(result.sections.map(s => stripMarkdown(s.content)).join('\n\n'));
+      // Combine answer + all sections for maximum detail
+      const parts = [];
+      if (result?.answer) parts.push(stripMarkdown(result.answer));
+      if (result?.sections?.length > 0) {
+        for (const s of result.sections) {
+          parts.push(`${s.heading}\n${stripMarkdown(s.content)}`);
+        }
+      }
+      if (result?.funFacts?.length > 0) {
+        parts.push('Fun facts: ' + result.funFacts.map(f => stripMarkdown(f)).join(' • '));
+      }
+      if (parts.length > 0) {
+        setExpandedContent(parts.join('\n\n'));
       }
       setExpanded(true);
     } catch {
@@ -459,8 +468,12 @@ function ExpandableSection({ content, heading, rootQuery, borderColor, onDeepDiv
     <div className={`px-5 py-4 border-l-4 ${borderColor}`}>
       <p className="text-gray-700 dark:text-gray-200 leading-relaxed">{stripMarkdown(content)}</p>
       {expanded && expandedContent && (
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-          <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm">{expandedContent}</p>
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 space-y-3">
+          {expandedContent.split('\n\n').map((paragraph, i) => (
+            <p key={i} className="text-gray-600 dark:text-gray-300 leading-relaxed text-sm">
+              {paragraph}
+            </p>
+          ))}
         </div>
       )}
       <button
