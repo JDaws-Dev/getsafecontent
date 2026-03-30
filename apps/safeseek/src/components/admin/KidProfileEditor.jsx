@@ -34,6 +34,22 @@ function getStrictnessFromAge(age) {
   return 'light';
 }
 
+function getReadingLevelFromAge(age) {
+  if (age <= 5) return 'K';
+  if (age <= 6) return '1st';
+  if (age <= 7) return '2nd';
+  if (age <= 8) return '3rd';
+  if (age <= 9) return '4th';
+  if (age <= 10) return '5th';
+  if (age <= 11) return '6th';
+  if (age <= 12) return '7th';
+  if (age <= 13) return '8th';
+  if (age <= 14) return '9th';
+  if (age <= 15) return '10th';
+  if (age <= 16) return '11th';
+  return '12th';
+}
+
 export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -56,6 +72,16 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
   const [allowImageSearch, setAllowImageSearch] = useState(true);
   const [allowTopicRequests, setAllowTopicRequests] = useState(true);
 
+  // Track whether user has manually chosen a reading level
+  const [manualLexile, setManualLexile] = useState(false);
+
+  // Auto-set reading level when age changes (only if user hasn't manually chosen)
+  useEffect(() => {
+    if (!manualLexile) {
+      setLexileLevel(getReadingLevelFromAge(age));
+    }
+  }, [age]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Populate when editing
   useEffect(() => {
     if (profile) {
@@ -66,6 +92,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
       setAllowedTopics((profile.allowedTopics || []).join(', '));
       setCustomInstructions(profile.customInstructions || '');
       setLexileLevel(profile.lexileLevel || 'auto');
+      setManualLexile(!!profile.lexileLevel && profile.lexileLevel !== 'auto');
       setAccessibilityNeeds(profile.accessibilityNeeds || []);
       setAllowImageSearch(profile.allowImageSearch ?? true);
       setAllowTopicRequests(profile.allowTopicRequests ?? true);
@@ -167,7 +194,18 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
             <div className="flex items-center gap-3">
               <button type="button" onClick={() => setAge(Math.max(4, age - 1))} className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-lg transition active:scale-95">−</button>
-              <span className="text-3xl font-bold text-gray-900 w-12 text-center">{age}</span>
+              <input
+                type="number"
+                min={4}
+                max={18}
+                value={age}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (!isNaN(val)) setAge(Math.min(18, Math.max(4, val)));
+                  else if (e.target.value === '') setAge(4);
+                }}
+                className="text-3xl font-bold text-gray-900 w-16 text-center bg-transparent border-none outline-none focus:ring-2 focus:ring-blue-500 rounded-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
               <button type="button" onClick={() => setAge(Math.min(18, age + 1))} className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-lg transition active:scale-95">+</button>
             </div>
           </div>
@@ -208,7 +246,16 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                 </div>
                 <select
                   value={lexileLevel}
-                  onChange={(e) => setLexileLevel(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === 'auto') {
+                      setManualLexile(false);
+                      setLexileLevel(getReadingLevelFromAge(age));
+                    } else {
+                      setManualLexile(true);
+                      setLexileLevel(val);
+                    }
+                  }}
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 text-[16px]"
                 >
                   <option value="auto">Auto (based on age)</option>

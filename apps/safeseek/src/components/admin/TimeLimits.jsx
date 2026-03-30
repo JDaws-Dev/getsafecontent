@@ -1,6 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+
+// Check if a value matches a preset (not custom)
+const PRESET_VALUES = new Set([0, 10, 20, 30, 50, 100]);
+function isCustomValue(val) {
+  return val !== undefined && val !== null && !PRESET_VALUES.has(val);
+}
 
 // Get Tailwind color class from color name
 function getColorClass(color) {
@@ -64,6 +70,8 @@ export default function TimeLimits({ userId, defaultKidId }) {
     weekendLimitSearches: undefined,
     allowedStartHour: undefined,
     allowedEndHour: undefined,
+    _dailyCustom: false,
+    _weekendCustom: false,
   });
 
   // Update form when kid is selected
@@ -71,11 +79,15 @@ export default function TimeLimits({ userId, defaultKidId }) {
     if (selectedKid) {
       const kidData = timeLimitsData?.find(k => k.kidProfileId === selectedKid);
       if (kidData?.limit) {
+        const daily = kidData.limit.dailyLimitSearches ?? kidData.limit.dailyLimitMinutes ?? 50;
+        const weekend = kidData.limit.weekendLimitSearches ?? kidData.limit.weekendLimitMinutes;
         setFormState({
-          dailyLimitSearches: kidData.limit.dailyLimitSearches ?? kidData.limit.dailyLimitMinutes ?? 50,
-          weekendLimitSearches: kidData.limit.weekendLimitSearches ?? kidData.limit.weekendLimitMinutes,
+          dailyLimitSearches: daily,
+          weekendLimitSearches: weekend,
           allowedStartHour: kidData.limit.allowedStartHour,
           allowedEndHour: kidData.limit.allowedEndHour,
+          _dailyCustom: isCustomValue(daily),
+          _weekendCustom: weekend !== undefined && isCustomValue(weekend),
         });
         setShowTimeWindow(kidData.limit.allowedStartHour !== undefined);
       } else {
@@ -84,6 +96,8 @@ export default function TimeLimits({ userId, defaultKidId }) {
           weekendLimitSearches: undefined,
           allowedStartHour: undefined,
           allowedEndHour: undefined,
+          _dailyCustom: false,
+          _weekendCustom: false,
         });
         setShowTimeWindow(false);
       }
@@ -118,6 +132,8 @@ export default function TimeLimits({ userId, defaultKidId }) {
         weekendLimitSearches: undefined,
         allowedStartHour: undefined,
         allowedEndHour: undefined,
+        _dailyCustom: false,
+        _weekendCustom: false,
       });
       setShowTimeWindow(false);
     } catch (err) {
@@ -192,13 +208,13 @@ export default function TimeLimits({ userId, defaultKidId }) {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Daily Search Limit (Weekdays)
             </label>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
               {SEARCH_PRESETS.map((preset) => (
                 <button
                   key={preset.value}
-                  onClick={() => setFormState(s => ({ ...s, dailyLimitSearches: preset.value }))}
+                  onClick={() => setFormState(s => ({ ...s, dailyLimitSearches: preset.value, _dailyCustom: false }))}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                    formState.dailyLimitSearches === preset.value
+                    formState.dailyLimitSearches === preset.value && !formState._dailyCustom
                       ? 'bg-blue-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
@@ -206,7 +222,33 @@ export default function TimeLimits({ userId, defaultKidId }) {
                   {preset.label}
                 </button>
               ))}
+              <button
+                onClick={() => setFormState(s => ({ ...s, _dailyCustom: true, dailyLimitSearches: isCustomValue(s.dailyLimitSearches) ? s.dailyLimitSearches : 75 }))}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                  formState._dailyCustom || isCustomValue(formState.dailyLimitSearches)
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Custom
+              </button>
             </div>
+            {(formState._dailyCustom || isCustomValue(formState.dailyLimitSearches)) && (
+              <div className="mt-3 flex items-center gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  max={999}
+                  value={formState.dailyLimitSearches || ''}
+                  onChange={(e) => {
+                    const val = Math.max(1, Math.min(999, parseInt(e.target.value) || 1));
+                    setFormState(s => ({ ...s, dailyLimitSearches: val, _dailyCustom: true }));
+                  }}
+                  className="w-24 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+                <span className="text-sm text-gray-500">searches per day</span>
+              </div>
+            )}
           </div>
 
           {/* Weekend limit toggle */}
@@ -225,13 +267,13 @@ export default function TimeLimits({ userId, defaultKidId }) {
             </label>
             {formState.weekendLimitSearches !== undefined && (
               <div className="mt-3 ml-6">
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
                   {SEARCH_PRESETS.map((preset) => (
                     <button
                       key={preset.value}
-                      onClick={() => setFormState(s => ({ ...s, weekendLimitSearches: preset.value }))}
+                      onClick={() => setFormState(s => ({ ...s, weekendLimitSearches: preset.value, _weekendCustom: false }))}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                        formState.weekendLimitSearches === preset.value
+                        formState.weekendLimitSearches === preset.value && !formState._weekendCustom
                           ? 'bg-cyan-500 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
@@ -239,7 +281,33 @@ export default function TimeLimits({ userId, defaultKidId }) {
                       {preset.label}
                     </button>
                   ))}
+                  <button
+                    onClick={() => setFormState(s => ({ ...s, _weekendCustom: true, weekendLimitSearches: isCustomValue(s.weekendLimitSearches) ? s.weekendLimitSearches : 75 }))}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                      formState._weekendCustom || isCustomValue(formState.weekendLimitSearches)
+                        ? 'bg-cyan-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    Custom
+                  </button>
                 </div>
+                {(formState._weekendCustom || isCustomValue(formState.weekendLimitSearches)) && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={999}
+                      value={formState.weekendLimitSearches || ''}
+                      onChange={(e) => {
+                        const val = Math.max(1, Math.min(999, parseInt(e.target.value) || 1));
+                        setFormState(s => ({ ...s, weekendLimitSearches: val, _weekendCustom: true }));
+                      }}
+                      className="w-24 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="text-sm text-gray-500">searches per day</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

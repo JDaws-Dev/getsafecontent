@@ -14,6 +14,7 @@ import {
   AlertTriangle, ExternalLink, Copy, Check, Plus, Pencil, Trash2,
   Home, Activity, UserCog, Mail, ChevronRight, Filter,
   Image, MessageSquare, ShieldAlert, CheckCircle2, Eye, EyeOff,
+  MessageCircle, X,
 } from 'lucide-react';
 
 const TABS = [
@@ -85,7 +86,7 @@ function KidAvatar({ name, color, size = 'md' }) {
 }
 
 // --- Home Tab ---
-function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavigate, onCopyCode, codeCopied }) {
+function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavigate, onShowBlocked, onCopyCode, codeCopied }) {
   const todaySearches = useMemo(() => {
     if (!searchHistory) return [];
     return searchHistory.filter((s) => isToday(s.searchedAt));
@@ -112,7 +113,10 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <button
+          onClick={() => onNavigate('activity')}
+          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left hover:border-blue-200 hover:shadow-md transition cursor-pointer"
+        >
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center">
               <Search className="w-4 h-4 text-blue-600" />
@@ -120,9 +124,12 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
             <span className="text-sm text-gray-500">Searches Today</span>
           </div>
           <p className="text-3xl font-bold text-gray-900">{todaySearches.length}</p>
-        </div>
+        </button>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <button
+          onClick={() => { onNavigate('activity'); onShowBlocked?.(); }}
+          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left hover:border-red-200 hover:shadow-md transition cursor-pointer"
+        >
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center">
               <ShieldAlert className="w-4 h-4 text-red-600" />
@@ -130,9 +137,12 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
             <span className="text-sm text-gray-500">Blocked Today</span>
           </div>
           <p className="text-3xl font-bold text-gray-900">{todayBlocked.length}</p>
-        </div>
+        </button>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 col-span-2 sm:col-span-1">
+        <button
+          onClick={() => onNavigate('profiles')}
+          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left col-span-2 sm:col-span-1 hover:border-cyan-200 hover:shadow-md transition cursor-pointer"
+        >
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 bg-cyan-50 rounded-xl flex items-center justify-center">
               <Users className="w-4 h-4 text-cyan-600" />
@@ -140,7 +150,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
             <span className="text-sm text-gray-500">Kid Profiles</span>
           </div>
           <p className="text-3xl font-bold text-gray-900">{kidProfiles?.length || 0}</p>
-        </div>
+        </button>
       </div>
 
       {/* Family Code Card */}
@@ -202,7 +212,9 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
                     <div className="min-w-0">
                       <h4 className="font-bold text-gray-900 truncate">{profile.name}</h4>
                       <p className="text-xs text-gray-500">
-                        Ages {profile.ageRange?.min || 4}&ndash;{profile.ageRange?.max || 18}
+                        {profile.ageRange?.min === profile.ageRange?.max
+                          ? `Age ${profile.ageRange?.min || 4}`
+                          : `Ages ${profile.ageRange?.min || 4}\u2013${profile.ageRange?.max || 18}`}
                       </p>
                     </div>
                   </div>
@@ -216,7 +228,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-500 truncate mr-2">Last search</span>
                         <span className="text-gray-700 truncate max-w-[140px] text-right font-medium" title={lastSearch.query}>
-                          {lastSearch.query}
+                          {lastSearch.query} <span className="text-gray-400 font-normal">&middot; {formatTimestamp(lastSearch.searchedAt)}</span>
                         </span>
                       </div>
                     )}
@@ -321,27 +333,91 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
 }
 
 // --- Activity Tab ---
-function ActivityTab({ searchHistory, blockedSearches, kidProfiles }) {
+function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowBlocked }) {
   const [filterKid, setFilterKid] = useState('all');
-  const [showBlocked, setShowBlocked] = useState(false);
+  const [showBlocked, setShowBlocked] = useState(initialShowBlocked || false);
+  const [activityFilter, setActivityFilter] = useState('');
+  const [activityDateFilter, setActivityDateFilter] = useState('all');
+  const [dismissedIds, setDismissedIds] = useState(new Set());
+  const [talkTooltipId, setTalkTooltipId] = useState(null);
+  const updateProfile = useMutation(api.kidProfiles.updateProfile);
+
+  const handleAllowTopic = async (entry) => {
+    const profile = kidProfiles?.find((p) => p._id === entry.kidProfileId);
+    if (!profile) return;
+    const currentAllowed = profile.allowedTopics || [];
+    if (currentAllowed.includes(entry.query.toLowerCase())) return;
+    await updateProfile({
+      kidProfileId: entry.kidProfileId,
+      allowedTopics: [...currentAllowed, entry.query.toLowerCase()],
+    });
+    setDismissedIds((prev) => new Set([...prev, entry._id]));
+  };
+
+  const handleDismiss = (entryId) => {
+    setDismissedIds((prev) => new Set([...prev, entryId]));
+  };
 
   const filteredHistory = useMemo(() => {
     if (!searchHistory) return [];
-    if (filterKid === 'all') return searchHistory;
-    const profile = kidProfiles?.find((p) => p._id === filterKid);
-    if (!profile) return searchHistory;
-    return searchHistory.filter((s) => s.kidName === profile.name);
-  }, [searchHistory, filterKid, kidProfiles]);
+    let result = searchHistory;
+    if (filterKid !== 'all') {
+      const profile = kidProfiles?.find((p) => p._id === filterKid);
+      if (profile) result = result.filter((s) => s.kidName === profile.name);
+    }
+    if (activityFilter.trim()) {
+      const q = activityFilter.trim().toLowerCase();
+      result = result.filter((s) => s.query?.toLowerCase().includes(q));
+    }
+    if (activityDateFilter === 'today') {
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+      result = result.filter((s) => s.searchedAt >= cutoff);
+    } else if (activityDateFilter === 'week') {
+      const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      result = result.filter((s) => s.searchedAt >= cutoff);
+    }
+    return result;
+  }, [searchHistory, filterKid, kidProfiles, activityFilter, activityDateFilter]);
 
   const filteredBlocked = useMemo(() => {
     if (!blockedSearches) return [];
-    if (filterKid === 'all') return blockedSearches;
-    const profile = kidProfiles?.find((p) => p._id === filterKid);
-    if (!profile) return blockedSearches;
-    return blockedSearches.filter((b) => b.kidName === profile.name);
-  }, [blockedSearches, filterKid, kidProfiles]);
+    let result = blockedSearches;
+    if (filterKid !== 'all') {
+      const profile = kidProfiles?.find((p) => p._id === filterKid);
+      if (profile) result = result.filter((b) => b.kidName === profile.name);
+    }
+    if (activityFilter.trim()) {
+      const q = activityFilter.trim().toLowerCase();
+      result = result.filter((b) => b.query?.toLowerCase().includes(q));
+    }
+    if (activityDateFilter === 'today') {
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+      result = result.filter((b) => b.searchedAt >= cutoff);
+    } else if (activityDateFilter === 'week') {
+      const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      result = result.filter((b) => b.searchedAt >= cutoff);
+    }
+    result = result.filter((b) => !dismissedIds.has(b._id));
+    return result;
+  }, [blockedSearches, filterKid, kidProfiles, activityFilter, activityDateFilter, dismissedIds]);
 
-  const displayData = showBlocked ? filteredBlocked : filteredHistory;
+  const rawDisplayData = showBlocked ? filteredBlocked : filteredHistory;
+
+  // Collapse consecutive identical queries into one entry with a count
+  const displayData = useMemo(() => {
+    if (!rawDisplayData || rawDisplayData.length === 0) return [];
+    const result = [];
+    for (let i = 0; i < rawDisplayData.length; i++) {
+      const entry = rawDisplayData[i];
+      const prev = result[result.length - 1];
+      if (prev && prev.query === entry.query && prev.kidName === entry.kidName) {
+        prev._consecutiveCount = (prev._consecutiveCount || 1) + 1;
+      } else {
+        result.push({ ...entry, _consecutiveCount: 1 });
+      }
+    }
+    return result;
+  }, [rawDisplayData]);
 
   return (
     <div className="space-y-4">
@@ -357,23 +433,6 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles }) {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Kid filter */}
-          {kidProfiles && kidProfiles.length > 1 && (
-            <div className="relative">
-              <Filter className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <select
-                value={filterKid}
-                onChange={(e) => setFilterKid(e.target.value)}
-                className="pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 appearance-none cursor-pointer hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
-              >
-                <option value="all">All kids</option>
-                {kidProfiles.map((p) => (
-                  <option key={p._id} value={p._id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
           {/* Toggle blocked */}
           <button
             onClick={() => setShowBlocked(!showBlocked)}
@@ -391,6 +450,53 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles }) {
               </span>
             )}
           </button>
+        </div>
+      </div>
+
+      {/* Filter bar */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={activityFilter}
+            onChange={(e) => setActivityFilter(e.target.value)}
+            placeholder="Filter searches..."
+            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          {kidProfiles && kidProfiles.length > 1 && (
+            <select
+              value={filterKid}
+              onChange={(e) => setFilterKid(e.target.value)}
+              className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 appearance-none cursor-pointer hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+            >
+              <option value="all">All Kids</option>
+              {kidProfiles.map((p) => (
+                <option key={p._id} value={p._id}>{p.name}</option>
+              ))}
+            </select>
+          )}
+          <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+            {[
+              { value: 'today', label: 'Today' },
+              { value: 'week', label: 'This Week' },
+              { value: 'all', label: 'All Time' },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setActivityDateFilter(opt.value)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
+                  activityDateFilter === opt.value
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -443,12 +549,50 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles }) {
                   showBlocked ? 'text-red-700 font-medium' : entry.flagged ? 'text-amber-800 font-medium' : 'text-gray-700'
                 }`}>
                   {entry.query}
+                  {entry._consecutiveCount > 1 && (
+                    <span className="ml-1.5 inline-flex items-center bg-gray-100 text-gray-500 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                      {entry._consecutiveCount}x
+                    </span>
+                  )}
                 </p>
                 {showBlocked && entry.blockedReason && (
                   <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
                     <ShieldAlert className="w-3 h-3" />
                     {entry.blockedReason}
                   </p>
+                )}
+                {showBlocked && (
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <button
+                      onClick={() => handleAllowTopic(entry)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-full bg-green-100 text-green-700 hover:bg-green-200 transition"
+                    >
+                      <Check className="w-3 h-3" />
+                      Allow this topic
+                    </button>
+                    <button
+                      onClick={() => handleDismiss(entry._id)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition"
+                    >
+                      <X className="w-3 h-3" />
+                      Dismiss
+                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setTalkTooltipId(talkTooltipId === entry._id ? null : entry._id)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                        Talk to them
+                      </button>
+                      {talkTooltipId === entry._id && (
+                        <div className="absolute left-0 top-full mt-1 z-10 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg w-56">
+                          Have a conversation with your child about why they searched for this.
+                          <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-900 rotate-45" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
                 {!showBlocked && entry.flagReason && (
                   <p className="text-xs text-amber-600 mt-1">{entry.flagReason}</p>
@@ -466,7 +610,7 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles }) {
 }
 
 // --- Profiles Tab ---
-function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editingProfile, setEditingProfile, customizingProfile, setCustomizingProfile, onDeleteProfile, showToast }) {
+function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editingProfile, setEditingProfile, onDeleteProfile, showToast }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -522,7 +666,9 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
                     <div>
                       <h3 className="font-bold text-gray-900">{profile.name}</h3>
                       <p className="text-xs text-gray-500">
-                        Ages {profile.ageRange?.min || 4}&ndash;{profile.ageRange?.max || 18}
+                        {profile.ageRange?.min === profile.ageRange?.max
+                          ? `Age ${profile.ageRange?.min || 4}`
+                          : `Ages ${profile.ageRange?.min || 4}\u2013${profile.ageRange?.max || 18}`}
                       </p>
                     </div>
                   </div>
@@ -600,7 +746,7 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
 
                 {/* Customize button */}
                 <button
-                  onClick={() => setCustomizingProfile(profile)}
+                  onClick={() => { setEditingProfile(profile); setShowEditor(true); }}
                   className="w-full mt-3 pt-3 border-t border-gray-100 text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center justify-center gap-1 py-2 hover:bg-blue-50 rounded-lg transition"
                 >
                   <Settings className="w-3.5 h-3.5" />
@@ -629,21 +775,14 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
         />
       )}
 
-      {customizingProfile && (
-        <KidProfileCustomize
-          profile={customizingProfile}
-          onClose={() => {
-            setCustomizingProfile(null);
-            showToast('Settings saved!');
-          }}
-        />
-      )}
     </div>
   );
 }
 
 // --- Settings Tab ---
 function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavigate }) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   return (
     <div className="space-y-6 max-w-2xl">
       {/* Account Info */}
@@ -661,6 +800,25 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
             <span className="text-sm text-gray-500">Name</span>
             <span className="text-sm font-medium text-gray-900">{user?.name || userData?.name || 'Not set'}</span>
           </div>
+        </div>
+        <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
+          <p className="text-xs text-gray-500">
+            To change your email or password, visit{' '}
+            <a
+              href="https://getsafefamily.com/account"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-700 underline"
+            >
+              getsafefamily.com/account
+            </a>
+          </p>
+          <a
+            href="/forgot-password"
+            className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Change Password
+          </a>
         </div>
       </div>
 
@@ -705,7 +863,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
           </a>
         ) : (
           <p className="text-sm text-gray-500">
-            To manage or cancel, contact jeremiah@getsafefamily.com
+            To manage or cancel, contact support@getsafefamily.com
           </p>
         )}
       </div>
@@ -751,22 +909,36 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
         )}
       </div>
 
-      {/* Support */}
+      {/* Help & Support */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
           <Mail className="w-5 h-5 text-gray-400" />
-          Support
+          Help & Support
         </h3>
-        <p className="text-sm text-gray-500 mb-3">
-          Need help? Reach out and we will get back to you within 24 hours.
-        </p>
-        <a
-          href="mailto:jeremiah@getsafefamily.com"
-          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
-        >
-          <Mail className="w-4 h-4" />
-          jeremiah@getsafefamily.com
-        </a>
+        <div className="space-y-3">
+          <a
+            href="/faq"
+            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            <ChevronRight className="w-4 h-4" />
+            FAQ
+          </a>
+          <a
+            href="mailto:support@getsafefamily.com"
+            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            <Mail className="w-4 h-4" />
+            Email Support
+          </a>
+          <a
+            href="mailto:safety@getsafefamily.com"
+            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            <ShieldAlert className="w-4 h-4" />
+            Report a Safety Issue
+          </a>
+        </div>
+        <p className="text-xs text-gray-400 mt-4">We typically respond within 24 hours</p>
       </div>
 
       {/* Sign Out */}
@@ -777,6 +949,54 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
         <LogOut className="w-4 h-4" />
         Sign Out
       </button>
+
+      {/* Danger Zone */}
+      <div className="bg-white rounded-2xl border-2 border-red-200 shadow-sm p-6">
+        <h3 className="font-bold text-red-600 mb-2 flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-red-500" />
+          Danger Zone
+        </h3>
+        <p className="text-sm text-gray-500 mb-4">
+          Permanently delete your account and all associated data. This action cannot be undone.
+        </p>
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
+        >
+          Delete my account and all data
+        </button>
+      </div>
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-lg">Delete Account?</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-2">
+              This action is <span className="font-semibold">irreversible</span>. All your data, kid profiles, search history, and settings will be permanently deleted.
+            </p>
+            <p className="text-sm text-gray-600 mb-6">
+              To delete your account, please contact{' '}
+              <a href="mailto:support@getsafefamily.com" className="text-blue-600 hover:text-blue-700 font-medium">
+                support@getsafefamily.com
+              </a>
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -795,8 +1015,13 @@ export default function AdminDashboard() {
   // Editor state
   const [showEditor, setShowEditor] = useState(false);
   const [editingProfile, setEditingProfile] = useState(null);
-  const [customizingProfile, setCustomizingProfile] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [activityShowBlocked, setActivityShowBlocked] = useState(false);
+
+  // Reset blocked filter flag when leaving activity tab
+  useEffect(() => {
+    if (activeTab !== 'activity') setActivityShowBlocked(false);
+  }, [activeTab]);
 
   // Convex mutations
   const deleteProfileMutation = useMutation(api.kidProfiles.deleteProfile);
@@ -1094,6 +1319,7 @@ export default function AdminDashboard() {
             searchHistory={searchHistory}
             blockedSearches={blockedSearches}
             onNavigate={setActiveTab}
+            onShowBlocked={() => setActivityShowBlocked(true)}
             onCopyCode={copyFamilyCode}
             codeCopied={copiedCode}
           />
@@ -1105,6 +1331,7 @@ export default function AdminDashboard() {
             searchHistory={searchHistory}
             blockedSearches={blockedSearches}
             kidProfiles={kidProfiles}
+            initialShowBlocked={activityShowBlocked}
           />
         )}
 
@@ -1117,8 +1344,6 @@ export default function AdminDashboard() {
             setShowEditor={setShowEditor}
             editingProfile={editingProfile}
             setEditingProfile={setEditingProfile}
-            customizingProfile={customizingProfile}
-            setCustomizingProfile={setCustomizingProfile}
             onDeleteProfile={handleDeleteProfile}
             showToast={showToast}
           />
