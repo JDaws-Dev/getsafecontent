@@ -167,32 +167,38 @@ export const performResearch = internalAction({
 
       if (!domain) continue;
 
-      // Fetch the page HTML
+      // Fetch the page HTML — fallback to Serper snippet if fetch fails
       console.log(`[research] Fetching: ${url}`);
       let textContent = "";
       try {
         const pageResponse = await fetch(url, {
           headers: {
             "User-Agent":
-              "Mozilla/5.0 (compatible; SafeNet/1.0; +https://getsafefamily.com)",
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
           },
-          signal: AbortSignal.timeout(8000),
+          redirect: "follow",
         });
 
-        if (!pageResponse.ok) continue;
-
-        const html = await pageResponse.text();
-        textContent = stripHtml(html).slice(0, 2000);
+        if (pageResponse.ok) {
+          const html = await pageResponse.text();
+          textContent = stripHtml(html).slice(0, 2000);
+        }
       } catch (err) {
-        console.error(`[research] Failed to fetch ${url}:`, err);
-        continue;
+        console.log(`[research] Fetch failed for ${url}, using snippet`);
       }
 
-      // Skip if too little content
-      console.log(`[research] Extracted ${textContent.length} chars from ${domain}`);
+      // Fallback to Serper's snippet if page fetch failed or returned little
       if (textContent.length < 200) {
-        console.log(`[research] Skipping ${domain} — too little content`);
-        continue;
+        const snippet = result.snippet || result.description || "";
+        if (snippet.length > 50) {
+          textContent = snippet;
+          console.log(`[research] Using Serper snippet for ${domain} (${snippet.length} chars)`);
+        } else {
+          console.log(`[research] Skipping ${domain} — no content available`);
+          continue;
+        }
+      } else {
+        console.log(`[research] Extracted ${textContent.length} chars from ${domain}`);
       }
 
       // Step 3: Rewrite with OpenAI

@@ -571,16 +571,14 @@ function ResearchCard({ source }) {
         </p>
       </div>
 
-      {/* Footer with reading level and source */}
+      {/* Footer */}
       <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
-            <BookOpen className="w-3 h-3" />
-            Written for {source.grade}
-          </span>
-        </div>
+        <span className="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+          <Shield className="w-3 h-3 text-green-500" />
+          Verified source · {source.siteDomain}
+        </span>
         <span className="text-xs text-gray-400 dark:text-gray-500">
-          Source: {source.siteDomain}
+          Summarized by SafeNet
         </span>
       </div>
     </div>
