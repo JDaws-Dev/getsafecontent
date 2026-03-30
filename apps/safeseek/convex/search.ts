@@ -438,7 +438,7 @@ export const expandSection = action({
         messages: [
           {
             role: "system",
-            content: `You expand on topics for kids. ${readingLevel} Give specific facts, dates, names, and examples. Be thorough but clear. Write 4-6 paragraphs. Plain text only, no markdown. No URLs.`,
+            content: `You expand on topics for kids. ${readingLevel} Give specific facts, dates, names, and examples. Be thorough but clear. Write 4-6 detailed paragraphs. Plain text only, no markdown. No URLs. IMPORTANT: Always end with a complete sentence. Never stop mid-word or mid-sentence.`,
           },
           {
             role: "user",
@@ -446,7 +446,7 @@ export const expandSection = action({
           },
         ],
         temperature: 0,
-        max_tokens: 600,
+        max_tokens: 1000,
       }),
     });
 
