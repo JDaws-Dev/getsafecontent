@@ -1326,18 +1326,20 @@ export default function KidSearch() {
                 <Sparkles className="w-4 h-4" />
                 Learn
               </button>
-              <button
-                type="button"
-                onClick={() => handleModeToggle('images')}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
-                  searchMode === 'images'
-                    ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
-                    : 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
-              >
-                <ImageIcon className="w-4 h-4" />
-                Images
-              </button>
+              {selectedProfile?.allowImageSearch !== false && (
+                <button
+                  type="button"
+                  onClick={() => handleModeToggle('images')}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
+                    searchMode === 'images'
+                      ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                      : 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  <ImageIcon className="w-4 h-4" />
+                  Images
+                </button>
+              )}
             </div>
           </form>
         </div>
@@ -1557,9 +1559,33 @@ export default function KidSearch() {
               </div>
             )}
 
-            {/* Image Gallery */}
-            {images.length > 0 && (
-              <ImageGallery images={images} onImageClick={handleImageClick} />
+            {/* Inline images — just 2 in Learn mode (full gallery in Images tab) */}
+            {images.length > 0 && selectedProfile?.allowImageSearch !== false && (
+              <div className="flex gap-3">
+                {images.slice(0, 2).map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleImageClick(index)}
+                    className="flex-1 max-w-[200px] group relative rounded-xl overflow-hidden shadow-sm hover:shadow-md transition bg-gray-100 aspect-[4/3]"
+                  >
+                    <img
+                      src={image.thumbnail || image.url}
+                      alt={image.title || ''}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </button>
+                ))}
+                {images.length > 2 && (
+                  <button
+                    onClick={() => setSearchMode('images')}
+                    className="flex items-center justify-center px-4 py-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition"
+                  >
+                    +{images.length - 2} more →
+                  </button>
+                )}
+              </div>
             )}
 
             {/* Visual Diagram */}

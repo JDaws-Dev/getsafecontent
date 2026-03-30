@@ -18,6 +18,7 @@ import type * as searchQueries from "../searchQueries.js";
 import type * as timeLimits from "../timeLimits.js";
 import type * as topicRequests from "../topicRequests.js";
 import type * as users from "../users.js";
+import type * as warmCache from "../warmCache.js";
 import type * as wikipedia from "../wikipedia.js";
 
 import type {
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   timeLimits: typeof timeLimits;
   topicRequests: typeof topicRequests;
   users: typeof users;
+  warmCache: typeof warmCache;
   wikipedia: typeof wikipedia;
 }>;
 

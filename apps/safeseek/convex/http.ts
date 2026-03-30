@@ -397,6 +397,39 @@ const setSubscriptionStatus = httpAction(async (ctx, request) => {
   }
 });
 
+// ==================== Warm Cache ====================
+
+const warmCache = httpAction(async (ctx, request) => {
+  const url = new URL(request.url);
+  const key = url.searchParams.get("key");
+  const ADMIN_KEY = process.env.ADMIN_KEY || "";
+
+  if (!key || key !== ADMIN_KEY) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    });
+  }
+
+  try {
+    // Schedule the warm cache action (runs async, don't wait)
+    await ctx.runAction(internal.warmCache.warmPopularSearches);
+
+    return new Response(JSON.stringify({ success: true, message: "Cache warming complete" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    });
+  } catch (error) {
+    console.error("[warmCache] Error:", error);
+    return new Response(JSON.stringify({
+      error: error instanceof Error ? error.message : "Unknown error",
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    });
+  }
+});
+
 // ==================== Routes ====================
 
 const http = httpRouter();
@@ -433,6 +466,13 @@ http.route({
   path: "/setSubscriptionStatus",
   method: "GET",
   handler: setSubscriptionStatus,
+});
+
+// Warm cache
+http.route({
+  path: "/warmCache",
+  method: "GET",
+  handler: warmCache,
 });
 
 export default http;

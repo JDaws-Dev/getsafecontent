@@ -214,7 +214,7 @@ export const fetchSerperImages = internalAction({
         body: JSON.stringify({
           q: args.query,
           gl: "us",
-          num: 8,
+          num: 4,
           safe: "active",
         }),
       });
