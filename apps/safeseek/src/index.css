@@ -20,16 +20,16 @@
 }
 
 .dark {
-  /* Dark mode */
-  --bg-primary: #111827;
-  --bg-secondary: #1f2937;
-  --bg-tertiary: #374151;
-  --text-primary: #f9fafb;
-  --text-secondary: #e5e7eb;
-  --text-muted: #9ca3af;
-  --border-color: #374151;
-  --card-bg: #1f2937;
-  --card-border: #374151;
+  /* Dark mode — Notion/VS Code inspired */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #222222;
+  --bg-tertiary: #2d2d2d;
+  --text-primary: #e8e8e8;
+  --text-secondary: #c8c8c8;
+  --text-muted: #888888;
+  --border-color: #333333;
+  --card-bg: #222222;
+  --card-border: #333333;
 }
 
 /* ==================== */
