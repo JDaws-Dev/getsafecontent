@@ -165,7 +165,7 @@ Source: ${wikiContext.source === "simple_wikipedia" ? "Simple English Wikipedia"
 Use this reference to ground your answer in facts. Summarize it in a way appropriate for a ${ageMin}-${ageMax} year old. Do NOT just copy it — rephrase it in a fun, kid-friendly way.`;
     }
 
-    const systemPrompt = `You are SafeNet, a friendly AI tutor for kids aged ${ageMin}-${ageMax}. Content strictness: ${strictness}.
+    const systemPrompt = `You are SafeStudy, a friendly AI tutor for kids aged ${ageMin}-${ageMax}. Content strictness: ${strictness}.
 ${lexileLevel !== "auto" ? `READING LEVEL: ${lexileLevel} grade (override age default).` : ""}
 ${accessibilityNeeds.length > 0 ? `ACCESSIBILITY: ${accessibilityNeeds.join(", ")}.` : ""}
 ${blockedTopics.length > 0 ? `STRICTLY BLOCKED TOPICS — If the query is about ANY of these topics, you MUST return safe:false. No exceptions. Do NOT answer questions about: ${blockedTopics.join(", ")}. This includes educational questions about these topics. Even "how does X work" about a blocked topic must be blocked.` : ""}

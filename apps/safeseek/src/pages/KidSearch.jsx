@@ -222,7 +222,7 @@ function ImageLightbox({ images, initialIndex, onClose }) {
                   ? 'bg-white/15 text-blue-200'
                   : 'bg-white/15 text-cyan-200'
               }`}>
-                {image.source === 'wikipedia' ? 'Wikipedia' : 'SafeNet'}
+                {image.source === 'wikipedia' ? 'Wikipedia' : 'SafeStudy'}
               </span>
             )}
             <span className="text-white/50 text-xs">
@@ -285,7 +285,7 @@ function ImageGallery({ images, onImageClick }) {
                     ? 'bg-white/90 text-blue-700 dark:bg-gray-800/90 dark:text-blue-300'
                     : 'bg-white/90 text-cyan-700 dark:bg-gray-800/90 dark:text-cyan-300'
                 }`}>
-                  {image.source === 'wikipedia' ? 'Wiki' : 'SafeNet'}
+                  {image.source === 'wikipedia' ? 'Wiki' : 'SafeStudy'}
                 </span>
               )}
               {/* Title caption */}
@@ -589,7 +589,7 @@ function ResearchCard({ source }) {
           Verified source · {source.siteDomain}
         </span>
         <span className="text-xs text-gray-400 dark:text-gray-500">
-          Summarized by SafeNet
+          Summarized by SafeStudy
         </span>
       </div>
     </div>
@@ -1143,7 +1143,7 @@ export default function KidSearch() {
           <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
             <Search className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">SafeNet</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">SafeStudy</h1>
           <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">Enter your family code to start searching</p>
 
           {error && (
@@ -1189,7 +1189,7 @@ export default function KidSearch() {
             <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
               <Search className="w-5 h-5 text-white" />
             </div>
-            <span className="font-semibold text-gray-900 dark:text-white text-lg">SafeNet</span>
+            <span className="font-semibold text-gray-900 dark:text-white text-lg">SafeStudy</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -1355,7 +1355,7 @@ export default function KidSearch() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Search className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-gray-900 dark:text-white text-base hidden sm:inline">SafeNet</span>
+            <span className="font-semibold text-gray-900 dark:text-white text-base hidden sm:inline">SafeStudy</span>
             <Shield className="w-4 h-4 text-green-500 dark:text-green-400" />
           </div>
 

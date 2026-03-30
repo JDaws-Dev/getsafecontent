@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /search
 
-Sitemap: https://getsafenet.com/sitemap.xml
+Sitemap: https://getsafestudy.com/sitemap.xml

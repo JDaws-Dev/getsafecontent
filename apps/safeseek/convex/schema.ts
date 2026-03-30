@@ -6,7 +6,7 @@ export default defineSchema({
     name: v.optional(v.string()),
     email: v.optional(v.string()),
 
-    // SafeNet custom fields
+    // SafeStudy custom fields
     familyCode: v.optional(v.string()), // Unique 6-char code for kids to access
     parentPin: v.optional(v.string()), // PIN to protect parent mode (hashed)
     timezone: v.optional(v.string()), // IANA timezone (e.g., "America/New_York")

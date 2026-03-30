@@ -94,7 +94,7 @@ const adminDashboard = httpAction(async (ctx, request) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SafeNet Admin Dashboard</title>
+  <title>SafeStudy Admin Dashboard</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f3f4f6; padding: 24px; }
@@ -124,7 +124,7 @@ const adminDashboard = httpAction(async (ctx, request) => {
 </head>
 <body>
   <div class="container">
-    <h1>SafeNet Admin Dashboard</h1>
+    <h1>SafeStudy Admin Dashboard</h1>
     <p class="subtitle">Real-time overview of all users and search activity</p>
 
     <div class="metrics">

@@ -22,7 +22,7 @@ const features = [
   {
     icon: Volume2,
     title: 'Answers read aloud for early readers',
-    description: 'Kids who are still learning to read don\'t get left behind. SafeNet reads every answer out loud, so they can learn at their own pace without needing your help.',
+    description: 'Kids who are still learning to read don\'t get left behind. SafeStudy reads every answer out loud, so they can learn at their own pace without needing your help.',
   },
   {
     icon: GraduationCap,
@@ -90,56 +90,56 @@ const problems = [
 ];
 
 const comparisonRows = [
-  { feature: 'Age-appropriate filtering', safenet: true, google: false, googleKids: 'Partial' },
-  { feature: 'No ads', safenet: true, google: false, googleKids: false },
-  { feature: 'Direct answers (no links)', safenet: true, google: false, googleKids: false },
-  { feature: 'Parent search visibility', safenet: true, google: false, googleKids: false },
-  { feature: 'Blocked topic controls', safenet: true, google: false, googleKids: 'Partial' },
-  { feature: 'Daily time limits', safenet: true, google: false, googleKids: false },
-  { feature: 'Per-kid profiles', safenet: true, google: false, googleKids: true },
-  { feature: 'AI-powered answers', safenet: true, google: 'Partial', googleKids: false },
-  { feature: 'Voice search', safenet: true, google: true, googleKids: false },
-  { feature: 'Read aloud (text-to-speech)', safenet: true, google: false, googleKids: false },
-  { feature: 'Accessibility adaptations', safenet: true, google: false, googleKids: false },
-  { feature: 'Grade-level reading adjustment', safenet: true, google: false, googleKids: false },
+  { feature: 'Age-appropriate filtering', safestudy: true, google: false, googleKids: 'Partial' },
+  { feature: 'No ads', safestudy: true, google: false, googleKids: false },
+  { feature: 'Direct answers (no links)', safestudy: true, google: false, googleKids: false },
+  { feature: 'Parent search visibility', safestudy: true, google: false, googleKids: false },
+  { feature: 'Blocked topic controls', safestudy: true, google: false, googleKids: 'Partial' },
+  { feature: 'Daily time limits', safestudy: true, google: false, googleKids: false },
+  { feature: 'Per-kid profiles', safestudy: true, google: false, googleKids: true },
+  { feature: 'AI-powered answers', safestudy: true, google: 'Partial', googleKids: false },
+  { feature: 'Voice search', safestudy: true, google: true, googleKids: false },
+  { feature: 'Read aloud (text-to-speech)', safestudy: true, google: false, googleKids: false },
+  { feature: 'Accessibility adaptations', safestudy: true, google: false, googleKids: false },
+  { feature: 'Grade-level reading adjustment', safestudy: true, google: false, googleKids: false },
 ];
 
 const faqs = [
   {
-    question: 'What ages is SafeNet designed for?',
-    answer: 'SafeNet works for kids ages 4-16. The AI adjusts reading level and content depth based on each child\'s age. Younger kids get simpler explanations with basic vocabulary, while older kids get more detailed, nuanced answers. You set the age for each kid profile, and the AI does the rest.',
+    question: 'What ages is SafeStudy designed for?',
+    answer: 'SafeStudy works for kids ages 4-16. The AI adjusts reading level and content depth based on each child\'s age. Younger kids get simpler explanations with basic vocabulary, while older kids get more detailed, nuanced answers. You set the age for each kid profile, and the AI does the rest.',
   },
   {
     question: 'Is it actually safe? How do you filter content?',
-    answer: 'Every search query and every answer passes through multiple layers of AI filtering before your child sees anything. We block inappropriate topics, filter out harmful content, and adjust language to be age-appropriate. You also control which topic categories are allowed or blocked for each child. No system is 100% perfect, but SafeNet is built from the ground up for safety rather than having it bolted on as an afterthought.',
+    answer: 'Every search query and every answer passes through multiple layers of AI filtering before your child sees anything. We block inappropriate topics, filter out harmful content, and adjust language to be age-appropriate. You also control which topic categories are allowed or blocked for each child. No system is 100% perfect, but SafeStudy is built from the ground up for safety rather than having it bolted on as an afterthought.',
   },
   {
     question: 'Does it use AI? Will it make things up?',
-    answer: 'Yes, SafeNet uses AI to generate direct, kid-friendly answers. But unlike chatbots, our answers are grounded in verified sources like Wikipedia and educational databases. We prioritize factual accuracy and clearly present information at an appropriate level. If the AI isn\'t confident in an answer, it says so rather than guessing.',
+    answer: 'Yes, SafeStudy uses AI to generate direct, kid-friendly answers. But unlike chatbots, our answers are grounded in verified sources like Wikipedia and educational databases. We prioritize factual accuracy and clearly present information at an appropriate level. If the AI isn\'t confident in an answer, it says so rather than guessing.',
   },
   {
-    question: 'Can my kid bypass SafeNet and use regular Google?',
-    answer: 'SafeNet is a standalone search experience at its own URL. Your child uses SafeNet instead of Google. You can block Google and other search engines using Screen Time (Apple), Family Link (Google), or your router settings. SafeNet becomes their only way to search the internet.',
+    question: 'Can my kid bypass SafeStudy and use regular Google?',
+    answer: 'SafeStudy is a standalone search experience at its own URL. Your child uses SafeStudy instead of Google. You can block Google and other search engines using Screen Time (Apple), Family Link (Google), or your router settings. SafeStudy becomes their only way to search the internet.',
   },
   {
-    question: 'Can my child talk to SafeNet?',
-    answer: 'Yes! SafeNet includes voice search so kids can speak their questions instead of typing. This is especially helpful for younger children who are still learning to type, or anyone who prefers asking questions out loud. SafeNet can also read answers aloud using text-to-speech, making it a truly hands-free research experience.',
+    question: 'Can my child talk to SafeStudy?',
+    answer: 'Yes! SafeStudy includes voice search so kids can speak their questions instead of typing. This is especially helpful for younger children who are still learning to type, or anyone who prefers asking questions out loud. SafeStudy can also read answers aloud using text-to-speech, making it a truly hands-free research experience.',
   },
   {
     question: 'Does it work for kids with learning differences?',
-    answer: 'Absolutely. SafeNet includes built-in accessibility adaptations for dyslexia (OpenDyslexic font, increased spacing), ADHD (reduced distractions, focused layouts), ESL learners (simplified language), and low vision (larger text, high contrast). These can be enabled per kid profile so each child gets an experience tailored to how they learn best.',
+    answer: 'Absolutely. SafeStudy includes built-in accessibility adaptations for dyslexia (OpenDyslexic font, increased spacing), ADHD (reduced distractions, focused layouts), ESL learners (simplified language), and low vision (larger text, high contrast). These can be enabled per kid profile so each child gets an experience tailored to how they learn best.',
   },
   {
     question: 'Can I set a specific reading level?',
-    answer: 'Yes. Parents can set a specific grade level (K through 12) for each kid profile. SafeNet adjusts vocabulary, sentence complexity, and explanation depth to match. A kindergartner gets simple words and short sentences, while a 10th grader gets detailed, nuanced explanations. Kids can also tap "Make it simpler" or "More details" to adjust answers on the fly.',
+    answer: 'Yes. Parents can set a specific grade level (K through 12) for each kid profile. SafeStudy adjusts vocabulary, sentence complexity, and explanation depth to match. A kindergartner gets simple words and short sentences, while a 10th grader gets detailed, nuanced explanations. Kids can also tap "Make it simpler" or "More details" to adjust answers on the fly.',
   },
   {
     question: 'What about images? Can they search for images?',
-    answer: 'Yes! SafeNet includes Google Images integration with SafeSearch filtering built in, so kids see real image results that are filtered for safety. Answers also include visual diagrams and flowcharts for concepts like the water cycle or how volcanoes work, making learning more visual and engaging.',
+    answer: 'Yes! SafeStudy includes Google Images integration with SafeSearch filtering built in, so kids see real image results that are filtered for safety. Answers also include visual diagrams and flowcharts for concepts like the water cycle or how volcanoes work, making learning more visual and engaging.',
   },
   {
     question: 'How is this different from Google SafeSearch?',
-    answer: 'Google SafeSearch is a basic filter that misses a lot. It still shows links to external websites, still has ads, and still lets kids click through to content you can\'t control. SafeNet is fundamentally different: kids never leave the app, never click external links, and every answer is generated specifically for their age level. Plus, you see every search they make.',
+    answer: 'Google SafeSearch is a basic filter that misses a lot. It still shows links to external websites, still has ads, and still lets kids click through to content you can\'t control. SafeStudy is fundamentally different: kids never leave the app, never click external links, and every answer is generated specifically for their age level. Plus, you see every search they make.',
   },
 ];
 
@@ -153,7 +153,7 @@ const steps = [
   {
     number: '2',
     title: 'Hand them the device',
-    description: 'They type or speak any question. SafeNet filters every answer through your rules before they see a single word. No links to click, no danger to find.',
+    description: 'They type or speak any question. SafeStudy filters every answer through your rules before they see a single word. No links to click, no danger to find.',
     icon: Search,
   },
   {
@@ -166,17 +166,17 @@ const steps = [
 
 const testimonials = [
   {
-    quote: 'Before SafeNet, I was my daughter\'s personal search engine. She\'d ask me 20 questions a day and I\'d have to screen every result. Now she searches on her own and I actually get things done — without worrying about what she\'ll find.',
+    quote: 'Before SafeStudy, I was my daughter\'s personal search engine. She\'d ask me 20 questions a day and I\'d have to screen every result. Now she searches on her own and I actually get things done — without worrying about what she\'ll find.',
     name: 'Sarah M.',
     role: 'Mom of 2',
   },
   {
-    quote: 'My son Googled something innocent for a school project and the results were horrifying. I took away his internet access for a month. With SafeNet, he got it back — and I finally stopped dreading homework time.',
+    quote: 'My son Googled something innocent for a school project and the results were horrifying. I took away his internet access for a month. With SafeStudy, he got it back — and I finally stopped dreading homework time.',
     name: 'David R.',
     role: 'Dad of 3',
   },
   {
-    quote: 'My daughter has ADHD and would melt down trying to read long Google results. SafeNet gives her answers at her level, reads them out loud, and she actually finishes her research now. She told me, "Mom, I like learning again." I cried.',
+    quote: 'My daughter has ADHD and would melt down trying to read long Google results. SafeStudy gives her answers at her level, reads them out loud, and she actually finishes her research now. She told me, "Mom, I like learning again." I cried.',
     name: 'Jennifer K.',
     role: 'Homeschool Mom',
   },
@@ -269,7 +269,7 @@ export default function LandingPage() {
               <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
                 <Search className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-[#1a1a2e]">SafeNet</span>
+              <span className="text-xl font-bold text-[#1a1a2e]">SafeStudy</span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">
               <a
@@ -315,7 +315,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
-                They explore freely. You sleep at night. SafeNet filters every answer before your child sees it — no links, no ads, no danger.
+                They explore freely. You sleep at night. SafeStudy filters every answer before your child sees it — no links, no ads, no danger.
               </p>
 
               <div className="flex flex-col sm:flex-row flex-wrap justify-center lg:justify-start gap-2 sm:gap-x-6 text-sm text-gray-500 mb-8">
@@ -434,7 +434,7 @@ export default function LandingPage() {
               </h3>
             </div>
             <p className="text-blue-100 text-sm sm:text-base max-w-xl mx-auto">
-              That's SafeNet. No external links. No ads. No algorithm deciding what your child sees. Just direct, age-appropriate answers — filtered through your rules.
+              That's SafeStudy. No external links. No ads. No algorithm deciding what your child sees. Just direct, age-appropriate answers — filtered through your rules.
             </p>
           </div>
         </div>
@@ -580,7 +580,7 @@ export default function LandingPage() {
               </div>
               <div className="flex-1 bg-white/20 rounded-lg px-4 py-1.5 flex items-center gap-2">
                 <Lock className="w-3.5 h-3.5 text-white/70" />
-                <span className="text-white/90 text-sm font-medium">safenet.com/search</span>
+                <span className="text-white/90 text-sm font-medium">safestudy.com/search</span>
               </div>
             </div>
 
@@ -612,7 +612,7 @@ export default function LandingPage() {
                 <div className="flex items-start gap-3">
                   <Sparkles className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-blue-800 mb-2">SafeNet Answer</p>
+                    <p className="text-sm font-semibold text-blue-800 mb-2">SafeStudy Answer</p>
                     <p className="text-sm text-blue-700 leading-relaxed">
                       Volcanoes erupt when hot melted rock called <strong>magma</strong> rises up from deep inside the Earth.
                       Think of it like shaking a soda bottle — pressure builds up until it has to escape!
@@ -677,7 +677,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 sm:mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
-              How SafeNet compares
+              How SafeStudy compares
             </h2>
             <p className="text-gray-600 text-lg max-w-xl mx-auto">
               There's nothing else like it. Here's why.
@@ -694,7 +694,7 @@ export default function LandingPage() {
                       <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
                         <Search className="w-4 h-4 text-white" />
                       </div>
-                      <span className="font-bold text-[#1a1a2e]">SafeNet</span>
+                      <span className="font-bold text-[#1a1a2e]">SafeStudy</span>
                     </div>
                   </th>
                   <th className="px-4 py-4 text-center min-w-[100px]">
@@ -719,7 +719,7 @@ export default function LandingPage() {
                 {comparisonRows.map((row, i) => (
                   <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
                     <td className="px-4 py-3 font-medium text-[#1a1a2e]">{row.feature}</td>
-                    <ComparisonCell value={row.safenet} />
+                    <ComparisonCell value={row.safestudy} />
                     <ComparisonCell value={row.google} />
                     <ComparisonCell value={row.googleKids} />
                   </tr>
@@ -747,7 +747,7 @@ export default function LandingPage() {
                 </span>
               </div>
               <div className="text-center mb-6 pt-2">
-                <h3 className="text-lg font-bold text-[#1a1a2e] mb-1">SafeNet</h3>
+                <h3 className="text-lg font-bold text-[#1a1a2e] mb-1">SafeStudy</h3>
                 <p className="text-gray-500 text-sm mb-4">Total peace of mind for every search</p>
                 <div>
                   <span className="text-5xl font-extrabold text-[#1a1a2e]">$4.99</span>
@@ -801,7 +801,7 @@ export default function LandingPage() {
 
               <ul className="space-y-3 mb-6">
                 {[
-                  'SafeNet \u2014 Every search result filtered for their age',
+                  'SafeStudy \u2014 Every search result filtered for their age',
                   'SafeTunes \u2014 They hear only music you\'ve approved',
                   'SafeTube \u2014 They watch only channels you\'ve approved',
                   'SafeReads \u2014 Know what\'s in a book before they read it',
@@ -920,7 +920,7 @@ export default function LandingPage() {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
                 <Search className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-white">SafeNet</span>
+              <span className="font-bold text-white">SafeStudy</span>
               <span className="text-white/40 text-sm ml-2">by Safe Family</span>
             </div>
 

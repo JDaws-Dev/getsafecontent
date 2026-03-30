@@ -164,7 +164,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
                 <span className="text-sm font-medium text-white/80">Family Code</span>
               </div>
               <p className="text-2xl font-mono font-bold tracking-wider">{userData.familyCode}</p>
-              <p className="text-xs text-white/60 mt-1">Share this code so your kids can access SafeNet</p>
+              <p className="text-xs text-white/60 mt-1">Share this code so your kids can access SafeStudy</p>
             </div>
             <button
               onClick={onCopyCode}
@@ -252,7 +252,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
             <div>
               <h3 className="font-bold text-gray-900 text-lg mb-1">Getting Started</h3>
               <p className="text-sm text-gray-500 mb-4">
-                Set up SafeNet in just a few steps.
+                Set up SafeStudy in just a few steps.
               </p>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
@@ -888,7 +888,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
                   ? 'Premium'
                   : 'Free Trial'}
             </p>
-            <p className="text-sm text-gray-500">SafeNet</p>
+            <p className="text-sm text-gray-500">SafeStudy</p>
           </div>
           <span
             className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -926,7 +926,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
           Family Code
         </h3>
         <p className="text-sm text-gray-500 mb-4">
-          Share this code with your kids so they can access SafeNet on their own devices. Each kid selects their profile after entering the code.
+          Share this code with your kids so they can access SafeStudy on their own devices. Each kid selects their profile after entering the code.
         </p>
         {userData?.familyCode ? (
           <div className="flex items-center gap-3">
@@ -1184,7 +1184,7 @@ export default function AdminDashboard() {
 
   // Show onboarding wizard for first-time users
   const showOnboarding = kidProfiles && kidProfiles.length === 0
-    && !localStorage.getItem('safenet_onboarding_complete');
+    && !localStorage.getItem('safestudy_onboarding_complete');
 
   if (showOnboarding) {
     return (
@@ -1192,7 +1192,7 @@ export default function AdminDashboard() {
         userId={userData._id}
         familyCode={userData.familyCode}
         onComplete={(action) => {
-          localStorage.setItem('safenet_onboarding_complete', 'true');
+          localStorage.setItem('safestudy_onboarding_complete', 'true');
           if (action === 'trySearch') {
             navigate(`/search/${userData.familyCode}`);
           } else if (action === 'addKid') {
@@ -1216,7 +1216,7 @@ export default function AdminDashboard() {
                 <Search className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-gray-900 text-sm sm:text-base">SafeNet</h1>
+                <h1 className="font-bold text-gray-900 text-sm sm:text-base">SafeStudy</h1>
                 <p className="text-[11px] text-gray-500 leading-tight">Parent Dashboard</p>
               </div>
             </div>

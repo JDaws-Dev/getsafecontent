@@ -55,7 +55,7 @@ export const fetchWikipediaContent = internalAction({
       try {
         const searchUrl = `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodedQuery}&limit=1&format=json`;
         const searchResp = await fetch(searchUrl, {
-          headers: { "User-Agent": "SafeNet/1.0 (kid-safe search engine)" },
+          headers: { "User-Agent": "SafeStudy/1.0 (kid-safe search engine)" },
         });
         if (searchResp.ok) {
           const searchData = await searchResp.json();
@@ -96,7 +96,7 @@ export const fetchWikipediaContent = internalAction({
 async function fetchWikiSummary(url: string): Promise<any | null> {
   try {
     const response = await fetch(url, {
-      headers: { "User-Agent": "SafeNet/1.0 (kid-safe search engine)" },
+      headers: { "User-Agent": "SafeStudy/1.0 (kid-safe search engine)" },
     });
     if (!response.ok) return null;
     const data = await response.json();
@@ -113,7 +113,7 @@ async function fetchWikimediaImages(
   topic: string
 ): Promise<Array<{ url: string; width: number; height: number }>> {
   const images: Array<{ url: string; width: number; height: number }> = [];
-  const UA = { "User-Agent": "SafeNet/1.0 (kid-safe search engine)" };
+  const UA = { "User-Agent": "SafeStudy/1.0 (kid-safe search engine)" };
 
   // Step 1: Get image file names from the Wikipedia article itself
   try {

@@ -17,7 +17,7 @@ export default {
           'peach-start': '#F5A962',
           'peach-end': '#E88B6A',
         },
-        // SafeNet accent (blue/cyan for search/explore theme)
+        // SafeStudy accent (blue/cyan for search/explore theme)
         accent: {
           50: '#eff6ff',
           100: '#dbeafe',

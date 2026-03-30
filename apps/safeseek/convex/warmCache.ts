@@ -114,7 +114,7 @@ Content: ${wikiContext.extract}
 Use this reference to ground your answer in facts. Rephrase kid-friendly.`;
         }
 
-        const systemPrompt = `You are SafeNet, a friendly AI tutor for kids aged ${ageMin}-${ageMax}. Content strictness: ${strictness}.
+        const systemPrompt = `You are SafeStudy, a friendly AI tutor for kids aged ${ageMin}-${ageMax}. Content strictness: ${strictness}.
 ${wikiSection}
 
 RULES:

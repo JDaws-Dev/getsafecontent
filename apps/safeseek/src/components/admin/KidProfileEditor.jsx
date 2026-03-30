@@ -281,7 +281,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                   <Shield className="w-4 h-4 text-red-500" />
                   <label className="text-sm font-medium text-gray-700">Blocked Topics</label>
                 </div>
-                <p className="text-xs text-gray-500 mb-2">SafeNet won't show results about these. Kids can request access if enabled below.</p>
+                <p className="text-xs text-gray-500 mb-2">SafeStudy won't show results about these. Kids can request access if enabled below.</p>
                 <div className="grid grid-cols-1 gap-1">
                   {BLOCKED_TOPICS.map((topic) => (
                     <label key={topic.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition text-sm ${blockedTopics.includes(topic.id) ? 'bg-red-50 border border-red-200' : 'bg-gray-50 border border-gray-100'}`}>
@@ -328,7 +328,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="w-4 h-4 text-blue-500" />
-                  <label className="text-sm font-medium text-gray-700">Instructions for SafeNet</label>
+                  <label className="text-sm font-medium text-gray-700">Instructions for SafeStudy</label>
                 </div>
                 <textarea
                   value={customInstructions}

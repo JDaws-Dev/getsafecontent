@@ -16,7 +16,7 @@ export default function ResetPasswordPage() {
 
   // Pre-fill email from forgot password flow
   useEffect(() => {
-    const savedEmail = localStorage.getItem('safenet_reset_email');
+    const savedEmail = localStorage.getItem('safestudy_reset_email');
     if (savedEmail) {
       setEmail(savedEmail);
     }
@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
         return;
       }
 
-      localStorage.removeItem('safenet_reset_email');
+      localStorage.removeItem('safestudy_reset_email');
       setSuccess(true);
 
       // Redirect to admin after a moment
@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
               <Search className="w-5 h-5 text-white" />
             </div>
-            <span className="font-semibold text-gray-900">SafeNet</span>
+            <span className="font-semibold text-gray-900">SafeStudy</span>
           </Link>
         </header>
 
@@ -93,7 +93,7 @@ export default function ResetPasswordPage() {
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
             <Search className="w-5 h-5 text-white" />
           </div>
-          <span className="font-semibold text-gray-900">SafeNet</span>
+          <span className="font-semibold text-gray-900">SafeStudy</span>
         </Link>
       </header>
 

@@ -99,7 +99,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
               <h3 className="font-semibold text-gray-900 text-sm">Blocked Topics</h3>
             </div>
             <p className="text-xs text-gray-500 mb-3">
-              SafeNet will never show results about these topics.
+              SafeStudy will never show results about these topics.
             </p>
             <div className="grid grid-cols-1 gap-1.5">
               {BLOCKED_TOPIC_OPTIONS.map((topic) => (
@@ -146,10 +146,10 @@ export default function KidProfileCustomize({ profile, onClose }) {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <MessageSquare className="w-4 h-4 text-blue-500" />
-              <h3 className="font-semibold text-gray-900 text-sm">Instructions for SafeNet</h3>
+              <h3 className="font-semibold text-gray-900 text-sm">Instructions for SafeStudy</h3>
             </div>
             <p className="text-xs text-gray-500 mb-2">
-              Tell SafeNet anything about your child that would help it give better answers.
+              Tell SafeStudy anything about your child that would help it give better answers.
             </p>
             <textarea
               value={customInstructions}
@@ -188,7 +188,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
               <h3 className="font-semibold text-gray-900 text-sm">Reading Level</h3>
             </div>
             <p className="text-xs text-gray-500 mb-2">
-              What grade does your child read at? SafeNet adjusts answers to match.
+              What grade does your child read at? SafeStudy adjusts answers to match.
             </p>
             <select
               value={lexileLevel}
@@ -219,7 +219,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
               <h3 className="font-semibold text-gray-900 text-sm">Accessibility</h3>
             </div>
             <p className="text-xs text-gray-500 mb-3">
-              SafeNet adapts answers for different learning needs.
+              SafeStudy adapts answers for different learning needs.
             </p>
             <div className="grid grid-cols-1 gap-1.5">
               {[

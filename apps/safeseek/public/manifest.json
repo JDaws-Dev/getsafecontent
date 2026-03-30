@@ -1,6 +1,6 @@
 {
-  "name": "SafeNet",
-  "short_name": "SafeNet",
+  "name": "SafeStudy",
+  "short_name": "SafeStudy",
   "description": "Kid-safe AI search engine",
   "start_url": "/",
   "display": "standalone",
