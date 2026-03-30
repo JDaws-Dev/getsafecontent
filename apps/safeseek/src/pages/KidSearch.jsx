@@ -421,7 +421,7 @@ function ReadAloudButton({ text, className = '', iconSize = 'w-4 h-4' }) {
 }
 
 // ========== Expandable Section — "Read more" expands inline ==========
-function ExpandableSection({ content, heading, rootQuery, borderColor, onDeepDive, performSearch, kidProfileId }) {
+function ExpandableSection({ content, heading, rootQuery, borderColor, onDeepDive, expandAction, kidProfileId }) {
   const [expanded, setExpanded] = useState(false);
   const [expandedContent, setExpandedContent] = useState('');
   const [loading, setLoading] = useState(false);
@@ -437,23 +437,14 @@ function ExpandableSection({ content, heading, rootQuery, borderColor, onDeepDiv
     }
     setLoading(true);
     try {
-      const result = await performSearch({
+      const result = await expandAction({
         kidProfileId,
-        query: `Tell me everything about ${rootQuery} ${heading}. Give a very detailed, comprehensive answer with specific facts, dates, names, and examples. Be thorough.`,
+        topic: rootQuery,
+        subtopic: heading,
+        currentContent: content,
       });
-      // Combine answer + all sections for maximum detail
-      const parts = [];
-      if (result?.answer) parts.push(stripMarkdown(result.answer));
-      if (result?.sections?.length > 0) {
-        for (const s of result.sections) {
-          parts.push(`${s.heading}\n${stripMarkdown(s.content)}`);
-        }
-      }
-      if (result?.funFacts?.length > 0) {
-        parts.push('Fun facts: ' + result.funFacts.map(f => stripMarkdown(f)).join(' • '));
-      }
-      if (parts.length > 0) {
-        setExpandedContent(parts.join('\n\n'));
+      if (result?.content) {
+        setExpandedContent(stripMarkdown(result.content));
       }
       setExpanded(true);
     } catch {
@@ -758,6 +749,7 @@ export default function KidSearch() {
   const searchInputRef = useRef(null);
   const performSearch = useAction(api.search.searchFromKid);
   const performResearch = useAction(api.research.researchFromKid);
+  const expandSection = useAction(api.search.expandSection);
   const createTopicRequest = useMutation(api.topicRequests.createRequest);
 
   // Track whether we already auto-searched from URL params
@@ -1961,7 +1953,7 @@ export default function KidSearch() {
                         rootQuery={rootQuery}
                         borderColor={borderColor}
                         onDeepDive={(q) => handleSuggestionClick(q)}
-                        performSearch={performSearch}
+                        expandAction={expandSection}
                         kidProfileId={selectedProfile?._id}
                       />
                     </div>

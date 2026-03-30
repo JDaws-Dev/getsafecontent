@@ -402,3 +402,56 @@ export const searchFromKid = action({
     return result;
   },
 });
+
+/**
+ * Lightweight "expand" action — just gets more detail on a subtopic.
+ * No Wikipedia, no images, no cache. Fast and focused.
+ */
+export const expandSection = action({
+  args: {
+    kidProfileId: v.id("kidProfiles"),
+    topic: v.string(),
+    subtopic: v.string(),
+    currentContent: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const kidProfile = await ctx.runQuery(api.kidProfiles.getProfile, {
+      kidProfileId: args.kidProfileId,
+    });
+    if (!kidProfile) throw new Error("Profile not found");
+
+    const age = kidProfile.ageRange?.min || 10;
+    const lexile = kidProfile.lexileLevel || "auto";
+    const readingLevel = lexile !== "auto" ? `Write at a ${lexile} grade reading level.` : `Write for a ${age} year old.`;
+
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You expand on topics for kids. ${readingLevel} Give specific facts, dates, names, and examples. Be thorough but clear. Write 4-6 paragraphs. Plain text only, no markdown. No URLs.`,
+          },
+          {
+            role: "user",
+            content: `The topic is "${args.topic}". I already know this about "${args.subtopic}": "${args.currentContent}". Tell me much more about ${args.subtopic}. Go deeper with specific details I don't already know.`,
+          },
+        ],
+        temperature: 0,
+        max_tokens: 600,
+      }),
+    });
+
+    if (!response.ok) throw new Error("OpenAI error");
+    const data = await response.json();
+    return { content: data.choices?.[0]?.message?.content || "" };
+  },
+});
