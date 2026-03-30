@@ -422,7 +422,19 @@ export const expandSection = action({
 
     const age = kidProfile.ageRange?.min || 10;
     const lexile = kidProfile.lexileLevel || "auto";
-    const readingLevel = lexile !== "auto" ? `Write at a ${lexile} grade reading level.` : `Write for a ${age} year old.`;
+    const accessibilityNeeds = kidProfile.accessibilityNeeds || [];
+
+    let readingInstruction;
+    if (lexile !== "auto") {
+      readingInstruction = `CRITICAL: Write at a ${lexile} grade reading level. A 2nd grader needs very simple words and short sentences (5-8 words). A 12th grader can handle advanced vocabulary. Match the grade level EXACTLY.`;
+    } else {
+      readingInstruction = `Write for a ${age} year old child.`;
+    }
+
+    let accessibilityInstruction = "";
+    if (accessibilityNeeds.includes("dyslexia")) accessibilityInstruction += " Use short sentences under 15 words. Use simple, common words.";
+    if (accessibilityNeeds.includes("adhd")) accessibilityInstruction += " Lead with the most interesting fact. Keep paragraphs very short.";
+    if (accessibilityNeeds.includes("esl")) accessibilityInstruction += " Use simple vocabulary. Define technical terms in parentheses.";
 
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
@@ -438,7 +450,7 @@ export const expandSection = action({
         messages: [
           {
             role: "system",
-            content: `You expand on topics for kids. ${readingLevel} Give specific facts, dates, names, and examples. Be thorough but clear. Write 4-6 detailed paragraphs. Plain text only, no markdown. No URLs. IMPORTANT: Always end with a complete sentence. Never stop mid-word or mid-sentence.`,
+            content: `You expand on topics for kids. ${readingInstruction}${accessibilityInstruction} Give specific facts, dates, names, and examples. Be thorough but match the reading level. Write 4-6 paragraphs. Plain text only, no markdown. No URLs. IMPORTANT: Always end with a complete sentence.`,
           },
           {
             role: "user",
