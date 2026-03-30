@@ -670,6 +670,8 @@ export default function KidSearch() {
 
   // Navigation history for back button
   const [searchStack, setSearchStack] = useState([]);
+  // Root query — the original topic (prevents "walt disney early life family background family background")
+  const [rootQuery, setRootQuery] = useState('');
 
   // Autocomplete state
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -896,6 +898,10 @@ export default function KidSearch() {
     // Push current query to back stack (if we had a previous search)
     if (query.trim() && results) {
       setSearchStack((prev) => [...prev.slice(-10), query.trim()]);
+    }
+    // Set root query if this is a fresh search (not from a section "learn more" click)
+    if (!rootQuery || !query.trim().includes(rootQuery)) {
+      setRootQuery(query.trim());
     }
 
     searchStartRef.current = Date.now();
@@ -1869,7 +1875,7 @@ export default function KidSearch() {
                             {index + 1}
                           </span>
                           <button
-                            onClick={() => handleSuggestionClick(query + ' ' + section.heading)}
+                            onClick={() => handleSuggestionClick(rootQuery + ' ' + section.heading)}
                             className="hover:underline text-left flex-1"
                             title={`Search "${section.heading}"`}
                           >
@@ -1885,7 +1891,7 @@ export default function KidSearch() {
                       <div className={`px-5 py-4 border-l-4 ${borderColor}`}>
                         <p className="text-gray-700 dark:text-gray-200 leading-relaxed">{stripMarkdown(section.content)}</p>
                         <button
-                          onClick={() => handleSuggestionClick(query + ' ' + section.heading)}
+                          onClick={() => handleSuggestionClick(rootQuery + ' ' + section.heading)}
                           className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
                         >
                           Learn more about {section.heading} →

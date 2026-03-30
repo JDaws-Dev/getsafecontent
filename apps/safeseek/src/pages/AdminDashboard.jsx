@@ -20,6 +20,7 @@ import {
 const TABS = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'activity', label: 'Activity', icon: Activity },
+  { id: 'requests', label: 'Requests', icon: MessageSquare },
   { id: 'profiles', label: 'Kid Profiles', icon: Users },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
@@ -1116,6 +1117,11 @@ export default function AdminDashboard() {
     userData?._id ? { userId: userData._id } : 'skip'
   );
 
+  const allRequests = useQuery(
+    api.topicRequests.getAllRequests,
+    userData?._id ? { userId: userData._id } : 'skip'
+  );
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -1276,7 +1282,7 @@ export default function AdminDashboard() {
                 >
                   <Icon className="w-4.5 h-4.5" />
                   {tab.label}
-                  {tab.id === 'activity' && pendingRequestCount > 0 && (
+                  {tab.id === 'requests' && pendingRequestCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-semibold">
                       {pendingRequestCount > 99 ? '99+' : pendingRequestCount}
                     </span>
@@ -1370,7 +1376,7 @@ export default function AdminDashboard() {
                 <span className={`text-[10px] ${isActive ? 'font-semibold text-blue-600' : 'text-gray-500'}`}>
                   {tab.label === 'Kid Profiles' ? 'Profiles' : tab.label}
                 </span>
-                {tab.id === 'activity' && pendingRequestCount > 0 && (
+                {tab.id === 'requests' && pendingRequestCount > 0 && (
                   <span className="absolute top-1 right-1/4 bg-red-500 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-semibold">
                     {pendingRequestCount > 9 ? '9+' : pendingRequestCount}
                   </span>
@@ -1411,6 +1417,22 @@ export default function AdminDashboard() {
             }}
             onDenyRequest={async (requestId) => {
               await denyRequestMutation({ requestId });
+              showToast('Request denied.', 'info');
+            }}
+          />
+        )}
+
+        {/* Requests Tab */}
+        {activeTab === 'requests' && (
+          <RequestsTab
+            allRequests={allRequests}
+            pendingRequests={pendingRequests}
+            onApprove={async (id) => {
+              await approveRequestMutation({ requestId: id });
+              showToast('Topic approved! They can now search for this.');
+            }}
+            onDeny={async (id) => {
+              await denyRequestMutation({ requestId: id });
               showToast('Request denied.', 'info');
             }}
           />
