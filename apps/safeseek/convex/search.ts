@@ -297,6 +297,16 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
         searchedAt: now,
       });
 
+      // Check if kid can request topic approval (defaults to true)
+      const canRequest = (kidProfile as any).allowTopicRequests !== false;
+      let alreadyRequested = false;
+      if (canRequest) {
+        alreadyRequested = await ctx.runQuery(api.topicRequests.hasPendingRequest, {
+          kidProfileId: args.kidProfileId,
+          query: args.query.trim(),
+        });
+      }
+
       return {
         safe: false,
         answer: parsed.answer || "Let's try searching for something else!",
@@ -306,6 +316,8 @@ Be warm, fun, and genuinely helpful. You're their favorite teacher, not a search
         flagged: true,
         flagReason: parsed.flagReason,
         images: [],
+        canRequest,
+        alreadyRequested,
       };
     }
 

@@ -90,6 +90,20 @@ export default defineSchema({
   })
     .index("by_user", ["userId"]),
 
+  // Topic requests — kids can request permission to search blocked topics
+  topicRequests: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    userId: v.id("users"), // parent
+    query: v.string(), // what they searched
+    reason: v.string(), // why it was blocked
+    status: v.string(), // "pending", "approved", "denied"
+    kidName: v.optional(v.string()),
+    requestedAt: v.number(),
+    respondedAt: v.optional(v.number()),
+  })
+    .index("by_user", ["userId", "status"])
+    .index("by_kid", ["kidProfileId"]),
+
   // Search result cache — avoids redundant AI calls for identical queries
   searchCache: defineTable({
     normalizedQuery: v.string(),

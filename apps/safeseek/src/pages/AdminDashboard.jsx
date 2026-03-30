@@ -333,7 +333,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
 }
 
 // --- Activity Tab ---
-function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowBlocked }) {
+function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowBlocked, pendingRequests, onApproveRequest, onDenyRequest }) {
   const [filterKid, setFilterKid] = useState('all');
   const [showBlocked, setShowBlocked] = useState(initialShowBlocked || false);
   const [activityFilter, setActivityFilter] = useState('');
@@ -421,6 +421,56 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
 
   return (
     <div className="space-y-4">
+      {/* Pending Topic Requests */}
+      {pendingRequests && pendingRequests.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Mail className="w-5 h-5 text-amber-600" />
+            <h3 className="font-semibold text-gray-900">
+              Topic Requests
+              <span className="ml-2 bg-red-500 text-white text-[10px] w-5 h-5 inline-flex items-center justify-center rounded-full font-semibold align-middle">
+                {pendingRequests.length}
+              </span>
+            </h3>
+          </div>
+          <p className="text-sm text-gray-600 mb-3">
+            Your kids are asking permission to search these topics.
+          </p>
+          <div className="space-y-2">
+            {pendingRequests.map((req) => (
+              <div key={req._id} className="bg-white rounded-xl border border-amber-100 px-4 py-3 flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-medium text-gray-900 text-sm">{req.kidName || 'Unknown'}</span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(req.requestedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-800 font-medium">&ldquo;{req.query}&rdquo;</p>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{req.reason}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => onApproveRequest(req._id)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full bg-green-100 text-green-700 hover:bg-green-200 transition"
+                  >
+                    <Check className="w-3 h-3" />
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => onDenyRequest(req._id)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition"
+                  >
+                    <X className="w-3 h-3" />
+                    Deny
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -863,7 +913,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
           </a>
         ) : (
           <p className="text-sm text-gray-500">
-            To manage or cancel, contact support@getsafefamily.com
+            To manage or cancel, contact jeremiah@getsafefamily.com
           </p>
         )}
       </div>
@@ -924,7 +974,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
             FAQ
           </a>
           <a
-            href="mailto:support@getsafefamily.com"
+            href="mailto:jeremiah@getsafefamily.com"
             className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             <Mail className="w-4 h-4" />
@@ -982,8 +1032,8 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
             </p>
             <p className="text-sm text-gray-600 mb-6">
               To delete your account, please contact{' '}
-              <a href="mailto:support@getsafefamily.com" className="text-blue-600 hover:text-blue-700 font-medium">
-                support@getsafefamily.com
+              <a href="mailto:jeremiah@getsafefamily.com" className="text-blue-600 hover:text-blue-700 font-medium">
+                jeremiah@getsafefamily.com
               </a>
             </p>
             <div className="flex gap-3 justify-end">
@@ -1025,6 +1075,8 @@ export default function AdminDashboard() {
 
   // Convex mutations
   const deleteProfileMutation = useMutation(api.kidProfiles.deleteProfile);
+  const approveRequestMutation = useMutation(api.topicRequests.approveRequest);
+  const denyRequestMutation = useMutation(api.topicRequests.denyRequest);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -1051,6 +1103,16 @@ export default function AdminDashboard() {
 
   const blockedSearches = useQuery(
     api.searchQueries.getBlockedSearches,
+    userData?._id ? { userId: userData._id } : 'skip'
+  );
+
+  const pendingRequestCount = useQuery(
+    api.topicRequests.getPendingCount,
+    userData?._id ? { userId: userData._id } : 'skip'
+  );
+
+  const pendingRequests = useQuery(
+    api.topicRequests.getPendingRequests,
     userData?._id ? { userId: userData._id } : 'skip'
   );
 
@@ -1206,7 +1268,7 @@ export default function AdminDashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${
+                  className={`relative flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -1214,6 +1276,11 @@ export default function AdminDashboard() {
                 >
                   <Icon className="w-4.5 h-4.5" />
                   {tab.label}
+                  {tab.id === 'activity' && pendingRequestCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-semibold">
+                      {pendingRequestCount > 99 ? '99+' : pendingRequestCount}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -1303,6 +1370,11 @@ export default function AdminDashboard() {
                 <span className={`text-[10px] ${isActive ? 'font-semibold text-blue-600' : 'text-gray-500'}`}>
                   {tab.label === 'Kid Profiles' ? 'Profiles' : tab.label}
                 </span>
+                {tab.id === 'activity' && pendingRequestCount > 0 && (
+                  <span className="absolute top-1 right-1/4 bg-red-500 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-semibold">
+                    {pendingRequestCount > 9 ? '9+' : pendingRequestCount}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -1332,6 +1404,15 @@ export default function AdminDashboard() {
             blockedSearches={blockedSearches}
             kidProfiles={kidProfiles}
             initialShowBlocked={activityShowBlocked}
+            pendingRequests={pendingRequests}
+            onApproveRequest={async (requestId) => {
+              await approveRequestMutation({ requestId });
+              showToast('Topic approved! Your child can now search this.');
+            }}
+            onDenyRequest={async (requestId) => {
+              await denyRequestMutation({ requestId });
+              showToast('Request denied.', 'info');
+            }}
           />
         )}
 

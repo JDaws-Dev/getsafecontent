@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery, useAction } from 'convex/react';
+import { useQuery, useAction, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import {
   Search, Sparkles, Clock, History, ChevronRight,
@@ -518,6 +518,9 @@ export default function KidSearch() {
   const [aiSummary, setAiSummary] = useState('');
   const [blocked, setBlocked] = useState(false);
   const [blockedMessage, setBlockedMessage] = useState('');
+  const [canRequest, setCanRequest] = useState(false);
+  const [alreadyRequested, setAlreadyRequested] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [timesUp, setTimesUp] = useState(false);
   const [error, setError] = useState('');
@@ -547,6 +550,7 @@ export default function KidSearch() {
 
   const searchInputRef = useRef(null);
   const performSearch = useAction(api.search.searchFromKid);
+  const createTopicRequest = useMutation(api.topicRequests.createRequest);
 
   // Track whether we already auto-searched from URL params
   const autoSearchedRef = useRef(false);
@@ -749,6 +753,9 @@ export default function KidSearch() {
     setSearching(true);
     setBlocked(false);
     setBlockedMessage('');
+    setCanRequest(false);
+    setAlreadyRequested(false);
+    setRequestSent(false);
     setResults(null);
     setAiSummary('');
     setSections([]);
@@ -768,6 +775,8 @@ export default function KidSearch() {
         setBlocked(true);
         setBlockedMessage(data.answer || "That's not something I can help with right now. Try asking about something else!");
         setRelatedQuestions(data.relatedQuestions || []);
+        setCanRequest(data.canRequest || false);
+        setAlreadyRequested(data.alreadyRequested || false);
       } else {
         setAiSummary(data.answer || '');
         setSections(data.sections || []);
@@ -1389,6 +1398,37 @@ export default function KidSearch() {
             <p className="text-gray-600 dark:text-gray-300 text-lg max-w-md mx-auto">
               {blockedMessage}
             </p>
+
+            {/* Ask My Parent button */}
+            {canRequest && (
+              <div className="mt-4">
+                {requestSent || alreadyRequested ? (
+                  <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-sm font-medium">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {alreadyRequested && !requestSent ? 'Already requested — waiting for your parent' : 'Request sent!'}
+                  </div>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      try {
+                        await createTopicRequest({
+                          kidProfileId: selectedProfile._id,
+                          query: query.trim(),
+                          reason: blockedMessage,
+                        });
+                        setRequestSent(true);
+                      } catch (err) {
+                        console.error('[KidSearch] Topic request error:', err);
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors shadow-sm active:scale-[0.98]"
+                  >
+                    <Users className="w-4 h-4" />
+                    Ask My Parent
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Related questions as suggestion buttons when blocked */}
             {relatedQuestions.length > 0 && (

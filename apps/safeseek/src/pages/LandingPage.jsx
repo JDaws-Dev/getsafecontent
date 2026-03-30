@@ -862,7 +862,7 @@ export default function LandingPage() {
           <div className="text-center mt-8">
             <p className="text-gray-500 text-sm">
               Still have questions?{' '}
-              <a href="mailto:support@getsafefamily.com" className="text-blue-600 hover:text-blue-700 font-medium">
+              <a href="mailto:jeremiah@getsafefamily.com" className="text-blue-600 hover:text-blue-700 font-medium">
                 Email us anytime
               </a>
             </p>
@@ -935,8 +935,8 @@ export default function LandingPage() {
 
             {/* Contact */}
             <div className="text-sm text-center md:text-right">
-              <a href="mailto:support@getsafefamily.com" className="hover:text-white transition">
-                support@getsafefamily.com
+              <a href="mailto:jeremiah@getsafefamily.com" className="hover:text-white transition">
+                jeremiah@getsafefamily.com
               </a>
             </div>
           </div>
