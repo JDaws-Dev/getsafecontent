@@ -6,7 +6,7 @@ import {
   Search, Sparkles, Clock, History, ChevronRight, Check,
   Shield, AlertCircle, Loader2, X, ChevronLeft, ChevronRight as ChevronRightIcon,
   Image as ImageIcon, Camera, Mic, Sun, Moon, Volume2, VolumeX, GitBranch, Users, ArrowLeft,
-  BookOpen, GraduationCap, Send, ArrowUp
+  BookOpen, GraduationCap, Send, ArrowUp, Lock
 } from 'lucide-react';
 import mermaid from 'mermaid';
 import { useTheme } from '../contexts/ThemeContext';
@@ -635,6 +635,10 @@ export default function KidSearch() {
   const [familyCode, setFamilyCode] = useState(urlFamilyCode || '');
   const [codeInput, setCodeInput] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [pinProfile, setPinProfile] = useState(null);
+  const [pinInput, setPinInput] = useState(['', '', '', '']);
+  const [pinError, setPinError] = useState('');
+  const pinRefs = [useRef(), useRef(), useRef(), useRef()];
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState(null);
@@ -693,6 +697,54 @@ export default function KidSearch() {
   const sendTutorMessage = useAction(api.tutor.sendMessage);
   const expandSection = useAction(api.search.expandSection);
   const createTopicRequest = useMutation(api.topicRequests.createRequest);
+
+  // PIN verification
+  const pinVerification = useQuery(
+    api.kidProfiles.verifyKidPin,
+    pinProfile && pinInput.every(d => d !== '')
+      ? { profileId: pinProfile._id, pin: pinInput.join('') }
+      : 'skip'
+  );
+
+  useEffect(() => {
+    if (pinVerification?.valid === true) {
+      setSelectedProfile(pinProfile);
+      setPinProfile(null);
+      setPinInput(['', '', '', '']);
+    } else if (pinVerification?.valid === false) {
+      setPinError('Wrong PIN');
+      setPinInput(['', '', '', '']);
+      pinRefs[0].current?.focus();
+    }
+  }, [pinVerification]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleProfileClick = (profile) => {
+    if (profile.pin) {
+      setPinProfile(profile);
+      setPinInput(['', '', '', '']);
+      setPinError('');
+      setTimeout(() => pinRefs[0].current?.focus(), 100);
+    } else {
+      setSelectedProfile(profile);
+    }
+  };
+
+  const handlePinChange = (index, value) => {
+    if (value && !/^\d$/.test(value)) return;
+    setPinError('');
+    const newPin = [...pinInput];
+    newPin[index] = value;
+    setPinInput(newPin);
+    if (value && index < 3) {
+      pinRefs[index + 1].current?.focus();
+    }
+  };
+
+  const handlePinKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !pinInput[index] && index > 0) {
+      pinRefs[index - 1].current?.focus();
+    }
+  };
 
   // Track whether we already auto-searched from URL params
   const autoSearchedRef = useRef(false);
@@ -1328,6 +1380,50 @@ export default function KidSearch() {
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+          {pinProfile ? (
+            /* PIN Entry Screen */
+            <div className="text-center">
+              <div className={`w-24 h-24 mx-auto mb-4 rounded-full ${getColorClass(pinProfile.color)} flex items-center justify-center text-white text-3xl font-bold shadow-lg`}>
+                {pinProfile.name.charAt(0).toUpperCase()}
+              </div>
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{pinProfile.name}</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Enter your 4-digit PIN</p>
+
+              <div className="flex justify-center gap-3 mb-4">
+                {pinInput.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={pinRefs[index]}
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handlePinChange(index, e.target.value)}
+                    onKeyDown={(e) => handlePinKeyDown(index, e)}
+                    className={`w-14 h-14 text-center text-2xl font-bold text-gray-900 dark:text-white border-2 rounded-xl focus:outline-none focus:ring-2 transition ${
+                      pinError
+                        ? 'border-red-300 bg-red-50 dark:bg-red-900/20 focus:ring-red-200 focus:border-red-500'
+                        : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-blue-200 focus:border-blue-500'
+                    }`}
+                    autoComplete="off"
+                  />
+                ))}
+              </div>
+
+              {pinError && (
+                <p className="text-red-500 text-sm mb-4">{pinError}</p>
+              )}
+
+              <button
+                onClick={() => { setPinProfile(null); setPinInput(['', '', '', '']); setPinError(''); }}
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm font-medium"
+              >
+                ← Choose different profile
+              </button>
+            </div>
+          ) : (
+            /* Profile Selection */
+            <>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">Who's searching?</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Select your profile to get started</p>
 
@@ -1336,7 +1432,7 @@ export default function KidSearch() {
               {kidProfiles.map((profile) => (
                 <button
                   key={profile._id}
-                  onClick={() => setSelectedProfile(profile)}
+                  onClick={() => handleProfileClick(profile)}
                   className="flex flex-col items-center gap-3 p-5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 active:scale-[0.98]"
                 >
                   <div
@@ -1344,7 +1440,12 @@ export default function KidSearch() {
                   >
                     {profile.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-gray-900 dark:text-white font-semibold text-lg">{profile.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-900 dark:text-white font-semibold text-lg">{profile.name}</span>
+                    {profile.pin && (
+                      <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    )}
+                  </div>
                 </button>
               ))}
             </div>
@@ -1373,6 +1474,8 @@ export default function KidSearch() {
               </a>
             </p>
           </div>
+            </>
+          )}
         </main>
       </div>
     );

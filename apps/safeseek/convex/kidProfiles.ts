@@ -35,6 +35,7 @@ export const createProfile = mutation({
     blockedTopics: v.array(v.string()),
     allowImageSearch: v.boolean(),
     allowFollowUp: v.boolean(),
+    pin: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Verify user exists
@@ -43,7 +44,7 @@ export const createProfile = mutation({
       throw new Error("User not found");
     }
 
-    const profileId = await ctx.db.insert("kidProfiles", {
+    const data: Record<string, any> = {
       userId: args.userId,
       name: args.name.trim(),
       color: args.color,
@@ -54,7 +55,10 @@ export const createProfile = mutation({
       allowImageSearch: args.allowImageSearch,
       allowFollowUp: args.allowFollowUp,
       createdAt: Date.now(),
-    });
+    };
+    if (args.pin) data.pin = args.pin;
+
+    const profileId = await ctx.db.insert("kidProfiles", data as any);
 
     return profileId;
   },
@@ -80,6 +84,7 @@ export const updateProfile = mutation({
     allowImageSearch: v.optional(v.boolean()),
     allowFollowUp: v.optional(v.boolean()),
     allowTopicRequests: v.optional(v.boolean()),
+    pin: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db.get(args.kidProfileId);
@@ -102,12 +107,27 @@ export const updateProfile = mutation({
     if (args.allowImageSearch !== undefined) updates.allowImageSearch = args.allowImageSearch;
     if (args.allowFollowUp !== undefined) updates.allowFollowUp = args.allowFollowUp;
     if (args.allowTopicRequests !== undefined) updates.allowTopicRequests = args.allowTopicRequests;
+    if (args.pin !== undefined) updates.pin = args.pin === '' ? undefined : args.pin;
 
     if (Object.keys(updates).length > 0) {
       await ctx.db.patch(args.kidProfileId, updates);
     }
 
     return { success: true };
+  },
+});
+
+// Verify a kid's PIN
+export const verifyKidPin = query({
+  args: {
+    profileId: v.id("kidProfiles"),
+    pin: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db.get(args.profileId);
+    if (!profile) return { valid: false };
+    if (!profile.pin) return { valid: true };
+    return { valid: profile.pin === args.pin };
   },
 });
 

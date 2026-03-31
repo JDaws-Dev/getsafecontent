@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { X, Save, ChevronDown, ChevronUp, Shield, BookOpen, MessageSquare } from 'lucide-react';
+import { X, Save, ChevronDown, ChevronUp, Shield, BookOpen, MessageSquare, Lock } from 'lucide-react';
 
 const COLORS = [
   { name: 'red', class: 'bg-red-500' },
@@ -71,6 +71,8 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
   const [accessibilityNeeds, setAccessibilityNeeds] = useState([]);
   const [allowImageSearch, setAllowImageSearch] = useState(true);
   const [allowTopicRequests, setAllowTopicRequests] = useState(true);
+  const [pin, setPin] = useState('');
+  const [pinEnabled, setPinEnabled] = useState(false);
 
   // Track whether user has manually chosen a reading level
   const [manualLexile, setManualLexile] = useState(false);
@@ -96,6 +98,8 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
       setAccessibilityNeeds(profile.accessibilityNeeds || []);
       setAllowImageSearch(profile.allowImageSearch ?? true);
       setAllowTopicRequests(profile.allowTopicRequests ?? true);
+      setPin(profile.pin || '');
+      setPinEnabled(!!profile.pin);
     }
   }, [profile]);
 
@@ -115,6 +119,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
     e.preventDefault();
     setError('');
     if (!name.trim()) { setError('Please enter a name.'); return; }
+    if (pinEnabled && pin.length !== 4) { setError('PIN must be exactly 4 digits.'); return; }
 
     setSaving(true);
     try {
@@ -132,6 +137,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
         accessibilityNeeds,
         allowImageSearch,
         allowFollowUp: true,
+        pin: pinEnabled && pin.length === 4 ? pin : '',
       };
 
       if (profile) {
@@ -373,6 +379,40 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${allowImageSearch ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
+              </div>
+
+              {/* Kid PIN */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Lock className="w-4 h-4 text-amber-500" />
+                  <label className="text-sm font-medium text-gray-700">Kid PIN</label>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">Optional — prevents other kids from accessing this profile</p>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setPinEnabled(!pinEnabled); if (pinEnabled) setPin(''); }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition flex-shrink-0 ${pinEnabled ? 'bg-amber-500' : 'bg-gray-300'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${pinEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                  {pinEnabled ? (
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={4}
+                      value={pin}
+                      onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); setPin(v); }}
+                      placeholder="4-digit PIN"
+                      className="w-32 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 tracking-widest text-center font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-[16px]"
+                    />
+                  ) : (
+                    <span className="text-sm text-gray-400">No PIN</span>
+                  )}
+                </div>
+                {pinEnabled && pin.length > 0 && pin.length < 4 && (
+                  <p className="text-xs text-amber-600 mt-1">PIN must be 4 digits</p>
+                )}
               </div>
             </div>
           )}

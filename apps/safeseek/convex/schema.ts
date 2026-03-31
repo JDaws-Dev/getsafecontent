@@ -29,7 +29,8 @@ export default defineSchema({
     userId: v.id("users"),
     name: v.string(),
     color: v.string(),
-    icon: v.optional(v.string()), // Emoji icon
+    icon: v.optional(v.string()),
+    pin: v.optional(v.string()), // 4-digit PIN for profile access
     ageRange: v.object({
       min: v.number(),
       max: v.number(),
