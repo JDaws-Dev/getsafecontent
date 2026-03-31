@@ -13,12 +13,14 @@ const appColors = {
   safetunes: "bg-gradient-to-br from-indigo-500 to-purple-500",
   safetube: "bg-gradient-to-br from-red-500 to-orange-500",
   safereads: "bg-gradient-to-br from-emerald-500 to-teal-500",
+  safestudy: "bg-gradient-to-br from-blue-500 to-cyan-500",
 };
 
 const appIcons = {
   safetunes: "🎵",
   safetube: "📺",
   safereads: "📚",
+  safestudy: "🔍",
 };
 
 const statusColors: Record<string, string> = {

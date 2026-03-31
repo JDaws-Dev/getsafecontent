@@ -852,23 +852,15 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
             <span className="text-sm font-medium text-gray-900">{user?.name || userData?.name || 'Not set'}</span>
           </div>
         </div>
-        <div className="mt-4 pt-3 border-t border-gray-100 space-y-2">
-          <p className="text-xs text-gray-500">
-            To change your email or password, visit{' '}
-            <a
-              href="https://getsafefamily.com/account"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-700 underline"
-            >
-              getsafefamily.com/account
-            </a>
-          </p>
+        <div className="mt-4 pt-3 border-t border-gray-100">
           <a
-            href="/forgot-password"
-            className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium"
+            href="https://getsafefamily.com/forgot-password"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             Change Password
+            <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
       </div>
@@ -902,20 +894,33 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
             {(userData?.subscriptionStatus || 'trial').toUpperCase()}
           </span>
         </div>
-        {userData?.stripeCustomerId ? (
+        {userData?.subscriptionStatus === 'lifetime' ? (
+          <p className="text-sm text-gray-500">Lifetime access — no billing.</p>
+        ) : userData?.subscriptionStatus === 'trial' ? (
+          <div className="space-y-2">
+            {userData?.trialEndsAt && (
+              <p className="text-sm text-gray-500">
+                Trial ends {new Date(userData.trialEndsAt).toLocaleDateString()}
+              </p>
+            )}
+            <a
+              href="https://getsafefamily.com/signup"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Upgrade to Premium
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        ) : (
           <a
-            href="https://getsafefamily.com/account"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="mailto:jeremiah@getsafefamily.com?subject=SafeStudy%20Subscription"
             className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
+            <Mail className="w-3.5 h-3.5" />
             Manage Subscription
-            <ExternalLink className="w-3.5 h-3.5" />
           </a>
-        ) : (
-          <p className="text-sm text-gray-500">
-            To manage or cancel, contact jeremiah@getsafefamily.com
-          </p>
         )}
       </div>
 
@@ -968,7 +973,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
         </h3>
         <div className="space-y-3">
           <a
-            href="/faq"
+            href="/#faq"
             className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             <ChevronRight className="w-4 h-4" />
@@ -1425,7 +1430,7 @@ export default function AdminDashboard() {
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div className="grid grid-cols-4 safe-area-inset-bottom">
+        <div className="grid grid-cols-5 safe-area-inset-bottom">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;

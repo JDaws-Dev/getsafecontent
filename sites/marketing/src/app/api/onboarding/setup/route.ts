@@ -38,6 +38,7 @@ const APP_URLS: Record<AppId, string> = {
   safetunes: "https://formal-chihuahua-623.convex.site",
   safetube: "https://rightful-rabbit-333.convex.site",
   safereads: "https://exuberant-puffin-838.convex.site",
+  safestudy: "https://strong-scorpion-227.convex.site",
 };
 
 export async function POST(request: NextRequest) {

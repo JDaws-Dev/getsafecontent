@@ -67,6 +67,7 @@ const APP_NAMES: Record<AppName, string> = {
   safetunes: "SafeTunes",
   safetube: "SafeTube",
   safereads: "SafeReads",
+  safestudy: "SafeStudy",
 };
 
 export async function POST(req: Request) {

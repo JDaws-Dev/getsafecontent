@@ -121,6 +121,7 @@ export interface RevenueBreakdown {
     safetunes: { count: number; mrr: number };
     safetube: { count: number; mrr: number };
     safereads: { count: number; mrr: number };
+    safestudy: { count: number; mrr: number };
   };
   // Non-revenue users
   lifetime: number;

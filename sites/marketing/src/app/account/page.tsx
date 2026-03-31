@@ -29,6 +29,7 @@ import {
   Minus,
   MessageCircle,
   FileText,
+  Search,
 } from "lucide-react";
 
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
@@ -51,6 +52,12 @@ const APP_INFO: Record<AppId, { name: string; domain: string; icon: React.ReactN
     domain: "getsafereads.com",
     icon: <BookOpen className="w-5 h-5 text-white" />,
     gradient: "from-emerald-500 to-teal-500",
+  },
+  safestudy: {
+    name: "SafeStudy",
+    domain: "getsafestudy.com",
+    icon: <Search className="w-5 h-5 text-white" />,
+    gradient: "from-blue-500 to-cyan-500",
   },
 };
 

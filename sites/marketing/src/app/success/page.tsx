@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Shield, ChevronRight, Music, Play, BookOpen, Loader2 } from "lucide-react";
+import { Shield, ChevronRight, Music, Play, BookOpen, Search, Loader2 } from "lucide-react";
 
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
 
@@ -131,6 +131,7 @@ function SuccessContent() {
     safetunes: { icon: Music, gradient: "from-indigo-500 to-purple-600", name: "SafeTunes" },
     safetube: { icon: Play, gradient: "from-red-500 to-orange-500", name: "SafeTube" },
     safereads: { icon: BookOpen, gradient: "from-emerald-500 to-teal-500", name: "SafeReads" },
+    safestudy: { icon: Search, gradient: "from-blue-500 to-cyan-500", name: "SafeStudy" },
   };
 
   return (

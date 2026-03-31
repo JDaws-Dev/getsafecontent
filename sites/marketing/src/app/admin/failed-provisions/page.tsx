@@ -24,6 +24,7 @@ const APP_DISPLAY_NAMES: Record<AppName, string> = {
   safetunes: "SafeTunes",
   safetube: "SafeTube",
   safereads: "SafeReads",
+  safestudy: "SafeStudy",
 };
 
 function FailedProvisionsContent() {

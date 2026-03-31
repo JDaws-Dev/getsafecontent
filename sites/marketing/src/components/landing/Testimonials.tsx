@@ -1,6 +1,6 @@
 "use client";
 
-import { Music, Play, BookOpen } from "lucide-react";
+import { Music, Play, BookOpen, Search } from "lucide-react";
 
 type App = "safetunes" | "safetube" | "safereads" | "safestudy";
 
@@ -89,6 +89,11 @@ const appConfig: Record<
     gradient: "from-emerald-500 to-teal-500",
     Icon: BookOpen,
     label: "SafeReads",
+  },
+  safestudy: {
+    gradient: "from-blue-500 to-cyan-500",
+    Icon: Search,
+    label: "SafeStudy",
   },
 };
 

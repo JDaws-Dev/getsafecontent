@@ -5,14 +5,14 @@ import {
   ArrowRight, Users, Lock, Zap, BookOpen, AlertTriangle, X,
   ChevronDown, ChevronUp, Globe, Ban, Monitor, MessageCircle,
   Image, Fingerprint, Mic, Volume2, GraduationCap, Accessibility,
-  RefreshCw, Moon, ImageIcon, Star, Quote, MessageSquare, Library,
+  RefreshCw, Moon, ImageIcon, MessageSquare, Library,
   MousePointerClick, Send
 } from 'lucide-react';
 
 const features = [
   {
     icon: MessageSquare,
-    title: 'An built-in tutor that actually teaches',
+    title: 'A built-in tutor that actually teaches',
     description: 'Not a chatbot. A real built-in tutor that uses the Socratic method — asking questions back, guiding your child to the answer, and celebrating when they get it. Back-and-forth conversations that feel like having a patient teacher in the room.',
   },
   {
@@ -183,24 +183,6 @@ const steps = [
   },
 ];
 
-const testimonials = [
-  {
-    quote: 'The built-in tutor changed everything. My son used to come to me every 5 minutes for homework help. Now he works through problems with SafeStudy\'s tutor and only comes to me when he\'s genuinely stuck. His confidence has gone through the roof.',
-    name: 'Sarah M.',
-    role: 'Mom of 2',
-  },
-  {
-    quote: 'My son Googled something innocent for a school project and the results were horrifying. I took away his internet access for a month. With SafeStudy, he got it back — and now he uses the tutor for homework and the research mode for projects. I finally stopped dreading homework time.',
-    name: 'David R.',
-    role: 'Dad of 3',
-  },
-  {
-    quote: 'My daughter has ADHD and would melt down trying to read long Google results. SafeStudy gives her answers at her level, reads them out loud, and the tutor keeps explanations short. She told me, "Mom, I like learning again." I cried.',
-    name: 'Jennifer K.',
-    role: 'Homeschool Mom',
-  },
-];
-
 const primaryFeatures = features.slice(0, 4);
 const secondaryFeatures = features.slice(4);
 
@@ -335,7 +317,7 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 mb-6 leading-relaxed">
-                They search safely, get homework help from an built-in tutor, and research with trusted educational sources — all within the boundaries you set. You see everything.
+                They search safely, get homework help from a built-in tutor, and research with trusted educational sources — all within the boundaries you set. You see everything.
               </p>
 
               <div className="flex flex-col sm:flex-row flex-wrap justify-center lg:justify-start gap-2 sm:gap-x-6 text-sm text-gray-500 mb-8">
@@ -365,13 +347,13 @@ export default function LandingPage() {
                   Start Free for 7 Days — $4.99/mo after
                   <ArrowRight className="w-5 h-5" />
                 </Link>
-                <Link
-                  to="/search"
+                <a
+                  href="#demo"
                   className="w-full sm:w-auto border-2 border-gray-200 hover:border-blue-300 text-[#1a1a2e] font-semibold px-8 py-4 rounded-xl text-lg transition-all inline-flex items-center justify-center gap-2 bg-white"
                 >
                   <Search className="w-5 h-5" />
-                  Try a Demo Search
-                </Link>
+                  See It in Action
+                </a>
               </div>
 
               <div className="flex items-center justify-center lg:justify-start gap-3 text-sm text-gray-500">
@@ -542,8 +524,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* Testimonials removed — will add real ones after beta testing */}
 
       {/* ========== HOW IT WORKS ========== */}
       <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">

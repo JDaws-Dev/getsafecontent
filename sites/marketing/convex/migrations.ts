@@ -283,13 +283,15 @@ export const runMigration = action({
       safetunes: "https://formal-chihuahua-623.convex.site/adminDashboard",
       safetube: "https://rightful-rabbit-333.convex.site/adminDashboard",
       safereads: "https://exuberant-puffin-838.convex.site/adminDashboard",
+      safestudy: "https://strong-scorpion-227.convex.site/adminDashboard",
     };
 
-    // Fetch users from all 3 apps
+    // Fetch users from all apps
     const allAppUsers: Record<AppType, AppUser[]> = {
       safetunes: [],
       safetube: [],
       safereads: [],
+      safestudy: [],
     };
 
     const fetchErrors: string[] = [];

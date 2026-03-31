@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Shield, ChevronRight, Check, Music, Play, BookOpen, ArrowRight, SkipForward, Users, Clock, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Shield, ChevronRight, Check, Music, Play, BookOpen, Search, ArrowRight, SkipForward, Users, Clock, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 /**
  * Unified Onboarding Page
@@ -41,6 +41,7 @@ interface OnboardingData {
   safetunes?: SafeTunesData;
   safetube?: SafeTubeData;
   safereads?: SafeReadsData;
+  safestudy?: Record<string, unknown>;
   email?: string;
 }
 
@@ -79,6 +80,14 @@ const APP_CONFIGS: Record<AppId, AppConfig> = {
     gradient: "from-emerald-500 to-teal-500",
     description: "Get content analysis for books",
     domain: "getsafereads.com",
+  },
+  safestudy: {
+    id: "safestudy",
+    name: "SafeStudy",
+    icon: Search,
+    gradient: "from-blue-500 to-cyan-500",
+    description: "Safe search + built-in tutor",
+    domain: "getsafestudy.com",
   },
 };
 
@@ -666,6 +675,7 @@ function OnboardingContent() {
     safetunes: { status: "pending" },
     safetube: { status: "pending" },
     safereads: { status: "pending" },
+    safestudy: { status: "pending" },
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 

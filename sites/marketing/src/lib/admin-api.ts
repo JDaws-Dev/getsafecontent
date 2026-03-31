@@ -435,6 +435,7 @@ export function calculateRevenueStats(groupedUsers: GroupedUser[]): RevenueStats
       safetunes: { count: 0, mrr: 0 },
       safetube: { count: 0, mrr: 0 },
       safereads: { count: 0, mrr: 0 },
+      safestudy: { count: 0, mrr: 0 },
     },
     lifetime: 0,
     trial: 0,
