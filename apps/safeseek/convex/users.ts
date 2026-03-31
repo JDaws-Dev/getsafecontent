@@ -33,10 +33,19 @@ async function generateUniqueFamilyCode(ctx: any): Promise<string> {
 export const getUser = query({
   args: { email: v.string() },
   handler: async (ctx, args) => {
-    const user = await ctx.db
+    const email = args.email.toLowerCase().trim();
+    let user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", email))
       .first();
+
+    // Fallback: try original case if normalized didn't match
+    if (!user && email !== args.email) {
+      user = await ctx.db
+        .query("users")
+        .withIndex("email", (q) => q.eq("email", args.email))
+        .first();
+    }
 
     if (!user) return null;
 

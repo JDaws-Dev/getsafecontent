@@ -1244,7 +1244,7 @@ export default function AdminDashboard() {
           <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
             <Search className="w-7 h-7 text-white" />
           </div>
-          <p className="text-gray-500">Loading profile...</p>
+          <p className="text-gray-500">Loading...</p>
         </div>
       </div>
     );

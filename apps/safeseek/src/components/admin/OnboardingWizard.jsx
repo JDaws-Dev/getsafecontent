@@ -2,29 +2,72 @@ import { useState, useCallback } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import {
-  Search, ArrowRight, Copy, Check, Sparkles,
-  LayoutDashboard, UserPlus, ExternalLink,
+  Search, ArrowRight, ArrowLeft, Copy, Check, Sparkles,
+  LayoutDashboard, UserPlus, ExternalLink, Shield,
+  ChevronDown, Minus, Plus,
 } from 'lucide-react';
 
 const COLORS = [
-  { name: 'red', bg: 'bg-red-500' },
-  { name: 'orange', bg: 'bg-orange-500' },
-  { name: 'yellow', bg: 'bg-yellow-500' },
-  { name: 'green', bg: 'bg-green-500' },
-  { name: 'blue', bg: 'bg-blue-500' },
-  { name: 'cyan', bg: 'bg-cyan-500' },
-  { name: 'purple', bg: 'bg-purple-500' },
-  { name: 'pink', bg: 'bg-pink-500' },
+  { name: 'red', bg: 'bg-red-500', ring: 'ring-red-400' },
+  { name: 'orange', bg: 'bg-orange-500', ring: 'ring-orange-400' },
+  { name: 'yellow', bg: 'bg-yellow-500', ring: 'ring-yellow-400' },
+  { name: 'green', bg: 'bg-green-500', ring: 'ring-green-400' },
+  { name: 'blue', bg: 'bg-blue-500', ring: 'ring-blue-400' },
+  { name: 'cyan', bg: 'bg-cyan-500', ring: 'ring-cyan-400' },
+  { name: 'purple', bg: 'bg-purple-500', ring: 'ring-purple-400' },
+  { name: 'pink', bg: 'bg-pink-500', ring: 'ring-pink-400' },
 ];
 
-const DEFAULT_BLOCKED_TOPICS = ['violence', 'drugs', 'sexual', 'profanity', 'self-harm', 'weapons'];
+const ALL_BLOCKED_TOPICS = [
+  { id: 'violence', label: 'Violence & Gore', desc: 'Graphic violence, war details, abuse' },
+  { id: 'drugs', label: 'Drugs & Alcohol', desc: 'Substance use, drug culture' },
+  { id: 'sexual', label: 'Sexual Content', desc: 'Sexual themes, explicit material' },
+  { id: 'profanity', label: 'Profanity', desc: 'Swearing, vulgar language' },
+  { id: 'self-harm', label: 'Self-Harm', desc: 'Self-injury, suicide content' },
+  { id: 'weapons', label: 'Weapons', desc: 'Guns, knives, weapon instructions' },
+  { id: 'gambling', label: 'Gambling', desc: 'Betting, casino, lottery' },
+  { id: 'horror', label: 'Horror & Disturbing', desc: 'Scary imagery, disturbing content' },
+  { id: 'dating', label: 'Dating & Romance', desc: 'Romantic relationships, dating culture' },
+];
 
-function getStrictnessFromAge(age) {
+const GRADE_OPTIONS = [
+  { value: 'K', label: 'Kindergarten' },
+  { value: '1', label: '1st Grade' },
+  { value: '2', label: '2nd Grade' },
+  { value: '3', label: '3rd Grade' },
+  { value: '4', label: '4th Grade' },
+  { value: '5', label: '5th Grade' },
+  { value: '6', label: '6th Grade' },
+  { value: '7', label: '7th Grade' },
+  { value: '8', label: '8th Grade' },
+  { value: '9', label: '9th Grade' },
+  { value: '10', label: '10th Grade' },
+  { value: '11', label: '11th Grade' },
+  { value: '12', label: '12th Grade' },
+];
+
+const ACCESSIBILITY_OPTIONS = [
+  { id: 'dyslexia', label: 'Dyslexia', desc: 'Simpler sentence structure, phonetic-friendly' },
+  { id: 'adhd', label: 'ADHD', desc: 'Shorter answers, bullet points, clear structure' },
+  { id: 'esl', label: 'ESL / English Learner', desc: 'Simpler vocabulary, clearer explanations' },
+  { id: 'low-vision', label: 'Low Vision', desc: 'Larger text prompts, high-contrast friendly' },
+];
+
+function gradeFromAge(age) {
+  if (age <= 5) return 'K';
+  if (age >= 18) return '12';
+  return String(age - 5);
+}
+
+function strictnessFromAge(age) {
   if (age <= 7) return 'strict';
   if (age <= 12) return 'moderate';
   return 'light';
 }
 
+const TOTAL_STEPS = 7;
+
+// --- Step Indicator ---
 function StepDots({ current, total }) {
   return (
     <div className="flex items-center gap-2 justify-center">
@@ -44,11 +87,37 @@ function StepDots({ current, total }) {
   );
 }
 
+// --- Navigation Buttons ---
+function NavButtons({ onBack, onNext, nextLabel = 'Next', nextDisabled = false, loading = false, showBack = true }) {
+  return (
+    <div className="flex gap-3 mt-8">
+      {showBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex items-center justify-center gap-2 px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-medium rounded-2xl transition active:scale-[0.97] min-w-[100px]"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={nextDisabled || loading}
+        className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-300 disabled:to-gray-400 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97]"
+      >
+        {loading ? 'Saving...' : nextLabel}
+        {!loading && <ArrowRight className="w-5 h-5" />}
+      </button>
+    </div>
+  );
+}
+
 // --- Step 1: Welcome ---
 function WelcomeStep({ onNext }) {
   return (
     <div className="flex flex-col items-center text-center px-6 py-8 animate-fadeIn">
-      {/* Logo */}
       <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-200 mb-8">
         <Search className="w-12 h-12 text-white" />
       </div>
@@ -57,10 +126,10 @@ function WelcomeStep({ onNext }) {
         Welcome to SafeStudy!
       </h1>
       <p className="text-lg text-gray-600 max-w-md mb-2">
-        Let's set up a safe search experience for your kids.
+        SafeStudy is an AI-powered search engine built for kids. Every answer is filtered, age-appropriate, and explained at your child's reading level.
       </p>
-      <p className="text-sm text-gray-400 mb-10">
-        This takes about 1 minute.
+      <p className="text-base text-gray-500 max-w-sm mb-10">
+        Let's set up a safe experience for your kids.
       </p>
 
       <button
@@ -74,55 +143,27 @@ function WelcomeStep({ onNext }) {
   );
 }
 
-// --- Step 2: Create Kid Profile ---
-function CreateProfileStep({ userId, onNext, onCreated }) {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState(8);
-  const [color, setColor] = useState('blue');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-
-  const createProfile = useMutation(api.kidProfiles.createProfile);
-
-  const strictness = getStrictnessFromAge(age);
+// --- Step 2: Name, Age & Color ---
+function NameAgeStep({ data, onChange, onNext, onBack }) {
+  const { name, age, color } = data;
   const selectedColor = COLORS.find((c) => c.name === color);
   const initial = name ? name.charAt(0).toUpperCase() : '?';
+  const [error, setError] = useState('');
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (!name.trim()) {
       setError('Please enter a name.');
       return;
     }
-
-    setSaving(true);
     setError('');
-
-    try {
-      await createProfile({
-        userId,
-        name: name.trim(),
-        color,
-        ageRange: { min: age, max: age },
-        contentStrictness: strictness,
-        blockedTopics: DEFAULT_BLOCKED_TOPICS,
-        allowImageSearch: true,
-        allowFollowUp: true,
-      });
-      onCreated?.();
-      onNext();
-    } catch (err) {
-      console.error('[OnboardingWizard] Create profile error:', err);
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setSaving(false);
-    }
+    onNext();
   };
 
   return (
     <div className="px-6 py-8 animate-fadeIn">
       <div className="text-center mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-          Who will be searching?
+          Who will be using SafeStudy?
         </h1>
         <p className="text-gray-500">Create a profile for your child</p>
       </div>
@@ -143,12 +184,7 @@ function CreateProfileStep({ userId, onNext, onCreated }) {
         {name && (
           <p className="mt-3 text-lg font-semibold text-gray-900">{name}</p>
         )}
-        <p className="text-xs text-gray-400 mt-1">
-          Age {age} &middot;{' '}
-          {strictness === 'strict' && 'Strict filtering'}
-          {strictness === 'moderate' && 'Moderate filtering'}
-          {strictness === 'light' && 'Light filtering'}
-        </p>
+        <p className="text-xs text-gray-400 mt-1">Age {age}</p>
       </div>
 
       {/* Name Input */}
@@ -160,7 +196,7 @@ function CreateProfileStep({ userId, onNext, onCreated }) {
           id="kidName"
           type="text"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => onChange({ name: e.target.value })}
           className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
           placeholder="Your child's name"
           autoFocus
@@ -175,35 +211,35 @@ function CreateProfileStep({ userId, onNext, onCreated }) {
         <div className="flex items-center gap-4 justify-center">
           <button
             type="button"
-            onClick={() => setAge(Math.max(4, age - 1))}
+            onClick={() => onChange({ age: Math.max(4, age - 1) })}
             className="w-14 h-14 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-2xl transition active:scale-90 flex items-center justify-center"
           >
-            &minus;
+            <Minus className="w-5 h-5" />
           </button>
           <span className="text-5xl font-bold text-gray-900 w-20 text-center tabular-nums">
             {age}
           </span>
           <button
             type="button"
-            onClick={() => setAge(Math.min(18, age + 1))}
+            onClick={() => onChange({ age: Math.min(18, age + 1) })}
             className="w-14 h-14 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-2xl transition active:scale-90 flex items-center justify-center"
           >
-            +
+            <Plus className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {/* Color Picker */}
-      <div className="mb-8">
+      <div className="mb-2">
         <label className="block text-sm font-medium text-gray-700 mb-3">
           Pick a color
         </label>
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-3 justify-center flex-wrap">
           {COLORS.map((c) => (
             <button
               key={c.name}
               type="button"
-              onClick={() => setColor(c.name)}
+              onClick={() => onChange({ color: c.name })}
               className={`w-11 h-11 rounded-full ${c.bg} transition-all ring-offset-2 ${
                 color === c.name
                   ? 'ring-3 ring-blue-500 scale-110 shadow-md'
@@ -215,22 +251,263 @@ function CreateProfileStep({ userId, onNext, onCreated }) {
         </div>
       </div>
 
-      {/* Next Button */}
-      <button
-        onClick={handleNext}
-        disabled={saving}
-        className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-300 disabled:to-gray-400 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97]"
-      >
-        {saving ? 'Creating...' : 'Next'}
-        {!saving && <ArrowRight className="w-5 h-5" />}
-      </button>
+      <NavButtons onBack={onBack} onNext={handleNext} showBack />
     </div>
   );
 }
 
-// --- Step 3: Family Code ---
-function FamilyCodeStep({ familyCode, onNext }) {
+// --- Step 3: Reading Level ---
+function ReadingLevelStep({ data, onChange, onNext, onBack }) {
+  const { name, age, readingLevel, autoReadingLevel } = data;
+  const displayName = name || 'your child';
+
+  const handleAutoToggle = () => {
+    const newAuto = !autoReadingLevel;
+    onChange({
+      autoReadingLevel: newAuto,
+      readingLevel: newAuto ? gradeFromAge(age) : readingLevel,
+    });
+  };
+
+  const handleGradeChange = (value) => {
+    onChange({ readingLevel: value, autoReadingLevel: false });
+  };
+
+  return (
+    <div className="px-6 py-8 animate-fadeIn">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          What grade does {displayName} read at?
+        </h1>
+        <p className="text-gray-500">SafeStudy adjusts all answers to match this level</p>
+      </div>
+
+      {/* Auto Option */}
+      <button
+        type="button"
+        onClick={handleAutoToggle}
+        className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 mb-4 transition ${
+          autoReadingLevel
+            ? 'border-blue-500 bg-blue-50'
+            : 'border-gray-200 bg-white hover:border-gray-300'
+        }`}
+      >
+        <div className="text-left">
+          <p className="font-semibold text-gray-900">Auto (based on age)</p>
+          <p className="text-sm text-gray-500">
+            Age {age} = {GRADE_OPTIONS.find(g => g.value === gradeFromAge(age))?.label || gradeFromAge(age)}
+          </p>
+        </div>
+        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition ${
+          autoReadingLevel ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+        }`}>
+          {autoReadingLevel && <Check className="w-4 h-4 text-white" />}
+        </div>
+      </button>
+
+      {/* Grade Dropdown */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Or choose a specific grade
+        </label>
+        <div className="relative">
+          <select
+            value={readingLevel}
+            onChange={(e) => handleGradeChange(e.target.value)}
+            className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-gray-900 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+          >
+            {GRADE_OPTIONS.map((g) => (
+              <option key={g.value} value={g.value}>{g.label}</option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 mb-2">
+        Answers, vocabulary, and explanations will be written at a {GRADE_OPTIONS.find(g => g.value === readingLevel)?.label || readingLevel} reading level.
+      </div>
+
+      <NavButtons onBack={onBack} onNext={onNext} />
+    </div>
+  );
+}
+
+// --- Step 4: Content Safety ---
+function ContentSafetyStep({ data, onChange, onNext, onBack }) {
+  const { name, blockedTopics, allowTopicRequests } = data;
+  const displayName = name || 'your child';
+
+  const toggleTopic = (topicId) => {
+    const newTopics = blockedTopics.includes(topicId)
+      ? blockedTopics.filter((t) => t !== topicId)
+      : [...blockedTopics, topicId];
+    onChange({ blockedTopics: newTopics });
+  };
+
+  const allChecked = blockedTopics.length === ALL_BLOCKED_TOPICS.length;
+
+  const toggleAll = () => {
+    onChange({
+      blockedTopics: allChecked ? [] : ALL_BLOCKED_TOPICS.map((t) => t.id),
+    });
+  };
+
+  return (
+    <div className="px-6 py-8 animate-fadeIn">
+      <div className="text-center mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          What should {displayName} be protected from?
+        </h1>
+        <p className="text-gray-500">Choose which topics to block in search results</p>
+      </div>
+
+      {/* Select All */}
+      <button
+        type="button"
+        onClick={toggleAll}
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 rounded-xl mb-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition"
+      >
+        <span>{allChecked ? 'Deselect all' : 'Select all'}</span>
+        <Shield className="w-4 h-4 text-blue-500" />
+      </button>
+
+      {/* Topic Checkboxes */}
+      <div className="space-y-2 mb-4 max-h-[280px] overflow-y-auto pr-1">
+        {ALL_BLOCKED_TOPICS.map((topic) => {
+          const checked = blockedTopics.includes(topic.id);
+          return (
+            <button
+              key={topic.id}
+              type="button"
+              onClick={() => toggleTopic(topic.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition ${
+                checked
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+              }`}
+            >
+              <div className={`w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition ${
+                checked ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+              }`}>
+                {checked && <Check className="w-3.5 h-3.5 text-white" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 text-sm">{topic.label}</p>
+                <p className="text-xs text-gray-400 truncate">{topic.desc}</p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-5">
+        We recommend keeping all of these blocked. You can always adjust later from the dashboard.
+      </p>
+
+      {/* Allow Topic Requests Toggle */}
+      <div className="flex items-start gap-4 bg-white border border-gray-200 rounded-2xl px-4 py-4 mb-2">
+        <div className="flex-1">
+          <p className="font-medium text-gray-900 text-sm">
+            Allow {displayName} to request blocked topics
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5">
+            If they search for something blocked, they can ask you for permission instead of seeing nothing.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange({ allowTopicRequests: !allowTopicRequests })}
+          className={`relative w-12 h-7 rounded-full transition-colors flex-shrink-0 ${
+            allowTopicRequests ? 'bg-blue-500' : 'bg-gray-300'
+          }`}
+        >
+          <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${
+            allowTopicRequests ? 'translate-x-5.5' : 'translate-x-0.5'
+          }`} />
+        </button>
+      </div>
+
+      <NavButtons onBack={onBack} onNext={onNext} />
+    </div>
+  );
+}
+
+// --- Step 5: Accessibility ---
+function AccessibilityStep({ data, onChange, onNext, onBack }) {
+  const { name, accessibilityNeeds } = data;
+  const displayName = name || 'your child';
+
+  const toggleNeed = (needId) => {
+    const newNeeds = accessibilityNeeds.includes(needId)
+      ? accessibilityNeeds.filter((n) => n !== needId)
+      : [...accessibilityNeeds, needId];
+    onChange({ accessibilityNeeds: newNeeds });
+  };
+
+  return (
+    <div className="px-6 py-8 animate-fadeIn">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          Does {displayName} have any learning differences?
+        </h1>
+        <p className="text-gray-500">SafeStudy adapts answers for each of these</p>
+      </div>
+
+      <div className="space-y-3 mb-6">
+        {ACCESSIBILITY_OPTIONS.map((option) => {
+          const checked = accessibilityNeeds.includes(option.id);
+          return (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => toggleNeed(option.id)}
+              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 text-left transition ${
+                checked
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+              }`}
+            >
+              <div className={`w-6 h-6 rounded flex-shrink-0 border-2 flex items-center justify-center transition ${
+                checked ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+              }`}>
+                {checked && <Check className="w-4 h-4 text-white" />}
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-gray-900">{option.label}</p>
+                <p className="text-sm text-gray-500">{option.desc}</p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex gap-3 mt-8">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex items-center justify-center gap-2 px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-medium rounded-2xl transition active:scale-[0.97] min-w-[100px]"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+        <button
+          type="button"
+          onClick={onNext}
+          className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97]"
+        >
+          {accessibilityNeeds.length === 0 ? 'Skip' : 'Next'}
+          <ArrowRight className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// --- Step 6: Family Code ---
+function FamilyCodeStep({ data, familyCode, onNext, onBack, saving, error }) {
   const [copied, setCopied] = useState(false);
+  const displayName = data.name || 'your child';
 
   const copyCode = useCallback(async () => {
     if (!familyCode) return;
@@ -239,7 +516,7 @@ function FamilyCodeStep({ familyCode, onNext }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback — code is visible
+      // Fallback - code is visible
     }
   }, [familyCode]);
 
@@ -247,10 +524,16 @@ function FamilyCodeStep({ familyCode, onNext }) {
     <div className="px-6 py-8 animate-fadeIn">
       <div className="text-center mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-          Share this code with your kids
+          Share this code with {displayName}
         </h1>
-        <p className="text-gray-500">They'll use it to start searching safely</p>
+        <p className="text-gray-500">They enter this at the search page to start</p>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-6 text-center">
+          {error}
+        </div>
+      )}
 
       {/* Family Code Display */}
       <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-6 sm:p-8 mb-6">
@@ -278,9 +561,9 @@ function FamilyCodeStep({ familyCode, onNext }) {
       </div>
 
       {/* Instructions */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-8">
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-2">
         <p className="text-sm text-gray-600 mb-3">
-          Your kids enter this code at:
+          They enter this code at:
         </p>
         <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-3">
           <ExternalLink className="w-4 h-4 text-blue-500 flex-shrink-0" />
@@ -293,23 +576,20 @@ function FamilyCodeStep({ familyCode, onNext }) {
         </p>
       </div>
 
-      {/* Done Button */}
-      <button
-        onClick={onNext}
-        className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97]"
-      >
-        Done!
-        <ArrowRight className="w-5 h-5" />
-      </button>
+      <NavButtons
+        onBack={onBack}
+        onNext={onNext}
+        nextLabel={saving ? 'Saving...' : 'Finish Setup'}
+        loading={saving}
+      />
     </div>
   );
 }
 
-// --- Step 4: All Set ---
+// --- Step 7: All Set ---
 function AllSetStep({ onComplete, onAddAnother, onTrySearch }) {
   return (
     <div className="flex flex-col items-center text-center px-6 py-8 animate-fadeIn">
-      {/* Celebration */}
       <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-200 mb-6">
         <Sparkles className="w-10 h-10 text-white" />
       </div>
@@ -321,7 +601,6 @@ function AllSetStep({ onComplete, onAddAnother, onTrySearch }) {
         SafeStudy is ready. Your kids can now search the web safely with content filtered just for them.
       </p>
 
-      {/* Quick Links */}
       <div className="w-full max-w-sm space-y-3">
         <button
           onClick={onComplete}
@@ -363,8 +642,73 @@ function AllSetStep({ onComplete, onAddAnother, onTrySearch }) {
 // --- Main Wizard ---
 export default function OnboardingWizard({ userId, familyCode, onComplete }) {
   const [step, setStep] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
-  const TOTAL_STEPS = 4;
+  // All form data stored in state, saved at the end
+  const [formData, setFormData] = useState({
+    name: '',
+    age: 8,
+    color: 'blue',
+    readingLevel: gradeFromAge(8),
+    autoReadingLevel: true,
+    blockedTopics: ALL_BLOCKED_TOPICS.map((t) => t.id),
+    allowTopicRequests: true,
+    allowImageSearch: true,
+    accessibilityNeeds: [],
+  });
+
+  const createProfile = useMutation(api.kidProfiles.createProfile);
+  const updateProfile = useMutation(api.kidProfiles.updateProfile);
+
+  const updateFormData = useCallback((partial) => {
+    setFormData((prev) => {
+      const next = { ...prev, ...partial };
+      // When age changes and auto reading level is on, update reading level
+      if (partial.age !== undefined && prev.autoReadingLevel) {
+        next.readingLevel = gradeFromAge(partial.age);
+      }
+      return next;
+    });
+  }, []);
+
+  const goBack = useCallback(() => setStep((s) => Math.max(0, s - 1)), []);
+
+  // Save profile when transitioning from Step 6 to Step 7
+  const handleSaveAndFinish = useCallback(async () => {
+    setSaving(true);
+    setSaveError('');
+
+    try {
+      const profileId = await createProfile({
+        userId,
+        name: formData.name.trim(),
+        color: formData.color,
+        ageRange: { min: formData.age, max: formData.age },
+        contentStrictness: strictnessFromAge(formData.age),
+        blockedTopics: formData.blockedTopics,
+        allowImageSearch: formData.allowImageSearch,
+        allowFollowUp: true,
+      });
+
+      // Patch additional fields via updateProfile
+      const extras = {};
+      if (formData.readingLevel) extras.lexileLevel = formData.readingLevel;
+      if (formData.allowTopicRequests !== undefined) extras.allowTopicRequests = formData.allowTopicRequests;
+      if (formData.accessibilityNeeds.length > 0) extras.accessibilityNeeds = formData.accessibilityNeeds;
+
+      if (Object.keys(extras).length > 0) {
+        await updateProfile({ kidProfileId: profileId, ...extras });
+      }
+
+      setStep(6);
+    } catch (err) {
+      console.error('[OnboardingWizard] Save error:', err);
+      setSaveError('Something went wrong. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  }, [userId, formData, createProfile, updateProfile]);
 
   const handleComplete = useCallback(() => {
     localStorage.setItem('safestudy_onboarding_complete', 'true');
@@ -396,21 +740,53 @@ export default function OnboardingWizard({ userId, familyCode, onComplete }) {
           )}
 
           {step === 1 && (
-            <CreateProfileStep
-              userId={userId}
+            <NameAgeStep
+              data={formData}
+              onChange={updateFormData}
               onNext={() => setStep(2)}
-              onCreated={() => {}}
+              onBack={goBack}
             />
           )}
 
           {step === 2 && (
-            <FamilyCodeStep
-              familyCode={familyCode}
+            <ReadingLevelStep
+              data={formData}
+              onChange={updateFormData}
               onNext={() => setStep(3)}
+              onBack={goBack}
             />
           )}
 
           {step === 3 && (
+            <ContentSafetyStep
+              data={formData}
+              onChange={updateFormData}
+              onNext={() => setStep(4)}
+              onBack={goBack}
+            />
+          )}
+
+          {step === 4 && (
+            <AccessibilityStep
+              data={formData}
+              onChange={updateFormData}
+              onNext={() => setStep(5)}
+              onBack={goBack}
+            />
+          )}
+
+          {step === 5 && (
+            <FamilyCodeStep
+              data={formData}
+              familyCode={familyCode}
+              onNext={handleSaveAndFinish}
+              onBack={goBack}
+              saving={saving}
+              error={saveError}
+            />
+          )}
+
+          {step === 6 && (
             <AllSetStep
               onComplete={handleComplete}
               onAddAnother={handleAddAnother}
@@ -420,8 +796,8 @@ export default function OnboardingWizard({ userId, familyCode, onComplete }) {
         </div>
       </div>
 
-      {/* Skip link (steps 0-2 only) */}
-      {step < 3 && (
+      {/* Skip link (steps 0-5 only) */}
+      {step < 6 && (
         <div className="pb-6 text-center">
           <button
             onClick={handleComplete}
