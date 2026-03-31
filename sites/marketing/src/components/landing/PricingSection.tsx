@@ -8,6 +8,7 @@ const bundleFeatures = [
   { text: "SafeTunes — every song, parent-approved", value: "$4.99 value" },
   { text: "SafeTube — every video, parent-approved", value: "$4.99 value" },
   { text: "SafeReads — every book analyzed", value: "$4.99 value" },
+  { text: "SafeStudy — safe search + tutor", value: "$4.99 value" },
   { text: "Unlimited kid profiles for the whole family", value: null },
   { text: "7-day free trial, cancel anytime", value: null },
 ];
@@ -16,7 +17,8 @@ const bundleFeatures = [
 const SAFETUNES_PRICE = 4.99;
 const SAFETUBE_PRICE = 4.99;
 const SAFEREADS_PRICE = 4.99;
-const INDIVIDUAL_TOTAL = SAFETUNES_PRICE + SAFETUBE_PRICE + SAFEREADS_PRICE; // $14.97
+const SAFESTUDY_PRICE = 4.99;
+const INDIVIDUAL_TOTAL = SAFETUNES_PRICE + SAFETUBE_PRICE + SAFEREADS_PRICE + SAFESTUDY_PRICE; // $19.96
 
 // Stripe Price IDs
 const MONTHLY_PRICE_ID = "price_1SxaerKgkIT46sg7NHNy0wk8"; // $9.99/mo
@@ -44,7 +46,7 @@ export default function PricingSection() {
               All the content. All the control. One price.
             </h2>
             <p className="mt-4 text-lg text-navy/60 max-w-2xl mx-auto">
-              Cover books, music, and YouTube for <strong>less than Netflix</strong>. Save ${yearlySavings.toFixed(0)} every year.
+              Cover books, music, YouTube, and search for <strong>less than Netflix</strong>. Save ${yearlySavings.toFixed(0)} every year.
             </p>
           </div>
         </div>
@@ -62,7 +64,7 @@ export default function PricingSection() {
                     Safe Family
                   </h3>
                   <p className="text-sm text-navy/60 mt-1">
-                    SafeTunes + SafeTube + SafeReads
+                    SafeTunes + SafeTube + SafeReads + SafeStudy
                   </p>
                 </div>
 
@@ -83,6 +85,10 @@ export default function PricingSection() {
                     <div className="flex justify-between">
                       <span>SafeReads</span>
                       <span>${SAFEREADS_PRICE.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>SafeStudy</span>
+                      <span>${SAFESTUDY_PRICE.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between pt-2 border-t border-emerald-200 text-navy/50 line-through">
                       <span>Separate total</span>

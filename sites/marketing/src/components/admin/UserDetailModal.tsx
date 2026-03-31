@@ -37,6 +37,13 @@ const APP_CONFIG = {
     lightBg: "bg-emerald-50 dark:bg-emerald-900/20",
     borderColor: "border-emerald-200 dark:border-emerald-800",
   },
+  safestudy: {
+    name: "SafeStudy",
+    icon: "📝",
+    gradient: "from-amber-500 to-yellow-500",
+    lightBg: "bg-amber-50 dark:bg-amber-900/20",
+    borderColor: "border-amber-200 dark:border-amber-800",
+  },
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -215,7 +222,7 @@ function InfoCard({ label, value }: { label: string; value: string }) {
 }
 
 function AppCard({ app, hasAccess, appAccess, rawData }: {
-  app: "safetunes" | "safetube" | "safereads";
+  app: "safetunes" | "safetube" | "safereads" | "safestudy";
   hasAccess: boolean;
   appAccess?: GroupedUser["apps"][0];
   rawData: SafeTunesUser | SafeTubeUser | SafeReadsUser | null | undefined;

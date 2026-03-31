@@ -29,8 +29,8 @@ const APP_TO_PRICE: Record<string, string> = {
 };
 
 // Valid app names
-type AppName = "safetunes" | "safetube" | "safereads";
-const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
+type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
+const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
 
 /**
  * Normalize email to lowercase and trim whitespace.

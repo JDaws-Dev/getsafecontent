@@ -9,9 +9,10 @@ const APP_ENDPOINTS = {
   safetunes: "https://formal-chihuahua-623.convex.site",
   safetube: "https://rightful-rabbit-333.convex.site",
   safereads: "https://exuberant-puffin-838.convex.site",
+  safestudy: "https://strong-scorpion-227.convex.site",
 } as const;
 
-type AppName = "safetunes" | "safetube" | "safereads";
+type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 /**
  * Helper to provision a single app
@@ -83,7 +84,8 @@ export const forceProvisionUser = action({
     app: v.union(
       v.literal("safetunes"),
       v.literal("safetube"),
-      v.literal("safereads")
+      v.literal("safereads"),
+      v.literal("safestudy")
     ),
     adminKey: v.string(),
   },
@@ -192,7 +194,7 @@ export const forceProvisionAll = action({
 
     // Get entitled apps
     const account = await ctx.runQuery(api.accounts.getAccountByEmail, { email: normalizedEmail });
-    const entitledApps: AppName[] = (account?.entitledApps as AppName[]) || ["safetunes", "safetube", "safereads"];
+    const entitledApps: AppName[] = (account?.entitledApps as AppName[]) || ["safetunes", "safetube", "safereads", "safestudy"];
 
     const results: { app: string; success: boolean; error?: string }[] = [];
     const subscriptionStatus = centralUser.subscriptionStatus === "lifetime" ? "lifetime" : "active";

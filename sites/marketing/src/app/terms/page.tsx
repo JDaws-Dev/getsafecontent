@@ -64,7 +64,7 @@ export default function TermsPage() {
 
               <h3 className="text-xl font-medium text-navy mb-3">Pricing</h3>
               <ul className="list-disc pl-6 text-navy/80 mb-4 space-y-2">
-                <li>Safe Family Bundle: $9.99/month or $99/year (includes all three apps)</li>
+                <li>Safe Family Bundle: $9.99/month or $99/year (includes all four apps)</li>
                 <li>Individual apps: $4.99/month (SafeTunes), $4.99/month (SafeTube), $2.99/month (SafeReads)</li>
               </ul>
 

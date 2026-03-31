@@ -29,13 +29,14 @@ if (!ADMIN_KEY) {
 const CENTRAL_AUTH_ENDPOINT = "https://adamant-crow-705.convex.site";
 
 // App admin endpoint URLs
-type AppName = "safetunes" | "safetube" | "safereads";
-const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
+type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
+const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
 
 const APP_ENDPOINTS: Record<AppName, string> = {
   safetunes: "https://formal-chihuahua-623.convex.site",
   safetube: "https://rightful-rabbit-333.convex.site",
   safereads: "https://exuberant-puffin-838.convex.site",
+  safestudy: "https://strong-scorpion-227.convex.site",
 };
 
 // Timeout for provisioning calls

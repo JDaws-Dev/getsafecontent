@@ -57,6 +57,15 @@ const APP_CONFIG = {
     gradient: "from-emerald-500 to-teal-500",
     borderColor: "border-emerald-200 dark:border-emerald-700",
   },
+  safestudy: {
+    name: "SafeStudy",
+    icon: "📝",
+    color: "bg-amber-500",
+    lightBg: "bg-amber-50 dark:bg-amber-900/20",
+    textColor: "text-amber-600 dark:text-amber-400",
+    gradient: "from-amber-500 to-yellow-500",
+    borderColor: "border-amber-200 dark:border-amber-700",
+  },
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
@@ -89,7 +98,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: str
 
 type SortField = "name" | "email" | "apps" | "status" | "joined" | "activity" | "lastActive";
 type SortDirection = "asc" | "desc";
-type AppFilter = "all" | "safetunes" | "safetube" | "safereads";
+type AppFilter = "all" | "safetunes" | "safetube" | "safereads" | "safestudy";
 type ViewMode = "table" | "cards";
 
 const ITEMS_PER_PAGE = 25;

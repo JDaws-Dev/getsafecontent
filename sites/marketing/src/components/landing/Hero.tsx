@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Music, PlaySquare, Book, Shield } from "lucide-react";
+import { Music, PlaySquare, Book, Search, Shield } from "lucide-react";
 
-const rotatingWords = ["watching", "listening to", "reading"];
+const rotatingWords = ["watching", "listening to", "reading", "searching"];
 
 export default function Hero() {
   const [wordIndex, setWordIndex] = useState(0);
@@ -61,6 +61,10 @@ export default function Hero() {
                 <Book className="w-5 h-5 text-emerald-600" />
                 Any Book
               </span>
+              <span className="inline-flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-full font-medium text-gray-700 shadow-sm">
+                <Search className="w-5 h-5 text-cyan-600" />
+                Any Search
+              </span>
             </div>
 
             {/* Subheadline */}
@@ -74,11 +78,11 @@ export default function Hero() {
                 href="#pricing"
                 className="btn-peach inline-flex items-center justify-center text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all"
               >
-                Get All 3 Apps — $9.99/mo
+                Get All 4 Apps — $9.99/mo
               </a>
               <div className="text-sm text-navy/60">
-                <span className="line-through text-navy/40">$14.97</span>
-                <span className="ml-2 text-emerald-600 font-medium">Save 33%</span>
+                <span className="line-through text-navy/40">$19.96</span>
+                <span className="ml-2 text-emerald-600 font-medium">Save 50%</span>
               </div>
             </div>
 

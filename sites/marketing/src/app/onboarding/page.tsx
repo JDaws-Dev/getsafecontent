@@ -19,7 +19,7 @@ import { Shield, ChevronRight, Check, Music, Play, BookOpen, ArrowRight, SkipFor
  * - Sent to apps on completion via /api/onboarding/setup
  */
 
-type AppId = "safetunes" | "safetube" | "safereads";
+type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 // Onboarding data structure for each app
 interface SafeTunesData {
@@ -654,9 +654,9 @@ function OnboardingContent() {
   const emailParam = searchParams.get("email");
   const selectedApps: AppId[] = appsParam
     ? (appsParam.split(",").filter((a): a is AppId =>
-        ["safetunes", "safetube", "safereads"].includes(a)
+        ["safetunes", "safetube", "safereads", "safestudy"].includes(a)
       ))
-    : ["safetunes", "safetube", "safereads"];
+    : ["safetunes", "safetube", "safereads", "safestudy"];
 
   // State
   const [currentStepIndex, setCurrentStepIndex] = useState(-1); // -1 = welcome

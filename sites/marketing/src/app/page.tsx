@@ -22,7 +22,7 @@ export default function Home() {
         {/* 2. Problem - Why parents need this */}
         <ProblemSolutionSection />
 
-        {/* 3. Solution - The 3 apps (brief cards, not deep dives) */}
+        {/* 3. Solution - The 4 apps (brief cards, not deep dives) */}
         <AppCards />
 
         {/* 4. Try It - Live demos */}

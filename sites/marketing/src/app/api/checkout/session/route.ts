@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 
-type AppId = "safetunes" | "safetube" | "safereads";
+type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 /**
  * GET /api/checkout/session?session_id=cs_xxx
@@ -60,12 +60,12 @@ export async function GET(req: NextRequest) {
     const apps: AppId[] = appsString
       .split(",")
       .filter((a): a is AppId =>
-        ["safetunes", "safetube", "safereads"].includes(a)
+        ["safetunes", "safetube", "safereads", "safestudy"].includes(a)
       );
 
-    // If no apps in metadata, default to all 3
+    // If no apps in metadata, default to all
     if (apps.length === 0) {
-      apps.push("safetunes", "safetube", "safereads");
+      apps.push("safetunes", "safetube", "safereads", "safestudy");
     }
 
     // SECURITY: Only return non-sensitive data

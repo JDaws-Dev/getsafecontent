@@ -8,7 +8,7 @@
 /**
  * App names used throughout the system
  */
-export type AppName = "safetunes" | "safetube" | "safereads";
+export type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 /**
  * Possible subscription statuses
@@ -34,6 +34,7 @@ export interface OnboardingCompleted {
   safetunes?: boolean;
   safetube?: boolean;
   safereads?: boolean;
+  safestudy?: boolean;
 }
 
 /**

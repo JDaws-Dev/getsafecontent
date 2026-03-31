@@ -71,12 +71,13 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         trialExpiresAt,
         subscriptionStatus: "trial",
         // Grant access to all apps during trial
-        entitledApps: ["safetunes", "safetube", "safereads"],
+        entitledApps: ["safetunes", "safetube", "safereads", "safestudy"],
         // Initialize onboarding tracking
         onboardingCompleted: {
           safetunes: false,
           safetube: false,
           safereads: false,
+          safestudy: false,
         },
       });
 
@@ -89,7 +90,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         eventData: JSON.stringify({
           trialDays,
           trialExpiresAt,
-          entitledApps: ["safetunes", "safetube", "safereads"],
+          entitledApps: ["safetunes", "safetube", "safereads", "safestudy"],
         }),
         timestamp: now,
       });

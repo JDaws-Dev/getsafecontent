@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     // Validate all apps
-    const validApps = ["safetunes", "safetube", "safereads"];
+    const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
     for (const app of apps) {
       if (!validApps.includes(app)) {
         return NextResponse.json({ error: `Invalid app: ${app}` }, { status: 400 });

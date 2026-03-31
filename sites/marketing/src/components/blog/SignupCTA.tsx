@@ -33,9 +33,9 @@ const productConfig = {
   all: {
     icon: Shield,
     color: "from-peach-start to-peach-end",
-    defaultHeadline: "Get all 3 apps for one low price",
+    defaultHeadline: "Get all 4 apps for one low price",
     defaultDescription:
-      "SafeTunes + SafeTube + SafeReads. Just $9.99/month. Try free for 7 days.",
+      "SafeTunes + SafeTube + SafeReads + SafeStudy. Just $9.99/month. Try free for 7 days.",
   },
 };
 

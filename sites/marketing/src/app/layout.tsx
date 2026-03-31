@@ -23,11 +23,11 @@ const siteUrl = process.env.NEXT_PUBLIC_URL || "https://getsafefamily.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Safe Family — SafeTunes, SafeTube, SafeReads",
+    default: "Safe Family — SafeTunes, SafeTube, SafeReads, SafeStudy",
     template: "%s | Safe Family",
   },
   description:
-    "Three apps that let you approve every song, video, and book before your kids see it. Get all 3 for $9.99/month.",
+    "Four apps that let you approve every song, video, book, and search before your kids see it. Get all 4 for $9.99/month.",
   keywords: [
     "parental controls",
     "safe content",
@@ -39,6 +39,8 @@ export const metadata: Metadata = {
     "SafeTunes",
     "SafeTube",
     "SafeReads",
+    "SafeStudy",
+    "safe search",
   ],
   authors: [{ name: "Safe Family" }],
   creator: "Safe Family",
@@ -52,9 +54,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Safe Family — Music, Video, Books. All Parent-Approved.",
+    title: "Safe Family — Music, Video, Books, Search. All Parent-Approved.",
     description:
-      "Three apps that let you approve every song, video, and book before your kids see it. Get all 3 for $9.99/month.",
+      "Four apps that let you approve every song, video, book, and search before your kids see it. Get all 4 for $9.99/month.",
     url: siteUrl,
     siteName: "Safe Family",
     images: [
@@ -70,9 +72,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Safe Family — Music, Video, Books. All Parent-Approved.",
+    title: "Safe Family — Music, Video, Books, Search. All Parent-Approved.",
     description:
-      "Three apps that let you approve every song, video, and book before your kids see it. Get all 3 for $9.99/month.",
+      "Four apps that let you approve every song, video, book, and search before your kids see it. Get all 4 for $9.99/month.",
     images: ["/og-image.png"],
   },
   icons: {

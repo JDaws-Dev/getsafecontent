@@ -57,7 +57,8 @@ export default defineSchema({
         v.union(
           v.literal("safetunes"),
           v.literal("safetube"),
-          v.literal("safereads")
+          v.literal("safereads"),
+          v.literal("safestudy")
         )
       )
     ),
@@ -68,6 +69,7 @@ export default defineSchema({
         safetunes: v.optional(v.boolean()),
         safetube: v.optional(v.boolean()),
         safereads: v.optional(v.boolean()),
+        safestudy: v.optional(v.boolean()),
       })
     ),
 
@@ -88,7 +90,8 @@ export default defineSchema({
       v.union(
         v.literal("safetunes"),
         v.literal("safetube"),
-        v.literal("safereads")
+        v.literal("safereads"),
+        v.literal("safestudy")
       )
     ), // Which app they originally subscribed to
     migratedAt: v.optional(v.number()), // When they were migrated to central accounts
@@ -99,6 +102,7 @@ export default defineSchema({
         safetunes: v.optional(v.number()),
         safetube: v.optional(v.number()),
         safereads: v.optional(v.number()),
+        safestudy: v.optional(v.number()),
       })
     ),
   })
@@ -117,7 +121,8 @@ export default defineSchema({
         v.union(
           v.literal("safetunes"),
           v.literal("safetube"),
-          v.literal("safereads")
+          v.literal("safereads"),
+          v.literal("safestudy")
         )
       )
     ), // Which apps this code grants access to (null = all apps)
@@ -190,7 +195,8 @@ export default defineSchema({
     app: v.union(
       v.literal("safetunes"),
       v.literal("safetube"),
-      v.literal("safereads")
+      v.literal("safereads"),
+      v.literal("safestudy")
     ),
     lastSyncedAt: v.number(), // When we last synced to this app
     syncStatus: v.union(

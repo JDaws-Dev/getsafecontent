@@ -27,6 +27,11 @@ const APP_CONFIG = {
     icon: "📚",
     color: "bg-emerald-500",
   },
+  safestudy: {
+    name: "SafeStudy",
+    icon: "📝",
+    color: "bg-amber-500",
+  },
 };
 
 export function QuickActionsModal({ user, onClose, onComplete }: QuickActionsModalProps) {
@@ -270,7 +275,7 @@ export function QuickActionsModal({ user, onClose, onComplete }: QuickActionsMod
               </p>
 
               <div className="space-y-2">
-                {(["safetunes", "safetube", "safereads"] as const).map(app => {
+                {(["safetunes", "safetube", "safereads", "safestudy"] as const).map(app => {
                   const config = APP_CONFIG[app];
                   const isSelected = selectedApps.has(app);
 

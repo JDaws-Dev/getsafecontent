@@ -84,10 +84,10 @@ export async function POST(req: Request) {
     }
 
     // Validate source app
-    const validApps = ["safetunes", "safetube", "safereads"];
+    const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
     if (!sourceApp || !validApps.includes(sourceApp)) {
       return NextResponse.json(
-        { success: false, error: "Invalid sourceApp. Must be one of: safetunes, safetube, safereads" },
+        { success: false, error: "Invalid sourceApp. Must be one of: safetunes, safetube, safereads, safestudy" },
         { status: 400 }
       );
     }

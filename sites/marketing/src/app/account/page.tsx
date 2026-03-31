@@ -31,7 +31,7 @@ import {
   FileText,
 } from "lucide-react";
 
-type AppId = "safetunes" | "safetube" | "safereads";
+type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 const APP_INFO: Record<AppId, { name: string; domain: string; icon: React.ReactNode; gradient: string }> = {
   safetunes: {

@@ -37,7 +37,7 @@ export default function StickyMobileCTA() {
               Safe Family — $9.99/mo
             </p>
             <p className="text-xs text-navy/60">
-              All 3 apps • Save 33%
+              All 4 apps • Save 50%
             </p>
           </div>
           <a

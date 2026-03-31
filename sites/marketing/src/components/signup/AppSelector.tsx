@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Music, PlaySquare, BookOpen, Check, Sparkles } from "lucide-react";
 
-export type AppId = "safetunes" | "safetube" | "safereads";
+export type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 interface AppSelectorProps {
   /** Which app(s) to pre-select (e.g., from referrer) */

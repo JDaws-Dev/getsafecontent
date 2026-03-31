@@ -21,14 +21,15 @@ const INITIAL_DELAY_MS = 1000;
 const PROVISION_TIMEOUT_MS = 5000;
 
 // Valid app names
-export type AppName = "safetunes" | "safetube" | "safereads";
-export const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
+export type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
+export const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
 
 // App admin endpoint URLs
 const APP_ENDPOINTS: Record<AppName, string> = {
   safetunes: "https://formal-chihuahua-623.convex.site",
   safetube: "https://rightful-rabbit-333.convex.site",
   safereads: "https://exuberant-puffin-838.convex.site",
+  safestudy: "https://strong-scorpion-227.convex.site",
 };
 
 // Central auth endpoint (Marketing site)

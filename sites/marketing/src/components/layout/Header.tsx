@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Shield, Music, PlaySquare, Book } from "lucide-react";
+import { Shield, Music, PlaySquare, Book, Search } from "lucide-react";
 import { ThemeToggle } from "../ThemeToggle";
 
 const apps = [
   { name: "SafeTunes", href: "https://getsafetunes.com", icon: Music, color: "text-purple-600" },
   { name: "SafeTube", href: "https://getsafetube.com", icon: PlaySquare, color: "text-red-500" },
   { name: "SafeReads", href: "https://getsafereads.com", icon: Book, color: "text-emerald-600" },
+  { name: "SafeStudy", href: "https://getsafestudy.com", icon: Search, color: "text-cyan-600" },
 ];
 
 export default function Header() {

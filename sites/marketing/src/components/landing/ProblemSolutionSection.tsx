@@ -1,4 +1,4 @@
-import { AlertTriangle, Music, PlaySquare, Book, ArrowRight } from "lucide-react";
+import { AlertTriangle, Music, PlaySquare, Book, Search, ArrowRight } from "lucide-react";
 
 const painPoints = [
   {
@@ -28,6 +28,15 @@ const painPoints = [
     bgColor: "bg-emerald-50",
     textColor: "text-emerald-700",
   },
+  {
+    icon: Search,
+    problem: "Google isn't built for kids.",
+    description: "One wrong search and they see things you can't unsee. No age filtering, no parent visibility, no controls.",
+    solution: "SafeStudy: They search safely. You see everything.",
+    color: "from-cyan-500 to-blue-500",
+    bgColor: "bg-cyan-50",
+    textColor: "text-cyan-700",
+  },
 ];
 
 export default function ProblemSolutionSection() {
@@ -44,12 +53,12 @@ export default function ProblemSolutionSection() {
             Kids apps are too limited. Regular apps are too open.
           </h2>
           <p className="text-lg text-navy/60 max-w-2xl mx-auto">
-            Your kids want access to YouTube, Apple Music, and popular books. You just want to know what they&apos;re consuming. <strong>Now you can have both.</strong>
+            Your kids want access to YouTube, Apple Music, popular books, and the internet. You just want to know what they&apos;re consuming. <strong>Now you can have both.</strong>
           </p>
         </div>
 
         {/* Pain Points Grid */}
-        <div className="grid gap-6 md:gap-8 md:grid-cols-3">
+        <div className="grid gap-6 md:gap-8 md:grid-cols-2 lg:grid-cols-4">
           {painPoints.map((point) => (
             <div
               key={point.problem}

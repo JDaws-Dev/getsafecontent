@@ -33,6 +33,12 @@ const ENDPOINTS = {
     grantLifetime: "/grantLifetime",
     deleteUser: "/deleteUser",
   },
+  safestudy: {
+    base: "https://strong-scorpion-227.convex.site",
+    adminDashboard: "/adminDashboard",
+    grantLifetime: "/grantLifetime",
+    deleteUser: "/deleteUser",
+  },
 };
 
 export async function fetchSafeTunesUsers(): Promise<SafeTunesUser[]> {
@@ -339,7 +345,7 @@ export function calculateStats(data: {
 }
 
 export async function grantLifetime(
-  app: "safetunes" | "safetube" | "safereads",
+  app: "safetunes" | "safetube" | "safereads" | "safestudy",
   email: string
 ): Promise<{ success: boolean; message: string }> {
   let url: string;
@@ -349,7 +355,7 @@ export async function grantLifetime(
   } else if (app === "safetube") {
     url = `${ENDPOINTS.safetube.base}${ENDPOINTS.safetube.setSubscriptionStatus}?email=${encodeURIComponent(email)}&status=lifetime&key=${encodeURIComponent(ADMIN_KEY)}`;
   } else {
-    url = `${ENDPOINTS.safereads.base}${ENDPOINTS.safereads.grantLifetime}?email=${encodeURIComponent(email)}&key=${encodeURIComponent(ADMIN_KEY)}`;
+    url = `${ENDPOINTS[app].base}${ENDPOINTS[app].grantLifetime}?email=${encodeURIComponent(email)}&key=${encodeURIComponent(ADMIN_KEY)}`;
   }
 
   const res = await fetch(url);
@@ -363,7 +369,7 @@ export async function grantLifetime(
 }
 
 export async function deleteUser(
-  app: "safetunes" | "safetube" | "safereads",
+  app: "safetunes" | "safetube" | "safereads" | "safestudy",
   email: string
 ): Promise<{ success: boolean; message: string }> {
   const baseUrl = ENDPOINTS[app].base;
@@ -382,7 +388,7 @@ export async function deleteUser(
 // Grant lifetime to all apps that the user has
 export async function grantLifetimeAll(
   email: string,
-  apps: ("safetunes" | "safetube" | "safereads")[]
+  apps: ("safetunes" | "safetube" | "safereads" | "safestudy")[]
 ): Promise<{ success: boolean; results: { app: string; success: boolean; message: string }[] }> {
   const results = await Promise.all(
     apps.map(async (app) => {
@@ -398,7 +404,7 @@ export async function grantLifetimeAll(
 // Delete user from all apps
 export async function deleteUserAll(
   email: string,
-  apps: ("safetunes" | "safetube" | "safereads")[]
+  apps: ("safetunes" | "safetube" | "safereads" | "safestudy")[]
 ): Promise<{ success: boolean; results: { app: string; success: boolean; message: string }[] }> {
   const results = await Promise.all(
     apps.map(async (app) => {

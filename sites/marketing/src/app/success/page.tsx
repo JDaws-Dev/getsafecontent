@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Shield, ChevronRight, Music, Play, BookOpen, Loader2 } from "lucide-react";
 
-type AppId = "safetunes" | "safetube" | "safereads";
+type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 interface SessionData {
   apps: AppId[];
@@ -42,14 +42,14 @@ function SuccessContent() {
       // Promo signups always get all apps (lifetime access)
       if (isPromoSignup) {
         setLoading(false);
-        setSessionData({ apps: ["safetunes", "safetube", "safereads"] });
+        setSessionData({ apps: ["safetunes", "safetube", "safereads", "safestudy"] });
         return;
       }
 
       if (!sessionId) {
         // No session ID - show default success page
         setLoading(false);
-        setSessionData({ apps: ["safetunes", "safetube", "safereads"] });
+        setSessionData({ apps: ["safetunes", "safetube", "safereads", "safestudy"] });
         return;
       }
 
@@ -60,12 +60,12 @@ function SuccessContent() {
         }
         const data = await response.json();
         setSessionData({
-          apps: data.apps || ["safetunes", "safetube", "safereads"],
+          apps: data.apps || ["safetunes", "safetube", "safereads", "safestudy"],
         });
       } catch (err) {
         console.error("Error fetching session:", err);
         // Default to all apps on error
-        setSessionData({ apps: ["safetunes", "safetube", "safereads"] });
+        setSessionData({ apps: ["safetunes", "safetube", "safereads", "safestudy"] });
       } finally {
         setLoading(false);
       }
@@ -125,7 +125,7 @@ function SuccessContent() {
     );
   }
 
-  const selectedApps = sessionData?.apps || ["safetunes", "safetube", "safereads"];
+  const selectedApps = sessionData?.apps || ["safetunes", "safetube", "safereads", "safestudy"];
 
   const APP_ICONS = {
     safetunes: { icon: Music, gradient: "from-indigo-500 to-purple-600", name: "SafeTunes" },

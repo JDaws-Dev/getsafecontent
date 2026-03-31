@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!["safetunes", "safetube", "safereads"].includes(app)) {
+    if (!["safetunes", "safetube", "safereads", "safestudy"].includes(app)) {
       return NextResponse.json({ error: "Invalid app" }, { status: 400 });
     }
 

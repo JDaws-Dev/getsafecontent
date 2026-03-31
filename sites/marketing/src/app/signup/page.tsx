@@ -118,12 +118,12 @@ function SignupContent() {
 
   // Get initial app selection from query params
   const initialApp = searchParams.get("app") as AppId | null;
-  const validApps: AppId[] = ["safetunes", "safetube", "safereads"];
+  const validApps: AppId[] = ["safetunes", "safetube", "safereads", "safestudy"];
   const preSelectedApp = initialApp && validApps.includes(initialApp) ? initialApp : null;
 
   // State for selected apps - default to pre-selected app or all apps
   const [selectedApps, setSelectedApps] = useState<AppId[]>(
-    preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safereads"]
+    preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safereads", "safestudy"]
   );
 
   // State for pricing info
@@ -450,7 +450,7 @@ function SignupContent() {
             {/* Left column: App selection */}
             <div className="card-soft p-6 sm:p-8">
               <AppSelector
-                initialApps={preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safereads"]}
+                initialApps={preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safereads", "safestudy"]}
                 onChange={handleAppSelectionChange}
                 showYearlyToggle={true}
               />

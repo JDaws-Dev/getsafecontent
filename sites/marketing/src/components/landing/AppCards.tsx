@@ -1,4 +1,4 @@
-import { Music, PlaySquare, BookOpen, ExternalLink } from "lucide-react";
+import { Music, PlaySquare, BookOpen, Search, ExternalLink } from "lucide-react";
 
 const apps = [
   {
@@ -56,6 +56,24 @@ const apps = [
           { label: "Language", level: "None", color: "green" },
           { label: "Romance", level: "None", color: "green" },
         ]
+      }
+    }
+  },
+  {
+    id: "safestudy",
+    name: "SafeStudy",
+    tagline: "Works with Any Search",
+    description: "A safe search engine with a built-in tutor. Kids get answers at their reading level. Parents see every search and control what's off-limits.",
+    icon: Search,
+    gradient: "from-cyan-500 to-blue-500",
+    href: "https://getsafestudy.com",
+    highlight: "AI-powered",
+    preview: {
+      type: "search",
+      query: {
+        question: "Why is the sky blue?",
+        answer: "Sunlight has all the colors of the rainbow mixed together. When it hits the air, blue light bounces around the most because it travels in shorter waves. That's why when you look up, you see blue!",
+        level: "Ages 8-10",
       }
     }
   },
@@ -142,6 +160,26 @@ function BookPreview({ analysis }: { analysis: { title: string; rating: string; 
   );
 }
 
+function SearchPreview({ query }: { query: { question: string; answer: string; level: string } }) {
+  return (
+    <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-4">
+      <p className="text-xs text-gray-500 mb-3">Safe Search</p>
+      <div className="bg-white rounded-lg px-3 py-2 shadow-sm mb-3 flex items-center gap-2">
+        <Search className="w-4 h-4 text-cyan-500 flex-shrink-0" />
+        <p className="text-sm font-medium text-gray-900">{query.question}</p>
+      </div>
+      <div className="bg-white rounded-lg px-3 py-3 shadow-sm">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="inline-block px-2 py-0.5 bg-cyan-100 text-cyan-700 text-xs font-medium rounded-full">
+            {query.level}
+          </span>
+        </div>
+        <p className="text-xs text-gray-600 leading-relaxed">{query.answer}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function AppCards() {
   return (
     <section id="apps" className="py-12 sm:py-16 bg-white">
@@ -149,7 +187,7 @@ export default function AppCards() {
         {/* Section header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight text-navy sm:text-4xl mb-4">
-            Three apps. One subscription.
+            Four apps. One subscription.
           </h2>
           <p className="text-lg text-navy/60 max-w-2xl mx-auto">
             Each one works with platforms your kids already use. You just control what they can access.
@@ -157,7 +195,7 @@ export default function AppCards() {
         </div>
 
         {/* App cards grid */}
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {apps.map((app) => (
             <div
               key={app.id}
@@ -197,6 +235,9 @@ export default function AppCards() {
                 {app.preview.type === "book" && app.preview.analysis && (
                   <BookPreview analysis={app.preview.analysis} />
                 )}
+                {app.preview.type === "search" && app.preview.query && (
+                  <SearchPreview query={app.preview.query as { question: string; answer: string; level: string }} />
+                )}
               </div>
 
               {/* Link */}
@@ -219,7 +260,7 @@ export default function AppCards() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            All three included in Safe Family for $9.99/month
+            All four included in Safe Family for $9.99/month
           </div>
         </div>
       </div>

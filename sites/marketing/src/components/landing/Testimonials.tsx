@@ -2,7 +2,7 @@
 
 import { Music, Play, BookOpen } from "lucide-react";
 
-type App = "safetunes" | "safetube" | "safereads";
+type App = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 interface Testimonial {
   quote: string;

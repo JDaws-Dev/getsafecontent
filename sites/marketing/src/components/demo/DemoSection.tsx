@@ -175,13 +175,13 @@ export default function DemoSection() {
               Ready to take control?
             </h3>
             <p className="text-gray-600 mb-6">
-              Get full access to SafeReads, SafeTunes, and SafeTube with one simple subscription.
+              Get full access to SafeReads, SafeTunes, SafeTube, and SafeStudy with one simple subscription.
             </p>
             <a
               href="#pricing"
               className="inline-flex items-center gap-2 px-8 py-4 bg-navy text-white rounded-full font-semibold hover:bg-navy/90 transition-all shadow-lg hover:shadow-xl hover:scale-105"
             >
-              Get All 3 Apps for $9.99/month
+              Get All 4 Apps for $9.99/month
               <ChevronRight className="h-5 w-5" />
             </a>
             <p className="text-sm text-gray-500 mt-4">

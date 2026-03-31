@@ -44,7 +44,7 @@ const APP_TO_PRICE: Record<string, string> = {
 };
 
 // Valid app names (AppName type imported from provisioning)
-const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
+const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
 
 // Get the appropriate price ID for a given set of apps
 function getPriceIdForApps(

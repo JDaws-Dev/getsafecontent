@@ -30,12 +30,12 @@ interface AppUser {
   createdAt?: number;
 }
 
-type AppType = "safetunes" | "safetube" | "safereads";
+type AppType = "safetunes" | "safetube" | "safereads" | "safestudy";
 type SubscriptionStatus = "trial" | "active" | "lifetime" | "canceled" | "past_due" | "incomplete" | "expired";
 
 // App pricing - individual apps were $4.99/mo
 const INDIVIDUAL_APP_RATE = 4.99;
-const ALL_APPS: AppType[] = ["safetunes", "safetube", "safereads"];
+const ALL_APPS: AppType[] = ["safetunes", "safetube", "safereads", "safestudy"];
 
 /**
  * Helper to determine the "best" subscription status when merging multiple accounts
@@ -108,14 +108,16 @@ export const migrateUser = internalMutation({
       v.union(
         v.literal("safetunes"),
         v.literal("safetube"),
-        v.literal("safereads")
+        v.literal("safereads"),
+        v.literal("safestudy")
       )
     ),
     sourceApps: v.array(
       v.union(
         v.literal("safetunes"),
         v.literal("safetube"),
-        v.literal("safereads")
+        v.literal("safereads"),
+        v.literal("safestudy")
       )
     ),
   },
@@ -456,7 +458,8 @@ export const migrateUserByEmail = mutation({
       v.union(
         v.literal("safetunes"),
         v.literal("safetube"),
-        v.literal("safereads")
+        v.literal("safereads"),
+        v.literal("safestudy")
       )
     ),
     stripeCustomerId: v.optional(v.string()),

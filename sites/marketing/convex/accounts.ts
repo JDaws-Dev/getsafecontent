@@ -12,7 +12,7 @@ import { getAuthUserId } from "./auth";
 
 // Constants
 const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-const ALL_APPS = ["safetunes", "safetube", "safereads"] as const;
+const ALL_APPS = ["safetunes", "safetube", "safereads", "safestudy"] as const;
 
 type AppType = (typeof ALL_APPS)[number];
 type SubscriptionStatus =
@@ -28,7 +28,8 @@ type SubscriptionStatus =
 const appValidator = v.union(
   v.literal("safetunes"),
   v.literal("safetube"),
-  v.literal("safereads")
+  v.literal("safereads"),
+  v.literal("safestudy")
 );
 
 /**
@@ -1158,7 +1159,8 @@ export const markProvisioned = internalMutation({
     app: v.union(
       v.literal("safetunes"),
       v.literal("safetube"),
-      v.literal("safereads")
+      v.literal("safereads"),
+      v.literal("safestudy")
     ),
   },
   handler: async (ctx, args) => {

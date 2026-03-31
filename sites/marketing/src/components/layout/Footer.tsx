@@ -4,6 +4,7 @@ const apps = [
   { name: "SafeTunes", href: "https://getsafetunes.com" },
   { name: "SafeTube", href: "https://getsafetube.com" },
   { name: "SafeReads", href: "https://getsafereads.com" },
+  { name: "SafeStudy", href: "https://getsafestudy.com" },
 ];
 
 const legalLinks = [

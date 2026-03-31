@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-type AppName = "safetunes" | "safetube" | "safereads";
+type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
 type SubscriptionStatus = "trial" | "active" | "lifetime" | "cancelled" | "expired";
 
 type AppStatus = {
@@ -26,9 +26,10 @@ const APP_DISPLAY_NAMES: Record<AppName, string> = {
   safetunes: "SafeTunes",
   safetube: "SafeTube",
   safereads: "SafeReads",
+  safestudy: "SafeStudy",
 };
 
-const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
+const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
 
 const STATUS_OPTIONS: { value: SubscriptionStatus; label: string; description: string }[] = [
   { value: "trial", label: "Trial", description: "7-day free trial" },

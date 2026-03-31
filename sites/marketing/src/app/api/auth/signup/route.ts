@@ -98,7 +98,7 @@ export async function POST(req: Request) {
     }
 
     // Validate selectedApps if provided
-    const validApps = ["safetunes", "safetube", "safereads"];
+    const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
     if (selectedApps) {
       if (!Array.isArray(selectedApps)) {
         return NextResponse.json(
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
         email: normalizedEmail,
         passwordHash,
         name: name?.trim() || undefined,
-        selectedApps: selectedApps || ["safetunes", "safetube", "safereads"],
+        selectedApps: selectedApps || ["safetunes", "safetube", "safereads", "safestudy"],
       }),
     });
 

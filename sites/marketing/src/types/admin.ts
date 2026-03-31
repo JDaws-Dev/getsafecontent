@@ -47,7 +47,7 @@ export interface SafeReadsUser {
 export interface UnifiedUser {
   email: string;
   name: string | null;
-  app: "safetunes" | "safetube" | "safereads";
+  app: "safetunes" | "safetube" | "safereads" | "safestudy";
   subscriptionStatus: string;
   createdAt: number | null;
   stripeCustomerId: string | null;
@@ -63,7 +63,7 @@ export interface UnifiedUser {
 
 // Per-app access info for grouped users
 export interface AppAccess {
-  app: "safetunes" | "safetube" | "safereads";
+  app: "safetunes" | "safetube" | "safereads" | "safestudy";
   subscriptionStatus: string;
   createdAt: number | null;
   stripeCustomerId: string | null;

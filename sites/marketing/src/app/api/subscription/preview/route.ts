@@ -31,8 +31,8 @@ const APP_TO_PRICE: Record<string, string> = {
   safereads: PRICE_IDS.SAFEREADS,
 };
 
-type AppName = "safetunes" | "safetube" | "safereads";
-const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
+type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
+const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
 
 // Get the appropriate price ID for a given set of apps
 function getPriceIdForApps(

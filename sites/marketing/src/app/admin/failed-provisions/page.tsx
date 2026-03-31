@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-type AppName = "safetunes" | "safetube" | "safereads";
+type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 type AppStatus = {
   app: AppName;
@@ -34,7 +34,7 @@ function FailedProvisionsContent() {
   const [email, setEmail] = useState(initialEmail);
   const [selectedApps, setSelectedApps] = useState<AppName[]>(
     initialApps.filter((a): a is AppName =>
-      ["safetunes", "safetube", "safereads"].includes(a)
+      ["safetunes", "safetube", "safereads", "safestudy"].includes(a)
     )
   );
   const [isChecking, setIsChecking] = useState(false);

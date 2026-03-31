@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
  *
  * Request body:
  * {
- *   app: "safetunes" | "safetube" | "safereads",
+ *   app: "safetunes" | "safetube" | "safereads" | "safestudy",
  *   email: string,
  *   data: {
  *     kidName: string,
@@ -20,7 +20,7 @@ import { NextRequest, NextResponse } from "next/server";
  * }
  */
 
-type AppId = "safetunes" | "safetube" | "safereads";
+type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 interface SetupRequest {
   app: AppId;
@@ -54,9 +54,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate app
-    if (!["safetunes", "safetube", "safereads"].includes(app)) {
+    if (!["safetunes", "safetube", "safereads", "safestudy"].includes(app)) {
       return NextResponse.json(
-        { error: "Invalid app. Must be safetunes, safetube, or safereads" },
+        { error: "Invalid app. Must be safetunes, safetube, safereads, or safestudy" },
         { status: 400 }
       );
     }

@@ -240,7 +240,7 @@ http.route({
   handler: httpAction(async (ctx, request) => {
     const url = new URL(request.url);
     const email = url.searchParams.get("email");
-    const app = url.searchParams.get("app") as "safetunes" | "safetube" | "safereads" | null;
+    const app = url.searchParams.get("app") as "safetunes" | "safetube" | "safereads" | "safestudy" | null;
     const key = url.searchParams.get("key");
 
     // CORS headers
@@ -267,9 +267,9 @@ http.route({
       );
     }
 
-    if (!app || !["safetunes", "safetube", "safereads"].includes(app)) {
+    if (!app || !["safetunes", "safetube", "safereads", "safestudy"].includes(app)) {
       return new Response(
-        JSON.stringify({ error: "Valid app parameter required (safetunes, safetube, safereads)" }),
+        JSON.stringify({ error: "Valid app parameter required (safetunes, safetube, safereads, safestudy)" }),
         { status: 400, headers }
       );
     }
@@ -326,9 +326,9 @@ http.route({
 
     try {
       // Parse apps if provided
-      let apps: ("safetunes" | "safetube" | "safereads")[] | undefined;
+      let apps: ("safetunes" | "safetube" | "safereads" | "safestudy")[] | undefined;
       if (appsParam) {
-        const validApps = ["safetunes", "safetube", "safereads"];
+        const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
         apps = appsParam
           .split(",")
           .map((a) => a.trim().toLowerCase())
@@ -411,7 +411,7 @@ http.route({
 
       // Validate entitled apps if provided
       if (body.entitledApps) {
-        const validApps = ["safetunes", "safetube", "safereads"];
+        const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
         if (!Array.isArray(body.entitledApps) || !body.entitledApps.every((a: string) => validApps.includes(a))) {
           return new Response(
             JSON.stringify({ error: "entitledApps must be an array of valid app names" }),
@@ -967,7 +967,7 @@ http.route({
       }
 
       // Validate selectedApps if provided
-      const validApps = ["safetunes", "safetube", "safereads"];
+      const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
       if (body.selectedApps) {
         if (!Array.isArray(body.selectedApps)) {
           return new Response(
@@ -1536,7 +1536,7 @@ http.route({
  * Admin endpoint to force re-provision a user to an app.
  *
  * POST /forceProvision?key=API_KEY
- * Body: { email: string, app: "safetunes" | "safetube" | "safereads" }
+ * Body: { email: string, app: "safetunes" | "safetube" | "safereads" | "safestudy" }
  *
  * OR for all apps:
  * POST /forceProvision?key=API_KEY
@@ -1576,9 +1576,9 @@ http.route({
         );
       }
 
-      if (!app || !["safetunes", "safetube", "safereads", "all"].includes(app)) {
+      if (!app || !["safetunes", "safetube", "safereads", "safestudy", "all"].includes(app)) {
         return new Response(
-          JSON.stringify({ error: "App must be safetunes, safetube, safereads, or all" }),
+          JSON.stringify({ error: "App must be safetunes, safetube, safereads, safestudy, or all" }),
           { status: 400, headers }
         );
       }
@@ -1592,7 +1592,7 @@ http.route({
       } else {
         result = await ctx.runAction(api.forceProvision.forceProvisionUser, {
           email,
-          app: app as "safetunes" | "safetube" | "safereads",
+          app: app as "safetunes" | "safetube" | "safereads" | "safestudy",
           adminKey: key,
         });
       }
@@ -1702,7 +1702,7 @@ http.route({
         );
       }
 
-      const validApps = ["safetunes", "safetube", "safereads"];
+      const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
       if (!body.entitledApps.every((a: string) => validApps.includes(a))) {
         return new Response(
           JSON.stringify({ success: false, error: "entitledApps contains invalid app names" }),

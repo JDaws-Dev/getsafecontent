@@ -352,7 +352,7 @@ export async function GET(req: Request) {
       template,
       userName,
       daysLeft,
-      appNames: ["safetunes", "safetube", "safereads"],
+      appNames: ["safetunes", "safetube", "safereads", "safestudy"],
     });
 
     return NextResponse.json({

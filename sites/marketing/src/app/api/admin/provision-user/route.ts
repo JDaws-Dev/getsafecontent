@@ -9,8 +9,8 @@ const ADMIN_KEY = process.env.ADMIN_API_KEY || "";
 const ADMIN_EMAIL = "jedaws@gmail.com";
 
 // Valid app names
-type AppName = "safetunes" | "safetube" | "safereads";
-const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads"];
+type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
+const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
 
 // Valid subscription statuses
 const VALID_STATUSES = ["trial", "active", "lifetime", "cancelled", "expired"] as const;
@@ -21,6 +21,7 @@ const APP_ENDPOINTS: Record<AppName, string> = {
   safetunes: "https://formal-chihuahua-623.convex.site",
   safetube: "https://rightful-rabbit-333.convex.site",
   safereads: "https://exuberant-puffin-838.convex.site",
+  safestudy: "https://strong-scorpion-227.convex.site",
 };
 
 // Retry configuration
