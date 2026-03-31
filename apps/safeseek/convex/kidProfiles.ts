@@ -33,12 +33,16 @@ export const createProfile = mutation({
     }),
     contentStrictness: v.string(),
     blockedTopics: v.array(v.string()),
+    allowedTopics: v.optional(v.array(v.string())),
+    customInstructions: v.optional(v.string()),
+    lexileLevel: v.optional(v.string()),
+    accessibilityNeeds: v.optional(v.array(v.string())),
     allowImageSearch: v.boolean(),
     allowFollowUp: v.boolean(),
+    allowTopicRequests: v.optional(v.boolean()),
     pin: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Verify user exists
     const user = await ctx.db.get(args.userId);
     if (!user) {
       throw new Error("User not found");
@@ -56,6 +60,11 @@ export const createProfile = mutation({
       allowFollowUp: args.allowFollowUp,
       createdAt: Date.now(),
     };
+    if (args.allowedTopics) data.allowedTopics = args.allowedTopics;
+    if (args.customInstructions) data.customInstructions = args.customInstructions;
+    if (args.lexileLevel) data.lexileLevel = args.lexileLevel;
+    if (args.accessibilityNeeds) data.accessibilityNeeds = args.accessibilityNeeds;
+    if (args.allowTopicRequests !== undefined) data.allowTopicRequests = args.allowTopicRequests;
     if (args.pin) data.pin = args.pin;
 
     const profileId = await ctx.db.insert("kidProfiles", data as any);
