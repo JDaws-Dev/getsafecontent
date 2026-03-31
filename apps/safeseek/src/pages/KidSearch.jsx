@@ -1634,7 +1634,7 @@ export default function KidSearch() {
             )}
 
             {/* Mode tabs */}
-            <div className="flex items-center gap-4 mt-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-4 mt-3 border-b border-gray-200 overflow-x-auto flex-nowrap dark:border-gray-700">
               <button
                 type="button"
                 onClick={() => handleModeToggle('learn')}

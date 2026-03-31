@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
+import stripeWebhook from "./stripe";
 
 // CORS headers for cross-origin API access from marketing site
 const CORS_HEADERS = {
@@ -430,9 +431,31 @@ const warmCache = httpAction(async (ctx, request) => {
   }
 });
 
+// ==================== Stripe CORS Preflight ====================
+
+const stripeCorsHandler = httpAction(async (ctx, request) => {
+  return new Response(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+});
+
 // ==================== Routes ====================
 
 const http = httpRouter();
+
+// Stripe webhook
+http.route({
+  path: "/stripe",
+  method: "POST",
+  handler: stripeWebhook,
+});
+
+http.route({
+  path: "/stripe",
+  method: "OPTIONS",
+  handler: stripeCorsHandler,
+});
 
 // Admin dashboard
 http.route({

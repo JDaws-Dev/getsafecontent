@@ -405,3 +405,59 @@ export const verifyParentPin = query({
     return user?.parentPin || null;
   },
 });
+
+// Update subscription status by email (used by Stripe webhook on checkout.session.completed)
+export const updateSubscriptionStatus = mutation({
+  args: {
+    email: v.string(),
+    subscriptionStatus: v.string(),
+    subscriptionId: v.string(),
+    stripeCustomerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .first();
+
+    if (!user) {
+      throw new Error(`User not found: ${args.email}`);
+    }
+
+    await ctx.db.patch(user._id, {
+      subscriptionStatus: args.subscriptionStatus,
+      subscriptionId: args.subscriptionId,
+      stripeCustomerId: args.stripeCustomerId,
+    });
+  },
+});
+
+// Update subscription by Stripe subscription ID (used by webhook for subscription updates/deletions)
+export const updateSubscriptionByStripeId = mutation({
+  args: {
+    subscriptionId: v.string(),
+    subscriptionStatus: v.string(),
+    subscriptionEndsAt: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_subscription", (q) => q.eq("subscriptionId", args.subscriptionId))
+      .first();
+
+    if (!user) {
+      console.error("User not found for subscription:", args.subscriptionId);
+      return;
+    }
+
+    const updates: Record<string, any> = {
+      subscriptionStatus: args.subscriptionStatus,
+    };
+
+    if (args.subscriptionEndsAt !== undefined) {
+      updates.subscriptionEndsAt = args.subscriptionEndsAt;
+    }
+
+    await ctx.db.patch(user._id, updates);
+  },
+});
