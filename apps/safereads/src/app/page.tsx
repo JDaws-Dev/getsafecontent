@@ -22,25 +22,25 @@ import {
 const testimonials = [
   {
     quote:
-      "SafeReads caught themes in a book I never would have noticed. So grateful I checked before my son read it.",
+      "SafeReads flagged some stuff in a book I honestly never would have caught. Really glad I looked it up before handing it to my 9-year-old.",
     author: "Emily T.",
-    role: "Mom of 2",
+    role: "Mom of 2, Raleigh, NC",
     rating: 5,
     avatarGradient: "from-emerald-400 to-green-500",
   },
   {
     quote:
-      "I used to be nervous about every book my daughter picked up. Now I check SafeReads first and can say yes with confidence.",
+      "Game changer for library trips. I check SafeReads before we go and the kids can grab whatever's on the approved list. No more standing in the aisle Googling book reviews on my phone.",
     author: "David P.",
-    role: "Dad of 3",
+    role: "Dad of 3, Tampa, FL",
     rating: 5,
     avatarGradient: "from-sky-400 to-blue-500",
   },
   {
     quote:
-      "Finally, a tool that tells me what's actually in the book instead of just giving it a vague 'age rating'. Love the detailed breakdowns.",
+      "Way better than Common Sense Media. Actual content breakdowns instead of vague age ratings.",
     author: "Jessica M.",
-    role: "Homeschool Mom",
+    role: "Homeschool Mom of 6, Boise, ID",
     rating: 5,
     avatarGradient: "from-amber-400 to-orange-500",
   },
@@ -263,8 +263,175 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Book Analysis Demo */}
       <section className="py-16 sm:py-20">
+        <div className="mx-auto max-w-5xl px-4">
+          <div className="text-center mb-4">
+            <h2 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+              See exactly what&apos;s in the book
+            </h2>
+            <p className="mt-4 text-ink-500 max-w-2xl mx-auto">
+              Every analysis breaks down 10 content categories so you know
+              exactly what your child will encounter — before they start reading.
+            </p>
+          </div>
+
+          <div className="mt-10 mx-auto max-w-2xl">
+            {/* Mock Analysis Card */}
+            <div className="rounded-2xl border border-parchment-200 bg-white shadow-xl overflow-hidden">
+              {/* Book Header */}
+              <div className="bg-parchment-50 p-5 sm:p-6 border-b border-parchment-200">
+                <div className="flex gap-4 sm:gap-5">
+                  {/* Book Cover */}
+                  <div className="flex-shrink-0 w-20 sm:w-24 rounded-lg overflow-hidden shadow-md bg-[#1a3a5c]">
+                    <div className="aspect-[2/3] flex flex-col items-center justify-center p-2 text-center">
+                      <div className="w-8 h-8 mb-1 rounded-full border-2 border-amber-400 flex items-center justify-center">
+                        <svg className="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                      </div>
+                      <span className="text-[8px] sm:text-[9px] font-bold text-white leading-tight">
+                        PERCY JACKSON
+                      </span>
+                      <span className="text-[7px] sm:text-[8px] text-amber-400 leading-tight mt-0.5">
+                        &amp; The Lightning Thief
+                      </span>
+                      <span className="text-[6px] sm:text-[7px] text-white/60 mt-1">
+                        Rick Riordan
+                      </span>
+                    </div>
+                  </div>
+                  {/* Book Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-serif text-lg sm:text-xl font-bold text-ink-900 leading-tight">
+                      Percy Jackson &amp; The Lightning Thief
+                    </h3>
+                    <p className="text-sm text-ink-500 mt-1">Rick Riordan</p>
+                    <p className="text-xs text-ink-400 mt-0.5">
+                      Fantasy / Middle Grade &middot; 377 pages
+                    </p>
+                    {/* Overall Recommendation */}
+                    <div className="mt-3 inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5">
+                      <Shield className="w-4 h-4 text-verdict-safe" />
+                      <span className="text-sm font-semibold text-verdict-safe">
+                        Recommended for ages 9+
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content Categories */}
+              <div className="p-5 sm:p-6">
+                <h4 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-4">
+                  Content Breakdown
+                </h4>
+                <div className="space-y-3">
+                  <DemoRatingRow
+                    label="Violence"
+                    level="Mild"
+                    color="caution"
+                    detail="Fantasy battle scenes, monsters defeated"
+                    width="30%"
+                  />
+                  <DemoRatingRow
+                    label="Language"
+                    level="Clean"
+                    color="safe"
+                    detail="No profanity"
+                    width="5%"
+                  />
+                  <DemoRatingRow
+                    label="Sexual Content"
+                    level="None"
+                    color="none"
+                    detail="None present"
+                    width="0%"
+                  />
+                  <DemoRatingRow
+                    label="Scary / Intense"
+                    level="Moderate"
+                    color="caution"
+                    detail="Monster encounters, life-threatening situations"
+                    width="45%"
+                  />
+                  <DemoRatingRow
+                    label="Positive Messages"
+                    level="Strong"
+                    color="safe"
+                    detail="Loyalty, bravery, friendship, self-sacrifice"
+                    width="90%"
+                  />
+                  <DemoRatingRow
+                    label="Educational Value"
+                    level="High"
+                    color="safe"
+                    detail="Greek mythology woven throughout"
+                    width="85%"
+                  />
+                  <DemoRatingRow
+                    label="Role Models"
+                    level="Strong"
+                    color="safe"
+                    detail="Courageous protagonist, diverse heroes"
+                    width="85%"
+                  />
+                  <DemoRatingRow
+                    label="Drinking / Drugs"
+                    level="None"
+                    color="none"
+                    detail="None present"
+                    width="0%"
+                  />
+                  <DemoRatingRow
+                    label="Diversity"
+                    level="Moderate"
+                    color="safe"
+                    detail="Characters from various backgrounds"
+                    width="55%"
+                  />
+                  <DemoRatingRow
+                    label="Consumerism"
+                    level="Low"
+                    color="none"
+                    detail="Minimal references"
+                    width="10%"
+                  />
+                </div>
+              </div>
+
+              {/* AI Summary */}
+              <div className="px-5 sm:px-6 pb-5 sm:pb-6">
+                <div className="bg-parchment-50 rounded-xl p-4 border border-parchment-200">
+                  <div className="flex items-start gap-2">
+                    <BookOpen className="w-4 h-4 text-parchment-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-ink-700 mb-1">
+                        AI Summary
+                      </p>
+                      <p className="text-xs text-ink-500 leading-relaxed">
+                        A fast-paced adventure rooted in Greek mythology.
+                        Contains fantasy violence (sword fights, monster
+                        battles) but no gore. Themes of identity,
+                        belonging, and standing up for what&apos;s right make it
+                        a strong choice for confident readers ages 9 and up.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Caption */}
+            <p className="text-center text-sm text-ink-400 mt-6">
+              This is a real SafeReads analysis — every book gets this level of detail.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-16 sm:py-20 bg-parchment-100/50">
         <div className="mx-auto max-w-5xl px-4">
           <h2 className="text-center font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
             Built for parents who read the fine print
@@ -408,10 +575,10 @@ export default function Home() {
             Save with the Safe Family Bundle
           </p>
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">
-            Get all 3 apps for $9.99/month
+            Get all 4 apps for $9.99/month
           </h3>
           <p className="text-white/80 text-sm mb-6 max-w-xl mx-auto">
-            Protect your family across music, videos, and books — all in one
+            Protect your family across music, videos, books, and search — all in one
             subscription.
           </p>
 
@@ -450,6 +617,29 @@ export default function Home() {
                 <p className="text-xs text-white/70">Kid-safe YouTube</p>
               </div>
             </div>
+
+            {/* SafeStudy */}
+            <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                  />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-semibold text-white">SafeStudy</p>
+                <p className="text-xs text-white/70">Kid-safe AI search</p>
+              </div>
+            </div>
           </div>
 
           <a
@@ -472,8 +662,8 @@ export default function Home() {
             </svg>
           </a>
           <p className="text-xs text-white/70 mt-3">
-            <span className="line-through">$14.97/mo</span> → $9.99/mo · Save
-            33%
+            <span className="line-through">$19.96/mo</span> → $9.99/mo · Save
+            50%
           </p>
         </div>
       </section>
@@ -525,6 +715,60 @@ function Feature({
   );
 }
 
+function DemoRatingRow({
+  label,
+  level,
+  color,
+  detail,
+  width,
+}: {
+  label: string;
+  level: string;
+  color: "safe" | "caution" | "warning" | "none";
+  detail: string;
+  width: string;
+}) {
+  const colorMap = {
+    safe: {
+      badge: "bg-emerald-50 text-verdict-safe border-emerald-200",
+      bar: "bg-emerald-400",
+    },
+    caution: {
+      badge: "bg-amber-50 text-verdict-caution border-amber-200",
+      bar: "bg-amber-400",
+    },
+    warning: {
+      badge: "bg-red-50 text-verdict-warning border-red-200",
+      bar: "bg-red-400",
+    },
+    none: {
+      badge: "bg-slate-50 text-verdict-none border-slate-200",
+      bar: "bg-slate-300",
+    },
+  };
+  const styles = colorMap[color];
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-sm font-medium text-ink-700">{label}</span>
+        <span
+          className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${styles.badge}`}
+        >
+          {level}
+        </span>
+      </div>
+      <div className="h-1.5 w-full bg-parchment-100 rounded-full overflow-hidden mb-1">
+        <div
+          className={`h-full rounded-full ${styles.bar}`}
+          style={{ width: width === "0%" ? "2%" : width }}
+        />
+      </div>
+      <p className="text-xs text-ink-400">{detail}</p>
+    </div>
+  );
+}
+
 function FAQItem({
   question,
   answer,
@@ -565,6 +809,33 @@ function FAQItem({
 
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  // Add FAQ Schema markup for Google featured snippets (SEO)
+  useEffect(() => {
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqs.map((faq) => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer,
+        },
+      })),
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(faqSchema);
+    script.id = 'faq-schema';
+    document.head.appendChild(script);
+
+    return () => {
+      const el = document.getElementById('faq-schema');
+      if (el) el.remove();
+    };
+  }, []);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);

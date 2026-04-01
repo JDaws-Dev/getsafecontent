@@ -31,9 +31,9 @@ const PRICE_IDS = {
   SAFEREADS: process.env.SAFEREADS_PRICE_ID || "",
   // 2-app bundle ($7.99/mo)
   TWO_APP: "price_1SzNlSKgkIT46sg7T88Bxq6p",
-  // 3-app bundle ($9.99/mo or $99/year)
-  THREE_APP_MONTHLY: "price_1SxaerKgkIT46sg7NHNy0wk8",
-  THREE_APP_YEARLY: "price_1SzLJUKgkIT46sg7xsKo2A71",
+  // Bundle: 3-4 apps ($9.99/mo or $99/year)
+  BUNDLE_MONTHLY: "price_1SxaerKgkIT46sg7NHNy0wk8",
+  BUNDLE_YEARLY: "price_1SzLJUKgkIT46sg7xsKo2A71",
 };
 
 // Map app names to their individual price IDs
@@ -67,9 +67,9 @@ function getPriceIdForApps(
     return { priceId: PRICE_IDS.TWO_APP };
   }
 
-  // 3 apps - bundle pricing
+  // 3+ apps - bundle pricing
   return {
-    priceId: isYearly ? PRICE_IDS.THREE_APP_YEARLY : PRICE_IDS.THREE_APP_MONTHLY,
+    priceId: isYearly ? PRICE_IDS.BUNDLE_YEARLY : PRICE_IDS.BUNDLE_MONTHLY,
   };
 }
 

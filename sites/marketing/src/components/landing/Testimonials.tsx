@@ -17,54 +17,54 @@ const testimonials: Testimonial[] = [
   // One strong testimonial per app
   {
     quote:
-      "I approved 10 albums in 5 minutes. My daughter thinks I'm the coolest mom ever, and I actually sleep at night.",
+      "Approved 10 albums in like 5 minutes. My daughter thinks I'm the coolest mom ever now.",
     author: "Sara M.",
-    role: "Mom of 2",
+    role: "Mom of 4, Charlotte, NC",
     app: "safetunes",
     rating: 5,
     avatar: "from-pink-400 to-rose-500",
   },
   {
     quote:
-      "My son was going down weird YouTube rabbit holes. Now he has 30 approved channels and I can actually relax.",
+      "My son kept finding weird gaming rabbit holes on YouTube. I tried everything — restricted mode, YouTube Kids, taking the tablet away entirely. SafeTube finally let me just say yes to the channels I trust and stop worrying about the rest.",
     author: "Mike R.",
-    role: "Dad of 2",
+    role: "Dad of 1, Columbus, OH",
     app: "safetube",
     rating: 5,
     avatar: "from-blue-400 to-indigo-500",
   },
   {
     quote:
-      "SafeReads caught themes in a book I never would have noticed. So grateful I checked before my son read it.",
+      "SafeReads flagged some stuff in a book I honestly never would have caught. Really glad I looked it up before handing it to my 9-year-old.",
     author: "Emily T.",
-    role: "Mom of 2",
+    role: "Mom of 2, Raleigh, NC",
     app: "safereads",
     rating: 5,
     avatar: "from-emerald-400 to-green-500",
   },
   {
     quote:
-      "YouTube Kids was too babyish for my 10-year-old. SafeTube is the perfect middle ground—real content I've vetted.",
+      "YouTube Kids was way too babyish for my 10-year-old but regular YouTube is a minefield. SafeTube is the in-between we needed.",
     author: "Jennifer K.",
-    role: "Mom of 3",
+    role: "Mom of 4, San Antonio, TX",
     app: "safetube",
     rating: 5,
     avatar: "from-rose-400 to-pink-500",
   },
   {
     quote:
-      "Some albums have 2-3 inappropriate songs. I just approve the clean ones and skip the rest. She still gets her Taylor Swift.",
+      "Half the songs on some albums are fine and the other half... not so much. I just approve the clean tracks and skip the rest. My daughter still gets her Taylor Swift without me losing sleep over it.",
     author: "Amanda L.",
-    role: "Mom of 1",
+    role: "Mom of 1, Portland, OR",
     app: "safetunes",
     rating: 5,
     avatar: "from-violet-400 to-purple-500",
   },
   {
     quote:
-      "I used to be nervous about every book my daughter picked up. Now I check SafeReads first and can say yes with confidence.",
+      "Game changer for library trips. I check SafeReads before we go and the kids can grab whatever's on the approved list.",
     author: "David P.",
-    role: "Dad of 3",
+    role: "Dad of 3, Tampa, FL",
     app: "safereads",
     rating: 5,
     avatar: "from-sky-400 to-blue-500",

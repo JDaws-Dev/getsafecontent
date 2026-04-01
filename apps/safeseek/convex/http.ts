@@ -26,7 +26,13 @@ const adminDashboard = httpAction(async (ctx, request) => {
     const url = new URL(request.url);
     const secretKey = url.searchParams.get("key");
     const format = url.searchParams.get("format");
-    const ADMIN_SECRET = process.env.ADMIN_KEY || "";
+    const ADMIN_SECRET = process.env.ADMIN_KEY;
+    if (!ADMIN_SECRET) {
+      return new Response(JSON.stringify({ error: "Server misconfigured" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
+    }
 
     if (!secretKey || secretKey !== ADMIN_SECRET) {
       if (format === "json") {

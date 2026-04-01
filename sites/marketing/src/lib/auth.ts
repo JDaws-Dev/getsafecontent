@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 const ADMIN_EMAIL = "jedaws@gmail.com";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  basePath: "/api/admin-auth",
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,

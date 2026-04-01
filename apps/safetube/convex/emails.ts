@@ -32,7 +32,7 @@ export const sendTrialSignupEmails = action({
         <li><strong>Date:</strong> ${new Date().toLocaleString()}</li>
       </ul>
 
-      <p><a href="https://rightful-rabbit-333.convex.cloud/adminDashboard?key=safetube-admin-2024" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin: 16px 0;">View Admin Dashboard →</a></p>
+      <p><a href="https://rightful-rabbit-333.convex.site/adminDashboard?key=${encodeURIComponent(process.env.ADMIN_KEY || '')}" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin: 16px 0;">View Admin Dashboard →</a></p>
 
       <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
 
@@ -116,7 +116,7 @@ export const sendTrialSignupEmails = action({
     try {
       // Send admin notification
       const adminResult = await resend.emails.send({
-        from: "SafeTube Admin <notifications@getsafetube.com>",
+        from: "SafeTube Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
         subject: `🎉 SafeTube Trial: ${args.userName}`,
         html: adminEmailContent,
@@ -130,7 +130,7 @@ export const sendTrialSignupEmails = action({
     try {
       // Send welcome email to user
       const userResult = await resend.emails.send({
-        from: "SafeTube <noreply@getsafetube.com>",
+        from: "SafeTube <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.userEmail,
         subject: "Welcome to SafeTube! Your 7-Day Trial Has Started 🎬",
@@ -143,92 +143,6 @@ export const sendTrialSignupEmails = action({
     }
 
     return { success: results.admin || results.user, results };
-  },
-});
-
-/**
- * Send password reset email
- */
-export const sendPasswordResetEmail = action({
-  args: {
-    email: v.string(),
-    resetUrl: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const resend = new Resend(process.env.RESEND_API_KEY);
-
-    const emailContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-
-          <!-- Header -->
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #dc2626; margin: 0 0 8px 0; font-size: 28px;">SafeTube</h1>
-            <p style="color: #6b7280; margin: 0; font-size: 14px;">Password Reset Request</p>
-          </div>
-
-          <!-- Main Content -->
-          <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-            <p style="margin: 0 0 20px 0; font-size: 16px;">Hi,</p>
-
-            <p style="margin: 0 0 20px 0; font-size: 16px;">
-              We received a request to reset your SafeTube password. Click the button below to create a new password:
-            </p>
-
-            <div style="text-align: center; margin: 24px 0;">
-              <a href="${args.resetUrl}"
-                 style="display: inline-block; background: #dc2626; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                Reset Password
-              </a>
-            </div>
-
-            <p style="margin: 20px 0 0 0; font-size: 14px; color: #6b7280;">
-              Or copy and paste this link into your browser:<br>
-              <a href="${args.resetUrl}" style="color: #dc2626; word-break: break-all;">${args.resetUrl}</a>
-            </p>
-          </div>
-
-          <!-- Security Notice -->
-          <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
-            <p style="margin: 0; font-size: 14px; color: #92400E;">
-              <strong>Security Notice:</strong> This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.
-            </p>
-          </div>
-
-          <!-- Footer -->
-          <div style="text-align: center; padding-top: 24px; border-top: 1px solid #e5e7eb;">
-            <p style="color: #6b7280; font-size: 14px; margin: 0 0 8px 0;">
-              Questions? Contact us at <a href="mailto:jeremiah@getsafefamily.com" style="color: #dc2626; text-decoration: none;">jeremiah@getsafefamily.com</a>
-            </p>
-            <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-              The SafeTube Team
-            </p>
-          </div>
-
-        </body>
-      </html>
-    `;
-
-    try {
-      const result = await resend.emails.send({
-        from: "SafeTube <noreply@getsafetube.com>",
-        replyTo: "jeremiah@getsafefamily.com",
-        to: args.email,
-        subject: "Reset Your SafeTube Password",
-        html: emailContent,
-      });
-
-      console.log(`Password reset email sent to ${args.email}:`, result);
-      return { success: true, id: result.data?.id };
-    } catch (error) {
-      console.error("Failed to send password reset email:", error);
-      return { success: false, error: String(error) };
-    }
   },
 });
 
@@ -307,7 +221,7 @@ export const sendSubscriptionConfirmation = action({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeTube <noreply@getsafetube.com>",
+        from: "SafeTube <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.email,
         subject: subject,
@@ -358,7 +272,7 @@ export const sendCancellationConfirmation = action({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeTube <noreply@getsafetube.com>",
+        from: "SafeTube <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.email,
         subject: "Your SafeTube Subscription Has Been Cancelled",
@@ -412,7 +326,7 @@ export const sendPaymentFailedEmail = action({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeTube <noreply@getsafetube.com>",
+        from: "SafeTube <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.email,
         subject: "⚠️ Payment Failed - Action Required",
@@ -469,7 +383,7 @@ export const sendCancellationReasonEmail = action({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeTube Admin <notifications@getsafetube.com>",
+        from: "SafeTube Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
         subject: `Cancellation: ${args.userName} - ${args.reason}`,
         html: emailContent,
@@ -539,7 +453,7 @@ export const sendBatchedRequestNotification = action({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeTube <notifications@getsafetube.com>",
+        from: "SafeTube <notifications@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.userEmail,
         subject: isMultiple
@@ -657,7 +571,7 @@ export const sendAdminNotification = action({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeTube Admin <notifications@getsafetube.com>",
+        from: "SafeTube Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
         subject: `🎉 New Signup: ${args.userName} (${args.subscriptionType})`,
         html: emailContent,
@@ -710,13 +624,14 @@ export const sendTrialExpiringWarning = internalAction({
             <p style="color: #6b7280; font-size: 14px; margin: 0;">Questions? Reply to this email.</p>
             <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">The SafeTube Team</p>
           </div>
+          <p style="font-size: 11px; color: #9ca3af; margin-top: 24px;">If you no longer wish to receive these emails, reply with "unsubscribe" and we'll remove you from future communications.</p>
         </body>
       </html>
     `;
 
     try {
       const result = await resend.emails.send({
-        from: "SafeTube <noreply@getsafetube.com>",
+        from: "SafeTube <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.email,
         subject: "Your SafeTube trial expires in 2 days",
@@ -769,13 +684,14 @@ export const sendTrialExpiredEmail = internalAction({
             <p style="color: #6b7280; font-size: 14px; margin: 0;">Questions? Reply to this email.</p>
             <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0;">The SafeTube Team</p>
           </div>
+          <p style="font-size: 11px; color: #9ca3af; margin-top: 24px;">If you no longer wish to receive these emails, reply with "unsubscribe" and we'll remove you from future communications.</p>
         </body>
       </html>
     `;
 
     try {
       const result = await resend.emails.send({
-        from: "SafeTube <noreply@getsafetube.com>",
+        from: "SafeTube <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.email,
         subject: "Your SafeTube trial has ended — your data is safe",
@@ -828,7 +744,7 @@ export const sendAdminTrialExpirationSummary = internalAction({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeTube Admin <notifications@getsafetube.com>",
+        from: "SafeTube Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || "jeremiah@getsafefamily.com",
         subject: `SafeTube Trials: ${args.expiredCount} expired, ${args.warningCount} warnings`,
         html: emailContent,

@@ -7,6 +7,7 @@ export type AppSelection = {
   safetunes: boolean;
   safetube: boolean;
   safereads: boolean;
+  safestudy: boolean;
 };
 
 export type AccountFormData = {
@@ -43,6 +44,7 @@ const APP_LABELS: Record<keyof AppSelection, string> = {
   safetunes: "SafeTunes",
   safetube: "SafeTube",
   safereads: "SafeReads",
+  safestudy: "SafeStudy",
 };
 
 export default function AccountForm({

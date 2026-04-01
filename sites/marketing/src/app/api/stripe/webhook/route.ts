@@ -74,7 +74,7 @@ const MARKETING_ENDPOINT = "https://adamant-crow-705.convex.site";
 // Parse apps from metadata (comma-separated string or undefined for legacy bundles)
 function parseAppsFromMetadata(metadata: Stripe.Metadata | null): AppName[] {
   if (!metadata?.apps) {
-    // Legacy bundles without apps metadata get all 3 apps
+    // Legacy bundles without apps metadata get all apps
     return ALL_APPS;
   }
   const apps = metadata.apps.split(",").filter((app) =>
@@ -785,7 +785,7 @@ async function sendProvisioningFailureAlert(
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const failedAppNames = failedApps.map((f) => {
-    const name = f.app === "safetunes" ? "SafeTunes" : f.app === "safetube" ? "SafeTube" : "SafeReads";
+    const name = f.app === "safetunes" ? "SafeTunes" : f.app === "safetube" ? "SafeTube" : f.app === "safestudy" ? "SafeStudy" : "SafeReads";
     return `${name} (${f.error}, ${f.attempts} attempts)`;
   });
 
@@ -952,6 +952,7 @@ async function sendCancellationReengagementEmail(
 
       <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
       <p style="color: #9ca3af; font-size: 12px;">Safe Family · <a href="https://getsafefamily.com" style="color: #9ca3af;">getsafefamily.com</a></p>
+      <p style="font-size: 11px; color: #9ca3af; margin-top: 24px;">If you no longer wish to receive these emails, reply with "unsubscribe" and we'll remove you from future communications.</p>
     </div>
   `;
 
@@ -966,6 +967,53 @@ async function sendCancellationReengagementEmail(
     console.log(`Cancellation re-engagement email sent to ${email}`);
   } catch (error) {
     console.error(`Failed to send re-engagement email to ${email}:`, error);
+  }
+}
+
+// Helper to send dunning email when payment fails
+async function sendPaymentFailedEmail(
+  email: string,
+  customerName: string | null
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const name = customerName || "there";
+
+  const emailContent = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h1 style="color: #1a1a1a;">Payment failed — action needed</h1>
+
+      <p>Hi ${name},</p>
+
+      <p>We weren't able to process your latest Safe Family payment. This can happen if your card expired, your bank declined the charge, or your payment details need updating.</p>
+
+      <p>Don't worry — your family's access will continue for a few days while you get this sorted out. All your kids' approved content is safe and waiting.</p>
+
+      <p>To update your payment method, visit your account page:</p>
+
+      <p><a href="https://getsafefamily.com/account" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Update payment method →</a></p>
+
+      <p>If you're having trouble or think this is a mistake, just reply to this email and I'll help you out.</p>
+
+      <p>— Jeremiah, Safe Family</p>
+
+      <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
+      <p style="color: #9ca3af; font-size: 12px;">Safe Family · <a href="https://getsafefamily.com" style="color: #9ca3af;">getsafefamily.com</a></p>
+    </div>
+  `;
+
+  try {
+    await resend.emails.send({
+      from: "Safe Family <notifications@getsafefamily.com>",
+      replyTo: "jeremiah@getsafefamily.com",
+      to: email,
+      subject: "Action needed: Your Safe Family payment failed",
+      html: emailContent,
+    });
+    console.log(`Payment failed (dunning) email sent to ${email}`);
+  } catch (error) {
+    console.error(`Failed to send dunning email to ${email}:`, error);
   }
 }
 
@@ -1387,7 +1435,9 @@ export async function POST(req: Request) {
           attemptCount: invoice.attempt_count,
         };
 
-        // TODO: Send notification email about failed payment
+        if (email) {
+          await sendPaymentFailedEmail(email, webhookContext.customerName);
+        }
         break;
       }
 

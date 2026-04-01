@@ -189,16 +189,15 @@ export function AuthProvider({ children }) {
         };
       }
 
-      // TODO: Check entitlement to SafeStudy once Marketing Central supports it
-      // For now, allow all authenticated users during development
-      // if (!data.user.entitledApps?.includes('safestudy')) {
-      //   return {
-      //     success: false,
-      //     error: 'NOT_ENTITLED',
-      //     code: 'NOT_ENTITLED',
-      //     user: data.user,
-      //   };
-      // }
+      // Check entitlement to SafeStudy
+      if (!data.user.entitledApps?.includes('safestudy')) {
+        return {
+          success: false,
+          error: 'Your account does not include SafeStudy. Visit getsafefamily.com to add it.',
+          code: 'NOT_ENTITLED',
+          user: data.user,
+        };
+      }
 
       // Store token and user
       localStorage.setItem(JWT_KEY, data.token);

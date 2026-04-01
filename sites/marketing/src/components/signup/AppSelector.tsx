@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Music, PlaySquare, BookOpen, Check, Sparkles } from "lucide-react";
+import { Music, PlaySquare, BookOpen, Search, Check, Sparkles } from "lucide-react";
 
 export type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
 
@@ -58,17 +58,24 @@ const apps = [
     borderSelected: "border-emerald-500",
     checkBg: "bg-emerald-500",
   },
+  {
+    id: "safestudy" as AppId,
+    name: "SafeStudy",
+    tagline: "Kid-safe AI search",
+    icon: Search,
+    gradient: "from-blue-500 to-cyan-500",
+    bgLight: "bg-blue-50",
+    borderSelected: "border-blue-500",
+    checkBg: "bg-blue-500",
+  },
 ];
 
 // Pricing tiers
 const PRICING = {
   single: { monthly: 4.99, yearly: 49 },      // 1 app
   double: { monthly: 7.99, yearly: 79 },      // 2 apps
-  bundle: { monthly: 9.99, yearly: 99 },      // 3 apps (bundle)
+  bundle: { monthly: 9.99, yearly: 99 },      // 3+ apps (bundle)
 };
-
-// Individual total if bought separately
-const INDIVIDUAL_TOTAL = 4.99 * 3; // $14.97/mo
 
 function calculatePricing(selectedCount: number): PricingInfo {
   let pricing: { monthly: number; yearly: number };
@@ -81,6 +88,7 @@ function calculatePricing(selectedCount: number): PricingInfo {
       pricing = PRICING.double;
       break;
     case 3:
+    case 4:
     default:
       pricing = PRICING.bundle;
       break;
@@ -89,7 +97,7 @@ function calculatePricing(selectedCount: number): PricingInfo {
   // What they'd pay if each app was $4.99
   const regularPrice = selectedCount * SINGLE_APP_PRICE;
   const savings = regularPrice - pricing.monthly;
-  const isBundlePrice = selectedCount === 3;
+  const isBundlePrice = selectedCount >= 3;
 
   return {
     monthly: pricing.monthly,
@@ -124,7 +132,7 @@ export default function AppSelector({
         // Don't allow deselecting last app
         if (next.size === 1) return prev;
         next.delete(appId);
-        // Reset to monthly if dropping below 3 apps
+        // Reset to monthly if dropping below bundle threshold (3 apps)
         if (next.size < 3) {
           setIsYearly(false);
         }
@@ -153,7 +161,7 @@ export default function AppSelector({
             </p>
           )}
         </div>
-        {selectedApps.size < 3 && (
+        {selectedApps.size < apps.length && (
           <button
             type="button"
             onClick={selectAll}
@@ -165,7 +173,7 @@ export default function AppSelector({
       </div>
 
       {/* App checkboxes */}
-      <div className={`grid gap-3 ${compact ? "" : "sm:grid-cols-3"}`}>
+      <div className={`grid gap-3 ${compact ? "" : "sm:grid-cols-2 lg:grid-cols-4"}`}>
         {apps.map((app) => {
           const isSelected = selectedApps.has(app.id);
           return (
@@ -223,7 +231,7 @@ export default function AppSelector({
         <div className="flex items-center justify-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl animate-in fade-in slide-in-from-bottom-2 duration-300">
           <Sparkles className="w-5 h-5" />
           <span className="font-semibold">
-            {selectedApps.size === 2 ? "Multi-app discount!" : "Best value!"}
+            {selectedApps.size === 2 ? "Multi-app discount!" : selectedApps.size === 3 ? "Bundle discount!" : "Best value!"}
           </span>
           <span className="text-sm">
             Save ${pricing.savings.toFixed(2)}/mo
@@ -240,7 +248,9 @@ export default function AppSelector({
                 ? "1 app"
                 : selectedApps.size === 2
                 ? "2 apps"
-                : "All 3 apps"}
+                : selectedApps.size === 3
+                ? "3 apps"
+                : "All 4 apps"}
             </p>
             <div className="flex items-baseline gap-2 mt-1">
               {/* Show crossed-out regular price when there are savings */}
@@ -263,8 +273,8 @@ export default function AppSelector({
             )}
           </div>
 
-          {/* Yearly toggle - only show for 3-app bundle */}
-          {showYearlyToggle && selectedApps.size === 3 && (
+          {/* Yearly toggle - only show for bundle (3+ apps) */}
+          {showYearlyToggle && selectedApps.size >= 3 && (
             <div className="flex items-center gap-2">
               <span
                 className={`text-xs font-medium ${

@@ -2,7 +2,7 @@ import { query, mutation, internalMutation, QueryCtx, MutationCtx } from "./_gen
 import { v } from "convex/values";
 
 // Admin emails - add your email here
-const ADMIN_EMAILS = ["jedaws@gmail.com", "jeremiah@getsafereads.com"];
+const ADMIN_EMAILS = ["jedaws@gmail.com", "jeremiah@getsafefamily.com"];
 
 /**
  * Check if an email is an admin.

@@ -115,12 +115,12 @@ export const sendTrialSignupEmails = action({
     try {
       // Send admin notification
       const adminResult = await resend.emails.send({
-        from: "SafeStudy Admin <notifications@getsafestudy.com>",
+        from: "SafeStudy Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
         subject: `New SafeStudy Trial: ${args.userName}`,
         html: adminEmailContent,
       });
-      console.log(`Admin notification sent for ${args.userEmail}:`, adminResult);
+      console.log("[sendTrialSignupEmails] Admin notification sent successfully");
       results.admin = true;
     } catch (error) {
       console.error("Failed to send admin notification:", error);
@@ -129,13 +129,13 @@ export const sendTrialSignupEmails = action({
     try {
       // Send welcome email to user
       const userResult = await resend.emails.send({
-        from: "SafeStudy <noreply@getsafestudy.com>",
+        from: "SafeStudy <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.userEmail,
         subject: "Welcome to SafeStudy! Your 7-Day Trial Has Started",
         html: userEmailContent,
       });
-      console.log(`Welcome email sent to ${args.userEmail}:`, userResult);
+      console.log("[sendTrialSignupEmails] Welcome email sent successfully");
       results.user = true;
     } catch (error) {
       console.error("Failed to send welcome email:", error);
@@ -182,7 +182,7 @@ export const sendTrialExpiringWarning = internalAction({
             </p>
 
             <div style="text-align: center; margin: 24px 0;">
-              <a href="https://getsafestudy.com/settings"
+              <a href="https://getsafestudy.com/login"
                  style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                 Upgrade Now
               </a>
@@ -201,6 +201,7 @@ export const sendTrialExpiringWarning = internalAction({
               The SafeStudy Team
             </p>
           </div>
+          <p style="font-size: 11px; color: #9ca3af; margin-top: 24px;">If you no longer wish to receive these emails, reply with "unsubscribe" and we'll remove you from future communications.</p>
 
         </body>
       </html>
@@ -208,13 +209,13 @@ export const sendTrialExpiringWarning = internalAction({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeStudy <noreply@getsafestudy.com>",
+        from: "SafeStudy <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.userEmail,
         subject: "Your SafeStudy trial ends in 2 days",
         html: emailContent,
       });
-      console.log(`Trial warning email sent to ${args.userEmail}:`, result);
+      console.log("[sendTrialExpiringWarning] Trial warning email sent successfully");
       return { success: true };
     } catch (error) {
       console.error("Failed to send trial warning email:", error);
@@ -259,7 +260,7 @@ export const sendTrialExpiredEmail = internalAction({
             </p>
 
             <div style="text-align: center; margin: 24px 0;">
-              <a href="https://getsafestudy.com/settings"
+              <a href="https://getsafestudy.com/login"
                  style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                 Reactivate SafeStudy
               </a>
@@ -274,6 +275,7 @@ export const sendTrialExpiredEmail = internalAction({
               The SafeStudy Team
             </p>
           </div>
+          <p style="font-size: 11px; color: #9ca3af; margin-top: 24px;">If you no longer wish to receive these emails, reply with "unsubscribe" and we'll remove you from future communications.</p>
 
         </body>
       </html>
@@ -281,13 +283,13 @@ export const sendTrialExpiredEmail = internalAction({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeStudy <noreply@getsafestudy.com>",
+        from: "SafeStudy <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.userEmail,
         subject: "Your SafeStudy trial has ended",
         html: emailContent,
       });
-      console.log(`Trial expired email sent to ${args.userEmail}:`, result);
+      console.log("[sendTrialExpiredEmail] Trial expired email sent successfully");
       return { success: true };
     } catch (error) {
       console.error("Failed to send trial expired email:", error);
@@ -341,7 +343,7 @@ export const sendAdminTrialExpirationSummary = internalAction({
 
     try {
       const result = await resend.emails.send({
-        from: "SafeStudy Admin <notifications@getsafestudy.com>",
+        from: "SafeStudy Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
         subject: `SafeStudy Trials: ${args.expiredUsers.length} expired, ${args.warningUsers.length} warned`,
         html: emailContent,

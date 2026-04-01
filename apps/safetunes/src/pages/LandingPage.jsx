@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ImprovedHero from '../components/landing/ImprovedHero';
 import InteractiveFeaturePreview from '../components/landing/InteractiveFeaturePreview';
 import ComparisonTable from '../components/landing/ComparisonTable';
@@ -8,6 +8,83 @@ import StickyCTA from '../components/landing/StickyCTA';
 
 function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Add FAQ Schema markup for Google featured snippets (SEO)
+  useEffect(() => {
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does SafeTunes actually work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You search Apple Music and approve albums or individual songs\u2014your choice. Want to approve Taylor Swift's entire 'Folklore' album? One tap. Want to cherry-pick only the 8 clean songs from an album? You can do that too. Your kids can only play exactly what you've approved\u2014nothing else."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What if my child tries to search for inappropriate content?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You get an instant notification showing exactly what they searched for. The search is blocked automatically, and your child sees positive encouragement with timeless wisdom instead of shame. It creates the perfect opportunity for a loving conversation about guarding their heart and mind."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I hide album artwork?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "YES! This is our most-loved feature. You have selective control\u2014choose which albums show artwork and which don't. Perfect for albums with questionable covers while keeping kid-friendly artwork visible. Kids see a simple placeholder instead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can my kids request new music?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes! Kids can request albums from Apple Music. You get a notification on your phone and can approve or deny with one tap. It's a great teaching opportunity and keeps you connected to what they're interested in."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do you offer tools to help me find appropriate music faster?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes! SafeTunes includes smart tools to help you build your library quickly. Get personalized music recommendations based on your child's age and preferences, or review song lyrics with AI-powered content analysis before approving. However, you always have final approval\u2014these are just time-saving tools to help you make informed decisions."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What devices does SafeTunes work on?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SafeTunes works on any device with a web browser\u2014iPhone, iPad, Android phones and tablets, Chromebooks, Windows PCs, and Macs. Parents manage everything from their phone or computer. Kids can play their approved music from any device. A native iOS app is coming soon for an even better experience."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who is SafeTunes for?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SafeTunes was built by a Christian parent, but it's for any family who cares about what their kids listen to. When content is blocked, kids see positive messages about making healthy choices and guarding their mind, along with scripture verses about thinking on what is true, honorable, and pure. These timeless principles resonate with many families and help kids develop discernment about their content choices."
+          }
+        }
+      ]
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(faqSchema);
+    script.id = 'faq-schema';
+    document.head.appendChild(script);
+
+    return () => {
+      const el = document.getElementById('faq-schema');
+      if (el) el.remove();
+    };
+  }, []);
 
   // Add smooth scrolling behavior
   const handleSmoothScroll = (e, targetId) => {
@@ -201,9 +278,9 @@ function LandingPage() {
               ))}
             </div>
             <p className="text-gray-700 text-lg italic mb-2">
-              "Finally, peace of mind! My kids have safe access to real music, and I don't worry anymore."
+              "We tried Apple Music's parental controls and they basically don't work. This was the only thing that actually solved the problem."
             </p>
-            <p className="text-sm text-gray-600">— Sarah M., Mom of 3</p>
+            <p className="text-sm text-gray-600">— Sarah M., Mom of 4, Charlotte, NC</p>
           </div>
         </div>
       </section>
@@ -522,9 +599,9 @@ function LandingPage() {
                 ))}
               </div>
               <p className="text-base text-gray-800 italic mb-3">
-                "I approved 10 pop albums in 5 minutes. My daughter thinks I'm the coolest mom ever, and I actually sleep at night knowing what she's listening to."
+                "We tried Apple Music's parental controls and they basically don't work. This was the only thing that actually let me pick exactly what my kids hear. Approved a bunch of albums in one sitting and now I don't have to think about it."
               </p>
-              <p className="font-semibold text-sm text-gray-900">— Sarah M., mom of 3</p>
+              <p className="font-semibold text-sm text-gray-900">— Sarah M., mom of 4, Charlotte, NC</p>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-6">
@@ -537,9 +614,9 @@ function LandingPage() {
                   ))}
                 </div>
                 <p className="text-base text-gray-800 italic mb-3">
-                  "I approved 15 full albums in 20 minutes. My 10-year-old has hundreds of songs to choose from. When she asks for more, I just approve the whole album if it's clean. So easy!"
+                  "Super easy. Approve the whole album if it's clean, or just the individual songs if it's not."
                 </p>
-                <p className="font-semibold text-sm text-gray-900">— Rachel D., mom of 2</p>
+                <p className="font-semibold text-sm text-gray-900">— Rachel D., mom of 2, Greenville, SC</p>
               </div>
 
               <div className="bg-white rounded-2xl p-5 sm:p-6 border-2 border-purple-200 shadow-lg">
@@ -551,9 +628,9 @@ function LandingPage() {
                   ))}
                 </div>
                 <p className="text-base text-gray-800 italic mb-3">
-                  "Some albums have 2-3 inappropriate songs mixed in. I just approve the clean songs individually and skip the rest. My daughter still gets the Taylor Swift songs she loves, without the ones I don't want her hearing."
+                  "Half the songs on some albums are fine, the other half... not so much. I just approve the clean tracks and skip the rest. My daughter still gets her Taylor Swift without me having to worry about what else is on the album."
                 </p>
-                <p className="font-semibold text-sm text-gray-900">— Amanda L., mom of 1</p>
+                <p className="font-semibold text-sm text-gray-900">— Amanda L., mom of 1, Portland, OR</p>
               </div>
             </div>
           </div>
@@ -810,10 +887,10 @@ function LandingPage() {
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-sm font-medium text-white/90 mb-2">Save with the Safe Family Bundle</p>
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">
-              Get all 3 apps for $9.99/month
+              Get all 4 apps for $9.99/month
             </h3>
             <p className="text-white/80 text-sm mb-6 max-w-xl mx-auto">
-              Protect your family across music, videos, and books — all in one subscription.
+              Protect your family across music, videos, books, and search — all in one subscription.
             </p>
 
             {/* Other apps */}
@@ -843,6 +920,19 @@ function LandingPage() {
                   <p className="text-xs text-white/70">AI book screening</p>
                 </div>
               </div>
+
+              {/* SafeStudy */}
+              <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-white">SafeStudy</p>
+                  <p className="text-xs text-white/70">Kid-safe AI search</p>
+                </div>
+              </div>
             </div>
 
             <a
@@ -855,7 +945,7 @@ function LandingPage() {
               </svg>
             </a>
             <p className="text-xs text-white/70 mt-3">
-              <span className="line-through">$14.97/mo</span> → $9.99/mo · Save 33%
+              <span className="line-through">$19.96/mo</span> → $9.99/mo · Save 50%
             </p>
           </div>
         </div>

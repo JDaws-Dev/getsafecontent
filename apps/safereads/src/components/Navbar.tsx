@@ -38,7 +38,7 @@ export function Navbar() {
                 href="/login"
                 className="text-sm font-medium text-ink-600 hover:text-ink-900 transition-colors"
               >
-                Sign In
+                Parent Login
               </Link>
               <Link
                 href="/signup"

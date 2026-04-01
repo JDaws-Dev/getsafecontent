@@ -55,9 +55,9 @@ export default httpAction(async (ctx, request) => {
             subscriptionId: session.subscription as string,
             stripeCustomerId: session.customer as string,
           });
-          console.log(`[Webhook] Updated subscription for ${customerEmail} to ${isTrial ? "trial" : "active"}`);
+          console.log(`[Webhook] Updated subscription to ${isTrial ? "trial" : "active"} for session ${session.id}`);
         } catch (updateErr) {
-          console.error(`[Webhook] CRITICAL: Failed to update subscription for ${customerEmail}:`, updateErr);
+          console.error(`[Webhook] CRITICAL: Failed to update subscription for session ${session.id}:`, updateErr);
           return new Response(`Failed to update subscription: ${updateErr instanceof Error ? updateErr.message : "Unknown error"}`, { status: 500 });
         }
         break;

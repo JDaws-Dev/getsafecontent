@@ -58,7 +58,7 @@ export async function POST(req: Request) {
           if (customer && !customer.deleted && customer.email) {
             const resend = new Resend(process.env.RESEND_API_KEY);
             await resend.emails.send({
-              from: "SafeReads <hello@getsafereads.com>",
+              from: "SafeReads <hello@getsafefamily.com>",
               to: customer.email,
               subject: "Welcome to SafeReads!",
               html: getWelcomeEmailHtml(customer.name || "there"),

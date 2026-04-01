@@ -200,11 +200,9 @@ function FaqItem({ faq, isOpen, onToggle }) {
           <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
         )}
       </button>
-      {isOpen && (
-        <div className="px-5 sm:px-6 pb-5 sm:pb-6 bg-white">
-          <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
-        </div>
-      )}
+      <div className={`overflow-hidden transition-all duration-200 bg-white ${isOpen ? 'max-h-96 pb-5 sm:pb-6' : 'max-h-0'}`}>
+        <p className="px-5 sm:px-6 text-gray-600 leading-relaxed">{faq.answer}</p>
+      </div>
     </div>
   );
 }

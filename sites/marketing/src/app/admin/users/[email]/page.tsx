@@ -255,7 +255,7 @@ export default function UserDetailPage() {
   }, [fetchData]);
 
   const handleGrantLifetime = async () => {
-    if (!window.confirm(`Grant lifetime access to ${email} on all 3 apps?`)) {
+    if (!window.confirm(`Grant lifetime access to ${email} on all apps?`)) {
       return;
     }
     setActionLoading("grant-lifetime");

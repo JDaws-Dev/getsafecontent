@@ -8,7 +8,7 @@ import { fetchQuery } from "convex/nextjs";
 import { api } from "../../../../convex/_generated/api";
 
 // Price IDs for different plans
-// PRICING: 1 app=$4.99/mo, 2 apps=$7.99/mo, 3 apps=$9.99/mo (monthly) or $99/year
+// PRICING: 1 app=$4.99/mo, 2 apps=$7.99/mo, 3-4 apps=$9.99/mo (monthly) or $99/year
 const PRICE_IDS = {
   // Individual app prices ($4.99/mo each)
   SAFETUNES: "price_1SUXOjKgkIT46sg7RKwIgAVv",
@@ -16,9 +16,9 @@ const PRICE_IDS = {
   SAFEREADS: process.env.SAFEREADS_PRICE_ID || "", // Set via env var
   // 2-app bundle ($7.99/mo)
   TWO_APP: "price_1SzNlSKgkIT46sg7T88Bxq6p",
-  // 3-app bundle ($9.99/mo or $99/year)
-  THREE_APP_MONTHLY: "price_1SxaerKgkIT46sg7NHNy0wk8",
-  THREE_APP_YEARLY: "price_1SzLJUKgkIT46sg7xsKo2A71",
+  // Bundle: 3-4 apps ($9.99/mo or $99/year)
+  BUNDLE_MONTHLY: "price_1SxaerKgkIT46sg7NHNy0wk8",
+  BUNDLE_YEARLY: "price_1SzLJUKgkIT46sg7xsKo2A71",
 };
 
 // Map app names to their individual price IDs
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     const appsInput = apps || selectedApps;
 
     // Validate apps array if provided
-    let finalApps: AppName[] = VALID_APPS; // Default to all 3 apps
+    let finalApps: AppName[] = VALID_APPS; // Default to all apps
     if (appsInput && Array.isArray(appsInput)) {
       finalApps = appsInput.filter((app: string) =>
         VALID_APPS.includes(app as AppName)
@@ -111,10 +111,10 @@ export async function POST(req: Request) {
         finalPriceId = appPriceId;
       } else if (finalApps.length === 2) {
         finalPriceId = PRICE_IDS.TWO_APP;
-      } else if (finalApps.length === 3) {
+      } else if (finalApps.length >= 3) {
         finalPriceId = isYearly
-          ? PRICE_IDS.THREE_APP_YEARLY
-          : PRICE_IDS.THREE_APP_MONTHLY;
+          ? PRICE_IDS.BUNDLE_YEARLY
+          : PRICE_IDS.BUNDLE_MONTHLY;
       }
     }
 

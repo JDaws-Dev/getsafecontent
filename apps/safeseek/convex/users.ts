@@ -176,7 +176,7 @@ export const setSubscriptionStatusByEmailInternal = internalMutation({
         stripeCustomerId: args.stripeCustomerId,
         subscriptionId: args.subscriptionId,
       });
-      console.log(`[setSubscriptionStatus] Created new user with status ${args.status}: ${args.email}`);
+      console.log(`[setSubscriptionStatus] Created new user with status ${args.status}`);
       return { userId, email: args.email, status: args.status, created: true };
     }
 
@@ -194,7 +194,7 @@ export const setSubscriptionStatusByEmailInternal = internalMutation({
 
     await ctx.db.patch(user._id, updates);
 
-    console.log(`[setSubscriptionStatus] Updated ${args.email} to ${args.status}`);
+    console.log(`[setSubscriptionStatus] Updated user ${user._id} to ${args.status}`);
     return { userId: user._id, email: args.email, status: args.status, created: false };
   },
 });
@@ -215,7 +215,7 @@ export const provisionUserInternal = internalMutation({
     isOAuthUser: v.optional(v.boolean()), // Accepted but ignored (auth handled by Marketing)
   },
   handler: async (ctx, args) => {
-    console.log(`[provisionUser] Starting for ${args.email} (OAuth: ${args.isOAuthUser ?? false})`);
+    console.log(`[provisionUser] Starting (OAuth: ${args.isOAuthUser ?? false})`);
 
     // 1. Check if user already exists
     const existingUser = await ctx.db
@@ -239,7 +239,7 @@ export const provisionUserInternal = internalMutation({
         name: args.name ?? existingUser.name,
       });
 
-      console.log(`[provisionUser] Updated existing user: ${args.email}`);
+      console.log(`[provisionUser] Updated existing user ${userId}`);
     } else {
       // Create new user with family code
       const familyCode = await generateUniqueFamilyCode(ctx);
@@ -257,7 +257,7 @@ export const provisionUserInternal = internalMutation({
       });
       wasCreated = true;
 
-      console.log(`[provisionUser] Created new user: ${args.email} with familyCode: ${familyCode}`);
+      console.log(`[provisionUser] Created new user ${userId} with trial`);
     }
 
     // Auth is handled centrally by Marketing (JWT). No local authAccounts needed.
@@ -287,7 +287,7 @@ export const deleteUserInternal = internalMutation({
       .first();
 
     if (!user) {
-      throw new Error(`User not found: ${args.email}`);
+      throw new Error("User not found");
     }
 
     // Delete kid profiles and all their associated data
@@ -380,7 +380,7 @@ export const grantLifetime = mutation({
       .first();
 
     if (!user) {
-      throw new Error(`User not found: ${args.email}`);
+      throw new Error("User not found");
     }
 
     await ctx.db.patch(user._id, {
@@ -430,7 +430,7 @@ export const updateSubscriptionStatus = mutation({
       .first();
 
     if (!user) {
-      throw new Error(`User not found: ${args.email}`);
+      throw new Error("User not found");
     }
 
     await ctx.db.patch(user._id, {

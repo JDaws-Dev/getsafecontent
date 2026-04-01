@@ -652,6 +652,7 @@ export default function KidSearch() {
   const [timesUp, setTimesUp] = useState(false);
   const [error, setError] = useState('');
   const [codeShake, setCodeShake] = useState(false);
+  const [introDismissed, setIntroDismissed] = useState(false);
 
   // Search mode: 'learn' (text answers) or 'images' (image grid)
   const [searchMode, setSearchMode] = useState(searchParams.get('mode') || 'learn');
@@ -1006,7 +1007,7 @@ export default function KidSearch() {
       }
     } catch (err) {
       console.error('[KidSearch] Search error:', err);
-      setBlockedMessage('Oops! Something went wrong. Try again in a moment.');
+      setBlockedMessage("Our search engine is taking a quick nap! Try again in a moment. Tip: write down your question so you don't forget it!");
       setBlocked(true);
     } finally {
       setSearching(false);
@@ -1083,6 +1084,15 @@ export default function KidSearch() {
     // If switching to research and we have a query but no research results yet, trigger research
     if (mode === 'research' && query.trim() && researchResults.length === 0 && !researchLoading && results) {
       handleResearchSearch(query);
+    }
+    // If switching to tutor with an active search, inject a context-aware greeting
+    if (mode === 'tutor' && rootQuery && tutorMessages.length <= 1) {
+      const topic = rootQuery;
+      setTutorMessages([{
+        role: 'tutor',
+        content: `Hi ${selectedProfile?.name || 'there'}! I see you were learning about "${topic}" — want me to help you understand it better? Or you can ask me about anything else!`,
+        timestamp: Date.now(),
+      }]);
     }
   };
 
@@ -1257,7 +1267,7 @@ export default function KidSearch() {
       console.error('[Tutor] Error:', err);
       setTutorMessages(prev => [...prev, {
         role: 'tutor',
-        content: "Oops, something went wrong. Try asking me again!",
+        content: "Hmm, my brain had a little hiccup! Can you ask me that again?",
         timestamp: Date.now(),
       }]);
     } finally {
@@ -1605,14 +1615,15 @@ export default function KidSearch() {
             </div>
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
               aria-label="Toggle dark mode"
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
             </button>
             <button
               onClick={() => setShowRequestsInbox(!showRequestsInbox)}
-              className={`relative p-2 rounded-xl transition-all duration-200 active:scale-[0.98] ${
+              className={`relative flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 active:scale-[0.98] ${
                 showRequestsInbox
                   ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
                   : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -1620,6 +1631,7 @@ export default function KidSearch() {
               aria-label="My requests"
             >
               <AlertCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">Requests</span>
               {newApprovedCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {newApprovedCount}
@@ -1888,7 +1900,7 @@ export default function KidSearch() {
             <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="w-8 h-8 text-orange-500" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Oops!</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Hold on!</h2>
             <p className="text-gray-600 dark:text-gray-300 text-lg max-w-md mx-auto">
               {blockedMessage}
             </p>
@@ -2166,14 +2178,6 @@ export default function KidSearch() {
         {/* Results: Learn Mode */}
         {results && !searching && !blocked && searchMode === 'learn' && (
           <div className="space-y-5">
-            {/* Search timing */}
-            {searchTime && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                Found answer in {searchTime}s{images.length > 0 ? ` · ${images.length} images` : ''}
-              </p>
-            )}
-
             {/* AI Answer — clean card with left blue border */}
             {aiSummary && (
               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 border-l-blue-500 rounded-lg p-5">
@@ -2323,12 +2327,66 @@ export default function KidSearch() {
         {/* Empty state - clean, minimal */}
         {!results && !searching && !blocked && searchMode !== 'tutor' && (
           <div className="text-center pt-12">
+            {/* First-time walkthrough */}
+            {!introDismissed && !localStorage.getItem(`safestudy_kid_intro_${selectedProfile?._id}`) && (
+              <div className="max-w-lg mx-auto mb-8 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-5 text-left relative">
+                <button
+                  onClick={() => {
+                    localStorage.setItem(`safestudy_kid_intro_${selectedProfile?._id}`, 'true');
+                    setIntroDismissed(true);
+                  }}
+                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
+                  aria-label="Dismiss"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3">Welcome to SafeStudy! Here's how it works:</h3>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="flex items-start gap-2">
+                    <div className="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Search className="w-3 h-3 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">Learn</p>
+                      <p className="text-gray-500 dark:text-gray-400">Quick answers to any question</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-6 h-6 bg-cyan-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <ImageIcon className="w-3 h-3 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">Images</p>
+                      <p className="text-gray-500 dark:text-gray-400">Safe pictures from the web</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-6 h-6 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <BookOpen className="w-3 h-3 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">Research</p>
+                      <p className="text-gray-500 dark:text-gray-400">Real articles from NASA, Britannica & more</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-6 h-6 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <GraduationCap className="w-3 h-3 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">Tutor</p>
+                      <p className="text-gray-500 dark:text-gray-400">Homework help that teaches you</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
               Search anything
             </h2>
             <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">Explore topics, ask questions, discover new things</p>
 
-            {/* Approved notifications moved to inbox — see Bell icon in header */}
             <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
               {randomSuggestions.map((suggestion) => (
                 <button

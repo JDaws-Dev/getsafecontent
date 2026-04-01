@@ -23,12 +23,13 @@ export default function LoginPage() {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
 
-  // Redirect if already logged in
+  // Redirect if already logged in or just completed login
   useEffect(() => {
     if (isAuthenticated && !isPending) {
-      router.replace("/account");
+      localStorage.removeItem("safefamily_login_pending");
+      window.location.href = "/account";
     }
-  }, [isAuthenticated, isPending, router]);
+  }, [isAuthenticated, isPending]);
 
   // Load remembered email on mount
   useEffect(() => {
@@ -53,17 +54,16 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    localStorage.setItem("safefamily_remembered_email", formData.email);
 
-    try {
-      await signIn("password", {
-        email: formData.email,
-        password: formData.password,
-        flow: "signIn",
-      });
-
-      localStorage.setItem("safefamily_remembered_email", formData.email);
-      router.push("/account");
-    } catch (err: unknown) {
+    // Fire signIn but don't await — the promise may never resolve due to
+    // WebSocket reconnection during auth state change. The useEffect on
+    // isAuthenticated handles the redirect instead.
+    signIn("password", {
+      email: formData.email,
+      password: formData.password,
+      flow: "signIn",
+    }).catch((err: unknown) => {
       console.error("[LoginPage] Login error:", err);
       const errorMessage = err instanceof Error ? err.message : "";
       if (
@@ -85,7 +85,7 @@ export default function LoginPage() {
       }
       errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       setLoading(false);
-    }
+    });
   };
 
   const handleGoogleSignIn = async () => {

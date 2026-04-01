@@ -130,8 +130,8 @@ function SignupContent() {
   const [pricingInfo, setPricingInfo] = useState<PricingInfo>({
     monthly: 9.99,
     yearly: 99,
-    regularPrice: 14.97,
-    savings: 4.98,
+    regularPrice: 19.96,
+    savings: 9.97,
     isBundlePrice: true,
   });
 
@@ -251,6 +251,7 @@ function SignupContent() {
     safetunes: selectedApps.includes("safetunes"),
     safetube: selectedApps.includes("safetube"),
     safereads: selectedApps.includes("safereads"),
+    safestudy: selectedApps.includes("safestudy"),
   };
 
   // Handle form submission
@@ -478,7 +479,7 @@ function SignupContent() {
             <h3 className="font-semibold text-navy text-center mb-6">
               What&apos;s included in your trial:
             </h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {selectedApps.includes("safetunes") && (
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
@@ -517,6 +518,20 @@ function SignupContent() {
                   <div>
                     <p className="font-medium text-navy">SafeReads</p>
                     <p className="text-sm text-navy/60">Get content analysis for books</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedApps.includes("safestudy") && (
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-navy">SafeStudy</p>
+                    <p className="text-sm text-navy/60">Safe search + built-in tutor</p>
                   </div>
                 </div>
               )}

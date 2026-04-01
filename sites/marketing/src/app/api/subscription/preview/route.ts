@@ -21,8 +21,8 @@ const PRICE_IDS = {
   SAFETUBE: "price_1Spp7oKgkIT46sg7oJIKGfMG",
   SAFEREADS: process.env.SAFEREADS_PRICE_ID || "",
   TWO_APP: "price_1SzNlSKgkIT46sg7T88Bxq6p",
-  THREE_APP_MONTHLY: "price_1SxaerKgkIT46sg7NHNy0wk8",
-  THREE_APP_YEARLY: "price_1SzLJUKgkIT46sg7xsKo2A71",
+  BUNDLE_MONTHLY: "price_1SxaerKgkIT46sg7NHNy0wk8",
+  BUNDLE_YEARLY: "price_1SzLJUKgkIT46sg7xsKo2A71",
 };
 
 const APP_TO_PRICE: Record<string, string> = {
@@ -55,9 +55,9 @@ function getPriceIdForApps(
     return { priceId: PRICE_IDS.TWO_APP, monthlyPrice: 7.99 };
   }
 
-  // 3 apps
+  // 3+ apps - bundle pricing
   return {
-    priceId: isYearly ? PRICE_IDS.THREE_APP_YEARLY : PRICE_IDS.THREE_APP_MONTHLY,
+    priceId: isYearly ? PRICE_IDS.BUNDLE_YEARLY : PRICE_IDS.BUNDLE_MONTHLY,
     monthlyPrice: isYearly ? 99 / 12 : 9.99,
   };
 }

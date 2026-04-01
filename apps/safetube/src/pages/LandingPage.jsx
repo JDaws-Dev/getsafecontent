@@ -807,9 +807,9 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <p className="text-white italic mb-4">
-                  "My son was going down rabbit holes of weird gaming videos. Now he has 30 channels he loves and I can actually relax when he's watching."
+                  "My son kept finding the weirdest stuff through YouTube recommendations. Now he's got his channels and that's it. Honestly the peace of mind alone is worth it."
                 </p>
-                <p className="text-white/80 font-medium text-sm">— Sarah M., Mom of 2</p>
+                <p className="text-white/80 font-medium text-sm">— Sarah M., Mom of 5, Knoxville, TN</p>
               </div>
 
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
@@ -821,9 +821,9 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <p className="text-white italic mb-4">
-                  "YouTube Kids was too babyish for my 10-year-old. SafeTube lets him watch real content creators that I've vetted. Perfect middle ground."
+                  "YouTube Kids was way too babyish for my 10-year-old but regular YouTube is a minefield. This is the in-between we needed."
                 </p>
-                <p className="text-white/80 font-medium text-sm">— Mike R., Dad of 1, Ohio</p>
+                <p className="text-white/80 font-medium text-sm">— Mike R., Dad of 1, Columbus, OH</p>
               </div>
 
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
@@ -835,9 +835,9 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <p className="text-white italic mb-4">
-                  "The time limits feature is amazing. No more 'just one more video' arguments. When time's up, it's up. My daughter actually respects it now."
+                  "No more 'just one more video' arguments. When time's up, it's up. I was skeptical that my kids would accept it but they actually do because they know the rule is the rule. Huge win for our house."
                 </p>
-                <p className="text-white/80 font-medium text-sm">— Jennifer K., Mom of 3, Texas</p>
+                <p className="text-white/80 font-medium text-sm">— Jennifer K., Mom of 4, San Antonio, TX</p>
               </div>
             </div>
           </div>
@@ -1021,10 +1021,10 @@ export default function LandingPage() {
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-sm font-medium text-white/90 mb-2">Save with the Safe Family Bundle</p>
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">
-              Get all 3 apps for $9.99/month
+              Get all 4 apps for $9.99/month
             </h3>
             <p className="text-white/80 text-sm mb-6 max-w-xl mx-auto">
-              Protect your family across music, videos, and books — all in one subscription.
+              Protect your family across music, videos, books, and search — all in one subscription.
             </p>
 
             {/* Other apps */}
@@ -1054,6 +1054,19 @@ export default function LandingPage() {
                   <p className="text-xs text-white/70">AI book screening</p>
                 </div>
               </div>
+
+              {/* SafeStudy */}
+              <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-white">SafeStudy</p>
+                  <p className="text-xs text-white/70">Kid-safe AI search</p>
+                </div>
+              </div>
             </div>
 
             <a
@@ -1066,7 +1079,7 @@ export default function LandingPage() {
               </svg>
             </a>
             <p className="text-xs text-white/70 mt-3">
-              <span className="line-through">$14.97/mo</span> → $9.99/mo · Save 33%
+              <span className="line-through">$19.96/mo</span> → $9.99/mo · Save 50%
             </p>
           </div>
         </div>
