@@ -124,6 +124,7 @@ export default httpAction(async (ctx, request) => {
       entitledToThisApp: body.entitledToThisApp !== false, // Default to true
       stripeCustomerId: body.stripeCustomerId || null,
       subscriptionId: body.subscriptionId || null,
+      familyCode: body.familyCode || undefined,
     });
 
     console.log(`[provisionUser HTTP] Successfully provisioned: ${body.email}`, result);

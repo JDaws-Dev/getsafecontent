@@ -163,6 +163,7 @@ export async function POST(req: Request) {
     console.log(`[signup] Created central user successfully`);
 
     // Provision user to all individual app backends (trial access)
+    // First app generates the family code, remaining apps reuse it
     const APP_ENDPOINTS: Record<string, string> = {
       safetunes: "https://formal-chihuahua-623.convex.site",
       safetube: "https://rightful-rabbit-333.convex.site",
@@ -172,31 +173,46 @@ export async function POST(req: Request) {
 
     const appsToProvision = selectedApps || ["safetunes", "safetube", "safereads", "safestudy"];
     const provisionResults: Record<string, string> = {};
+    let sharedFamilyCode: string | null = null;
 
-    await Promise.allSettled(
-      appsToProvision.map(async (app: string) => {
-        try {
-          const endpoint = APP_ENDPOINTS[app];
-          if (!endpoint) return;
-          const url = `${endpoint}/provisionUser?key=${encodeURIComponent(ADMIN_KEY)}`;
-          const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: normalizedEmail,
-              passwordHash,
-              name: name?.trim() || null,
-              subscriptionStatus: "trial",
-              entitledToThisApp: true,
-            }),
-            signal: AbortSignal.timeout(5000),
-          });
-          provisionResults[app] = res.ok ? "ok" : `error:${res.status}`;
-        } catch (err) {
-          provisionResults[app] = `failed:${err instanceof Error ? err.message : "unknown"}`;
+    // Provision sequentially: first app that has family codes generates one, rest reuse it
+    for (const app of appsToProvision) {
+      try {
+        const endpoint = APP_ENDPOINTS[app];
+        if (!endpoint) continue;
+        const url = `${endpoint}/provisionUser?key=${encodeURIComponent(ADMIN_KEY)}`;
+        const res: Response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: normalizedEmail,
+            passwordHash,
+            name: name?.trim() || null,
+            subscriptionStatus: "trial",
+            entitledToThisApp: true,
+            ...(sharedFamilyCode ? { familyCode: sharedFamilyCode } : {}),
+          }),
+          signal: AbortSignal.timeout(5000),
+        });
+        if (res.ok) {
+          provisionResults[app] = "ok";
+          // Grab the family code from the first successful provisioning
+          if (!sharedFamilyCode) {
+            try {
+              const data = await res.json();
+              if (data.familyCode) {
+                sharedFamilyCode = data.familyCode;
+                console.log(`[signup] Got shared familyCode from ${app}: ${sharedFamilyCode}`);
+              }
+            } catch { /* ignore parse errors */ }
+          }
+        } else {
+          provisionResults[app] = `error:${res.status}`;
         }
-      })
-    );
+      } catch (err) {
+        provisionResults[app] = `failed:${err instanceof Error ? err.message : "unknown"}`;
+      }
+    }
 
     console.log("[signup] Provisioning results:", provisionResults);
 

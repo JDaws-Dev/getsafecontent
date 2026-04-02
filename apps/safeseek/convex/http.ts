@@ -267,6 +267,7 @@ const provisionUser = httpAction(async (ctx, request) => {
       entitledToThisApp: body.entitledToThisApp !== false,
       stripeCustomerId: body.stripeCustomerId || null,
       subscriptionId: body.subscriptionId || null,
+      familyCode: body.familyCode || undefined,
     });
 
     return new Response(JSON.stringify(result), {

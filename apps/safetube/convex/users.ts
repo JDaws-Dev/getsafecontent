@@ -432,6 +432,7 @@ export const provisionUserInternal = internalMutation({
     stripeCustomerId: v.union(v.string(), v.null()),
     subscriptionId: v.union(v.string(), v.null()),
     isOAuthUser: v.optional(v.boolean()), // Accepted but ignored (auth handled by Marketing)
+    familyCode: v.optional(v.string()), // Optional: use shared family code across apps
   },
   handler: async (ctx, args) => {
     console.log(`[provisionUser] Starting for ${args.email} (OAuth: ${args.isOAuthUser ?? false})`);
@@ -444,9 +445,11 @@ export const provisionUserInternal = internalMutation({
 
     let userId;
     let wasCreated = false;
+    let familyCode: string;
 
     if (existingUser) {
       userId = existingUser._id;
+      familyCode = existingUser.familyCode;
 
       // Update subscription status
       await ctx.db.patch(userId, {
@@ -460,8 +463,8 @@ export const provisionUserInternal = internalMutation({
 
       console.log(`[provisionUser] Updated existing user: ${args.email}`);
     } else {
-      // Create new user with family code
-      const familyCode = await generateUniqueFamilyCodeInternal(ctx);
+      // Use provided family code or generate a new one
+      familyCode = args.familyCode || await generateUniqueFamilyCodeInternal(ctx);
 
       userId = await ctx.db.insert("users", {
         email: args.email,
@@ -484,6 +487,7 @@ export const provisionUserInternal = internalMutation({
     return {
       success: true,
       userId: userId,
+      familyCode,
       provisioned: wasCreated,
       updated: !wasCreated,
       authAccountCreated: false,

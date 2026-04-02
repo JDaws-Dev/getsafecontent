@@ -107,8 +107,9 @@ async function provisionApp(
   email: string,
   passwordHash: string,
   name: string | undefined,
-  app: AppName
-): Promise<{ success: boolean; error?: string }> {
+  app: AppName,
+  familyCode?: string
+): Promise<{ success: boolean; familyCode?: string; error?: string }> {
   if (!ADMIN_KEY) {
     return { success: false, error: "ADMIN_API_KEY not configured" };
   }
@@ -129,6 +130,7 @@ async function provisionApp(
           name: name || null,
           subscriptionStatus: "lifetime",
           entitledToThisApp: true,
+          ...(familyCode ? { familyCode } : {}),
         }),
       },
       PROVISION_TIMEOUT_MS
@@ -138,7 +140,13 @@ async function provisionApp(
       const body = await response.text().catch(() => "");
       return { success: false, error: `HTTP ${response.status} - ${body}` };
     }
-    return { success: true };
+    // Extract familyCode from response
+    try {
+      const data = await response.json();
+      return { success: true, familyCode: data.familyCode };
+    } catch {
+      return { success: true };
+    }
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
       return { success: false, error: `Timeout after ${PROVISION_TIMEOUT_MS}ms` };
@@ -207,19 +215,40 @@ export async function POST(req: Request) {
 
     console.log(`[Promo Signup] Found central user with passwordHash for ${email}`);
 
-    // Step 2: Provision lifetime access to all apps with the passwordHash
-    // This creates both user records AND authAccounts for login
-    const results = await Promise.all(
-      ALL_APPS.map(async (app: AppName) => {
-        const result = await provisionApp(
-          email,
-          centralUser.passwordHash!,
-          centralUser.name,
-          app
+    // Step 2: Update Marketing Central status to "lifetime"
+    if (ADMIN_KEY) {
+      const encodedEmail = encodeURIComponent(email.toLowerCase());
+      const encodedKey = encodeURIComponent(ADMIN_KEY);
+      try {
+        await fetchWithTimeout(
+          `${CENTRAL_AUTH_ENDPOINT}/grantLifetime?email=${encodedEmail}&key=${encodedKey}&apps=${ALL_APPS.join(",")}`
         );
-        return { app, ...result };
-      })
-    );
+        console.log(`[Promo Signup] Marketing Central updated to lifetime for ${email}`);
+      } catch (err) {
+        console.error(`[Promo Signup] Failed to update Marketing Central for ${email}:`, err);
+      }
+    }
+
+    // Step 3: Provision lifetime access to all apps with the passwordHash
+    // First app generates family code, rest reuse it for a unified kid login experience
+    const results: { app: AppName; success: boolean; familyCode?: string; error?: string }[] = [];
+    let sharedFamilyCode: string | undefined;
+
+    for (const app of ALL_APPS) {
+      const result = await provisionApp(
+        email,
+        centralUser.passwordHash!,
+        centralUser.name,
+        app,
+        sharedFamilyCode
+      );
+      results.push({ app, ...result });
+      // Grab family code from first successful provisioning
+      if (result.success && result.familyCode && !sharedFamilyCode) {
+        sharedFamilyCode = result.familyCode;
+        console.log(`[Promo Signup] Got shared familyCode from ${app}: ${sharedFamilyCode}`);
+      }
+    }
 
     const failures = results.filter((r) => !r.success);
     const successes = results.filter((r) => r.success);
