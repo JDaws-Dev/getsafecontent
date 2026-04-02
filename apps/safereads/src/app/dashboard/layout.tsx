@@ -1,8 +1,8 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import { InactiveUserPrompt } from "@/components/InactiveUserPrompt";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,12 +16,40 @@ export default function DashboardLayout({
   const { user: centralUser, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
+  // Track whether we've already attempted to provision the local user
+  const [provisionAttempted, setProvisionAttempted] = useState(false);
+  const ensureUser = useMutation(api.userSync.ensureSafeReadsUser);
+
   // Get local SafeReads user data (kid profiles, onboarding status, etc.)
   // The subscription status comes from centralUser (JWT auth)
   const localUser = useQuery(
     api.userSync.getSafeReadsUserByEmail,
     centralUser?.email ? { email: centralUser.email } : "skip"
   );
+
+  // If the user is authenticated via JWT but has no local SafeReads user record,
+  // auto-provision one so they aren't stuck on "Loading..." forever.
+  useEffect(() => {
+    if (
+      !isLoading &&
+      isAuthenticated &&
+      centralUser?.email &&
+      localUser === null &&
+      !provisionAttempted
+    ) {
+      console.log("[DashboardLayout] Local user not found for", centralUser.email, "- auto-provisioning...");
+      setProvisionAttempted(true);
+      ensureUser({
+        email: centralUser.email,
+        name: centralUser.name || centralUser.email.split("@")[0],
+        subscriptionStatus: centralUser.subscriptionStatus || "trial",
+      }).then((result) => {
+        console.log("[DashboardLayout] Auto-provisioned local user:", result);
+      }).catch((err) => {
+        console.error("[DashboardLayout] Failed to auto-provision local user:", err);
+      });
+    }
+  }, [isLoading, isAuthenticated, centralUser, localUser, provisionAttempted, ensureUser]);
 
   // Combine central auth data with local user data
   const convexUser = localUser ? {
@@ -54,7 +82,7 @@ export default function DashboardLayout({
     );
   }
 
-  // Show loading state while fetching user
+  // Show loading state while fetching user (undefined = still loading, null = not found yet, auto-provisioning in progress)
   if (convexUser === undefined || convexUser === null) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">

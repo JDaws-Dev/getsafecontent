@@ -660,6 +660,7 @@ export default function OnboardingWizard({ userId, familyCode, onComplete }) {
 
   const createProfile = useMutation(api.kidProfiles.createProfile);
   const updateProfile = useMutation(api.kidProfiles.updateProfile);
+  const completeOnboarding = useMutation(api.users.completeOnboarding);
 
   const updateFormData = useCallback((partial) => {
     setFormData((prev) => {
@@ -711,19 +712,19 @@ export default function OnboardingWizard({ userId, familyCode, onComplete }) {
   }, [userId, formData, createProfile, updateProfile]);
 
   const handleComplete = useCallback(() => {
-    localStorage.setItem('safestudy_onboarding_complete', 'true');
+    completeOnboarding({ userId });
     onComplete?.('dashboard');
-  }, [onComplete]);
+  }, [onComplete, completeOnboarding, userId]);
 
   const handleAddAnother = useCallback(() => {
-    localStorage.setItem('safestudy_onboarding_complete', 'true');
+    completeOnboarding({ userId });
     onComplete?.('addKid');
-  }, [onComplete]);
+  }, [onComplete, completeOnboarding, userId]);
 
   const handleTrySearch = useCallback(() => {
-    localStorage.setItem('safestudy_onboarding_complete', 'true');
+    completeOnboarding({ userId });
     onComplete?.('trySearch');
-  }, [onComplete]);
+  }, [onComplete, completeOnboarding, userId]);
 
   return (
     <div className="fixed inset-0 z-50 bg-[#FFF8F0] flex flex-col">

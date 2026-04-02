@@ -10,9 +10,12 @@ function AdminPage() {
   const { user: centralUser, isAuthenticated, isLoading: isPending, logout } = useAuth();
   const navigate = useNavigate();
   const logAccessDenied = useMutation(api.subscriptionEvents.logAccessDenied);
+  const ensureUser = useMutation(api.userSync.ensureSafeTunesUser);
   // Track if we should redirect - gives session time to settle after login
   const [sessionChecked, setSessionChecked] = useState(false);
   const sessionCheckTimerRef = useRef(null);
+  // Track whether we've already attempted to provision the local user
+  const [provisionAttempted, setProvisionAttempted] = useState(false);
 
   // Get local SafeTunes user data by email (kid profiles, family code, etc.)
   // The subscription status and entitlements come from centralUser (JWT auth)
@@ -20,6 +23,29 @@ function AdminPage() {
     api.userSync.getSafeTunesUserByEmail,
     centralUser?.email ? { email: centralUser.email } : "skip"
   );
+
+  // If the user is authenticated via JWT but has no local SafeTunes user record,
+  // auto-provision one so they aren't stuck on "Loading..." forever.
+  useEffect(() => {
+    if (
+      !isPending &&
+      isAuthenticated &&
+      centralUser?.email &&
+      localUser === null &&
+      !provisionAttempted
+    ) {
+      console.log('[AdminPage] Local user not found for', centralUser.email, '- auto-provisioning...');
+      setProvisionAttempted(true);
+      ensureUser({
+        email: centralUser.email,
+        name: centralUser.name || centralUser.email.split('@')[0],
+      }).then((result) => {
+        console.log('[AdminPage] Auto-provisioned local user:', result);
+      }).catch((err) => {
+        console.error('[AdminPage] Failed to auto-provision local user:', err);
+      });
+    }
+  }, [isPending, isAuthenticated, centralUser, localUser, provisionAttempted, ensureUser]);
 
   // Combine central auth data with local user data
   const currentUser = localUser ? {

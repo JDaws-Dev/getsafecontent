@@ -24,6 +24,31 @@ export default function AdminDashboard() {
     centralUser?.email ? { email: centralUser.email } : "skip"
   );
 
+  // Auto-provision: if JWT-authenticated but no local user record, create one
+  const ensureUser = useMutation(api.userSync.ensureSafeTubeUser);
+  const [provisionAttempted, setProvisionAttempted] = useState(false);
+
+  useEffect(() => {
+    if (
+      !sessionPending &&
+      isAuthenticated &&
+      centralUser?.email &&
+      localUser === null &&
+      !provisionAttempted
+    ) {
+      console.log('[AdminDashboard] Local user not found for', centralUser.email, '- auto-provisioning...');
+      setProvisionAttempted(true);
+      ensureUser({
+        email: centralUser.email,
+        name: centralUser.name || centralUser.email.split('@')[0],
+      }).then((result) => {
+        console.log('[AdminDashboard] Auto-provisioned local user:', result);
+      }).catch((err) => {
+        console.error('[AdminDashboard] Failed to auto-provision local user:', err);
+      });
+    }
+  }, [sessionPending, isAuthenticated, centralUser, localUser, provisionAttempted, ensureUser]);
+
   // Combine central auth data with local user data
   const currentUser = localUser ? {
     ...localUser,

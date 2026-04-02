@@ -31,6 +31,7 @@ function SuccessContent() {
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
   const isPromoSignup = searchParams.get("promo") === "true";
+  const isTrialSignup = searchParams.get("trial") === "true";
 
   const [loading, setLoading] = useState(true);
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
@@ -40,7 +41,8 @@ function SuccessContent() {
   useEffect(() => {
     async function fetchSession() {
       // Promo signups always get all apps (lifetime access)
-      if (isPromoSignup) {
+      // Trial signups (unified auth) also get all apps during trial
+      if (isPromoSignup || isTrialSignup) {
         setLoading(false);
         setSessionData({ apps: ["safetunes", "safetube", "safereads", "safestudy"] });
         return;
@@ -173,7 +175,9 @@ function SuccessContent() {
           <p className="text-lg text-navy/70 mb-8">
             {isPromoSignup
               ? "Your lifetime access is now active! Let's set up your apps so your kids can start using them safely."
-              : "Your subscription is now active. Let's set up your apps so your kids can start using them safely."}
+              : isTrialSignup
+                ? "Your 7-day free trial is now active — all 4 apps, no credit card needed! Explore everything and see which apps your family loves."
+                : "Your subscription is now active. Let's set up your apps so your kids can start using them safely."}
           </p>
 
           {/* Apps purchased */}
@@ -230,7 +234,8 @@ function SuccessContent() {
             <div className="flex flex-wrap justify-center gap-3">
               {selectedApps.map((appId) => {
                 const config = APP_ICONS[appId];
-                const domain = appId === "safetunes" ? "getsafetunes.com" : appId === "safetube" ? "getsafetube.com" : "getsafereads.com";
+                const domains: Record<string, string> = { safetunes: "getsafetunes.com", safetube: "getsafetube.com", safereads: "getsafereads.com", safestudy: "getsafestudy.com" };
+                const domain = domains[appId] || "getsafefamily.com";
                 return (
                   <a
                     key={appId}

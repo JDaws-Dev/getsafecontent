@@ -357,6 +357,16 @@ export const deleteUserInternal = internalMutation({
   },
 });
 
+// Mark onboarding as complete for a user
+export const completeOnboarding = mutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, {
+      onboardingComplete: true,
+    });
+  },
+});
+
 // Set user timezone
 export const setTimezone = mutation({
   args: {

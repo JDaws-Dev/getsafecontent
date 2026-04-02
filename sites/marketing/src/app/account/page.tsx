@@ -310,7 +310,7 @@ function AccountPageContent() {
                   </p>
                   <div className="flex flex-wrap gap-3">
                     <Link
-                      href="/#pricing"
+                      href="/signup"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition"
                     >
                       <Plus className="w-4 h-4" />
@@ -601,7 +601,7 @@ function AccountPageContent() {
 
             {(isTrial || isExpired) && (
               <Link
-                href="/#pricing"
+                href="/signup"
                 className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 text-sm font-medium text-white hover:from-indigo-600 hover:to-purple-700"
               >
                 Upgrade Now

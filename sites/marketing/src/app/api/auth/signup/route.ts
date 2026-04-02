@@ -160,12 +160,51 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log(`[signup] Created central user: ${normalizedEmail}`);
+    console.log(`[signup] Created central user successfully`);
+
+    // Provision user to all individual app backends (trial access)
+    const APP_ENDPOINTS: Record<string, string> = {
+      safetunes: "https://formal-chihuahua-623.convex.site",
+      safetube: "https://rightful-rabbit-333.convex.site",
+      safereads: "https://exuberant-puffin-838.convex.site",
+      safestudy: "https://strong-scorpion-227.convex.site",
+    };
+
+    const appsToProvision = selectedApps || ["safetunes", "safetube", "safereads", "safestudy"];
+    const provisionResults: Record<string, string> = {};
+
+    await Promise.allSettled(
+      appsToProvision.map(async (app: string) => {
+        try {
+          const endpoint = APP_ENDPOINTS[app];
+          if (!endpoint) return;
+          const url = `${endpoint}/provisionUser?key=${encodeURIComponent(ADMIN_KEY)}`;
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: normalizedEmail,
+              passwordHash,
+              name: name?.trim() || null,
+              subscriptionStatus: "trial",
+              entitledToThisApp: true,
+            }),
+            signal: AbortSignal.timeout(5000),
+          });
+          provisionResults[app] = res.ok ? "ok" : `error:${res.status}`;
+        } catch (err) {
+          provisionResults[app] = `failed:${err instanceof Error ? err.message : "unknown"}`;
+        }
+      })
+    );
+
+    console.log("[signup] Provisioning results:", provisionResults);
 
     return NextResponse.json({
       success: true,
       email: normalizedEmail,
       userId: result.userId,
+      provisioned: provisionResults,
     });
   } catch (error) {
     console.error("[signup] Unexpected error:", error);

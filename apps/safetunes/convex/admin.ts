@@ -146,7 +146,7 @@ export const deleteUserByEmailInternal = internalMutation({
     // Delete subscription events
     const subEvents = await ctx.db
       .query("subscriptionEvents")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("by_email", (q) => q.eq("email", args.email))
       .collect();
     for (const se of subEvents) {
       await ctx.db.delete(se._id);
@@ -405,7 +405,7 @@ export const deleteOwnAccount = mutation({
     // Delete subscription events
     const subEvents = await ctx.db
       .query("subscriptionEvents")
-      .withIndex("email", (q) => q.eq("email", user.email))
+      .withIndex("by_email", (q) => q.eq("email", user.email))
       .collect();
     for (const se of subEvents) {
       await ctx.db.delete(se._id);

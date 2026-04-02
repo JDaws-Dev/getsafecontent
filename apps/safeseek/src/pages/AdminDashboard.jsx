@@ -1151,6 +1151,10 @@ export default function AdminDashboard() {
   const deleteProfileMutation = useMutation(api.kidProfiles.deleteProfile);
   const approveRequestMutation = useMutation(api.topicRequests.approveRequest);
   const denyRequestMutation = useMutation(api.topicRequests.denyRequest);
+  const createOrUpdateUser = useMutation(api.users.createOrUpdateUser);
+
+  // Track whether we've already attempted to auto-provision the local user
+  const [provisionAttempted, setProvisionAttempted] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -1194,6 +1198,28 @@ export default function AdminDashboard() {
     api.topicRequests.getAllRequests,
     userData?._id ? { userId: userData._id } : 'skip'
   );
+
+  // Auto-provision: if JWT user is authenticated but has no local user record, create one
+  useEffect(() => {
+    if (
+      !isLoading &&
+      isAuthenticated &&
+      user?.email &&
+      userData === null &&
+      !provisionAttempted
+    ) {
+      console.log('[AdminDashboard] Local user not found for', user.email, '- auto-provisioning...');
+      setProvisionAttempted(true);
+      createOrUpdateUser({
+        email: user.email,
+        name: user.name || user.email.split('@')[0],
+      }).then((result) => {
+        console.log('[AdminDashboard] Auto-provisioned local user:', result);
+      }).catch((err) => {
+        console.error('[AdminDashboard] Failed to auto-provision local user:', err);
+      });
+    }
+  }, [isLoading, isAuthenticated, user, userData, provisionAttempted, createOrUpdateUser]);
 
   const handleLogout = () => {
     logout();
@@ -1255,9 +1281,9 @@ export default function AdminDashboard() {
     );
   }
 
-  // Show onboarding wizard for first-time users
-  const showOnboarding = kidProfiles && kidProfiles.length === 0
-    && !localStorage.getItem('safestudy_onboarding_complete');
+  // Show onboarding wizard for first-time users (database-backed, not localStorage)
+  const showOnboarding = userData && kidProfiles && kidProfiles.length === 0
+    && userData.onboardingComplete !== true;
 
   if (showOnboarding) {
     return (
@@ -1265,7 +1291,6 @@ export default function AdminDashboard() {
         userId={userData._id}
         familyCode={userData.familyCode}
         onComplete={(action) => {
-          localStorage.setItem('safestudy_onboarding_complete', 'true');
           if (action === 'trySearch') {
             navigate(`/search/${userData.familyCode}`);
           } else if (action === 'addKid') {

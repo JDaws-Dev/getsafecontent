@@ -143,6 +143,7 @@ export const ensureSafeTubeUser = mutation({
       familyCode: familyCode,
       createdAt: Date.now(),
       subscriptionStatus: "trial",
+      onboardingCompleted: false,
     });
 
     console.log(

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getActiveFeatureFlags } from "@/lib/feature-flags";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/feature-flags
  *
@@ -13,9 +15,15 @@ import { getActiveFeatureFlags } from "@/lib/feature-flags";
 export async function GET() {
   const flags = getActiveFeatureFlags();
 
-  return NextResponse.json({
-    flags,
-    // Include a timestamp for debugging/caching purposes
-    timestamp: new Date().toISOString(),
-  });
+  return NextResponse.json(
+    {
+      flags,
+      timestamp: new Date().toISOString(),
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    }
+  );
 }

@@ -191,7 +191,7 @@ export default function AccountForm({
             ? "Your code unlocks free access forever!"
             : isYearly
               ? "Save 17% with yearly billing"
-              : "7 days free. No credit card required."}
+              : "7 days free — all 4 apps. No credit card required."}
         </p>
       </div>
 

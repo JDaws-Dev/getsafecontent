@@ -286,14 +286,22 @@ function SignupContent() {
         const signupResult = await signupResponse.json();
 
         if (!signupResponse.ok) {
-          // Handle user already exists - they should sign in instead
+          // User already exists — they're upgrading from trial, skip to checkout
           if (signupResult.code === "USER_EXISTS" || signupResponse.status === 409) {
-            throw new Error("An account with this email already exists. Please sign in instead.");
+            console.log("[SignupPage] User exists — proceeding to Stripe checkout for upgrade");
+            // Fall through to Stripe checkout below
+          } else {
+            throw new Error(signupResult.error || "Failed to create account");
           }
-          throw new Error(signupResult.error || "Failed to create account");
+        } else {
+          console.log("[SignupPage] Central user created successfully:", signupResult.email);
+          // New account — skip Stripe, start free trial
+          if (!hasLifetimeCode) {
+            console.log("[SignupPage] Account created with trial — skipping Stripe checkout");
+            window.location.href = `/success?trial=true&email=${encodeURIComponent(data.email)}`;
+            return;
+          }
         }
-
-        console.log("[SignupPage] Central user created successfully:", signupResult.email);
       } catch (err) {
         console.error("[SignupPage] Account creation error:", err);
         setError(

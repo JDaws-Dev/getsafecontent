@@ -7,7 +7,7 @@
 | SafeTunes | getsafetunes.com | `formal-chihuahua-623` | React + Vite |
 | SafeTube | getsafetube.com | `rightful-rabbit-333` | React + Vite |
 | SafeReads | getsafereads.com | `exuberant-puffin-838` | Next.js |
-| SafeStudy | getsafestudy.com (TBD) | `quaint-shepherd-776` (dev) | React + Vite + OpenAI |
+| SafeStudy | getsafestudy.com (TBD) | `strong-scorpion-227` | React + Vite + OpenAI |
 | Marketing | getsafefamily.com | `adamant-crow-705` | Next.js |
 | Blog | getsafefamily.com/blog | N/A (shares Marketing) | MDX + Velite |
 
@@ -65,6 +65,18 @@ curl "https://rightful-rabbit-333.convex.site/deleteUser?email=EMAIL&key=KEY"
 
 # Admin dashboard
 curl "https://rightful-rabbit-333.convex.site/adminDashboard?key=KEY&format=json"
+```
+
+### SafeStudy (`strong-scorpion-227.convex.site`)
+```bash
+# Admin dashboard
+curl "https://strong-scorpion-227.convex.site/adminDashboard?key=KEY&format=json"
+
+# Provision user
+curl "https://strong-scorpion-227.convex.site/provisionUser?email=EMAIL&key=KEY"
+
+# Set subscription status
+curl "https://strong-scorpion-227.convex.site/setSubscriptionStatus?email=EMAIL&status=STATUS&key=KEY"
 ```
 
 ### SafeReads (`exuberant-puffin-838.convex.site`)
@@ -314,6 +326,9 @@ cd ~/safecontent/apps/safetube && CONVEX_DEPLOYMENT=prod:rightful-rabbit-333 npx
 # SafeReads
 cd ~/safecontent/apps/safereads && CONVEX_DEPLOYMENT=prod:exuberant-puffin-838 npx convex deploy
 
+# SafeStudy
+cd ~/safecontent/apps/safeseek && CONVEX_DEPLOYMENT=prod:strong-scorpion-227 npx convex deploy
+
 # Marketing (auto-deploys via Vercel on push)
 cd ~/safecontent/sites/marketing && vercel --prod
 ```
@@ -543,26 +558,33 @@ Logs include: timestamp, admin email, action, target, IP address.
 
 ## What's Next
 
+### SafeStudy Launch (Highest Priority)
+- [ ] Purchase domain (getsafestudy.com or similar)
+- [ ] Add Stripe checkout UI button in admin Settings
+- [ ] Build UpgradePrompt component (trial countdown)
+- [ ] Add `useSubscriptionSync` hook (sync with Marketing Central)
+- [ ] Add "safestudy" to Marketing Central entitledApps
+- [ ] Promo code validation (DAWSFRIEND, DEWITT)
+- [ ] Landing page polish (testimonials, FAQ, hero images)
+- [ ] Mobile hamburger menu
+- [ ] KidSearch.jsx refactor (2,429 lines needs component extraction)
+
 ### Immediate
 - [ ] Register for FPEA Florida Homeschool Convention (May 21-23, 2026)
   - See `docs/FPEA-2026-EXHIBITOR-GUIDE.md`
-  - URL: https://fpea.com/webforms/2026-exhibitor-registration
   - Cost: $525-685 (Zone 3-1)
 
-### Product
-- [ ] **Unified Auth** - One login across all apps (highest priority)
-  - Central user database in Marketing site
-  - Apps verify access via central API
-  - Password sync across apps
-  - See `docs/UNIFIED-AUTH-ARCHITECTURE.md`
+### Completed
+- [x] **Unified Auth** - JWT migration fully complete (Mar 27)
+- [x] **Email Automation** - All types deployed (Apr 1)
+- [x] **SafeStudy MVP** - Core search, tutor, profiles, time limits, Stripe webhooks
+- [x] **Convex Auth Removal** - Removed from all 3 original apps (Mar 27)
+- [x] **Homepage Updates** - On branch `marketing-homepage-updates`
 
 ### Marketing
 - [ ] Publish Substack article (saved in `docs/client-acquisition-research.md`)
 - [ ] Send outreach emails to Chris McKenna & Andrew Hogan
 - [ ] Apply to Southeast Homeschool Expo (Atlanta, Jul 24-25)
-- [ ] Apply to Suwanee Farmers Market (opens January)
-
-### Product
 - [ ] Add more blog posts (target: 2/week)
 - [ ] Create convention promo code (e.g., `FPEA2026`)
 - [ ] Design booth materials (banner, brochures)
@@ -575,4 +597,4 @@ Logs include: timestamp, admin email, action, target, IP address.
 
 ---
 
-*Last updated: February 11, 2026*
+*Last updated: April 1, 2026*
