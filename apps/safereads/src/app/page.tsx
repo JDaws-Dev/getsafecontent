@@ -107,6 +107,30 @@ export default function Home() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)]">
+      {/* Top Nav */}
+      <nav className="sticky top-0 z-40 border-b border-parchment-200 bg-white/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-2">
+            <BookOpen className="h-6 w-6 text-parchment-700" />
+            <span className="font-serif text-lg font-bold text-ink-900">SafeReads</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/play"
+              className="rounded-full bg-purple-100 px-4 py-2 text-sm font-semibold text-purple-700 transition-colors hover:bg-purple-200"
+            >
+              Kid Login
+            </Link>
+            <Link
+              href="/dashboard"
+              className="rounded-full bg-parchment-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-parchment-800"
+            >
+              Parent Login
+            </Link>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero */}
       <section className="bg-parchment-50 pt-16 pb-12 sm:pt-24 sm:pb-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
