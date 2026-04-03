@@ -101,49 +101,71 @@ export function BookSearch({ kidId }: BookSearchProps) {
       {/* Results */}
       {isSearching && results.length === 0 && (
         <div className="flex flex-col items-center py-12">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-50">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-violet-200">
+            <Loader2 className="h-9 w-9 animate-spin text-purple-500" />
+            <div className="absolute inset-0 animate-pulse rounded-full bg-purple-200/30" />
           </div>
-          <p className="mt-4 text-sm font-medium text-gray-500">Searching for books...</p>
+          <p className="mt-4 text-sm font-bold text-gray-600">Searching for books...</p>
+          <p className="mt-1 text-xs text-gray-400">Finding the best matches for you</p>
         </div>
       )}
 
       {!isSearching && hasSearched && results.length === 0 && (
-        <div className="flex flex-col items-center py-12 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-            <Search className="h-8 w-8 text-gray-300" />
+        <div className="flex flex-col items-center rounded-3xl bg-gradient-to-b from-gray-50 to-white px-6 py-12 text-center shadow-sm ring-1 ring-black/5">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+            <Search className="h-9 w-9 text-gray-300" />
           </div>
-          <p className="mt-4 text-lg font-bold text-gray-600">
+          <p className="mt-5 text-lg font-bold text-gray-700">
             No books found
           </p>
-          <p className="mt-1 text-sm text-gray-400">
-            Try a different title or author name
+          <p className="mt-1.5 max-w-xs text-sm text-gray-400">
+            Try searching for a different title, author, or topic. You can also browse genres from the home page!
           </p>
         </div>
       )}
 
       {!hasSearched && !isSearching && (
-        <div className="flex flex-col items-center py-12 text-center">
-          <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 to-purple-200">
-            <BookOpen className="h-10 w-10 text-purple-400" />
+        <div className="flex flex-col items-center rounded-3xl bg-gradient-to-b from-violet-50 to-purple-50/50 px-6 py-12 text-center shadow-sm ring-1 ring-purple-100">
+          <div className="animate-float relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-violet-200 to-purple-300 shadow-lg shadow-purple-100">
+            <BookOpen className="h-12 w-12 text-white" />
+            <span className="absolute -right-1 -top-1 text-2xl">{"✨"}</span>
           </div>
-          <p className="mt-5 text-xl font-bold text-gray-800">
+          <p className="mt-6 text-xl font-bold text-gray-800">
             Find your next adventure!
           </p>
-          <p className="mt-2 max-w-xs text-sm text-gray-400">
-            Search by title or author. If you find something you love, ask your parent to add it!
+          <p className="mt-2 max-w-xs text-sm text-gray-500">
+            Search by title or author. If you find something you love, ask your parent to add it to your bookshelf!
           </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            {["Harry Potter", "Dog Man", "Diary of a Wimpy Kid", "Percy Jackson"].map((suggestion) => (
+              <button
+                key={suggestion}
+                onClick={() => setQuery(suggestion)}
+                className="kid-touch rounded-full bg-white px-3.5 py-2 text-xs font-bold text-purple-600 shadow-sm ring-1 ring-purple-100 transition-all hover:shadow-md active:scale-95"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
+      {/* Result count */}
+      {hasSearched && results.length > 0 && (
+        <p className="mb-3 text-xs font-medium text-gray-400">
+          {results.length} book{results.length !== 1 ? "s" : ""} found
+        </p>
+      )}
+
       <div className="space-y-3">
-        {results.map((book) => (
+        {results.map((book, index) => (
           <div
             key={book.googleBooksId || book._id}
-            className="flex gap-3.5 rounded-2xl border-2 border-transparent bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:border-purple-100 hover:shadow-lg"
+            className="animate-fade-up flex gap-3.5 rounded-2xl border-2 border-transparent bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:border-purple-100 hover:shadow-lg active:scale-[0.99]"
+            style={{ animationDelay: `${index * 0.05}s` }}
           >
             {/* Cover */}
-            <div className="relative h-28 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
+            <div className="book-tilt relative h-28 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
               {book.coverUrl ? (
                 <Image
                   src={book.coverUrl}
@@ -157,6 +179,12 @@ export function BookSearch({ kidId }: BookSearchProps) {
                 <div className="flex h-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-violet-50 to-purple-100 p-2">
                   <BookOpen className="h-5 w-5 text-purple-300" />
                   <span className="text-[8px] font-medium text-purple-400">No Cover</span>
+                </div>
+              )}
+              {/* Page count badge */}
+              {book.pageCount && (
+                <div className="absolute right-1 top-1 rounded-md bg-black/50 px-1.5 py-0.5 backdrop-blur-sm">
+                  <span className="text-[9px] font-bold text-white">{book.pageCount}p</span>
                 </div>
               )}
             </div>

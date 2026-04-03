@@ -131,23 +131,29 @@ export function ProfileSelector({
   };
 
   return (
-    <div className="flex min-h-[80vh] flex-col items-center px-4 pt-8">
-      {/* Back button */}
-      <button
-        onClick={onBack}
-        className="kid-touch mb-6 flex items-center gap-1.5 self-start rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-gray-500 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-gray-700"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Different code
-      </button>
+    <div className="flex min-h-[80vh] flex-col items-center px-4 pt-6">
+      {/* Header with back button */}
+      <div className="mb-8 flex w-full max-w-md items-center justify-between">
+        <button
+          onClick={onBack}
+          className="kid-touch flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-gray-500 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-gray-700"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Different code
+        </button>
+        <div className="rounded-full bg-white/60 px-3 py-1 text-xs font-mono font-bold tracking-widest text-gray-400 backdrop-blur-sm">
+          {familyCode}
+        </div>
+      </div>
 
       {/* Header */}
       <div className="mb-2 text-center">
-        <p className="text-4xl">
-          {"\uD83D\uDCDA"}
-        </p>
-        <h1 className="mt-3 text-center font-serif text-2xl font-bold text-gray-900">
-          {familyName}
+        <div className="relative mx-auto mb-4 w-fit">
+          <span className="text-5xl">{"\uD83D\uDCDA"}</span>
+          <span className="absolute -right-2 -top-1 animate-float text-lg" style={{ animationDelay: "0.5s" }}>{"✨"}</span>
+        </div>
+        <h1 className="text-center font-serif text-2xl font-bold text-gray-900">
+          {familyName}&apos;s Library
         </h1>
         <p className="mt-2 text-center text-lg font-medium text-purple-600">
           Who&apos;s reading today?
@@ -164,13 +170,13 @@ export function ProfileSelector({
             <button
               key={kid._id}
               onClick={() => handleProfileSelect(kid)}
-              className="animate-bounce-in group flex min-h-[120px] flex-col items-center gap-3 rounded-3xl border-2 border-transparent bg-white p-4 shadow-md transition-all duration-200 hover:border-purple-200 hover:shadow-lg hover:-translate-y-1 active:scale-95 sm:p-6"
+              className="animate-bounce-in group flex min-h-[140px] flex-col items-center gap-3 rounded-3xl border-2 border-transparent bg-white p-5 shadow-md transition-all duration-200 hover:border-purple-200 hover:shadow-xl hover:-translate-y-1.5 active:scale-95 sm:p-6"
             >
               {/* Avatar with gradient + icon */}
-              <div className={`relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br ${gradientClass} ring-4 ${ringClass} shadow-lg transition-transform duration-200 group-hover:scale-110 sm:h-[88px] sm:w-[88px]`}>
-                <span className="text-3xl sm:text-4xl">{icon}</span>
+              <div className={`relative flex h-[84px] w-[84px] items-center justify-center rounded-full bg-gradient-to-br ${gradientClass} ring-4 ${ringClass} shadow-lg transition-transform duration-200 group-hover:scale-110 sm:h-24 sm:w-24`}>
+                <span className="text-4xl sm:text-5xl drop-shadow-sm">{icon}</span>
                 {kid.hasPin && (
-                  <div className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md">
+                  <div className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md ring-2 ring-white">
                     <Lock className="h-3.5 w-3.5 text-gray-400" />
                   </div>
                 )}
@@ -182,6 +188,11 @@ export function ProfileSelector({
                 {kid.age !== undefined && (
                   <p className="mt-0.5 text-xs font-medium text-gray-400">
                     Age {kid.age}
+                  </p>
+                )}
+                {kid.readingLevel && (
+                  <p className="mt-1 inline-block rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-500">
+                    {kid.readingLevel}
                   </p>
                 )}
               </div>

@@ -59,7 +59,7 @@ export function BookCard({
             alt={title}
             fill
             sizes={size === "sm" ? "96px" : size === "md" ? "112px" : "128px"}
-            className="object-cover"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
             unoptimized
           />
         ) : (
@@ -73,18 +73,29 @@ export function BookCard({
 
         {/* Progress bar overlay */}
         {progress !== undefined && progress > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 bg-black/30 p-1.5 backdrop-blur-sm">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-black/10 p-1.5 backdrop-blur-sm">
             <div className="h-1.5 overflow-hidden rounded-full bg-white/20">
               <div
-                className="progress-gradient h-full rounded-full transition-all duration-500"
+                className={`h-full rounded-full transition-all duration-500 ${progress >= 100 ? "bg-emerald-400" : "progress-gradient"}`}
                 style={{ width: `${Math.min(progress, 100)}%` }}
               />
             </div>
-            {progress >= 100 && (
-              <p className="mt-0.5 text-center text-[8px] font-bold text-white">
-                {"\u2728"} Done!
+            {progress >= 100 ? (
+              <p className="mt-0.5 text-center text-[8px] font-bold text-emerald-300">
+                {"\u2728"} Finished!
+              </p>
+            ) : (
+              <p className="mt-0.5 text-center text-[8px] font-bold text-white/80">
+                {Math.round(progress)}%
               </p>
             )}
+          </div>
+        )}
+
+        {/* New book shimmer indicator (no progress means not started) */}
+        {progress === undefined && (
+          <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-purple-500 text-[8px] font-bold text-white shadow-sm">
+            {"\u2728"}
           </div>
         )}
       </div>

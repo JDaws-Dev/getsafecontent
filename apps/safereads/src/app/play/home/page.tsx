@@ -8,7 +8,7 @@ import { KidBookshelf } from "@/components/kid/KidBookshelf";
 import { BookCard } from "@/components/kid/BookCard";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
 import { StylizedCover } from "@/components/kid/StylizedCover";
-import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star } from "lucide-react";
+import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star, Clock } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -41,6 +41,25 @@ const COLOR_GRADIENTS: Record<string, string> = {
   teal: "from-teal-400 via-cyan-500 to-blue-500",
   yellow: "from-yellow-400 via-amber-400 to-orange-400",
 };
+
+const AVATAR_BG: Record<string, string> = {
+  red: "bg-red-500",
+  blue: "bg-blue-500",
+  green: "bg-emerald-500",
+  purple: "bg-purple-500",
+  orange: "bg-orange-500",
+  pink: "bg-pink-500",
+  teal: "bg-teal-500",
+  yellow: "bg-yellow-500",
+};
+
+/** Greeting that changes based on time of day */
+function getTimeGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 interface FreeBook {
   id: string;
@@ -175,18 +194,43 @@ export default function KidHomePage() {
       progress: number;
     }>;
 
+  // Time-aware greeting
+  const timeGreeting = getTimeGreeting();
+  const avatarBg = AVATAR_BG[kidProfile.color] || AVATAR_BG.purple;
+
   return (
     <div className="py-6">
-      {/* Welcome Header - Hero */}
-      <div className={`animate-fade-up overflow-hidden rounded-3xl bg-gradient-to-r ${gradientClass} p-4 text-white shadow-xl sm:p-6`}
+      {/* Sticky Kid Header -- profile pill + search shortcut */}
+      <div className="sticky-kid-header animate-fade-up sticky -top-1 z-20 -mx-4 mb-4 flex items-center justify-between bg-[#FEF7EE]/95 px-4 py-2.5 backdrop-blur-md"
            style={{ animationDelay: "0s" }}>
+        <div className="flex items-center gap-2.5">
+          <div className={`flex h-9 w-9 items-center justify-center rounded-full ${avatarBg} text-sm font-bold text-white shadow-md`}>
+            {kidProfile.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium text-gray-400">{timeGreeting}</p>
+            <p className="truncate text-sm font-bold text-gray-900">{kidProfile.name}</p>
+          </div>
+        </div>
+        <Link
+          href="/play/search"
+          className="kid-touch flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-500 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md active:scale-95"
+        >
+          <Search className="h-4 w-4" />
+          <span className="hidden sm:inline">Find Books</span>
+        </Link>
+      </div>
+
+      {/* Welcome Header - Hero */}
+      <div className={`animate-fade-up overflow-hidden rounded-3xl bg-gradient-to-br ${gradientClass} p-5 text-white shadow-xl sm:p-6`}
+           style={{ animationDelay: "0.05s" }}>
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 text-2xl backdrop-blur-sm sm:h-16 sm:w-16 sm:text-3xl">
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 text-3xl backdrop-blur-sm sm:h-[72px] sm:w-[72px] sm:text-4xl">
             {greetingEmoji}
           </div>
           <div className="min-w-0">
             <h1 className="truncate text-xl font-bold sm:text-2xl">
-              Hi, {kidProfile.name}!
+              {timeGreeting}, {kidProfile.name}!
             </h1>
             <p className="mt-1 text-sm font-medium text-white/80 sm:text-base">
               Ready for a reading adventure?
@@ -194,51 +238,60 @@ export default function KidHomePage() {
           </div>
         </div>
 
-        {/* Quick Stats inline */}
-        {stats && (stats.totalBooks > 0 || stats.finishedBooks > 0) && (
-          <div className="mt-5 flex flex-wrap gap-2">
-            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
-              <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="text-xs font-bold sm:text-sm">{stats.currentlyReading}</span>
-              <span className="text-[10px] text-white/70 sm:text-xs">reading</span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
-              <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="text-xs font-bold sm:text-sm">{stats.finishedBooks}</span>
-              <span className="text-[10px] text-white/70 sm:text-xs">finished</span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
-              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="text-xs font-bold sm:text-sm">{stats.totalPages}</span>
-              <span className="text-[10px] text-white/70 sm:text-xs">pages</span>
-            </div>
+        {/* Quick Stats - always show, with zeros for new readers */}
+        <div className="mt-5 flex flex-wrap gap-2">
+          <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
+            <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="text-xs font-bold sm:text-sm">{stats?.currentlyReading || 0}</span>
+            <span className="text-[10px] text-white/70 sm:text-xs">reading</span>
           </div>
-        )}
+          <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
+            <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="text-xs font-bold sm:text-sm">{stats?.finishedBooks || 0}</span>
+            <span className="text-[10px] text-white/70 sm:text-xs">finished</span>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="text-xs font-bold sm:text-sm">{stats?.totalPages || 0}</span>
+            <span className="text-[10px] text-white/70 sm:text-xs">pages</span>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
+            <Library className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="text-xs font-bold sm:text-sm">{approvedBooks?.length || 0}</span>
+            <span className="text-[10px] text-white/70 sm:text-xs">books</span>
+          </div>
+        </div>
       </div>
 
       {/* Currently Reading - prominent card */}
       {currentlyReadingBooks.length > 0 && (
         <section className="animate-fade-up mt-6" style={{ animationDelay: "0.1s" }}>
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-purple-500" />
-            <h2 className="text-lg font-bold text-gray-800">
-              Continue Reading
-            </h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-purple-500" />
+              <h2 className="text-lg font-bold text-gray-800">
+                Continue Reading
+              </h2>
+            </div>
+            <span className="rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-bold text-purple-500">
+              {currentlyReadingBooks.length} book{currentlyReadingBooks.length !== 1 ? "s" : ""}
+            </span>
           </div>
           <div className="mt-3 space-y-3">
-            {currentlyReadingBooks.map((book) => (
+            {currentlyReadingBooks.map((book, index) => (
               <button
                 key={book._id}
                 onClick={() => router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)}
                 className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <div className="book-tilt relative h-20 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
+                <div className="book-tilt relative h-[72px] w-[52px] flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
                   {book.coverUrl ? (
                     <Image
                       src={book.coverUrl}
                       alt={book.title}
                       fill
-                      sizes="56px"
+                      sizes="52px"
                       className="object-cover"
                       unoptimized
                     />
@@ -249,20 +302,20 @@ export default function KidHomePage() {
                 <div className="min-w-0 flex-1 text-left">
                   <p className="line-clamp-1 text-sm font-bold text-gray-900">{book.title}</p>
                   <p className="mt-0.5 text-xs text-gray-400">{book.author}</p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-purple-100">
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-purple-100">
                       <div
-                        className="progress-gradient h-full rounded-full transition-all duration-500"
+                        className="progress-shimmer h-full rounded-full transition-all duration-500"
                         style={{ width: `${Math.min(book.progress, 100)}%` }}
                       />
                     </div>
-                    <span className="text-[10px] font-bold text-purple-600">
+                    <span className="min-w-[32px] text-right text-[11px] font-bold text-purple-600">
                       {Math.round(book.progress)}%
                     </span>
                   </div>
                 </div>
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 to-purple-600 shadow-md">
-                  <BookOpen className="h-4 w-4 text-white" />
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-purple-200 transition-transform group-hover:scale-105">
+                  <BookOpen className="h-4.5 w-4.5 text-white" />
                 </div>
               </button>
             ))}
@@ -417,15 +470,20 @@ export default function KidHomePage() {
 
       {/* Pending Requests */}
       {pendingCount > 0 && (
-        <div className="animate-fade-up mt-5 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 p-4 shadow-sm ring-1 ring-amber-200" style={{ animationDelay: "0.25s" }}>
-          <span className="text-2xl">{"\uD83D\uDE4F"}</span>
-          <div>
+        <div className="animate-fade-up mt-6 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-4 shadow-sm ring-1 ring-amber-200/60" style={{ animationDelay: "0.25s" }}>
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md">
+            <Clock className="h-5 w-5 text-white" />
+          </div>
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-amber-800">
               {pendingCount} book{pendingCount > 1 ? "s" : ""} waiting for approval
             </p>
-            <p className="mt-0.5 text-xs text-amber-600">
+            <p className="mt-0.5 text-xs text-amber-600/80">
               Your parent will review your requests soon!
             </p>
+          </div>
+          <div className="flex-shrink-0">
+            <span className="animate-pulse text-lg">{"⏳"}</span>
           </div>
         </div>
       )}
@@ -512,7 +570,7 @@ export default function KidHomePage() {
       </section>
 
       {/* My Bookshelf */}
-      <section className="animate-fade-up mt-7" style={{ animationDelay: "0.35s" }}>
+      <section id="bookshelf" className="animate-fade-up mt-7" style={{ animationDelay: "0.35s" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-lg">{"\uD83D\uDCDA"}</span>
@@ -520,7 +578,7 @@ export default function KidHomePage() {
           </div>
           <Link
             href="/play/search"
-            className="kid-touch flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
+            className="kid-touch flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
           >
             <Search className="h-3.5 w-3.5" />
             Find Books

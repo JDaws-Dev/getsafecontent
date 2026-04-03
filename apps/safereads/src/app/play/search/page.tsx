@@ -5,11 +5,22 @@ import { useRouter } from "next/navigation";
 import { BookSearch } from "@/components/kid/BookSearch";
 import { FreeBookSearch } from "@/components/kid/FreeBookSearch";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BookOpen, Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
 type SearchTab = "all" | "free";
+
+const SEARCH_SUGGESTIONS = [
+  { label: "Dragons", emoji: "\uD83D\uDC09" },
+  { label: "Space", emoji: "\uD83D\uDE80" },
+  { label: "Dinosaurs", emoji: "\uD83E\uDD95" },
+  { label: "Pirates", emoji: "\uD83C\uDFF4\u200D\u2620\uFE0F" },
+  { label: "Unicorns", emoji: "\uD83E\uDD84" },
+  { label: "Dogs", emoji: "\uD83D\uDC36" },
+  { label: "Magic", emoji: "\u2728" },
+  { label: "Robots", emoji: "\uD83E\uDD16" },
+];
 
 export default function KidSearchPage() {
   const router = useRouter();
@@ -48,33 +59,52 @@ export default function KidSearchPage() {
 
   return (
     <div className="py-6">
-      {/* Header */}
-      <div className="mb-4 flex items-center gap-3">
+      {/* Header with back button */}
+      <div className="animate-fade-up mb-5 flex items-center gap-3">
         <Link
           href="/play/home"
-          className="kid-touch flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 shadow-md transition-all hover:shadow-lg active:scale-95"
+          className="kid-touch flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 shadow-md ring-1 ring-black/5 transition-all hover:shadow-lg active:scale-95"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
-        <div>
+        <div className="flex-1">
           <h1 className="text-xl font-bold text-gray-800">Find Books</h1>
-          <p className="text-xs text-gray-400">Search or browse by genre</p>
+          <p className="text-xs text-gray-400">Search, browse, or discover something new</p>
+        </div>
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-purple-600 shadow-md">
+          <BookOpen className="h-4 w-4 text-white" />
         </div>
       </div>
 
+      {/* Quick Search Suggestions - horizontal scroll */}
+      <div className="animate-fade-up mb-4 flex gap-2 overflow-x-auto overscroll-contain pb-1 scrollbar-none" style={{ animationDelay: "0.05s" }}>
+        {SEARCH_SUGGESTIONS.map((s) => (
+          <button
+            key={s.label}
+            onClick={() => {
+              // Scroll to search input and set query -- just switch to all tab
+              setActiveTab("all");
+            }}
+            className="kid-touch flex flex-shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-gray-600 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md active:scale-95"
+          >
+            <span>{s.emoji}</span>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
       {/* Genre Pills (horizontal scroll) */}
-      <div className="mb-4">
+      <div className="animate-fade-up mb-4" style={{ animationDelay: "0.1s" }}>
         <GenreBrowser
           layout="pills"
-          onGenreSelect={(genre) => {
-            // Navigate to free tab with genre hint
+          onGenreSelect={() => {
             setActiveTab("free");
           }}
         />
       </div>
 
       {/* Tabs */}
-      <div className="mb-4 flex gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/5">
+      <div className="animate-fade-up mb-4 flex gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/5" style={{ animationDelay: "0.15s" }}>
         <button
           onClick={() => setActiveTab("all")}
           className={`kid-touch min-h-[44px] flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
@@ -83,13 +113,16 @@ export default function KidSearchPage() {
               : "text-gray-400 hover:text-gray-600"
           }`}
         >
-          All Books
+          <span className="flex items-center justify-center gap-1.5">
+            <Sparkles className={`h-3.5 w-3.5 ${activeTab === "all" ? "text-white" : "text-gray-300"}`} />
+            All Books
+          </span>
         </button>
         <button
           onClick={() => setActiveTab("free")}
           className={`kid-touch min-h-[44px] flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
             activeTab === "free"
-              ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md"
+              ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md"
               : "text-gray-400 hover:text-gray-600"
           }`}
         >

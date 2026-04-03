@@ -72,16 +72,17 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
       <div>
         {!selectedGenre ? (
           <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-6">
-            {GENRES.map((genre) => (
+            {GENRES.map((genre, index) => (
               <button
                 key={genre.key}
                 onClick={() => handleGenreClick(genre.key)}
-                className="genre-card flex min-h-[80px] flex-col items-center justify-center gap-1.5 rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5"
+                className="genre-card group flex min-h-[88px] flex-col items-center justify-center gap-2 rounded-2xl bg-white p-3 shadow-md ring-1 ring-black/5"
+                style={{ animationDelay: `${index * 0.03}s` }}
               >
-                <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${genre.gradient}`}>
-                  <span className="text-2xl">{genre.emoji}</span>
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${genre.gradient} shadow-sm transition-transform duration-200 group-hover:scale-110 group-active:scale-95`}>
+                  <span className="text-2xl drop-shadow-sm">{genre.emoji}</span>
                 </div>
-                <span className="text-[11px] font-bold text-gray-700">
+                <span className="text-[11px] font-bold text-gray-700 transition-colors group-hover:text-purple-600">
                   {genre.label}
                 </span>
               </button>

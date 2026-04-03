@@ -244,3 +244,48 @@ body {
   min-height: 44px;
   min-width: 44px;
 }
+
+/* Sticky kid header fade edge */
+.sticky-kid-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+/* Subtle scale-up for currently reading cards on tap */
+@keyframes tap-bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+/* Reading progress shimmer effect */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.progress-shimmer {
+  background: linear-gradient(
+    90deg,
+    #818CF8 0%,
+    #A78BFA 25%,
+    #C084FC 50%,
+    #A78BFA 75%,
+    #818CF8 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Slide-in for search results */
+@keyframes slide-in-right {
+  0% { transform: translateX(8px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in {
+  animation: slide-in-right 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+/* Bottom nav glass effect */
+nav.fixed {
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.04);
+}

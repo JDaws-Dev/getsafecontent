@@ -188,12 +188,22 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
       </button>
 
       {/* Help text */}
-      <div className="mt-8 rounded-2xl bg-white/60 px-6 py-4 text-center backdrop-blur-sm">
-        <p className="text-sm text-gray-500">
+      <div className="mt-8 rounded-2xl bg-white/60 px-6 py-4 text-center shadow-sm ring-1 ring-black/5 backdrop-blur-sm">
+        <p className="text-sm font-medium text-gray-500">
           {"🤔"} Don&apos;t have a code?
         </p>
         <p className="mt-1 text-xs text-gray-400">
           Ask your parent for the family code from SafeReads settings.
+        </p>
+      </div>
+
+      {/* Parent link */}
+      <div className="mt-6 text-center">
+        <p className="text-xs text-gray-400">
+          Are you a parent?{" "}
+          <a href="/" className="font-medium text-purple-500 transition-colors hover:text-purple-600">
+            Log in here &rarr;
+          </a>
         </p>
       </div>
     </div>
