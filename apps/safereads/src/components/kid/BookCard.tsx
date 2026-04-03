@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Headphones } from "lucide-react";
 import { StylizedCover } from "./StylizedCover";
 
 interface BookCardProps {
@@ -10,6 +11,7 @@ interface BookCardProps {
   cachedCoverUrl?: string; // Higher-quality cover from the cover cache
   genre?: string;          // For StylizedCover fallback
   progress?: number;       // 0-100
+  hasAudio?: boolean;      // Show subtle headphones icon
   onClick?: () => void;
   size?: "sm" | "md" | "lg";
 }
@@ -21,6 +23,7 @@ export function BookCard({
   cachedCoverUrl,
   genre,
   progress,
+  hasAudio,
   onClick,
   size = "md",
 }: BookCardProps) {
@@ -92,12 +95,17 @@ export function BookCard({
           </div>
         )}
 
-        {/* New book shimmer indicator (no progress means not started) */}
-        {progress === undefined && (
+        {/* Audio indicator (takes priority over new-book sparkle) */}
+        {hasAudio ? (
+          <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-violet-500/80 backdrop-blur-sm">
+            <Headphones className="h-2.5 w-2.5 text-white" />
+          </div>
+        ) : progress === undefined ? (
+          /* New book shimmer indicator (no progress means not started) */
           <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-purple-500 text-[8px] font-bold text-white shadow-sm">
             {"\u2728"}
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Title & Author */}

@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookSearch } from "@/components/kid/BookSearch";
 import { FreeBookSearch } from "@/components/kid/FreeBookSearch";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
 import { ArrowLeft, BookOpen, Sparkles, Headphones } from "lucide-react";
 import Link from "next/link";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
-type SearchTab = "all" | "free" | "audio";
+type SearchTab = "books" | "audio";
 
 const SEARCH_SUGGESTIONS = [
   { label: "Dragons", emoji: "\uD83D\uDC09" },
@@ -25,7 +24,7 @@ const SEARCH_SUGGESTIONS = [
 export default function KidSearchPage() {
   const router = useRouter();
   const [kidId, setKidId] = useState<Id<"kids"> | null>(null);
-  const [activeTab, setActiveTab] = useState<SearchTab>("all");
+  const [activeTab, setActiveTab] = useState<SearchTab>("books");
 
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
@@ -45,10 +44,12 @@ export default function KidSearchPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get("tab");
-    if (tab === "free") {
-      setActiveTab("free");
-    } else if (tab === "audio") {
+    if (tab === "audio") {
       setActiveTab("audio");
+    }
+    // Legacy support: "free" tab now maps to "books"
+    if (tab === "free") {
+      setActiveTab("books");
     }
   }, []);
 
@@ -85,7 +86,7 @@ export default function KidSearchPage() {
           <button
             key={s.label}
             onClick={() => {
-              setActiveTab("all");
+              setActiveTab("books");
             }}
             className="kid-touch flex flex-shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-gray-600 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md active:scale-95"
           >
@@ -100,43 +101,24 @@ export default function KidSearchPage() {
         <GenreBrowser
           layout="pills"
           onGenreSelect={() => {
-            setActiveTab("free");
+            setActiveTab("books");
           }}
         />
       </div>
 
-      {/* Tabs — three tabs: All Books, Free Books, Audiobooks */}
+      {/* Tabs -- two tabs: Books and Audio */}
       <div className="animate-fade-up mb-4 flex gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/5" style={{ animationDelay: "0.15s" }}>
         <button
-          onClick={() => setActiveTab("all")}
+          onClick={() => setActiveTab("books")}
           className={`kid-touch min-h-[44px] flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
-            activeTab === "all"
+            activeTab === "books"
               ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md"
               : "text-gray-400 hover:text-gray-600"
           }`}
         >
           <span className="flex items-center justify-center gap-1.5">
-            <Sparkles className={`h-3.5 w-3.5 ${activeTab === "all" ? "text-white" : "text-gray-300"}`} />
-            All Books
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab("free")}
-          className={`kid-touch min-h-[44px] flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
-            activeTab === "free"
-              ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md"
-              : "text-gray-400 hover:text-gray-600"
-          }`}
-        >
-          <span className="flex items-center justify-center gap-1.5">
-            Free
-            <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-              activeTab === "free"
-                ? "bg-white/20 text-white"
-                : "bg-emerald-100 text-emerald-700"
-            }`}>
-              FREE
-            </span>
+            <Sparkles className={`h-3.5 w-3.5 ${activeTab === "books" ? "text-white" : "text-gray-300"}`} />
+            Books
           </span>
         </button>
         <button
@@ -155,12 +137,10 @@ export default function KidSearchPage() {
       </div>
 
       {/* Search Content */}
-      {activeTab === "all" ? (
-        <BookSearch kidId={kidId} />
-      ) : activeTab === "audio" ? (
-        <FreeBookSearch kidId={kidId} audioOnly />
-      ) : (
+      {activeTab === "books" ? (
         <FreeBookSearch kidId={kidId} />
+      ) : (
+        <FreeBookSearch kidId={kidId} audioOnly />
       )}
     </div>
   );

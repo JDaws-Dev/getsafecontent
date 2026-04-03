@@ -40,8 +40,8 @@ const apps = [
   {
     id: "safereads",
     name: "SafeReads",
-    tagline: "Works with any book",
-    description: "Scan a barcode at the bookstore. Search any title. Get a full content analysis before they read it.",
+    tagline: "A complete reading platform",
+    description: "More than book reviews. Kids get their own reading experience with 70K+ free books, Bible reading with study notes, free audiobooks, and a tap-to-define dictionary. Parents control everything.",
     icon: BookOpen,
     gradient: "from-emerald-500 to-teal-500",
     href: "https://getsafereads.com",

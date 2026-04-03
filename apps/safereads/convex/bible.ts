@@ -555,7 +555,12 @@ export const searchBible = action({
     testament: v.optional(v.string()), // "ot", "nt", or undefined for both
     page: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{
+    results: { book: number; chapter: number; verse: number; text: string; translation: string }[];
+    total: number;
+    parallel: Record<string, { book: number; chapter: number; verse: number; text: string; translation: string }[]>;
+    error?: string;
+  }> => {
     const cacheKey = `bible-search:${args.translation}:${args.query.toLowerCase().trim()}:${args.testament || "all"}:${args.page || 1}`;
 
     // Check cache
@@ -577,7 +582,7 @@ export const searchBible = action({
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        return { results: [], total: 0, error: "Search failed" };
+        return { results: [], total: 0, parallel: {}, error: "Search failed" };
       }
 
       const data = await response.json();
@@ -662,7 +667,7 @@ export const searchBible = action({
       return searchResult;
     } catch (error) {
       console.error("[Bible Search] Error:", error);
-      return { results: [], total: 0, error: "Search failed" };
+      return { results: [], total: 0, parallel: {}, error: "Search failed" };
     }
   },
 });

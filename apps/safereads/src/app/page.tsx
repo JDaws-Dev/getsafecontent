@@ -16,6 +16,12 @@ import {
   ShieldCheck,
   ChevronDown,
   Star,
+  Headphones,
+  Library,
+  BookMarked,
+  GraduationCap,
+  Search,
+  Fingerprint,
 } from "lucide-react";
 
 // Testimonials data for SafeReads
@@ -122,10 +128,10 @@ export default function Home() {
               </h1>
 
               <p className="text-lg text-ink-500 mb-8 max-w-lg mx-auto lg:mx-0">
-                Scan a barcode at the bookstore, snap a cover at the library, or
-                search any title — SafeReads breaks down violence, language,
-                sexual content, and 7 more categories so you can decide
-                what&apos;s right for your family.
+                More than just book reviews — SafeReads is a complete reading platform.
+                AI content analysis, a kid-safe reading experience with 70K+ free books,
+                Bible reading with study notes, audiobooks, and parental controls
+                your family can trust.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
@@ -430,7 +436,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Parent Features */}
       <section className="py-16 sm:py-20 bg-parchment-100/50">
         <div className="mx-auto max-w-5xl px-4">
           <h2 className="text-center font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
@@ -450,12 +456,56 @@ export default function Home() {
             <Feature
               icon={<Users className="h-6 w-6 text-parchment-600" />}
               title="Built for Families"
-              description="Add your kids, manage wishlists, and keep track of books you've reviewed. One account for the whole family."
+              description="Add kid profiles, manage wishlists, approve book requests with AI analysis, and curate a pre-approved library. One account for the whole family."
             />
             <Feature
               icon={<Heart className="h-6 w-6 text-verdict-caution" />}
               title="Your Values, Your Choice"
               description="SafeReads gives you the facts about what's in a book. You decide what's right for your family."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Kid-Side Features */}
+      <section className="py-16 sm:py-20">
+        <div className="mx-auto max-w-5xl px-4">
+          <h2 className="text-center font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+            A reading experience kids actually love
+          </h2>
+          <p className="mt-4 text-center text-ink-500 max-w-2xl mx-auto">
+            Kids log in with a family code and explore a curated world of books, audiobooks, and Bible reading — all parent-approved.
+          </p>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <Feature
+              icon={<BookOpen className="h-6 w-6 text-emerald-600" />}
+              title="In-App Book Reader"
+              description="Over 70,000 free classic books from Project Gutenberg, Open Library, and Standard Ebooks. Tap any word to see its definition."
+            />
+            <Feature
+              icon={<BookMarked className="h-6 w-6 text-amber-600" />}
+              title="Bible Reading"
+              description="6 translations (ESV, NIV, NLT, NKJV, NASB, KJV) with AI study notes, verse highlighting, saved verses, and full-text search."
+            />
+            <Feature
+              icon={<Headphones className="h-6 w-6 text-purple-600" />}
+              title="Free Audiobooks"
+              description="Thousands of free audiobooks via LibriVox integration. Listen to classics while following along."
+            />
+            <Feature
+              icon={<Library className="h-6 w-6 text-blue-600" />}
+              title="Genre Browsing"
+              description="Browse 15 genres from Adventure to Science Fiction. Pre-approved Library Classics ready to read instantly."
+            />
+            <Feature
+              icon={<GraduationCap className="h-6 w-6 text-teal-600" />}
+              title="Book Requests"
+              description="Kids discover and request books. Parents review each request with AI content analysis before approving."
+            />
+            <Feature
+              icon={<Fingerprint className="h-6 w-6 text-rose-600" />}
+              title="Family Code Login"
+              description="Kids log in with a simple family code — no email or password needed. Safe, simple, and parent-controlled."
             />
           </div>
         </div>
@@ -500,6 +550,10 @@ export default function Home() {
                   'Unlimited book reviews',
                   'Full AI content breakdowns',
                   'Barcode & cover scanning',
+                  'Kid-side reading experience',
+                  '70K+ free books & audiobooks',
+                  'Bible reading with 6 translations',
+                  'AI study notes & saved verses',
                   'Kids profiles & wishlists',
                   'No credit card to start',
                   'Cancel anytime'

@@ -12,7 +12,6 @@ import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star,
 import Link from "next/link";
 import Image from "next/image";
 import type { Id } from "../../../../convex/_generated/dataModel";
-import { SourceBadge } from "@/components/kid/SourceBadge";
 
 interface KidProfile {
   _id: string;
@@ -71,6 +70,69 @@ interface FreeBook {
   hasAudio?: boolean;
   totalTime?: string;
   rssUrl?: string;
+}
+
+/** Well-known classic titles that deserve a "Classic" badge */
+const CLASSIC_TITLES = new Set([
+  "Alice's Adventures in Wonderland",
+  "The Adventures of Tom Sawyer",
+  "Treasure Island",
+  "The Jungle Book",
+  "Peter Pan",
+  "The Wind in the Willows",
+  "Black Beauty",
+  "Little Women",
+  "The Secret Garden",
+  "Anne of Green Gables",
+  "A Little Princess",
+  "The Call of the Wild",
+  "The Wonderful Wizard of Oz",
+  "Robinson Crusoe",
+  "Heidi",
+  "The Adventures of Huckleberry Finn",
+  "Oliver Twist",
+  "A Christmas Carol",
+  "Frankenstein",
+  "Dracula",
+  "Pride and Prejudice",
+  "Jane Eyre",
+  "Moby Dick",
+  "The Count of Monte Cristo",
+  "Gulliver's Travels",
+  "Swiss Family Robinson",
+  "The Prince and the Pauper",
+  "Around the World in 80 Days",
+  "20,000 Leagues Under the Sea",
+  "The Three Musketeers",
+  "Aesop's Fables",
+  "Robin Hood",
+  "King Arthur",
+]);
+
+/** Check if a title is a well-known classic */
+function isWellKnownClassic(title: string): boolean {
+  const normalized = title.trim();
+  for (const classic of CLASSIC_TITLES) {
+    if (normalized.toLowerCase().includes(classic.toLowerCase()) ||
+        classic.toLowerCase().includes(normalized.toLowerCase())) {
+      return true;
+    }
+  }
+  return false;
+}
+
+interface MergedBook {
+  id: string;
+  title: string;
+  author: string;
+  coverUrl?: string;
+  cachedCoverUrl?: string;
+  hasAudio: boolean;
+  isClassic: boolean;
+  /** Navigation target */
+  href: string;
+  totalTime?: string;
+  source: "preApproved" | "free" | "audiobook";
 }
 
 export default function KidHomePage() {
@@ -203,6 +265,114 @@ export default function KidHomePage() {
     allIdentifiers.length > 0 ? { bookIdentifiers: allIdentifiers } : "skip"
   );
 
+  // Merge all book sources into one "Recommended for You" list
+  const recommendedBooks = useMemo(() => {
+    const merged: MergedBook[] = [];
+    const seenTitles = new Set<string>();
+
+    // Pre-approved classics first (already age-sorted)
+    for (const book of (preApprovedBooks || [])) {
+      const key = book.title.toLowerCase();
+      if (seenTitles.has(key)) continue;
+      seenTitles.add(key);
+
+      const cachedUrl = cachedCovers?.[book.gutenbergId]?.coverUrl;
+      merged.push({
+        id: `pre-${book.gutenbergId}`,
+        title: book.title,
+        author: book.author,
+        coverUrl: book.coverUrl,
+        cachedCoverUrl: cachedUrl,
+        hasAudio: false,
+        isClassic: isWellKnownClassic(book.title),
+        href: `/play/read/${encodeURIComponent(book.googleBookId)}`,
+        source: "preApproved",
+      });
+    }
+
+    // Curated free books (excluding audiobooks, those go in their own section)
+    for (const book of freeBooks) {
+      const key = book.title.toLowerCase();
+      if (seenTitles.has(key)) continue;
+      seenTitles.add(key);
+
+      const cachedUrl = cachedCovers?.[book.id]?.coverUrl;
+      const bookHasAudio = book.hasAudio || book.source === "librivox" || book.source === "lit2go";
+      merged.push({
+        id: `free-${book.id}`,
+        title: book.title,
+        author: book.authors.join(", ") || "Unknown",
+        coverUrl: book.coverUrl,
+        cachedCoverUrl: cachedUrl,
+        hasAudio: bookHasAudio,
+        isClassic: isWellKnownClassic(book.title),
+        href: "/play/search",
+        source: "free",
+      });
+    }
+
+    // Mix in audiobooks that aren't already listed
+    for (const book of audiobooks) {
+      const key = book.title.toLowerCase();
+      if (seenTitles.has(key)) {
+        // Mark the existing entry as having audio
+        const existing = merged.find(m => m.title.toLowerCase() === key);
+        if (existing) existing.hasAudio = true;
+        continue;
+      }
+      seenTitles.add(key);
+
+      const rawId = book.id.replace(/^librivox:/, "");
+      const cachedUrl = cachedCovers?.[rawId]?.coverUrl;
+      merged.push({
+        id: `audio-${book.id}`,
+        title: book.title,
+        author: book.authors.join(", ") || "Unknown",
+        coverUrl: book.coverUrl,
+        cachedCoverUrl: cachedUrl,
+        hasAudio: true,
+        isClassic: isWellKnownClassic(book.title),
+        href: "/play/search?tab=audio",
+        source: "audiobook",
+        totalTime: book.totalTime,
+      });
+    }
+
+    return merged.slice(0, 15);
+  }, [preApprovedBooks, freeBooks, audiobooks, cachedCovers]);
+
+  // Books with audio for "Listen to a Story"
+  const listenBooks = useMemo(() => {
+    const books: MergedBook[] = [];
+    const seenTitles = new Set<string>();
+
+    for (const book of audiobooks) {
+      const key = book.title.toLowerCase();
+      if (seenTitles.has(key)) continue;
+      seenTitles.add(key);
+
+      const rawId = book.id.replace(/^librivox:/, "");
+      const cachedUrl = cachedCovers?.[rawId]?.coverUrl;
+      books.push({
+        id: `listen-${book.id}`,
+        title: book.title,
+        author: book.authors.join(", ") || "Unknown",
+        coverUrl: book.coverUrl,
+        cachedCoverUrl: cachedUrl,
+        hasAudio: true,
+        isClassic: false,
+        href: "/play/search?tab=audio",
+        source: "audiobook",
+        totalTime: book.totalTime,
+      });
+    }
+
+    return books.slice(0, 8);
+  }, [audiobooks, cachedCovers]);
+
+  const recommendedLoading = freeBooksLoading || audiobooksLoading;
+  const recommendedLoaded = freeBooksLoaded || audiobooksLoaded || (preApprovedBooks && preApprovedBooks.length > 0);
+
   if (!kidProfile) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -259,7 +429,7 @@ export default function KidHomePage() {
         </Link>
       </div>
 
-      {/* Welcome Header - Hero */}
+      {/* 1. Welcome Header - Hero */}
       <div className={`animate-fade-up overflow-hidden rounded-3xl bg-gradient-to-br ${gradientClass} p-5 text-white shadow-xl sm:p-6`}
            style={{ animationDelay: "0.05s" }}>
         <div className="flex items-center gap-3 sm:gap-4">
@@ -276,7 +446,7 @@ export default function KidHomePage() {
           </div>
         </div>
 
-        {/* Quick Stats - always show, with zeros for new readers */}
+        {/* Quick Stats */}
         <div className="mt-5 flex flex-wrap gap-2">
           <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
             <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -301,7 +471,7 @@ export default function KidHomePage() {
         </div>
       </div>
 
-      {/* Currently Reading - prominent card */}
+      {/* 2. Continue Reading */}
       {currentlyReadingBooks.length > 0 && (
         <section className="animate-fade-up mt-6" style={{ animationDelay: "0.1s" }}>
           <div className="flex items-center justify-between">
@@ -361,52 +531,7 @@ export default function KidHomePage() {
         </section>
       )}
 
-      {/* Read the Bible */}
-      <section className="animate-fade-up mt-6" style={{ animationDelay: "0.12s" }}>
-        <button
-          onClick={() => router.push("/play/bible")}
-          className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-4 shadow-md ring-1 ring-amber-200/60 transition-all hover:shadow-lg active:scale-[0.98]"
-        >
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-2xl shadow-lg shadow-amber-200">
-            <BookOpen className="h-7 w-7 text-white" />
-          </div>
-          <div className="min-w-0 flex-1 text-left">
-            <p className="text-base font-bold text-amber-900">Read the Bible</p>
-            <p className="mt-0.5 text-xs text-amber-700/70">
-              ESV, NIV, NLT, NKJV, KJV and more
-            </p>
-          </div>
-          <div className="flex-shrink-0 text-amber-400">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </div>
-        </button>
-      </section>
-
-      {/* Latest Saved Verse */}
-      {savedVerses && (savedVerses as Array<{ bookName: string; chapter: number; verse: number; verseText: string; translation: string; color?: string }>).length > 0 && (
-        <section className="animate-fade-up mt-4" style={{ animationDelay: "0.13s" }}>
-          <button
-            onClick={() => router.push("/play/bible/saved")}
-            className={`kid-touch w-full rounded-2xl border-l-4 border-l-amber-400 bg-amber-50 p-4 text-left shadow-sm ring-1 ring-amber-200/60 transition-all hover:shadow-md active:scale-[0.98]`}
-          >
-            <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
-              My Latest Saved Verse
-            </p>
-            <p className="mt-1.5 font-serif text-sm leading-relaxed text-gray-800 italic">
-              &ldquo;{(savedVerses as Array<{ verseText: string }>)[0].verseText.slice(0, 120)}{(savedVerses as Array<{ verseText: string }>)[0].verseText.length > 120 ? "..." : ""}&rdquo;
-            </p>
-            <p className="mt-1.5 text-xs font-medium text-amber-700">
-              {(savedVerses as Array<{ bookName: string; chapter: number; verse: number; translation: string }>)[0].bookName}{" "}
-              {(savedVerses as Array<{ chapter: number }>)[0].chapter}:{(savedVerses as Array<{ verse: number }>)[0].verse}{" "}
-              ({(savedVerses as Array<{ translation: string }>)[0].translation})
-            </p>
-          </button>
-        </section>
-      )}
-
-      {/* Genre Browse */}
+      {/* 3. Browse by Genre */}
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.15s" }}>
         <div className="flex items-center gap-2">
           <span className="text-lg">{"\uD83C\uDF1F"}</span>
@@ -415,196 +540,49 @@ export default function KidHomePage() {
           </h2>
         </div>
         <p className="mt-0.5 text-xs text-gray-400">
-          Tap a category to discover free books
+          Tap a category to discover books
         </p>
         <div className="mt-3">
           <GenreBrowser layout="grid" />
         </div>
       </section>
 
-      {/* Library Classics (Pre-Approved) */}
-      {preApprovedBooks && preApprovedBooks.length > 0 && (
-        <section className="animate-fade-up mt-7" style={{ animationDelay: "0.2s" }}>
-          <div className="flex items-center gap-2">
-            <Library className="h-4 w-4 text-amber-600" />
-            <h2 className="text-lg font-bold text-gray-800">
-              Library Classics
-            </h2>
-          </div>
-          <p className="mt-0.5 text-xs text-gray-400">
-            Timeless stories ready to read now
-          </p>
-          <div className="mt-3 flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
-            {preApprovedBooks.slice(0, 12).map((book) => {
-              const cachedUrl = cachedCovers?.[book.gutenbergId]?.coverUrl;
-              const displayUrl = cachedUrl || book.coverUrl;
-              return (
-              <button
-                key={book.gutenbergId}
-                onClick={() => router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)}
-                className="group flex flex-shrink-0 flex-col items-start text-left"
-              >
-                <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5 transition-all group-active:scale-[0.97]">
-                  {displayUrl ? (
-                    <Image
-                      src={displayUrl}
-                      alt={book.title}
-                      fill
-                      sizes="112px"
-                      className="object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <StylizedCover
-                      title={book.title}
-                      author={book.author}
-                      size="md"
-                    />
-                  )}
-                  {/* Classic badge overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-700/90 to-transparent px-2 pb-1.5 pt-4 text-center">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-white">Classic</span>
-                  </div>
-                </div>
-                <p
-                  className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-amber-700"
-                  style={{ maxWidth: "112px" }}
-                >
-                  {book.title}
-                </p>
-                <p
-                  className="mt-0.5 line-clamp-1 text-[9px] text-gray-400"
-                  style={{ maxWidth: "112px" }}
-                >
-                  {book.author}
-                </p>
-              </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Recommended for You — shows when bookshelf is empty */}
-      {approvedBooks !== undefined && approvedBooks.length === 0 && preApprovedBooks && preApprovedBooks.length > 0 && (
-        <section className="animate-fade-up mt-7" style={{ animationDelay: "0.2s" }}>
+      {/* 4. Recommended for You (merged classics + free books + audiobooks) */}
+      <section className="animate-fade-up mt-7" style={{ animationDelay: "0.2s" }}>
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Star className="h-4 w-4 text-yellow-500" />
             <h2 className="text-lg font-bold text-gray-800">
               Recommended for You
             </h2>
           </div>
-          <p className="mt-0.5 text-xs text-gray-400">
-            {kidProfile.age && kidProfile.age <= 6
-              ? "Great first books to start your reading journey!"
-              : kidProfile.age && kidProfile.age <= 9
-                ? "Adventures and stories picked just for you!"
-                : "Classics you might enjoy — tap to start reading!"}
-          </p>
-          <div className="mt-3 flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
-            {preApprovedBooks.slice(0, 5).map((book) => {
-              const cachedUrl = cachedCovers?.[book.gutenbergId]?.coverUrl;
-              const displayUrl = cachedUrl || book.coverUrl;
-              return (
-                <button
-                  key={book.gutenbergId}
-                  onClick={() => router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)}
-                  className="group flex flex-shrink-0 flex-col items-start text-left"
-                >
-                  <div className="book-tilt relative h-44 w-32 overflow-hidden rounded-xl bg-gray-100 shadow-lg ring-1 ring-black/5 transition-all group-active:scale-[0.97]">
-                    {displayUrl ? (
-                      <Image
-                        src={displayUrl}
-                        alt={book.title}
-                        fill
-                        sizes="128px"
-                        className="object-cover"
-                        unoptimized
-                      />
-                    ) : (
-                      <StylizedCover
-                        title={book.title}
-                        author={book.author}
-                        size="lg"
-                      />
-                    )}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-violet-700/90 to-transparent px-2 pb-2 pt-5 text-center">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-white">Start Reading</span>
-                    </div>
-                  </div>
-                  <p
-                    className="mt-2 line-clamp-2 text-xs font-semibold leading-tight text-gray-800 group-hover:text-purple-700"
-                    style={{ maxWidth: "128px" }}
-                  >
-                    {book.title}
-                  </p>
-                  <p
-                    className="mt-0.5 line-clamp-1 text-[10px] text-gray-400"
-                    style={{ maxWidth: "128px" }}
-                  >
-                    {book.author}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Pending Requests */}
-      {pendingCount > 0 && (
-        <div className="animate-fade-up mt-6 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-4 shadow-sm ring-1 ring-amber-200/60" style={{ animationDelay: "0.25s" }}>
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md">
-            <Clock className="h-5 w-5 text-white" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-amber-800">
-              {pendingCount} book{pendingCount > 1 ? "s" : ""} waiting for approval
-            </p>
-            <p className="mt-0.5 text-xs text-amber-600/80">
-              Your parent will review your requests soon!
-            </p>
-          </div>
-          <div className="flex-shrink-0">
-            <span className="animate-pulse text-lg">{"⏳"}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Audiobooks Section */}
-      <section className="animate-fade-up mt-7" style={{ animationDelay: "0.28s" }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Headphones className="h-4 w-4 text-violet-500" />
-            <h2 className="text-lg font-bold text-gray-800">
-              Audiobooks
-            </h2>
-          </div>
           <Link
-            href="/play/search?tab=audio"
-            className="kid-touch flex items-center gap-1 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-100"
+            href="/play/search"
+            className="kid-touch flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
           >
             See All
           </Link>
         </div>
         <p className="mt-0.5 text-xs text-gray-400">
-          Listen to free audiobooks from LibriVox
+          {kidProfile.age && kidProfile.age <= 6
+            ? "Great books to start your reading journey!"
+            : kidProfile.age && kidProfile.age <= 9
+              ? "Adventures and stories picked just for you!"
+              : "Books you might enjoy — tap to start reading!"}
         </p>
         <div className="mt-3">
-          {audiobooksLoading ? (
+          {recommendedLoading && recommendedBooks.length === 0 ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+              <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
             </div>
-          ) : audiobooks.length > 0 ? (
+          ) : recommendedBooks.length > 0 ? (
             <div className="flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
-              {audiobooks.map((book) => {
-                const rawId = book.id.replace(/^librivox:/, "");
-                const cachedUrl = cachedCovers?.[rawId]?.coverUrl;
-                const displayUrl = cachedUrl || book.coverUrl;
+              {recommendedBooks.map((book) => {
+                const displayUrl = book.cachedCoverUrl || book.coverUrl;
                 return (
                   <button
                     key={book.id}
-                    onClick={() => router.push("/play/search?tab=audio")}
+                    onClick={() => router.push(book.href)}
                     className="group flex flex-shrink-0 flex-col items-start text-left"
                   >
                     <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5 transition-all group-active:scale-[0.97]">
@@ -620,20 +598,111 @@ export default function KidHomePage() {
                       ) : (
                         <StylizedCover
                           title={book.title}
-                          author={book.authors.join(", ") || "Unknown"}
+                          author={book.author}
                           size="md"
                         />
                       )}
-                      {/* Audio badge overlay */}
+                      {/* Subtle headphones icon for books with audio */}
+                      {book.hasAudio && (
+                        <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-violet-500/80 backdrop-blur-sm">
+                          <Headphones className="h-2.5 w-2.5 text-white" />
+                        </div>
+                      )}
+                      {/* Classic badge for well-known titles */}
+                      {book.isClassic && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-700/80 to-transparent px-2 pb-1.5 pt-4 text-center">
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-white">Classic</span>
+                        </div>
+                      )}
+                    </div>
+                    <p
+                      className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-purple-700"
+                      style={{ maxWidth: "112px" }}
+                    >
+                      {book.title}
+                    </p>
+                    <p
+                      className="mt-0.5 line-clamp-1 text-[9px] text-gray-400"
+                      style={{ maxWidth: "112px" }}
+                    >
+                      {book.author}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          ) : recommendedLoaded ? (
+            <div className="flex flex-col items-center rounded-2xl bg-white px-4 py-8 text-center shadow-sm">
+              <span className="text-3xl">{"\uD83D\uDCDA"}</span>
+              <p className="mt-2 text-sm font-medium text-gray-500">
+                Recommendations will appear here soon!
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      {/* 5. Listen to a Story (audiobooks) */}
+      <section className="animate-fade-up mt-7" style={{ animationDelay: "0.25s" }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Headphones className="h-4 w-4 text-violet-500" />
+            <h2 className="text-lg font-bold text-gray-800">
+              Listen to a Story
+            </h2>
+          </div>
+          <Link
+            href="/play/search?tab=audio"
+            className="kid-touch flex items-center gap-1 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-100"
+          >
+            See All
+          </Link>
+        </div>
+        <p className="mt-0.5 text-xs text-gray-400">
+          Put on your headphones and listen!
+        </p>
+        <div className="mt-3">
+          {audiobooksLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+            </div>
+          ) : listenBooks.length > 0 ? (
+            <div className="flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
+              {listenBooks.map((book) => {
+                const displayUrl = book.cachedCoverUrl || book.coverUrl;
+                return (
+                  <button
+                    key={book.id}
+                    onClick={() => router.push(book.href)}
+                    className="group flex flex-shrink-0 flex-col items-start text-left"
+                  >
+                    <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-violet-50 shadow-md ring-1 ring-violet-200/50 transition-all group-active:scale-[0.97]">
+                      {displayUrl ? (
+                        <Image
+                          src={displayUrl}
+                          alt={book.title}
+                          fill
+                          sizes="112px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <StylizedCover
+                          title={book.title}
+                          author={book.author}
+                          size="md"
+                        />
+                      )}
+                      {/* Prominent play/headphones overlay */}
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-violet-700/90 to-transparent px-2 pb-1.5 pt-4 text-center">
                         <span className="flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-wider text-white">
                           <Headphones className="h-2.5 w-2.5" />
                           Listen
                         </span>
                       </div>
-                      {/* Headphones icon overlay */}
-                      <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-[8px] text-white shadow-sm">
-                        {"\uD83C\uDFA7"}
+                      {/* Headphones indicator */}
+                      <div className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 shadow-sm">
+                        <Headphones className="h-3 w-3 text-white" />
                       </div>
                     </div>
                     <p
@@ -646,7 +715,7 @@ export default function KidHomePage() {
                       className="mt-0.5 line-clamp-1 text-[9px] text-gray-400"
                       style={{ maxWidth: "112px" }}
                     >
-                      {book.authors.join(", ")}
+                      {book.author}
                     </p>
                     {book.totalTime && (
                       <p
@@ -671,88 +740,72 @@ export default function KidHomePage() {
         </div>
       </section>
 
-      {/* Free Books to Explore */}
-      <section className="animate-fade-up mt-7" style={{ animationDelay: "0.3s" }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{"\uD83D\uDCDA"}</span>
-            <h2 className="text-lg font-bold text-gray-800">
-              Free Books
-            </h2>
+      {/* 6. Read the Bible */}
+      <section className="animate-fade-up mt-7" style={{ animationDelay: "0.28s" }}>
+        <button
+          onClick={() => router.push("/play/bible")}
+          className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-4 shadow-md ring-1 ring-amber-200/60 transition-all hover:shadow-lg active:scale-[0.98]"
+        >
+          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-2xl shadow-lg shadow-amber-200">
+            <BookOpen className="h-7 w-7 text-white" />
           </div>
-          <Link
-            href="/play/search?tab=free"
-            className="kid-touch flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
-          >
-            See All
-          </Link>
-        </div>
-        <div className="mt-3">
-          {freeBooksLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
-            </div>
-          ) : freeBooks.length > 0 ? (
-            <div className="flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
-              {freeBooks.map((book) => {
-                const cachedUrl = cachedCovers?.[book.id]?.coverUrl;
-                const displayUrl = cachedUrl || book.coverUrl;
-                return (
-                <button
-                  key={book.id}
-                  onClick={() => router.push("/play/search?tab=free")}
-                  className="group flex flex-shrink-0 flex-col items-start text-left"
-                >
-                  <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5 transition-all group-active:scale-[0.97]">
-                    {displayUrl ? (
-                      <Image
-                        src={displayUrl}
-                        alt={book.title}
-                        fill
-                        sizes="112px"
-                        className="object-cover"
-                        unoptimized
-                      />
-                    ) : (
-                      <StylizedCover
-                        title={book.title}
-                        author={book.authors.join(", ") || "Unknown"}
-                        size="md"
-                      />
-                    )}
-                    {/* Free badge overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-emerald-600/90 to-transparent px-2 pb-1.5 pt-4 text-center">
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-white">Free</span>
-                    </div>
-                  </div>
-                  <p
-                    className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-purple-700"
-                    style={{ maxWidth: "112px" }}
-                  >
-                    {book.title}
-                  </p>
-                  <p
-                    className="mt-0.5 line-clamp-1 text-[9px] text-gray-400"
-                    style={{ maxWidth: "112px" }}
-                  >
-                    {book.authors.join(", ")}
-                  </p>
-                </button>
-                );
-              })}
-            </div>
-          ) : freeBooksLoaded ? (
-            <div className="flex flex-col items-center rounded-2xl bg-white px-4 py-8 text-center shadow-sm">
-              <span className="text-3xl">{"\uD83D\uDCDA"}</span>
-              <p className="mt-2 text-sm font-medium text-gray-500">
-                Free books will appear here soon!
-              </p>
-            </div>
-          ) : null}
-        </div>
+          <div className="min-w-0 flex-1 text-left">
+            <p className="text-base font-bold text-amber-900">Read the Bible</p>
+            <p className="mt-0.5 text-xs text-amber-700/70">
+              ESV, NIV, NLT, NKJV, KJV and more
+            </p>
+          </div>
+          <div className="flex-shrink-0 text-amber-400">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </button>
       </section>
 
-      {/* My Bookshelf */}
+      {/* My Saved Verses */}
+      {savedVerses && (savedVerses as Array<{ bookName: string; chapter: number; verse: number; verseText: string; translation: string; color?: string }>).length > 0 && (
+        <section className="animate-fade-up mt-4" style={{ animationDelay: "0.3s" }}>
+          <button
+            onClick={() => router.push("/play/bible/saved")}
+            className={`kid-touch w-full rounded-2xl border-l-4 border-l-amber-400 bg-amber-50 p-4 text-left shadow-sm ring-1 ring-amber-200/60 transition-all hover:shadow-md active:scale-[0.98]`}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+              My Latest Saved Verse
+            </p>
+            <p className="mt-1.5 font-serif text-sm leading-relaxed text-gray-800 italic">
+              &ldquo;{(savedVerses as Array<{ verseText: string }>)[0].verseText.slice(0, 120)}{(savedVerses as Array<{ verseText: string }>)[0].verseText.length > 120 ? "..." : ""}&rdquo;
+            </p>
+            <p className="mt-1.5 text-xs font-medium text-amber-700">
+              {(savedVerses as Array<{ bookName: string; chapter: number; verse: number; translation: string }>)[0].bookName}{" "}
+              {(savedVerses as Array<{ chapter: number }>)[0].chapter}:{(savedVerses as Array<{ verse: number }>)[0].verse}{" "}
+              ({(savedVerses as Array<{ translation: string }>)[0].translation})
+            </p>
+          </button>
+        </section>
+      )}
+
+      {/* Pending Requests */}
+      {pendingCount > 0 && (
+        <div className="animate-fade-up mt-6 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-4 shadow-sm ring-1 ring-amber-200/60" style={{ animationDelay: "0.32s" }}>
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md">
+            <Clock className="h-5 w-5 text-white" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-amber-800">
+              {pendingCount} book{pendingCount > 1 ? "s" : ""} waiting for approval
+            </p>
+            <p className="mt-0.5 text-xs text-amber-600/80">
+              Your parent will review your requests soon!
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <span className="animate-pulse text-lg">{"⏳"}</span>
+          </div>
+        </div>
+      )}
+
+      {/* 7. My Bookshelf */}
       <section id="bookshelf" className="animate-fade-up mt-7" style={{ animationDelay: "0.35s" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

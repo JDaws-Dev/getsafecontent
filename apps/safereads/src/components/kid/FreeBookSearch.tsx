@@ -6,7 +6,7 @@ import { api } from "../../../convex/_generated/api";
 import { Search, Loader2, Sparkles, Headphones } from "lucide-react";
 import { FreeBookRequestButton } from "./FreeBookRequestButton";
 import { StylizedCover } from "./StylizedCover";
-import { SourceBadge, AudioIndicator } from "./SourceBadge";
+import { AudioIndicator } from "./SourceBadge";
 import Image from "next/image";
 import type { Id } from "../../../convex/_generated/dataModel";
 
@@ -192,22 +192,13 @@ export function FreeBookSearch({ kidId, audioOnly }: FreeBookSearchProps) {
             )}
           </div>
           <p className="mt-5 text-xl font-bold text-gray-800">
-            {audioOnly ? "Free Audiobooks" : "Free Books"}
+            {audioOnly ? "Audiobooks" : "Find Books"}
           </p>
           <p className="mt-2 max-w-xs text-sm text-gray-400">
             {audioOnly
-              ? "Search thousands of free audiobooks. Listen right in the app!"
-              : "Search free books from Gutenberg, Bloom, LibriVox, Lit2Go, and Book Dash."}
+              ? "Search thousands of audiobooks. Listen right in the app!"
+              : "Search for books to read. Type a title, author, or topic!"}
           </p>
-          {!audioOnly && (
-            <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-              <SourceBadge source="gutenberg" compact />
-              <SourceBadge source="bloom" compact />
-              <SourceBadge source="librivox" compact />
-              <SourceBadge source="lit2go" compact />
-              <SourceBadge source="bookdash" compact />
-            </div>
-          )}
         </div>
       )}
 
@@ -264,9 +255,8 @@ export function FreeBookSearch({ kidId, audioOnly }: FreeBookSearchProps) {
                     {book.authors.join(", ") || "Unknown Author"}
                   </p>
 
-                  {/* Source badge + metadata row */}
+                  {/* Metadata row */}
                   <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                    <SourceBadge source={book.source} compact />
                     {(book.hasAudio || book.source === "librivox" || book.source === "lit2go") && (
                       <AudioIndicator />
                     )}
@@ -283,12 +273,7 @@ export function FreeBookSearch({ kidId, audioOnly }: FreeBookSearchProps) {
                   </div>
                 </div>
 
-                <div className="mt-2.5 flex items-center justify-between">
-                  {/* Free badge */}
-                  <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-50 to-green-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 ring-1 ring-emerald-200">
-                    <Sparkles className="h-2.5 w-2.5" />
-                    Free
-                  </span>
+                <div className="mt-2.5 flex items-center justify-end">
 
                   {/* Only show request button for Gutenberg books (others need different handling) */}
                   {book.source === "gutenberg" && (

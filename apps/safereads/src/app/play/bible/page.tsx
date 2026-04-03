@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   BookOpen,
   ChevronRight,
+  ChevronDown,
   Loader2,
   Minus,
   Plus,
@@ -20,6 +21,7 @@ import {
   HelpCircle,
   Sparkles,
   Heart,
+  Search,
 } from "lucide-react";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
@@ -56,6 +58,21 @@ interface StudyNotes {
   questionToThink: string;
 }
 
+interface SearchResult {
+  book: number;
+  chapter: number;
+  verse: number;
+  text: string;
+  translation: string;
+}
+
+interface SearchResponse {
+  results: SearchResult[];
+  total: number;
+  parallel: Record<string, SearchResult[]>;
+  error?: string;
+}
+
 type ViewState =
   | { view: "books" }
   | { view: "chapters"; book: BibleBook }
@@ -66,6 +83,27 @@ type ViewState =
 // ============================================================================
 
 const OT_BOOKS = 39; // Genesis through Malachi
+
+const SEARCH_SUGGESTIONS = ["love", "faith", "courage", "forgiveness", "prayer", "creation"];
+
+/** Map Bible book IDs to names (standard Protestant ordering) */
+const BOOK_ID_TO_NAME: Record<number, string> = {
+  1: "Genesis", 2: "Exodus", 3: "Leviticus", 4: "Numbers", 5: "Deuteronomy",
+  6: "Joshua", 7: "Judges", 8: "Ruth", 9: "1 Samuel", 10: "2 Samuel",
+  11: "1 Kings", 12: "2 Kings", 13: "1 Chronicles", 14: "2 Chronicles",
+  15: "Ezra", 16: "Nehemiah", 17: "Esther", 18: "Job", 19: "Psalms",
+  20: "Proverbs", 21: "Ecclesiastes", 22: "Song of Solomon", 23: "Isaiah",
+  24: "Jeremiah", 25: "Lamentations", 26: "Ezekiel", 27: "Daniel",
+  28: "Hosea", 29: "Joel", 30: "Amos", 31: "Obadiah", 32: "Jonah",
+  33: "Micah", 34: "Nahum", 35: "Habakkuk", 36: "Zephaniah", 37: "Haggai",
+  38: "Zechariah", 39: "Malachi",
+  40: "Matthew", 41: "Mark", 42: "Luke", 43: "John", 44: "Acts",
+  45: "Romans", 46: "1 Corinthians", 47: "2 Corinthians", 48: "Galatians",
+  49: "Ephesians", 50: "Philippians", 51: "Colossians", 52: "1 Thessalonians",
+  53: "2 Thessalonians", 54: "1 Timothy", 55: "2 Timothy", 56: "Titus",
+  57: "Philemon", 58: "Hebrews", 59: "James", 60: "1 Peter", 61: "2 Peter",
+  62: "1 John", 63: "2 John", 64: "3 John", 65: "Jude", 66: "Revelation",
+};
 
 const THEME_STYLES: Record<ThemeMode, { bg: string; text: string; label: string; icon: React.ReactNode }> = {
   light: {
@@ -113,11 +151,23 @@ export default function BiblePage() {
   const [studyNotesLoading, setStudyNotesLoading] = useState(false);
   const [kidAge, setKidAge] = useState<number | undefined>(undefined);
 
+  // Search state
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTranslation, setSearchTranslation] = useState("ESV");
+  const [searchTestament, setSearchTestament] = useState<string | null>(null);
+  const [searchCompare, setSearchCompare] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [expandedParallel, setExpandedParallel] = useState<string | null>(null);
+
   const scrollRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const getBooks = useAction(api.bible.getBooks);
   const getChapter = useAction(api.bible.getChapter);
   const getStudyNotes = useAction(api.bible.getStudyNotes);
+  const searchBible = useAction(api.bible.searchBible);
   const updateProgress = useMutation(api.bible.updateProgress);
   const translations = useQuery(api.bible.getTranslations) as TranslationInfo[] | undefined;
   const saveVerse = useMutation(api.bible.saveVerse);
@@ -244,6 +294,54 @@ export default function BiblePage() {
     }
   }, [translation, kidAge, getStudyNotes]);
 
+  // Search the Bible
+  const handleSearch = useCallback(async (query?: string) => {
+    const q = (query || searchQuery).trim();
+    if (!q) return;
+    setSearchLoading(true);
+    setExpandedParallel(null);
+    try {
+      const result = await searchBible({
+        query: q,
+        translation: searchTranslation,
+        showParallel: searchCompare,
+        testament: searchTestament || undefined,
+      });
+      setSearchResults(result as SearchResponse);
+    } catch (err) {
+      console.error("Bible search failed:", err);
+      setSearchResults({ results: [], total: 0, parallel: {}, error: "Search failed. Please try again." });
+    } finally {
+      setSearchLoading(false);
+    }
+  }, [searchQuery, searchTranslation, searchCompare, searchTestament, searchBible]);
+
+  // Navigate to a search result in the reader
+  const jumpToSearchResult = useCallback((bookId: number, chapter: number) => {
+    const book = books?.find((b) => b.bookid === bookId);
+    if (book) {
+      setShowSearch(false);
+      loadChapter(book, chapter);
+    }
+  }, [books, loadChapter]);
+
+  // Highlight search term in verse text
+  const highlightSearchTerm = useCallback((text: string, term: string) => {
+    if (!term.trim()) return text;
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escaped})`, "gi");
+    const parts = text.split(regex);
+    return parts.map((part, i) =>
+      regex.test(part) ? (
+        <mark key={i} className="rounded-sm bg-amber-200 px-0.5 text-amber-900">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
+  }, []);
+
   // Navigate chapters
   const goToChapter = useCallback((delta: number) => {
     if (viewState.view !== "reading") return;
@@ -270,6 +368,241 @@ export default function BiblePage() {
   // Get last read info for continue reading feature
   type BibleProgressEntry = { bookId: number; bookName: string; chapter: number; translation: string; lastReadAt: number };
   const lastRead = (bibleProgress as BibleProgressEntry[] | undefined)?.sort((a: BibleProgressEntry, b: BibleProgressEntry) => b.lastReadAt - a.lastReadAt)[0];
+
+  // ============================================================================
+  // Render: Search View
+  // ============================================================================
+  if (showSearch) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 py-6">
+        <div className="mx-auto max-w-2xl px-4">
+          {/* Header */}
+          <div className="mb-5 flex items-center gap-3">
+            <button
+              onClick={() => {
+                setShowSearch(false);
+                setSearchResults(null);
+                setSearchQuery("");
+              }}
+              className="flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
+            <h1 className="text-lg font-bold text-gray-900">Search the Bible</h1>
+          </div>
+
+          {/* Search Input */}
+          <div className="mb-4">
+            <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-md ring-1 ring-amber-200/60">
+              <Search className="h-5 w-5 flex-shrink-0 text-amber-500" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+                placeholder="Search the Bible..."
+                className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
+                autoFocus
+              />
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(""); setSearchResults(null); }} className="text-gray-400 hover:text-gray-600">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                onClick={() => handleSearch()}
+                disabled={!searchQuery.trim() || searchLoading}
+                className="rounded-xl bg-amber-600 px-4 py-1.5 text-xs font-bold text-white transition-all hover:bg-amber-700 disabled:opacity-40"
+              >
+                {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+              </button>
+            </div>
+          </div>
+
+          {/* Controls row */}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            {/* Translation selector */}
+            <select
+              value={searchTranslation}
+              onChange={(e) => setSearchTranslation(e.target.value)}
+              className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-amber-800 shadow-sm ring-1 ring-amber-200/60 outline-none"
+            >
+              {(translations || []).map((t) => (
+                <option key={t.code} value={t.code}>{t.code} - {t.name}</option>
+              ))}
+            </select>
+
+            {/* OT/NT filter pills */}
+            <div className="flex gap-1">
+              {[
+                { value: null, label: "All" },
+                { value: "ot", label: "Old Testament" },
+                { value: "nt", label: "New Testament" },
+              ].map((opt) => (
+                <button
+                  key={opt.label}
+                  onClick={() => setSearchTestament(opt.value)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
+                    searchTestament === opt.value
+                      ? "bg-amber-700 text-white shadow-md"
+                      : "bg-white text-amber-700 shadow-sm ring-1 ring-amber-200/60 hover:bg-amber-50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Compare toggle */}
+            <button
+              onClick={() => setSearchCompare((v) => !v)}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
+                searchCompare
+                  ? "bg-amber-200 text-amber-900 ring-1 ring-amber-300"
+                  : "bg-white text-amber-700 shadow-sm ring-1 ring-amber-200/60 hover:bg-amber-50"
+              }`}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              Compare versions
+            </button>
+          </div>
+
+          {/* Suggestion chips (shown when no results) */}
+          {!searchResults && !searchLoading && (
+            <div className="mb-6">
+              <p className="mb-3 text-xs font-medium text-amber-700/60">Try searching for:</p>
+              <div className="flex flex-wrap gap-2">
+                {SEARCH_SUGGESTIONS.map((chip) => (
+                  <button
+                    key={chip}
+                    onClick={() => {
+                      setSearchQuery(chip);
+                      handleSearch(chip);
+                    }}
+                    className="rounded-full bg-white px-4 py-2 text-sm font-medium text-amber-800 shadow-sm ring-1 ring-amber-200/60 transition-all hover:bg-amber-50 hover:ring-amber-300 active:scale-95"
+                  >
+                    {chip}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Loading state */}
+          {searchLoading && (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+              <p className="mt-3 text-sm font-medium text-amber-700">Searching the Bible...</p>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!searchResults && !searchLoading && !searchQuery && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100">
+                <Search className="h-8 w-8 text-amber-600" />
+              </div>
+              <h3 className="text-base font-bold text-gray-900">Search for a word, phrase, or topic</h3>
+              <p className="mt-1 max-w-xs text-sm text-gray-500">
+                Find any verse across 6 Bible translations
+              </p>
+            </div>
+          )}
+
+          {/* No results */}
+          {searchResults && searchResults.results.length === 0 && !searchLoading && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100">
+                <Search className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-base font-bold text-gray-900">No results found</h3>
+              <p className="mt-1 max-w-xs text-sm text-gray-500">
+                Try a different word or phrase, or change the translation.
+              </p>
+            </div>
+          )}
+
+          {/* Search results */}
+          {searchResults && searchResults.results.length > 0 && !searchLoading && (
+            <div>
+              <p className="mb-3 text-xs font-medium text-amber-700/60">
+                {searchResults.total} result{searchResults.total !== 1 ? "s" : ""} in {searchTranslation}
+              </p>
+              <div className="space-y-3">
+                {searchResults.results.map((result, idx) => {
+                  const bookName = BOOK_ID_TO_NAME[result.book] || `Book ${result.book}`;
+                  const resultKey = `${result.book}:${result.chapter}:${result.verse}`;
+                  const isParallelOpen = expandedParallel === resultKey;
+
+                  // Find parallel verses for this result
+                  const parallelVerses: { translation: string; text: string }[] = [];
+                  if (searchCompare && searchResults.parallel) {
+                    for (const [trans, verses] of Object.entries(searchResults.parallel)) {
+                      const match = verses.find(
+                        (v) => v.book === result.book && v.chapter === result.chapter && v.verse === result.verse
+                      );
+                      if (match) {
+                        parallelVerses.push({ translation: trans, text: match.text });
+                      }
+                    }
+                  }
+
+                  return (
+                    <div key={idx} className="rounded-2xl bg-white shadow-sm ring-1 ring-amber-200/40 overflow-hidden">
+                      {/* Main result */}
+                      <button
+                        onClick={() => jumpToSearchResult(result.book, result.chapter)}
+                        className="w-full p-4 text-left transition-colors hover:bg-amber-50/50 active:bg-amber-50"
+                      >
+                        <div className="mb-1.5 flex items-center gap-2">
+                          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+                            {bookName} {result.chapter}:{result.verse}
+                          </span>
+                          <span className="text-[10px] font-medium text-amber-500">{result.translation}</span>
+                        </div>
+                        <p className="text-sm leading-relaxed text-gray-700" style={{ fontFamily: "'Libre Baskerville', 'Georgia', serif" }}>
+                          {highlightSearchTerm(result.text, searchQuery)}
+                        </p>
+                      </button>
+
+                      {/* Compare versions toggle */}
+                      {searchCompare && parallelVerses.length > 0 && (
+                        <>
+                          <button
+                            onClick={() => setExpandedParallel(isParallelOpen ? null : resultKey)}
+                            className="flex w-full items-center justify-between border-t border-amber-100 px-4 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50/50"
+                          >
+                            <span>{parallelVerses.length} other translation{parallelVerses.length !== 1 ? "s" : ""}</span>
+                            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isParallelOpen ? "rotate-180" : ""}`} />
+                          </button>
+                          {isParallelOpen && (
+                            <div className="border-t border-amber-100 bg-amber-50/30 px-4 py-3 space-y-3">
+                              {parallelVerses.map((pv) => (
+                                <div key={pv.translation}>
+                                  <span className="mb-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                                    {pv.translation}
+                                  </span>
+                                  <p className="text-xs leading-relaxed text-gray-600" style={{ fontFamily: "'Libre Baskerville', 'Georgia', serif" }}>
+                                    {pv.text}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // ============================================================================
   // Render: Reading View
@@ -818,6 +1151,16 @@ export default function BiblePage() {
         >
           <Heart className="h-3.5 w-3.5" />
           My Saved Verses
+        </button>
+        <button
+          onClick={() => {
+            setShowSearch(true);
+            setSearchTranslation(translation);
+          }}
+          className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-amber-700 shadow-sm ring-1 ring-amber-200 transition-all hover:bg-amber-50 active:scale-95"
+        >
+          <Search className="h-3.5 w-3.5" />
+          Search
         </button>
       </div>
 
