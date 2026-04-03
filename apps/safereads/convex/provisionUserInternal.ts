@@ -4,6 +4,19 @@ import { v } from "convex/values";
 const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /**
+ * Generate a 6-character alphanumeric family code.
+ * Same algorithm as familyCodes.ts and all other Safe Family apps.
+ */
+function generateCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // No I/O/0/1 to avoid confusion
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+/**
  * Provision a user with authentication credentials from central auth.
  * This creates BOTH the users table entry AND the authAccounts entry,
  * allowing users to login with their central password.
@@ -64,6 +77,22 @@ export const provisionUserInternal = internalMutation({
 
       console.log(`[provisionUser] Updated existing user: ${args.email}`);
     } else {
+      // Auto-generate a family code if none provided
+      let familyCode = args.familyCode;
+      if (!familyCode) {
+        familyCode = generateCode();
+        let attempts = 0;
+        while (attempts < 10) {
+          const collision = await ctx.db
+            .query("users")
+            .withIndex("by_family_code", (q) => q.eq("familyCode", familyCode))
+            .first();
+          if (!collision) break;
+          familyCode = generateCode();
+          attempts++;
+        }
+      }
+
       // Create new user
       userId = await ctx.db.insert("users", {
         email: args.email,
@@ -74,11 +103,11 @@ export const provisionUserInternal = internalMutation({
         trialExpiresAt: mappedStatus === "trial" ? Date.now() + TRIAL_DURATION_MS : undefined,
         analysisCount: 0,
         onboardingComplete: false,
-        familyCode: args.familyCode,
+        familyCode,
       });
       wasCreated = true;
 
-      console.log(`[provisionUser] Created new user: ${args.email}`);
+      console.log(`[provisionUser] Created new user: ${args.email} (familyCode: ${familyCode})`);
     }
 
     // Auth is handled centrally by Marketing (JWT). No local authAccounts needed.

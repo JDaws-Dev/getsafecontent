@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { ArrowLeft, Lock } from "lucide-react";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -70,14 +70,10 @@ export function ProfileSelector({
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState("");
   const [showPinModal, setShowPinModal] = useState(false);
+  const [pinChecking, setPinChecking] = useState(false);
 
-  // Verify PIN via Convex query
-  const pinValid = useQuery(
-    api.kids.verifyPin,
-    selectedKid && pin.length === 4
-      ? { kidId: selectedKid._id, pin }
-      : "skip"
-  );
+  // Verify PIN via mutation (with brute-force protection)
+  const verifyPinMutation = useMutation(api.kids.verifyPinWithRateLimit);
 
   const handleProfileSelect = (kid: KidProfile) => {
     if (kid.hasPin) {
@@ -101,19 +97,38 @@ export function ProfileSelector({
         color: kid.color,
       })
     );
+    // Store session start time for TTL enforcement (24h)
+    localStorage.setItem("safereads_session_started", Date.now().toString());
     router.push("/play/home");
   };
 
-  const handlePinSubmit = () => {
-    if (pin.length !== 4) {
+  const handlePinSubmit = async () => {
+    if (pin.length !== 4 || !selectedKid) {
       setPinError("Enter 4 digits");
       return;
     }
-    if (pinValid === true && selectedKid) {
-      loginAsKid(selectedKid);
-    } else if (pinValid === false) {
-      setPinError("Wrong PIN. Try again.");
+    setPinChecking(true);
+    try {
+      const result = await verifyPinMutation({ kidId: selectedKid._id, pin });
+      if (result.success) {
+        loginAsKid(selectedKid);
+      } else if (result.locked) {
+        setPinError(`Too many attempts. Try again in ${result.remainingMinutes ?? 10} minutes.`);
+        setPin("");
+      } else {
+        const remaining = (result as { attemptsRemaining?: number }).attemptsRemaining;
+        setPinError(
+          remaining !== undefined
+            ? `Wrong PIN. ${remaining} ${remaining === 1 ? "attempt" : "attempts"} left.`
+            : "Wrong PIN. Try again."
+        );
+        setPin("");
+      }
+    } catch {
+      setPinError("Something went wrong. Try again.");
       setPin("");
+    } finally {
+      setPinChecking(false);
     }
   };
 
@@ -278,10 +293,10 @@ export function ProfileSelector({
               </button>
               <button
                 onClick={handlePinSubmit}
-                disabled={pin.length !== 4}
+                disabled={pin.length !== 4 || pinChecking}
                 className="kid-touch flex-1 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 py-3 text-sm font-bold text-white shadow-md transition-all hover:from-violet-600 hover:to-purple-700 disabled:opacity-40"
               >
-                Enter
+                {pinChecking ? "Checking..." : "Enter"}
               </button>
             </div>
           </div>

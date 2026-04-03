@@ -4,6 +4,19 @@ import { mutation, query } from "./_generated/server";
 const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /**
+ * Generate a 6-character alphanumeric family code.
+ * Same algorithm as familyCodes.ts and all other Safe Family apps.
+ */
+function generateCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // No I/O/0/1 to avoid confusion
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+/**
  * Get SafeReads user data by email.
  * Used by JWT-based auth to get local user data after central auth verification.
  */
@@ -54,8 +67,21 @@ export const ensureSafeReadsUser = mutation({
       ? (args.subscriptionStatus as SubscriptionStatus)
       : "trial";
 
+    // Auto-generate a unique family code
+    let familyCode = generateCode();
+    let attempts = 0;
+    while (attempts < 10) {
+      const collision = await ctx.db
+        .query("users")
+        .withIndex("by_family_code", (q) => q.eq("familyCode", familyCode))
+        .first();
+      if (!collision) break;
+      familyCode = generateCode();
+      attempts++;
+    }
+
     // Create new user with minimal fields
-    console.log(`[ensureSafeReadsUser] Creating missing local user: ${email}`);
+    console.log(`[ensureSafeReadsUser] Creating missing local user: ${email} (familyCode: ${familyCode})`);
 
     const userId = await ctx.db.insert("users", {
       email,
@@ -64,6 +90,7 @@ export const ensureSafeReadsUser = mutation({
       trialExpiresAt: status === "trial" ? Date.now() + TRIAL_DURATION_MS : undefined,
       analysisCount: 0,
       onboardingComplete: false,
+      familyCode,
     });
 
     console.log(`[ensureSafeReadsUser] Created local user: ${email} -> ${userId}`);

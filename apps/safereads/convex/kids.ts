@@ -118,7 +118,8 @@ export const remove = mutation({
 });
 
 /**
- * Verify a kid's PIN.
+ * Verify a kid's PIN (read-only, for backward compat with query-based callers).
+ * Note: Use verifyPinWithRateLimit mutation for new code — it enforces brute-force protection.
  */
 export const verifyPin = query({
   args: {
@@ -128,7 +129,70 @@ export const verifyPin = query({
   handler: async (ctx, args) => {
     const kid = await ctx.db.get(args.kidId);
     if (!kid) return false;
+
+    // Check lockout (if fields exist on the record)
+    const kidRecord = kid as typeof kid & {
+      pinFailedAttempts?: number;
+      pinLockedUntil?: number;
+    };
+    if (kidRecord.pinLockedUntil && kidRecord.pinLockedUntil > Date.now()) {
+      return false; // Locked out
+    }
+
     return kid.pin === args.pin;
+  },
+});
+
+/**
+ * Verify a kid's PIN with brute-force protection.
+ * Max 5 failed attempts, then 10-minute lockout.
+ */
+export const verifyPinWithRateLimit = mutation({
+  args: {
+    kidId: v.id("kids"),
+    pin: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const kid = await ctx.db.get(args.kidId);
+    if (!kid) return { success: false, locked: false };
+
+    // Check lockout
+    const kidRecord = kid as typeof kid & {
+      pinFailedAttempts?: number;
+      pinLockedUntil?: number;
+    };
+    if (kidRecord.pinLockedUntil && kidRecord.pinLockedUntil > Date.now()) {
+      const remainingMs = kidRecord.pinLockedUntil - Date.now();
+      const remainingMin = Math.ceil(remainingMs / 60000);
+      return { success: false, locked: true, remainingMinutes: remainingMin };
+    }
+
+    if (kid.pin === args.pin) {
+      // Correct PIN — reset failed attempts
+      await ctx.db.patch(args.kidId, {
+        pinFailedAttempts: 0,
+        pinLockedUntil: undefined,
+      } as Record<string, unknown>);
+      return { success: true, locked: false };
+    }
+
+    // Wrong PIN — increment failed attempts
+    const failedAttempts = (kidRecord.pinFailedAttempts || 0) + 1;
+    const LOCKOUT_THRESHOLD = 5;
+    const LOCKOUT_DURATION_MS = 10 * 60 * 1000; // 10 minutes
+
+    if (failedAttempts >= LOCKOUT_THRESHOLD) {
+      await ctx.db.patch(args.kidId, {
+        pinFailedAttempts: failedAttempts,
+        pinLockedUntil: Date.now() + LOCKOUT_DURATION_MS,
+      } as Record<string, unknown>);
+      return { success: false, locked: true, remainingMinutes: 10 };
+    }
+
+    await ctx.db.patch(args.kidId, {
+      pinFailedAttempts: failedAttempts,
+    } as Record<string, unknown>);
+    return { success: false, locked: false, attemptsRemaining: LOCKOUT_THRESHOLD - failedAttempts };
   },
 });
 

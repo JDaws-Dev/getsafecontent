@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
@@ -148,18 +148,74 @@ export default function KidHomePage() {
   const getCuratedFreeBooks = useAction(api.freeBooks.getCuratedFreeBooks);
   const getCuratedAudiobooks = useAction(api.freeBooks.getCuratedAudiobooks);
 
+  // Clear session and redirect to /play
+  const clearSession = useCallback(() => {
+    localStorage.removeItem("safereads_kid_profile");
+    localStorage.removeItem("safereads_family_code");
+    localStorage.removeItem("safereads_session_started");
+    router.replace("/play");
+  }, [router]);
+
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
     if (!profileData) {
       router.replace("/play");
       return;
     }
+
+    // Check session TTL (24 hours)
+    const sessionStarted = localStorage.getItem("safereads_session_started");
+    const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+    if (sessionStarted && Date.now() - parseInt(sessionStarted, 10) > SESSION_TTL_MS) {
+      clearSession();
+      return;
+    }
+
     try {
       setKidProfile(JSON.parse(profileData));
     } catch {
       router.replace("/play");
     }
-  }, [router]);
+  }, [router, clearSession]);
+
+  // Re-validate session against Convex (checks: code still valid, subscription active, profile exists)
+  // Also fetches fresh profile data (fixes stale name/color after parent edits)
+  const savedCode = typeof window !== "undefined" ? localStorage.getItem("safereads_family_code") : null;
+  const sessionValidation = useQuery(
+    api.familyCodes.revalidateSession,
+    kidProfile && savedCode
+      ? { code: savedCode, kidId: kidProfile._id as Id<"kids"> }
+      : "skip"
+  );
+
+  useEffect(() => {
+    if (!sessionValidation) return;
+    if (!sessionValidation.valid) {
+      // Session invalid — code changed, subscription expired, or profile deleted
+      clearSession();
+      return;
+    }
+    // Update localStorage with fresh profile data from Convex (issue #13)
+    if (sessionValidation.valid && "kid" in sessionValidation && sessionValidation.kid) {
+      const freshKid = sessionValidation.kid;
+      const current = kidProfile;
+      if (
+        current &&
+        (current.name !== freshKid.name ||
+          current.age !== freshKid.age ||
+          current.color !== freshKid.color)
+      ) {
+        const updatedProfile = {
+          _id: freshKid._id,
+          name: freshKid.name,
+          age: freshKid.age,
+          color: freshKid.color,
+        };
+        localStorage.setItem("safereads_kid_profile", JSON.stringify(updatedProfile));
+        setKidProfile(updatedProfile as KidProfile);
+      }
+    }
+  }, [sessionValidation, clearSession, kidProfile]);
 
   // Load curated free books
   useEffect(() => {

@@ -169,6 +169,9 @@ export default defineSchema({
     pin: v.optional(v.string()),          // Optional 4-digit PIN
     readingLevel: v.optional(v.string()), // e.g. "early-reader", "chapter-books", "middle-grade", "ya"
     createdAt: v.optional(v.number()),    // Creation timestamp
+    // PIN brute-force protection
+    pinFailedAttempts: v.optional(v.number()),  // Number of consecutive failed PIN attempts
+    pinLockedUntil: v.optional(v.number()),     // Unix timestamp when lockout expires
     // Pre-approved book exclusions (parent can remove specific classics)
     excludedPreApproved: v.optional(v.array(v.string())), // Array of gutenbergIds to exclude
   }).index("by_user", ["userId"]),
@@ -246,13 +249,7 @@ export default defineSchema({
     .index("by_kid", ["kidId"])
     .index("by_kid_and_book", ["kidId", "googleBookId"]),
 
-  familyCodes: defineTable({
-    userId: v.id("users"),
-    code: v.string(),               // 6-char uppercase alphanumeric
-    createdAt: v.number(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_code", ["code"]),
+  // NOTE: familyCodes table removed — family codes are now stored on users.familyCode
 
   analyses: defineTable({
     bookId: v.id("books"),

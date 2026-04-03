@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
-import { BookOpen, Users, ArrowRight, Plus, X } from "lucide-react";
+import { BookOpen, Users, ArrowRight, Plus, X, Copy, Check, Key } from "lucide-react";
 import { KidForm, KidFormValues } from "@/components/KidForm";
 import { Id } from "../../../convex/_generated/dataModel";
 import { useAuth } from "@/contexts/AuthContext";
 
-type AddedKid = { name: string; age?: number };
+type AddedKid = { name: string; age?: number; color?: string; pin?: string; readingLevel?: string };
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -21,11 +21,20 @@ export default function OnboardingPage() {
   );
   const completeOnboarding = useMutation(api.users.completeOnboarding);
   const createKid = useMutation(api.kids.create);
+  const userId = useQuery(
+    api.users.currentUserId,
+    authUser?.email ? { email: authUser.email } : "skip"
+  );
+  const familyCodeData = useQuery(
+    api.familyCodes.getByUser,
+    userId ? { userId } : "skip"
+  );
 
   const [step, setStep] = useState(0);
   const [kids, setKids] = useState<AddedKid[]>([]);
   const [showKidForm, setShowKidForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   // Redirect if already onboarded
   if (currentUser?.onboardingComplete) {
@@ -60,12 +69,15 @@ export default function OnboardingPage() {
     if (!currentUser) return;
     setSaving(true);
     try {
-      // Create all kids
+      // Create all kids with full profile data
       for (const kid of kids) {
         await createKid({
           userId: currentUser._id as Id<"users">,
           name: kid.name,
           age: kid.age,
+          color: kid.color,
+          pin: kid.pin,
+          readingLevel: kid.readingLevel,
         });
       }
       // Mark onboarding complete
@@ -83,7 +95,7 @@ export default function OnboardingPage() {
     <div className="mx-auto max-w-lg px-4 py-12">
       {/* Progress dots */}
       <div className="mb-8 flex items-center justify-center gap-2">
-        {[0, 1, 2].map((i) => (
+        {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
             className={`h-2 rounded-full transition-all ${
@@ -148,10 +160,20 @@ export default function OnboardingPage() {
                   key={i}
                   className="flex items-center justify-between rounded-lg border border-parchment-200 bg-white px-4 py-3"
                 >
-                  <div>
+                  <div className="flex items-center gap-2">
+                    <div className={`h-5 w-5 rounded-full ${
+                      kid.color === "red" ? "bg-red-400" :
+                      kid.color === "blue" ? "bg-blue-400" :
+                      kid.color === "green" ? "bg-green-400" :
+                      kid.color === "orange" ? "bg-orange-400" :
+                      kid.color === "pink" ? "bg-pink-400" :
+                      kid.color === "teal" ? "bg-teal-400" :
+                      kid.color === "yellow" ? "bg-yellow-400" :
+                      "bg-purple-400"
+                    }`} />
                     <span className="font-medium text-ink-900">{kid.name}</span>
                     {kid.age !== undefined && (
-                      <span className="ml-2 text-sm text-ink-400">
+                      <span className="text-sm text-ink-400">
                         age {kid.age}
                       </span>
                     )}
@@ -206,8 +228,73 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      {/* Step 2: Done */}
+      {/* Step 2: Family Code */}
       {step === 2 && (
+        <div className="text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
+            <Key className="h-8 w-8 text-emerald-600" />
+          </div>
+          <h2 className="font-serif text-2xl font-bold text-ink-900">
+            Your Family Code
+          </h2>
+          <p className="mt-2 text-sm text-ink-500">
+            Share this code with your kids so they can access their own reading experience.
+          </p>
+
+          {familyCodeData ? (
+            <div className="mt-6 space-y-4">
+              <div className="mx-auto flex max-w-xs items-center justify-center gap-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4">
+                <p className="font-mono text-3xl font-bold tracking-[0.3em] text-emerald-700">
+                  {familyCodeData.code}
+                </p>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(familyCodeData.code);
+                    setCodeCopied(true);
+                    setTimeout(() => setCodeCopied(false), 2000);
+                  }}
+                  className="flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+                >
+                  {codeCopied ? (
+                    <><Check className="h-3.5 w-3.5" /> Copied!</>
+                  ) : (
+                    <><Copy className="h-3.5 w-3.5" /> Copy</>
+                  )}
+                </button>
+              </div>
+              <p className="text-sm text-ink-500">
+                Kids go to{" "}
+                <span className="font-semibold text-emerald-700">getsafereads.com/play</span>{" "}
+                and enter this code.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-6">
+              <div className="mx-auto h-8 w-48 animate-pulse rounded-lg bg-parchment-200" />
+              <p className="mt-3 text-xs text-ink-400">Loading your family code...</p>
+            </div>
+          )}
+
+          <div className="mt-8 flex gap-3">
+            <button
+              onClick={() => setStep(1)}
+              className="flex-1 rounded-lg border border-parchment-300 px-4 py-3 text-sm font-medium text-ink-600 transition-colors hover:bg-parchment-50"
+            >
+              Back
+            </button>
+            <button
+              onClick={() => setStep(3)}
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-parchment-700 px-4 py-3 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+            >
+              Continue
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Done */}
+      {step === 3 && (
         <div className="text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-verdict-safe/10">
             <BookOpen className="h-8 w-8 text-verdict-safe" />
@@ -230,11 +317,11 @@ export default function OnboardingPage() {
               disabled={saving}
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-parchment-700 px-6 py-3 font-medium text-parchment-50 transition-colors hover:bg-parchment-800 disabled:opacity-50"
             >
-              {saving ? "Setting up…" : "Start Searching"}
+              {saving ? "Setting up..." : "Start Searching"}
               {!saving && <ArrowRight className="h-4 w-4" />}
             </button>
             <button
-              onClick={() => setStep(1)}
+              onClick={() => setStep(2)}
               className="text-sm text-ink-400 hover:text-ink-600"
             >
               Back

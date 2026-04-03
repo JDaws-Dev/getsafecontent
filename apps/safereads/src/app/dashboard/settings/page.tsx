@@ -35,6 +35,7 @@ export default function SettingsPage() {
   const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
   const familyCode = useQuery(api.familyCodes.getByUser, userId ? { userId } : "skip");
   const generateFamilyCode = useMutation(api.familyCodes.generate);
+  const regenerateFamilyCode = useMutation(api.familyCodes.regenerate);
   const details = useQuery(
     api.subscriptions.getDetails,
     authUser?.email ? { email: authUser.email } : "skip"
@@ -261,9 +262,13 @@ export default function SettingsPage() {
             <button
               onClick={async () => {
                 if (!userId) return;
+                const confirmed = window.confirm(
+                  "Are you sure? Regenerating the family code will sign out all kids currently using the old code. They will need the new code to log back in."
+                );
+                if (!confirmed) return;
                 setCodeGenerating(true);
                 try {
-                  await generateFamilyCode({ userId });
+                  await regenerateFamilyCode({ userId });
                 } finally {
                   setCodeGenerating(false);
                 }
@@ -272,7 +277,7 @@ export default function SettingsPage() {
               className="flex items-center gap-1 text-xs font-medium text-ink-400 transition-colors hover:text-ink-600 disabled:opacity-50"
             >
               <RefreshCw className={`h-3 w-3 ${codeGenerating ? "animate-spin" : ""}`} />
-              Generate new code
+              Regenerate code
             </button>
           </div>
         ) : (
