@@ -13,7 +13,7 @@ import type { Id } from "../../../../../convex/_generated/dataModel";
 export default function KidReadPage() {
   const router = useRouter();
   const params = useParams();
-  const bookId = params.bookId as string;
+  const bookId = decodeURIComponent(params.bookId as string);
   const [kidId, setKidId] = useState<Id<"kids"> | null>(null);
   const [isReading, setIsReading] = useState(false);
   const updateProgress = useMutation(api.readingProgress.update);

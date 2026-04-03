@@ -1,13 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { BookOpen } from "lucide-react";
+import { StylizedCover } from "./StylizedCover";
 
 interface BookCardProps {
   title: string;
   author: string;
   coverUrl?: string;
-  progress?: number; // 0-100
+  cachedCoverUrl?: string; // Higher-quality cover from the cover cache
+  genre?: string;          // For StylizedCover fallback
+  progress?: number;       // 0-100
   onClick?: () => void;
   size?: "sm" | "md" | "lg";
 }
@@ -16,6 +18,8 @@ export function BookCard({
   title,
   author,
   coverUrl,
+  cachedCoverUrl,
+  genre,
   progress,
   onClick,
   size = "md",
@@ -38,6 +42,9 @@ export function BookCard({
     lg: "128px",
   };
 
+  // Use the best available cover: cached > original > stylized fallback
+  const displayCoverUrl = cachedCoverUrl || coverUrl;
+
   return (
     <button
       onClick={onClick}
@@ -46,21 +53,22 @@ export function BookCard({
       <div
         className={`${sizeClasses[size]} book-tilt relative overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-active:scale-[0.96]`}
       >
-        {coverUrl ? (
+        {displayCoverUrl ? (
           <Image
-            src={coverUrl}
+            src={displayCoverUrl}
             alt={title}
             fill
             sizes={size === "sm" ? "96px" : size === "md" ? "112px" : "128px"}
             className="object-cover"
+            unoptimized
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-100 p-3">
-            <BookOpen className="h-6 w-6 text-purple-300" />
-            <p className="line-clamp-3 text-center text-[9px] font-medium leading-tight text-purple-600">
-              {title}
-            </p>
-          </div>
+          <StylizedCover
+            title={title}
+            author={author}
+            genre={genre}
+            size={size}
+          />
         )}
 
         {/* Progress bar overlay */}

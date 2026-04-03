@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { KidBookshelf } from "@/components/kid/KidBookshelf";
 import { BookCard } from "@/components/kid/BookCard";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
+import { StylizedCover } from "@/components/kid/StylizedCover";
 import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -125,6 +126,26 @@ export default function KidHomePage() {
     kidId ? { age: kidProfile?.age, kidId } : "skip"
   );
 
+  // Build book identifiers for cover cache lookups
+  const classicIdentifiers = useMemo(
+    () => (preApprovedBooks || []).map((b) => b.gutenbergId),
+    [preApprovedBooks]
+  );
+  const freeBookIdentifiers = useMemo(
+    () => freeBooks.map((b) => b.id),
+    [freeBooks]
+  );
+  const allIdentifiers = useMemo(
+    () => [...classicIdentifiers, ...freeBookIdentifiers],
+    [classicIdentifiers, freeBookIdentifiers]
+  );
+
+  // Batch lookup cached covers
+  const cachedCovers = useQuery(
+    api.bookCovers.getCachedCovers,
+    allIdentifiers.length > 0 ? { bookIdentifiers: allIdentifiers } : "skip"
+  );
+
   if (!kidProfile) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -213,7 +234,7 @@ export default function KidHomePage() {
                 coverUrl={book.coverUrl}
                 progress={book.progress}
                 onClick={() =>
-                  router.push(`/play/read/${book.googleBookId}`)
+                  router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)
                 }
                 size="lg"
               />
@@ -251,16 +272,19 @@ export default function KidHomePage() {
             Timeless stories ready to read now
           </p>
           <div className="mt-3 flex gap-3 overflow-x-auto pb-2 scrollbar-none">
-            {preApprovedBooks.slice(0, 12).map((book) => (
+            {preApprovedBooks.slice(0, 12).map((book) => {
+              const cachedUrl = cachedCovers?.[book.gutenbergId]?.coverUrl;
+              const displayUrl = cachedUrl || book.coverUrl;
+              return (
               <button
                 key={book.gutenbergId}
-                onClick={() => router.push(`/play/read/${book.googleBookId}`)}
+                onClick={() => router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)}
                 className="group flex flex-shrink-0 flex-col items-start text-left"
               >
                 <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5 transition-all group-active:scale-[0.97]">
-                  {book.coverUrl ? (
+                  {displayUrl ? (
                     <Image
-                      src={book.coverUrl}
+                      src={displayUrl}
                       alt={book.title}
                       fill
                       sizes="112px"
@@ -268,12 +292,11 @@ export default function KidHomePage() {
                       unoptimized
                     />
                   ) : (
-                    <div className="flex h-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-amber-50 to-amber-100 p-2">
-                      <BookOpen className="h-5 w-5 text-amber-300" />
-                      <p className="line-clamp-3 text-center text-[8px] leading-tight text-amber-600">
-                        {book.title}
-                      </p>
-                    </div>
+                    <StylizedCover
+                      title={book.title}
+                      author={book.author}
+                      size="md"
+                    />
                   )}
                   {/* Classic badge overlay */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-700/90 to-transparent px-2 pb-1.5 pt-4 text-center">
@@ -293,7 +316,8 @@ export default function KidHomePage() {
                   {book.author}
                 </p>
               </button>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
@@ -336,16 +360,19 @@ export default function KidHomePage() {
             </div>
           ) : freeBooks.length > 0 ? (
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
-              {freeBooks.map((book) => (
+              {freeBooks.map((book) => {
+                const cachedUrl = cachedCovers?.[book.id]?.coverUrl;
+                const displayUrl = cachedUrl || book.coverUrl;
+                return (
                 <button
                   key={book.id}
                   onClick={() => router.push("/play/search?tab=free")}
                   className="group flex flex-shrink-0 flex-col items-start text-left"
                 >
                   <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5 transition-all group-active:scale-[0.97]">
-                    {book.coverUrl ? (
+                    {displayUrl ? (
                       <Image
-                        src={book.coverUrl}
+                        src={displayUrl}
                         alt={book.title}
                         fill
                         sizes="112px"
@@ -353,12 +380,11 @@ export default function KidHomePage() {
                         unoptimized
                       />
                     ) : (
-                      <div className="flex h-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-violet-50 to-purple-100 p-2">
-                        <BookOpen className="h-5 w-5 text-purple-300" />
-                        <p className="line-clamp-3 text-center text-[8px] font-medium text-purple-600">
-                          {book.title}
-                        </p>
-                      </div>
+                      <StylizedCover
+                        title={book.title}
+                        author={book.authors.join(", ") || "Unknown"}
+                        size="md"
+                      />
                     )}
                     {/* Free badge overlay */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-emerald-600/90 to-transparent px-2 pb-1.5 pt-4 text-center">
@@ -378,7 +404,8 @@ export default function KidHomePage() {
                     {book.authors.join(", ")}
                   </p>
                 </button>
-              ))}
+                );
+              })}
             </div>
           ) : freeBooksLoaded ? (
             <div className="flex flex-col items-center rounded-2xl bg-white px-4 py-8 text-center shadow-sm">
@@ -421,7 +448,7 @@ export default function KidHomePage() {
               books={approvedBooks}
               progress={readingProgress || []}
               onBookClick={(book) =>
-                router.push(`/play/read/${book.googleBookId}`)
+                router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)
               }
             />
           )}

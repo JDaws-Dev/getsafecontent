@@ -215,8 +215,16 @@ export const getFreeBookContent = action({
       return { content: null, error: "Book content not available in HTML format." };
     }
 
+    // Fix relative image URLs to absolute Gutenberg URLs
+    const baseUrl = `https://www.gutenberg.org/cache/epub/${id}/`;
+    const fixedHtml = html
+      .replace(/src="images\//g, `src="${baseUrl}images/`)
+      .replace(/src='images\//g, `src='${baseUrl}images/`)
+      .replace(/src="\.\/images\//g, `src="${baseUrl}images/`)
+      .replace(/src='\.\/images\//g, `src='${baseUrl}images/`);
+
     // Extract body content and strip Gutenberg boilerplate
-    const cleanedHtml = stripGutenbergBoilerplate(html);
+    const cleanedHtml = stripGutenbergBoilerplate(fixedHtml);
 
     return { content: cleanedHtml, error: null };
   },

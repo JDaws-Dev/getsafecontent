@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { Search, Loader2, BookOpen, Sparkles } from "lucide-react";
+import { Search, Loader2, Sparkles } from "lucide-react";
 import { FreeBookRequestButton } from "./FreeBookRequestButton";
+import { StylizedCover } from "./StylizedCover";
 import Image from "next/image";
 import type { Id } from "../../../convex/_generated/dataModel";
 
@@ -36,6 +37,18 @@ export function FreeBookSearch({ kidId }: FreeBookSearchProps) {
   const [hasSearched, setHasSearched] = useState(false);
 
   const searchFreeBooks = useAction(api.freeBooks.searchFreeBooks);
+
+  // Build book identifiers for cover cache lookup
+  const bookIdentifiers = useMemo(
+    () => results.map((b) => b.id),
+    [results]
+  );
+
+  // Batch lookup cached covers for search results
+  const cachedCovers = useQuery(
+    api.bookCovers.getCachedCovers,
+    bookIdentifiers.length > 0 ? { bookIdentifiers } : "skip"
+  );
 
   // Get approved books to check status
   const approvedBooks = useQuery(api.approvedBooks.listForKid, { kidId });
@@ -154,21 +167,29 @@ export function FreeBookSearch({ kidId }: FreeBookSearchProps) {
           >
             {/* Cover */}
             <div className="h-28 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
-              {book.coverUrl ? (
-                <Image
-                  src={book.coverUrl}
-                  alt={book.title}
-                  width={80}
-                  height={112}
-                  className="h-full w-full object-cover"
-                  unoptimized
-                />
-              ) : (
-                <div className="flex h-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-emerald-50 to-teal-100 p-2">
-                  <BookOpen className="h-5 w-5 text-emerald-300" />
-                  <span className="text-[8px] font-medium text-emerald-400">Free</span>
-                </div>
-              )}
+              {(() => {
+                const cachedUrl = cachedCovers?.[book.id]?.coverUrl;
+                const displayUrl = cachedUrl || book.coverUrl;
+                if (displayUrl) {
+                  return (
+                    <Image
+                      src={displayUrl}
+                      alt={book.title}
+                      width={80}
+                      height={112}
+                      className="h-full w-full object-cover"
+                      unoptimized
+                    />
+                  );
+                }
+                return (
+                  <StylizedCover
+                    title={book.title}
+                    author={book.authors.join(", ") || "Unknown"}
+                    size="sm"
+                  />
+                );
+              })()}
             </div>
 
             {/* Info */}

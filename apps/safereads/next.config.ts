@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "storyweaver.org.in",
       },
+      {
+        protocol: "https",
+        hostname: "*.convex.cloud",
+      },
     ],
   },
   headers: async () => [

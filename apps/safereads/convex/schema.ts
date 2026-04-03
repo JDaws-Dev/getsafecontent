@@ -440,4 +440,14 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_and_app", ["userId", "app"])
     .index("by_sync_status", ["syncStatus"]),
+  // ========================================================================
+  // Book Covers Cache (for cover waterfall system)
+  // ========================================================================
+  bookCovers: defineTable({
+    bookIdentifier: v.string(), // gutenbergId, googleBookId, or isbn
+    coverUrl: v.string(), // URL to the cover image (or Convex storage URL)
+    source: v.string(), // "openlibrary", "google", "dalle", "gutenberg"
+    storageId: v.optional(v.id("_storage")), // Convex file storage ID for DALL-E generated covers
+    generatedAt: v.number(),
+  }).index("by_book", ["bookIdentifier"]),
 }, { schemaValidation: false });
