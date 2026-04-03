@@ -165,6 +165,8 @@ export default defineSchema({
     pin: v.optional(v.string()),          // Optional 4-digit PIN
     readingLevel: v.optional(v.string()), // e.g. "early-reader", "chapter-books", "middle-grade", "ya"
     createdAt: v.optional(v.number()),    // Creation timestamp
+    // Pre-approved book exclusions (parent can remove specific classics)
+    excludedPreApproved: v.optional(v.array(v.string())), // Array of gutenbergIds to exclude
   }).index("by_user", ["userId"]),
 
   wishlists: defineTable({
@@ -188,6 +190,10 @@ export default defineSchema({
     addedAt: v.number(),
     addedBy: v.string(),            // "parent" | "request_approved"
     notes: v.optional(v.string()),  // parent notes
+    // Free book fields
+    gutenbergId: v.optional(v.string()),       // Project Gutenberg ID
+    storyWeaverId: v.optional(v.string()),     // StoryWeaver ID
+    isFreeBook: v.optional(v.boolean()),       // Quick check for free book
   })
     .index("by_user", ["userId"])
     .index("by_kid", ["kidId"])
@@ -204,6 +210,13 @@ export default defineSchema({
     requestedAt: v.number(),
     respondedAt: v.optional(v.number()),
     denyReason: v.optional(v.string()),
+    // Free book fields
+    gutenbergId: v.optional(v.string()),       // Project Gutenberg ID
+    storyWeaverId: v.optional(v.string()),     // StoryWeaver ID
+    isFreeBook: v.optional(v.boolean()),       // Quick check for free book
+    // Content safety gate
+    analysisStatus: v.optional(v.string()),    // "pending" | "analyzing" | "complete" | "failed"
+    analysisBookId: v.optional(v.id("books")), // Reference to the books table entry used for analysis
   })
     .index("by_kid", ["kidId"])
     .index("by_user", ["userId"])

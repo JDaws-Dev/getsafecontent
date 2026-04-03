@@ -15,6 +15,9 @@ export const addForKid = mutation({
     coverUrl: v.optional(v.string()),
     addedBy: v.optional(v.string()),
     notes: v.optional(v.string()),
+    gutenbergId: v.optional(v.string()),
+    storyWeaverId: v.optional(v.string()),
+    isFreeBook: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Check for duplicate
@@ -39,6 +42,9 @@ export const addForKid = mutation({
       addedAt: Date.now(),
       addedBy: args.addedBy || "parent",
       notes: args.notes,
+      gutenbergId: args.gutenbergId,
+      storyWeaverId: args.storyWeaverId,
+      isFreeBook: args.isFreeBook,
     });
   },
 });

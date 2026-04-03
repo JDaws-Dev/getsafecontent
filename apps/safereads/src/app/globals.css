@@ -105,3 +105,131 @@ body {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* ============================================================================
+   Kid UI Animations & Styles
+   ============================================================================ */
+
+/* Gentle float animation for decorative elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Bounce-in animation for profile cards */
+@keyframes bounce-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-bounce-in {
+  animation: bounce-in 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* Staggered delays for bounce-in children */
+.animate-bounce-in:nth-child(1) { animation-delay: 0.05s; }
+.animate-bounce-in:nth-child(2) { animation-delay: 0.1s; }
+.animate-bounce-in:nth-child(3) { animation-delay: 0.15s; }
+.animate-bounce-in:nth-child(4) { animation-delay: 0.2s; }
+.animate-bounce-in:nth-child(5) { animation-delay: 0.25s; }
+.animate-bounce-in:nth-child(6) { animation-delay: 0.3s; }
+
+/* Fade-up animation for sections */
+@keyframes fade-up {
+  0% { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.animate-fade-up {
+  animation: fade-up 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+/* Pulse-glow for active nav indicator */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(124, 58, 237, 0); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Sparkle keyframes for the family code success */
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+.animate-sparkle {
+  animation: sparkle 0.6s ease-out forwards;
+}
+
+/* Book tilt effect on hover */
+.book-tilt {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.book-tilt:hover {
+  transform: perspective(300px) rotateY(-5deg) translateY(-4px);
+  box-shadow: 4px 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Wooden bookshelf background */
+.bookshelf-bg {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 88%,
+    #8B6914 88%,
+    #A0792C 92%,
+    #8B6914 92%,
+    #725510 96%,
+    #5C440E 100%
+  );
+  padding-bottom: 16px;
+}
+
+/* Subtle dot pattern background for kid pages */
+.kid-bg-pattern {
+  background-color: #FEF7EE;
+  background-image: radial-gradient(circle, #F0DCC4 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Gradient progress bar */
+.progress-gradient {
+  background: linear-gradient(90deg, #818CF8, #A78BFA, #C084FC);
+}
+
+/* Nav active dot indicator */
+.nav-active-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7C3AED, #A78BFA);
+  margin-top: 2px;
+}
+
+/* Genre card hover effect */
+.genre-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.genre-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+.genre-card:active {
+  transform: scale(0.97);
+}
+
+/* Cozy reading background */
+.reading-cozy {
+  background: linear-gradient(180deg, #FFFBF5 0%, #FFF8EE 100%);
+}
+
+/* Large touch targets for kids (minimum 44px) */
+.kid-touch {
+  min-height: 44px;
+  min-width: 44px;
+}

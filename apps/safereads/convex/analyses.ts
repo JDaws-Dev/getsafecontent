@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import {
   action,
+  internalAction,
   internalMutation,
   internalQuery,
   query,
@@ -407,6 +408,90 @@ export const listRecentInternal = internalQuery({
     });
 
     return deduped.slice(0, limit);
+  },
+});
+
+/**
+ * Auto-analyze a book for the content safety gate.
+ * Called internally when a book request is created.
+ * Bypasses paywall — this is a system-triggered analysis, not user-initiated.
+ * Updates the bookRequest's analysisStatus when complete.
+ */
+export const autoAnalyzeForRequest = internalAction({
+  args: {
+    bookId: v.id("books"),
+    requestId: v.id("bookRequests"),
+  },
+  handler: async (ctx, args) => {
+    try {
+      // Check cache first
+      const cached = await ctx.runQuery(internal.analyses.getCachedAnalysis, {
+        bookId: args.bookId,
+      });
+
+      if (cached) {
+        // Already analyzed — mark request as complete
+        await ctx.runMutation(internal.bookRequests.updateAnalysisStatus, {
+          requestId: args.requestId,
+          status: "complete",
+        });
+        return;
+      }
+
+      // Fetch book
+      const book = await ctx.runQuery(internal.analyses.getBookById, {
+        bookId: args.bookId,
+      });
+      if (!book) {
+        await ctx.runMutation(internal.bookRequests.updateAnalysisStatus, {
+          requestId: args.requestId,
+          status: "failed",
+        });
+        return;
+      }
+
+      // Run analysis (no paywall check)
+      const result = await runOpenAIAnalysis(book, args.bookId);
+
+      // Store in cache
+      await ctx.runMutation(internal.analyses.store, result);
+
+      // Mark request as complete
+      await ctx.runMutation(internal.bookRequests.updateAnalysisStatus, {
+        requestId: args.requestId,
+        status: "complete",
+      });
+    } catch (error) {
+      console.error("Auto-analysis failed for request:", args.requestId, error);
+      await ctx.runMutation(internal.bookRequests.updateAnalysisStatus, {
+        requestId: args.requestId,
+        status: "failed",
+      });
+    }
+  },
+});
+
+/**
+ * Look up an analysis by Google Books ID.
+ * Finds the book in the books table, then checks for a cached analysis.
+ */
+export const getByGoogleBookId = query({
+  args: { googleBookId: v.string() },
+  handler: async (ctx, args) => {
+    const book = await ctx.db
+      .query("books")
+      .withIndex("by_google_books_id", (q) =>
+        q.eq("googleBooksId", args.googleBookId)
+      )
+      .first();
+    if (!book) return null;
+
+    const analysis = await ctx.db
+      .query("analyses")
+      .withIndex("by_book", (q) => q.eq("bookId", book._id))
+      .order("desc")
+      .first();
+    return analysis;
   },
 });
 

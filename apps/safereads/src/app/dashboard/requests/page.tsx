@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useAuth } from "@/contexts/AuthContext";
 import Image from "next/image";
@@ -14,6 +14,11 @@ import {
   Loader2,
   Clock,
   AlertCircle,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldQuestion,
+  ExternalLink,
 } from "lucide-react";
 
 const COLOR_MAP: Record<string, string> = {
@@ -26,6 +31,85 @@ const COLOR_MAP: Record<string, string> = {
   teal: "bg-teal-400",
   yellow: "bg-yellow-400",
 };
+
+// Verdict badge component
+function VerdictBadge({ verdict }: { verdict: string }) {
+  const config: Record<string, { icon: typeof Shield; color: string; label: string }> = {
+    safe: { icon: ShieldCheck, color: "bg-emerald-100 text-emerald-700", label: "Safe" },
+    caution: { icon: ShieldAlert, color: "bg-amber-100 text-amber-700", label: "Caution" },
+    warning: { icon: ShieldAlert, color: "bg-red-100 text-red-700", label: "Warning" },
+    no_verdict: { icon: ShieldQuestion, color: "bg-gray-100 text-gray-600", label: "No Verdict" },
+  };
+  const c = config[verdict] || config.no_verdict;
+  const Icon = c.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${c.color}`}>
+      <Icon className="h-3 w-3" />
+      {c.label}
+    </span>
+  );
+}
+
+// Analysis summary card for a pending request
+function AnalysisSummary({ googleBookId }: { googleBookId: string }) {
+  const analysis = useQuery(api.analyses.getByGoogleBookId, { googleBookId });
+
+  if (analysis === undefined) {
+    return (
+      <div className="mt-2 flex items-center gap-2 rounded-lg bg-parchment-50 px-3 py-2 text-xs text-ink-400">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        Analyzing content...
+      </div>
+    );
+  }
+
+  if (analysis === null) {
+    return (
+      <div className="mt-2 flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-600">
+        <ShieldQuestion className="h-3.5 w-3.5" />
+        Analysis pending — content review in progress
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 rounded-lg border border-parchment-200 bg-parchment-50 p-3">
+      <div className="flex items-center gap-2">
+        <VerdictBadge verdict={analysis.verdict} />
+        {analysis.ageRecommendation && (
+          <span className="text-[10px] text-ink-400">
+            Ages {analysis.ageRecommendation}
+          </span>
+        )}
+      </div>
+      <p className="mt-1.5 text-xs text-ink-600 leading-relaxed">
+        {analysis.summary}
+      </p>
+      {analysis.contentFlags && analysis.contentFlags.filter(
+        (f: { severity: string }) => f.severity !== "none"
+      ).length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {analysis.contentFlags
+            .filter((f: { severity: string }) => f.severity !== "none")
+            .map((f: { category: string; severity: string }, i: number) => (
+              <span
+                key={i}
+                className={`rounded px-1.5 py-0.5 text-[9px] font-medium ${
+                  f.severity === "heavy"
+                    ? "bg-red-100 text-red-600"
+                    : f.severity === "moderate"
+                      ? "bg-amber-100 text-amber-600"
+                      : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                {f.category} ({f.severity})
+              </span>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function RequestsPage() {
   const { user: authUser } = useAuth();
@@ -46,10 +130,35 @@ export default function RequestsPage() {
 
   const approveRequest = useMutation(api.bookRequests.approve);
   const denyRequest = useMutation(api.bookRequests.deny);
+  const triggerAnalysis = useAction(api.bookRequests.triggerAnalysis);
 
   const [processing, setProcessing] = useState<string | null>(null);
   const [denyingId, setDenyingId] = useState<string | null>(null);
   const [denyReason, setDenyReason] = useState("");
+  const [triggeredAnalyses, setTriggeredAnalyses] = useState<Set<string>>(new Set());
+
+  // Auto-trigger analysis for pending requests that need it
+  useEffect(() => {
+    if (!pendingRequests) return;
+
+    for (const request of pendingRequests) {
+      if (
+        request.analysisStatus === "analyzing" &&
+        !triggeredAnalyses.has(request._id)
+      ) {
+        setTriggeredAnalyses((prev) => new Set(prev).add(request._id));
+        triggerAnalysis({
+          requestId: request._id as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          googleBookId: request.googleBookId,
+          title: request.title,
+          author: request.author,
+          coverUrl: request.coverUrl || undefined,
+        }).catch((err) => {
+          console.error("Failed to trigger analysis:", err);
+        });
+      }
+    }
+  }, [pendingRequests, triggerAnalysis, triggeredAnalyses]);
 
   const handleApprove = async (requestId: string) => {
     setProcessing(requestId);
@@ -170,6 +279,9 @@ export default function RequestsPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* AI Content Analysis */}
+                <AnalysisSummary googleBookId={request.googleBookId} />
 
                 {/* Actions */}
                 {isDenying ? (

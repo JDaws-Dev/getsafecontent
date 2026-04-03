@@ -6,27 +6,25 @@ import { api } from "../../../convex/_generated/api";
 import { Heart, Check, X, Loader2, Clock } from "lucide-react";
 import type { Id } from "../../../convex/_generated/dataModel";
 
-interface RequestButtonProps {
+interface FreeBookRequestButtonProps {
   kidId: Id<"kids">;
-  googleBookId: string;
+  gutenbergId: string;
   title: string;
   author: string;
   coverUrl?: string;
-  /** Current status from bookRequests query: null = not requested, "pending", "approved", "denied" */
   requestStatus: string | null;
-  /** Whether the book is already approved */
   isApproved: boolean;
 }
 
-export function RequestButton({
+export function FreeBookRequestButton({
   kidId,
-  googleBookId,
+  gutenbergId,
   title,
   author,
   coverUrl,
   requestStatus,
   isApproved,
-}: RequestButtonProps) {
+}: FreeBookRequestButtonProps) {
   const createRequest = useMutation(api.bookRequests.create);
   const [isLoading, setIsLoading] = useState(false);
   const [justRequested, setJustRequested] = useState(false);
@@ -70,9 +68,10 @@ export function RequestButton({
   const handleRequest = async () => {
     setIsLoading(true);
     try {
+      // Use gutenberg:{id} as the googleBookId for free books
       await createRequest({
         kidId,
-        googleBookId,
+        googleBookId: `gutenberg:${gutenbergId}`,
         title,
         author,
         coverUrl,

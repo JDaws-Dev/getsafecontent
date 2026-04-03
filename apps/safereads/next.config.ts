@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "covers.openlibrary.org",
       },
+      {
+        protocol: "https",
+        hostname: "www.gutenberg.org",
+      },
+      {
+        protocol: "https",
+        hostname: "storyweaver.org.in",
+      },
     ],
   },
   headers: async () => [

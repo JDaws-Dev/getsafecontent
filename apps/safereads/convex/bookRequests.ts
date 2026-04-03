@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation, action } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 /**
  * Create a book request from a kid.
@@ -12,6 +13,9 @@ export const create = mutation({
     title: v.string(),
     author: v.string(),
     coverUrl: v.optional(v.string()),
+    gutenbergId: v.optional(v.string()),
+    storyWeaverId: v.optional(v.string()),
+    isFreeBook: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Get the kid to find the parent userId
@@ -19,6 +23,13 @@ export const create = mutation({
     if (!kid) {
       throw new Error("Kid profile not found");
     }
+
+    // Auto-detect free book from googleBookId convention
+    const isGutenberg = args.googleBookId.startsWith("gutenberg:");
+    const gutenbergId = isGutenberg
+      ? args.googleBookId.replace("gutenberg:", "")
+      : args.gutenbergId;
+    const isFreeBook = args.isFreeBook || isGutenberg || !!args.gutenbergId || !!args.storyWeaverId;
 
     // Check for existing pending request for this book
     const existing = await ctx.db
@@ -44,7 +55,33 @@ export const create = mutation({
       return null; // Already on their shelf
     }
 
-    return await ctx.db.insert("bookRequests", {
+    // Check if an analysis already exists for this book (by googleBookId)
+    const existingBook = await ctx.db
+      .query("books")
+      .withIndex("by_google_books_id", (q) =>
+        q.eq("googleBooksId", args.googleBookId)
+      )
+      .first();
+
+    let analysisStatus: "pending" | "analyzing" | "complete" = "pending";
+    let analysisBookId = existingBook?._id;
+
+    if (existingBook) {
+      const existingAnalysis = await ctx.db
+        .query("analyses")
+        .withIndex("by_book", (q) => q.eq("bookId", existingBook._id))
+        .first();
+      if (existingAnalysis) {
+        analysisStatus = "complete";
+      } else {
+        analysisStatus = "analyzing";
+      }
+    } else {
+      // No book entry yet — will need to create one and analyze
+      analysisStatus = "analyzing";
+    }
+
+    const requestId = await ctx.db.insert("bookRequests", {
       kidId: args.kidId,
       userId: kid.userId,
       googleBookId: args.googleBookId,
@@ -53,6 +90,62 @@ export const create = mutation({
       coverUrl: args.coverUrl,
       status: "pending",
       requestedAt: Date.now(),
+      gutenbergId: gutenbergId || undefined,
+      storyWeaverId: args.storyWeaverId || undefined,
+      isFreeBook: isFreeBook || undefined,
+      analysisStatus,
+      analysisBookId: analysisBookId || undefined,
+    });
+
+    return requestId;
+  },
+});
+
+/**
+ * Trigger AI analysis for a book request.
+ * Called as an action after the request mutation creates the record.
+ * Handles creating/finding the book entry and scheduling the analysis.
+ */
+export const triggerAnalysis = action({
+  args: {
+    requestId: v.id("bookRequests"),
+    googleBookId: v.string(),
+    title: v.string(),
+    author: v.string(),
+    coverUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Upsert the book into the books table so analysis has something to work with
+    const bookId = await ctx.runMutation(internal.books.upsert, {
+      googleBooksId: args.googleBookId,
+      title: args.title,
+      authors: [args.author],
+      coverUrl: args.coverUrl,
+    });
+
+    // Update request with the book reference
+    await ctx.runMutation(internal.bookRequests.setAnalysisBookId, {
+      requestId: args.requestId,
+      bookId,
+    });
+
+    // Check if analysis already exists
+    const cached = await ctx.runQuery(internal.analyses.getCachedAnalysis, {
+      bookId,
+    });
+
+    if (cached) {
+      await ctx.runMutation(internal.bookRequests.updateAnalysisStatus, {
+        requestId: args.requestId,
+        status: "complete",
+      });
+      return;
+    }
+
+    // Schedule the analysis
+    await ctx.scheduler.runAfter(0, internal.analyses.autoAnalyzeForRequest, {
+      bookId,
+      requestId: args.requestId,
     });
   },
 });
@@ -101,6 +194,10 @@ export const approve = mutation({
         addedAt: Date.now(),
         addedBy: "request_approved",
         notes: args.notes,
+        // Carry through free book fields
+        gutenbergId: request.gutenbergId || undefined,
+        storyWeaverId: request.storyWeaverId || undefined,
+        isFreeBook: request.isFreeBook || undefined,
       });
     }
 
@@ -239,5 +336,41 @@ export const getRequestStatus = query({
 
     if (!request) return null;
     return { status: request.status, denyReason: request.denyReason };
+  },
+});
+
+// --- Internal mutations for content safety gate ---
+
+/**
+ * Update the analysis status on a book request.
+ */
+export const updateAnalysisStatus = internalMutation({
+  args: {
+    requestId: v.id("bookRequests"),
+    status: v.string(), // "pending" | "analyzing" | "complete" | "failed"
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) return;
+    await ctx.db.patch(args.requestId, {
+      analysisStatus: args.status,
+    });
+  },
+});
+
+/**
+ * Set the analysisBookId on a book request (links to books table).
+ */
+export const setAnalysisBookId = internalMutation({
+  args: {
+    requestId: v.id("bookRequests"),
+    bookId: v.id("books"),
+  },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) return;
+    await ctx.db.patch(args.requestId, {
+      analysisBookId: args.bookId,
+    });
   },
 });

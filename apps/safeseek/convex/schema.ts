@@ -140,4 +140,4 @@ export default defineSchema({
     timestamps: v.array(v.number()), // request timestamps within the window
   })
     .index("by_user_action", ["userId", "action"]),
-}, { schemaValidation: false });
+});

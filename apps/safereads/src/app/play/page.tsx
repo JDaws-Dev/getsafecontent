@@ -6,6 +6,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { FamilyCodeEntry } from "@/components/kid/FamilyCodeEntry";
 import { ProfileSelector } from "@/components/kid/ProfileSelector";
+import { BookOpen } from "lucide-react";
 
 /**
  * /play - Kid login page
@@ -74,8 +75,10 @@ export default function PlayPage() {
 
   if (step === "loading") {
     return (
-      <div className="flex min-h-[80vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-600" />
+      <div className="flex min-h-[80vh] flex-col items-center justify-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-400 to-purple-600 shadow-lg">
+          <BookOpen className="h-8 w-8 animate-pulse text-white" />
+        </div>
       </div>
     );
   }
@@ -93,8 +96,11 @@ export default function PlayPage() {
   // Waiting for validation
   if (familyData === undefined) {
     return (
-      <div className="flex min-h-[80vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-600" />
+      <div className="flex min-h-[80vh] flex-col items-center justify-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-400 to-purple-600 shadow-lg">
+          <BookOpen className="h-8 w-8 animate-pulse text-white" />
+        </div>
+        <p className="mt-4 text-sm font-medium text-gray-400">Loading your family...</p>
       </div>
     );
   }
@@ -114,7 +120,10 @@ export default function PlayPage() {
   // Family code valid but no kids
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 text-center">
-      <p className="text-lg font-semibold text-gray-800">
+      <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-purple-50">
+        <span className="text-4xl">{"\uD83D\uDCDA"}</span>
+      </div>
+      <p className="mt-5 text-xl font-bold text-gray-800">
         No reader profiles yet
       </p>
       <p className="mt-2 text-sm text-gray-500">
@@ -122,7 +131,7 @@ export default function PlayPage() {
       </p>
       <button
         onClick={handleBack}
-        className="mt-6 rounded-full border border-gray-200 px-6 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+        className="kid-touch mt-6 rounded-full bg-white px-6 py-3 text-sm font-bold text-purple-600 shadow-md transition-all hover:shadow-lg active:scale-95"
       >
         Try a different code
       </button>
