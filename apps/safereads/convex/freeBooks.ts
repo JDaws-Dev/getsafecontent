@@ -757,20 +757,32 @@ export const getCuratedAudiobooks = action({
     }
 
     try {
-      // Search LibriVox for age-appropriate audiobooks
-      const searchTerm = age <= 8 ? "children fairy tales" : "adventure classic";
-      const results: unknown[] = await ctx.runAction(api.librivox.searchLibriVox, {
-        query: searchTerm,
-      });
+      // Search specific popular kids' titles on LibriVox (generic searches return nothing)
+      const titles = age <= 8
+        ? ["alice", "peter rabbit", "wizard of oz", "wind in the willows", "peter pan", "secret garden", "velveteen rabbit", "jungle book"]
+        : ["treasure island", "sherlock holmes", "tom sawyer", "huckleberry finn", "christmas carol", "call of the wild", "around the world", "twenty thousand leagues"];
 
-      const curated = (results || []).slice(0, 8);
+      const allResults: unknown[] = [];
+      for (const title of titles) {
+        try {
+          const results: unknown[] = await ctx.runAction(api.librivox.searchLibriVox, {
+            query: title,
+          });
+          if (results && results.length > 0) {
+            allResults.push(results[0]); // Take first match per title
+          }
+        } catch {
+          // Skip failed individual searches
+        }
+        if (allResults.length >= 8) break;
+      }
 
       await ctx.runMutation(api.freeBooks.saveToCache, {
         cacheKey,
-        results: JSON.stringify(curated),
+        results: JSON.stringify(allResults),
       });
 
-      return curated;
+      return allResults;
     } catch (error) {
       console.error("Failed to load curated audiobooks:", error);
       return [];

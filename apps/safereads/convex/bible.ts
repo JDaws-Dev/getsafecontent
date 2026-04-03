@@ -534,3 +534,135 @@ export const setCacheEntry = mutation({
     });
   },
 });
+
+// ============================================================================
+// Bible Search — Full-text search across translations
+// ============================================================================
+
+/**
+ * Search the Bible for a word or phrase.
+ * Searches the selected translation and optionally shows parallel results
+ * from other translations for the same verses.
+ *
+ * Bolls.life search endpoint:
+ * GET https://bolls.life/v2/find/{translation}?search={query}&page={page}
+ */
+export const searchBible = action({
+  args: {
+    query: v.string(),
+    translation: v.string(), // Primary translation to search
+    showParallel: v.optional(v.boolean()), // Show same verses in other translations
+    testament: v.optional(v.string()), // "ot", "nt", or undefined for both
+    page: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const cacheKey = `bible-search:${args.translation}:${args.query.toLowerCase().trim()}:${args.testament || "all"}:${args.page || 1}`;
+
+    // Check cache
+    const cached = await ctx.runQuery(api.bible.getCacheEntry, { cacheKey });
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
+    const searchQuery = encodeURIComponent(args.query.trim());
+    let url = `${BOLLS_BASE}/v2/find/${args.translation}?search=${searchQuery}`;
+
+    if (args.testament) {
+      url += `&filter=${args.testament}`;
+    }
+    if (args.page && args.page > 1) {
+      url += `&page=${args.page}`;
+    }
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        return { results: [], total: 0, error: "Search failed" };
+      }
+
+      const data = await response.json();
+
+      // Bolls returns { results: [...], count: number }
+      const results = (data.results || data || []).slice(0, 50).map((verse: {
+        pk: number;
+        book: number;
+        chapter: number;
+        verse: number;
+        text: string;
+        bookName?: string;
+      }) => ({
+        book: verse.book,
+        chapter: verse.chapter,
+        verse: verse.verse,
+        text: cleanBibleText(verse.text),
+        translation: args.translation,
+      }));
+
+      // Fetch parallel translations for the first 10 results
+      let parallelResults: Record<string, typeof results> = {};
+
+      if (args.showParallel && results.length > 0) {
+        const otherTranslations = TRANSLATIONS
+          .filter((t) => t.code !== args.translation)
+          .slice(0, 3); // Show up to 3 parallels
+
+        const parallelPromises = otherTranslations.map(async (trans) => {
+          try {
+            // Fetch the same verses in the other translation
+            const verses = results.slice(0, 5); // Limit parallel to first 5 results
+            const parallelVerses = await Promise.all(
+              verses.map(async (v: { book: number; chapter: number; verse: number }) => {
+                const verseUrl = `${BOLLS_BASE}/get-text/${trans.code}/${v.book}/${v.chapter}/`;
+                const res = await fetch(verseUrl);
+                if (!res.ok) return null;
+                const chapterData = await res.json();
+                const matchingVerse = (chapterData as { verse: number; text: string }[]).find(
+                  (cv) => cv.verse === v.verse
+                );
+                return matchingVerse
+                  ? {
+                      book: v.book,
+                      chapter: v.chapter,
+                      verse: v.verse,
+                      text: cleanBibleText(matchingVerse.text),
+                      translation: trans.code,
+                    }
+                  : null;
+              })
+            );
+            return {
+              translation: trans.code,
+              verses: parallelVerses.filter(Boolean),
+            };
+          } catch {
+            return { translation: trans.code, verses: [] };
+          }
+        });
+
+        const parallelData = await Promise.allSettled(parallelPromises);
+        for (const result of parallelData) {
+          if (result.status === "fulfilled" && result.value.verses.length > 0) {
+            parallelResults[result.value.translation] = result.value.verses as typeof results;
+          }
+        }
+      }
+
+      const searchResult = {
+        results,
+        total: data.count || results.length,
+        parallel: parallelResults,
+      };
+
+      // Cache for 7 days (Bible text doesn't change)
+      await ctx.runMutation(api.bible.setCacheEntry, {
+        cacheKey,
+        data: JSON.stringify(searchResult),
+      });
+
+      return searchResult;
+    } catch (error) {
+      console.error("[Bible Search] Error:", error);
+      return { results: [], total: 0, error: "Search failed" };
+    }
+  },
+});

@@ -151,9 +151,9 @@ export const searchLibriVox = action({
     }
 
     try {
-      // LibriVox API supports title and author search
+      // LibriVox API uses ^ prefix for title search matching
       const params = new URLSearchParams({
-        title: args.query,
+        title: `^${args.query}`,
         format: "json",
         limit: "20",
       });
