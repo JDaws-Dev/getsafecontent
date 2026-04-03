@@ -101,6 +101,46 @@ export default function DashboardPage() {
         What would you like to do today?
       </p>
 
+      {/* Family Code — prominent, right after greeting */}
+      {familyCode && (
+        <div className="mt-4 flex items-center gap-3 rounded-xl bg-gradient-to-r from-purple-50 to-violet-50 p-4 ring-1 ring-purple-200">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-purple-600 text-white">
+            <Users className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-purple-700">
+              Kid Login Code — share this with your kids
+            </p>
+            <p className="mt-0.5 font-mono text-xl font-bold tracking-[0.2em] text-purple-900">
+              {familyCode.code}
+            </p>
+            <p className="mt-0.5 text-[10px] text-purple-500">
+              Kids go to getsafereads.com/play and enter this code
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(familyCode.code);
+              setCodeCopied(true);
+              setTimeout(() => setCodeCopied(false), 2000);
+            }}
+            className="flex items-center gap-1 rounded-lg bg-purple-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-purple-700"
+          >
+            {codeCopied ? (
+              <>
+                <Check className="h-3.5 w-3.5" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="h-3.5 w-3.5" />
+                Copy
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
       {/* Ask Advisor — prominent CTA */}
       <Link
         href="/dashboard/chat"
@@ -265,39 +305,7 @@ export default function DashboardPage() {
         </Link>
       )}
 
-      {/* Family Code */}
-      {familyCode && (
-        <div className="mt-4 flex items-center gap-3 rounded-xl border border-parchment-200 bg-white p-4">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-ink-500">
-              Family Code (for kid login at /play)
-            </p>
-            <p className="mt-0.5 font-mono text-lg font-bold tracking-widest text-ink-900">
-              {familyCode.code}
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(familyCode.code);
-              setCodeCopied(true);
-              setTimeout(() => setCodeCopied(false), 2000);
-            }}
-            className="flex items-center gap-1 rounded-lg border border-parchment-200 px-3 py-2 text-xs font-medium text-ink-600 transition-colors hover:bg-parchment-50"
-          >
-            {codeCopied ? (
-              <>
-                <Check className="h-3.5 w-3.5 text-emerald-500" />
-                Copied
-              </>
-            ) : (
-              <>
-                <Copy className="h-3.5 w-3.5" />
-                Copy
-              </>
-            )}
-          </button>
-        </div>
-      )}
+      {/* Family Code - removed from here, moved to top */}
 
       {/* Kids Overview */}
       {kids !== undefined && (
