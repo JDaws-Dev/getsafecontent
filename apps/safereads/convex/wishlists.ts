@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+type WishlistStatus = "want_to_read" | "reading" | "finished" | "not_interested";
+
 /**
  * List all wishlist entries for a kid, with book data.
  */
@@ -20,7 +22,12 @@ export const listByKid = query({
           .withIndex("by_book", (q) => q.eq("bookId", item.bookId))
           .order("desc")
           .first();
-        return { ...item, book, verdict: analysis?.verdict ?? null };
+        return {
+          ...item,
+          book,
+          verdict: analysis?.verdict ?? null,
+          status: (item.status || "want_to_read") as WishlistStatus,
+        };
       })
     );
 
@@ -39,6 +46,33 @@ export const countByKid = query({
       .withIndex("by_kid", (q) => q.eq("kidId", args.kidId))
       .collect();
     return items.length;
+  },
+});
+
+/**
+ * Count wishlist entries grouped by status.
+ */
+export const countByStatus = query({
+  args: { kidId: v.id("kids") },
+  handler: async (ctx, args) => {
+    const items = await ctx.db
+      .query("wishlists")
+      .withIndex("by_kid", (q) => q.eq("kidId", args.kidId))
+      .collect();
+
+    const counts: Record<WishlistStatus, number> = {
+      want_to_read: 0,
+      reading: 0,
+      finished: 0,
+      not_interested: 0,
+    };
+
+    for (const item of items) {
+      const status = (item.status || "want_to_read") as WishlistStatus;
+      counts[status]++;
+    }
+
+    return counts;
   },
 });
 
@@ -66,6 +100,12 @@ export const add = mutation({
     kidId: v.id("kids"),
     bookId: v.id("books"),
     note: v.optional(v.string()),
+    status: v.optional(v.union(
+      v.literal("want_to_read"),
+      v.literal("reading"),
+      v.literal("finished"),
+      v.literal("not_interested")
+    )),
   },
   handler: async (ctx, args) => {
     // Prevent duplicates
@@ -84,6 +124,7 @@ export const add = mutation({
       kidId: args.kidId,
       bookId: args.bookId,
       note: args.note,
+      status: args.status || "want_to_read",
     });
   },
 });
@@ -98,6 +139,24 @@ export const updateNote = mutation({
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.wishlistId, { note: args.note });
+  },
+});
+
+/**
+ * Update the status of a wishlist entry.
+ */
+export const updateStatus = mutation({
+  args: {
+    wishlistId: v.id("wishlists"),
+    status: v.union(
+      v.literal("want_to_read"),
+      v.literal("reading"),
+      v.literal("finished"),
+      v.literal("not_interested")
+    ),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.wishlistId, { status: args.status });
   },
 });
 

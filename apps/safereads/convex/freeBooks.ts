@@ -322,11 +322,11 @@ export const browseByGenre = action({
   args: {
     genre: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Array<Record<string, unknown>>> => {
     const cacheKey = `genre:${args.genre}`;
 
     // Check cache first
-    const cached = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
+    const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
     if (cached) {
       return JSON.parse(cached.results);
     }
@@ -490,12 +490,12 @@ export const getCuratedFreeBooks = action({
   args: {
     age: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<Array<Record<string, unknown>>> => {
     const age = args.age || 8;
     const cacheKey = `curated:${age <= 6 ? "young" : age <= 9 ? "mid" : age <= 12 ? "tween" : "teen"}`;
 
     // Check cache first
-    const cached = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
+    const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
     if (cached) {
       return JSON.parse(cached.results);
     }
@@ -601,7 +601,7 @@ export const saveToCache = mutation({
 
 /**
  * Clear expired cache entries. Called weekly by cron.
- * Next page load will fetch fresh results from Gutenberg.
+ * Next page load will fetch fresh results from all sources.
  */
 export const clearExpiredCache = internalMutation({
   handler: async (ctx) => {
@@ -615,5 +615,165 @@ export const clearExpiredCache = internalMutation({
     }
     console.log(`[freeBookCache] Cleared ${deleted} expired entries`);
     return { deleted };
+  },
+});
+
+// ============================================================================
+// Unified Multi-Source Search
+// ============================================================================
+
+/**
+ * Valid source identifiers for free books.
+ */
+export type FreeBookSource = "gutenberg" | "bloom" | "lit2go" | "librivox" | "bookdash" | "storyweaver";
+
+/**
+ * Unified search across all free book sources.
+ * Fires searches in parallel and merges results.
+ * Returns results tagged with source for badge display.
+ */
+export const searchAllSources = action({
+  args: {
+    query: v.string(),
+    childrenOnly: v.optional(v.boolean()),
+    includeAudioOnly: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args): Promise<Array<Record<string, unknown>>> => {
+    const childrenOnly = args.childrenOnly ?? true;
+    const cacheKey = `unified:search:${args.query.toLowerCase().trim()}:${childrenOnly}:${args.includeAudioOnly ?? false}`;
+
+    // Check cache
+    const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
+    if (cached) {
+      return JSON.parse(cached.results);
+    }
+
+    // Fire all source searches in parallel
+    const [gutenbergResults, bloomResults, lit2goResults, librivoxResults, bookDashResults] =
+      await Promise.allSettled([
+        // Gutenberg (existing)
+        (async () => {
+          const params = new URLSearchParams({
+            search: args.query,
+            languages: "en",
+          });
+          if (childrenOnly) params.set("topic", "children");
+          const url = `https://gutendex.com/books/?${params.toString()}`;
+          const response = await fetch(url);
+          if (!response.ok) return [];
+          const data = (await response.json()) as GutendexResponse;
+          return data.results
+            .filter(isKidFriendly)
+            .filter((b) => b.languages.includes("en"))
+            .slice(0, 10)
+            .map(parseGutenbergBook);
+        })(),
+
+        // Bloom Library
+        ctx.runAction(api.bloomBooks.searchBloom, { query: args.query }).catch(() => []),
+
+        // Lit2Go
+        ctx.runAction(api.lit2go.searchLit2Go, { query: args.query }).catch(() => []),
+
+        // LibriVox
+        ctx.runAction(api.librivox.searchLibriVox, { query: args.query }).catch(() => []),
+
+        // Book Dash / GDL
+        ctx.runAction(api.bookDash.searchBookDash, { query: args.query }).catch(() => []),
+      ]);
+
+    // Merge results, deduplicating by title similarity
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allResults: Array<Record<string, unknown>> = [];
+    const seenTitles = new Set<string>();
+
+    function addResults(settled: PromiseSettledResult<Array<Record<string, unknown>>>) {
+      if (settled.status === "fulfilled") {
+        for (const book of settled.value) {
+          const title = (book.title as string) || "";
+          const normalizedTitle = title.toLowerCase().replace(/[^a-z0-9]/g, "");
+          if (normalizedTitle && !seenTitles.has(normalizedTitle)) {
+            seenTitles.add(normalizedTitle);
+            allResults.push(book);
+          }
+        }
+      }
+    }
+
+    addResults(gutenbergResults as PromiseSettledResult<Array<Record<string, unknown>>>);
+    addResults(bloomResults);
+    addResults(lit2goResults);
+    addResults(librivoxResults);
+    addResults(bookDashResults);
+
+    // Filter audio-only if requested
+    let finalResults = allResults;
+    if (args.includeAudioOnly) {
+      finalResults = allResults.filter(
+        (b) => b.hasAudio || b.source === "librivox" || b.source === "lit2go"
+      );
+    }
+
+    // Sort: Gutenberg first (most reliable), then by source diversity
+    finalResults.sort((a, b) => {
+      const sourceOrder: Record<string, number> = {
+        gutenberg: 0,
+        bloom: 1,
+        bookdash: 2,
+        lit2go: 3,
+        librivox: 4,
+      };
+      return (sourceOrder[a.source as string] ?? 5) - (sourceOrder[b.source as string] ?? 5);
+    });
+
+    // Limit total results
+    finalResults = finalResults.slice(0, 30);
+
+    // Cache
+    await ctx.runMutation(api.freeBooks.saveToCache, {
+      cacheKey,
+      results: JSON.stringify(finalResults),
+    });
+
+    return finalResults;
+  },
+});
+
+/**
+ * Get curated audiobooks for the kid home page.
+ * Pulls from LibriVox children's section.
+ */
+export const getCuratedAudiobooks = action({
+  args: {
+    age: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<unknown[]> => {
+    const age = args.age || 8;
+    const cacheKey = `curated-audio:${age <= 8 ? "young" : "older"}`;
+
+    const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
+    if (cached) {
+      return JSON.parse(cached.results);
+    }
+
+    try {
+      // Search LibriVox for age-appropriate audiobooks
+      const searchTerm = age <= 8 ? "children fairy tales" : "adventure classic";
+      const results: unknown[] = await ctx.runAction(api.librivox.searchLibriVox, {
+        query: searchTerm,
+      });
+
+      const curated = (results || []).slice(0, 8);
+
+      await ctx.runMutation(api.freeBooks.saveToCache, {
+        cacheKey,
+        results: JSON.stringify(curated),
+      });
+
+      return curated;
+    } catch (error) {
+      console.error("Failed to load curated audiobooks:", error);
+      return [];
+    }
   },
 });

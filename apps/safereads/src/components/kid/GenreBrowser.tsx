@@ -59,7 +59,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
     setGenreBooks([]);
     try {
       const books = await browseByGenre({ genre: genreKey });
-      setGenreBooks(books);
+      setGenreBooks(books as unknown as FreeBook[]);
     } catch (err) {
       console.error("Failed to browse genre:", err);
     } finally {

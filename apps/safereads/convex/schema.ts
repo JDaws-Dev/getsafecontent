@@ -173,6 +173,12 @@ export default defineSchema({
     kidId: v.id("kids"),
     bookId: v.id("books"),
     note: v.optional(v.string()),
+    status: v.optional(v.union(
+      v.literal("want_to_read"),
+      v.literal("reading"),
+      v.literal("finished"),
+      v.literal("not_interested")
+    )), // Default: "want_to_read" (for backward compat, undefined = want_to_read)
   })
     .index("by_kid", ["kidId"])
     .index("by_kid_and_book", ["kidId", "bookId"]),
@@ -459,4 +465,41 @@ export default defineSchema({
     cachedAt: v.number(),
     expiresAt: v.number(), // TTL — refresh after expiry
   }).index("by_key", ["cacheKey"]),
+  // ========================================================================
+  // Bible Integration Tables
+  // ========================================================================
+  // Bible text cache (Bible text never changes, cache permanently)
+  bibleCache: defineTable({
+    cacheKey: v.string(),    // e.g., "books:ESV", "chapter:ESV:1:1"
+    data: v.string(),        // JSON stringified response
+    cachedAt: v.number(),
+  }).index("by_key", ["cacheKey"]),
+
+  // Saved/favorite Bible verses per kid
+  savedVerses: defineTable({
+    kidId: v.id("kids"),
+    translation: v.string(),
+    bookName: v.string(),
+    bookId: v.number(),
+    chapter: v.number(),
+    verse: v.number(),
+    verseText: v.string(),
+    savedAt: v.number(),
+    note: v.optional(v.string()),    // kid can add a personal note
+    color: v.optional(v.string()),   // highlight color: "yellow", "green", "blue", "pink"
+  })
+    .index("by_kid", ["kidId"])
+    .index("by_kid_and_ref", ["kidId", "translation", "bookId", "chapter", "verse"]),
+
+  // Bible reading progress per kid
+  bibleProgress: defineTable({
+    kidId: v.id("kids"),
+    translation: v.string(),  // e.g., "ESV"
+    bookId: v.number(),       // Bolls.life book ID (1-66)
+    bookName: v.string(),     // e.g., "Genesis"
+    chapter: v.number(),
+    lastReadAt: v.number(),
+  })
+    .index("by_kid", ["kidId"])
+    .index("by_kid_and_book", ["kidId", "translation", "bookId"]),
 }, { schemaValidation: false });

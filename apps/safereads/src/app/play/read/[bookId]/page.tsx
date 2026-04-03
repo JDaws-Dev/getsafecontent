@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
-import { ArrowLeft, BookOpen, Clock, BookMarked, ExternalLink, ShieldAlert, ShieldCheck, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, Clock, BookMarked, ExternalLink, ShieldAlert, ShieldCheck, Loader2, Sparkles, Headphones } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { BookReader } from "@/components/kid/BookReader";
+import { AudioPlayer } from "@/components/kid/AudioPlayer";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 
 export default function KidReadPage() {
@@ -16,7 +17,18 @@ export default function KidReadPage() {
   const bookId = decodeURIComponent(params.bookId as string);
   const [kidId, setKidId] = useState<Id<"kids"> | null>(null);
   const [isReading, setIsReading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [audioMatch, setAudioMatch] = useState<{
+    rssUrl?: string;
+    audioUrl?: string;
+    totalTime?: string;
+    coverUrl?: string;
+  } | null>(null);
+  const [audioChapters, setAudioChapters] = useState<Array<{ title: string; url: string; duration?: string }>>([]);
+  const [audioLoading, setAudioLoading] = useState(false);
   const updateProgress = useMutation(api.readingProgress.update);
+  const findAudioMatch = useAction(api.librivox.findAudioMatch);
+  const getLibriVoxChapters = useAction(api.librivox.getLibriVoxChapters);
 
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
@@ -73,6 +85,47 @@ export default function KidReadPage() {
     addedAt: Date.now(),
     addedBy: "pre_approved" as const,
   } : null);
+
+  // Check if a LibriVox audiobook is available for this title
+  useEffect(() => {
+    if (!effectiveBook?.title) return;
+
+    let cancelled = false;
+    async function checkAudio() {
+      try {
+        const match = await findAudioMatch({
+          title: effectiveBook!.title,
+          author: effectiveBook!.author || undefined,
+        });
+        if (!cancelled && match) {
+          setAudioMatch(match);
+        }
+      } catch {
+        // Audio match is optional, don't fail
+      }
+    }
+    checkAudio();
+    return () => { cancelled = true; };
+  }, [effectiveBook?.title, effectiveBook?.author, findAudioMatch]);
+
+  // Load chapters when user opens audio player
+  const handleListenClick = useCallback(async () => {
+    if (!audioMatch?.rssUrl) return;
+    setIsListening(true);
+    if (audioChapters.length > 0) return; // Already loaded
+
+    setAudioLoading(true);
+    try {
+      const result = await getLibriVoxChapters({ rssUrl: audioMatch.rssUrl });
+      if (result?.chapters) {
+        setAudioChapters(result.chapters);
+      }
+    } catch (err) {
+      console.error("Failed to load audio chapters:", err);
+    } finally {
+      setAudioLoading(false);
+    }
+  }, [audioMatch?.rssUrl, audioChapters.length, getLibriVoxChapters]);
 
   const handleStartReading = async () => {
     if (!kidId) return;
@@ -259,20 +312,57 @@ export default function KidReadPage() {
         </div>
       </div>
 
+      {/* Audio Player (when listening) */}
+      {isListening && audioMatch && (
+        <div className="mt-6">
+          <AudioPlayer
+            title={effectiveBook.title}
+            author={effectiveBook.author}
+            coverUrl={audioMatch.coverUrl || effectiveBook.coverUrl}
+            chapters={audioChapters}
+            onClose={() => setIsListening(false)}
+            embedded
+          />
+        </div>
+      )}
+
       {/* Read / Action Area */}
       <div className="mt-8">
         {isFreeBook ? (
           /* Free book - read in app */
-          <button
-            onClick={() => setIsReading(true)}
-            className="kid-touch w-full rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 py-5 text-center text-lg font-bold text-white shadow-lg shadow-purple-200 transition-all hover:from-violet-600 hover:to-purple-700 hover:shadow-xl active:scale-[0.98]"
-          >
-            {currentPercent > 0 && currentPercent < 100
-              ? "Continue Reading"
-              : currentPercent >= 100
-                ? "Read Again"
-                : "Start Reading"}
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={() => setIsReading(true)}
+              className="kid-touch w-full rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 py-5 text-center text-lg font-bold text-white shadow-lg shadow-purple-200 transition-all hover:from-violet-600 hover:to-purple-700 hover:shadow-xl active:scale-[0.98]"
+            >
+              {currentPercent > 0 && currentPercent < 100
+                ? "Continue Reading"
+                : currentPercent >= 100
+                  ? "Read Again"
+                  : "Start Reading"}
+            </button>
+
+            {/* Listen button — shown when LibriVox audio is available */}
+            {audioMatch && !isListening && (
+              <button
+                onClick={handleListenClick}
+                disabled={audioLoading}
+                className="kid-touch flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-100 to-indigo-100 py-4 text-base font-bold text-violet-700 shadow-sm ring-1 ring-violet-200 transition-all hover:shadow-md active:scale-[0.98]"
+              >
+                {audioLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Headphones className="h-5 w-5" />
+                )}
+                {audioLoading ? "Loading Audio..." : "Listen to Audiobook"}
+                {audioMatch.totalTime && (
+                  <span className="ml-1 text-sm font-medium text-violet-400">
+                    ({audioMatch.totalTime})
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
         ) : (
           /* Non-free book - external links */
           <div className="rounded-3xl bg-gradient-to-b from-violet-50 to-purple-50 p-6 text-center ring-1 ring-purple-100">
@@ -302,6 +392,21 @@ export default function KidReadPage() {
                 <ExternalLink className="h-3.5 w-3.5" />
                 Find at Library
               </a>
+              {/* Listen button for non-free books with available audio */}
+              {audioMatch && !isListening && (
+                <button
+                  onClick={handleListenClick}
+                  disabled={audioLoading}
+                  className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-violet-400 to-indigo-500 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-95"
+                >
+                  {audioLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Headphones className="h-3.5 w-3.5" />
+                  )}
+                  Listen Free
+                </button>
+              )}
             </div>
           </div>
         )}

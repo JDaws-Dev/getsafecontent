@@ -8,10 +8,11 @@ import { KidBookshelf } from "@/components/kid/KidBookshelf";
 import { BookCard } from "@/components/kid/BookCard";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
 import { StylizedCover } from "@/components/kid/StylizedCover";
-import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star, Clock } from "lucide-react";
+import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star, Clock, Headphones } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { SourceBadge } from "@/components/kid/SourceBadge";
 
 interface KidProfile {
   _id: string;
@@ -66,7 +67,10 @@ interface FreeBook {
   title: string;
   authors: string[];
   coverUrl?: string;
-  source: "gutenberg";
+  source: "gutenberg" | "bloom" | "lit2go" | "librivox" | "bookdash" | "storyweaver";
+  hasAudio?: boolean;
+  totalTime?: string;
+  rssUrl?: string;
 }
 
 export default function KidHomePage() {
@@ -75,8 +79,12 @@ export default function KidHomePage() {
   const [freeBooks, setFreeBooks] = useState<FreeBook[]>([]);
   const [freeBooksLoading, setFreeBooksLoading] = useState(false);
   const [freeBooksLoaded, setFreeBooksLoaded] = useState(false);
+  const [audiobooks, setAudiobooks] = useState<FreeBook[]>([]);
+  const [audiobooksLoading, setAudiobooksLoading] = useState(false);
+  const [audiobooksLoaded, setAudiobooksLoaded] = useState(false);
 
   const getCuratedFreeBooks = useAction(api.freeBooks.getCuratedFreeBooks);
+  const getCuratedAudiobooks = useAction(api.freeBooks.getCuratedAudiobooks);
 
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
@@ -103,7 +111,7 @@ export default function KidHomePage() {
           age: kidProfile?.age || undefined,
         });
         if (!cancelled) {
-          setFreeBooks(books);
+          setFreeBooks(books as unknown as FreeBook[]);
           setFreeBooksLoaded(true);
         }
       } catch (err) {
@@ -116,6 +124,32 @@ export default function KidHomePage() {
     loadFreeBooks();
     return () => { cancelled = true; };
   }, [kidProfile, freeBooksLoaded, getCuratedFreeBooks]);
+
+  // Load curated audiobooks
+  useEffect(() => {
+    if (!kidProfile || audiobooksLoaded) return;
+
+    let cancelled = false;
+    async function loadAudiobooks() {
+      setAudiobooksLoading(true);
+      try {
+        const books = await getCuratedAudiobooks({
+          age: kidProfile?.age || undefined,
+        });
+        if (!cancelled) {
+          setAudiobooks(books as unknown as FreeBook[]);
+          setAudiobooksLoaded(true);
+        }
+      } catch (err) {
+        console.error("Failed to load audiobooks:", err);
+      } finally {
+        if (!cancelled) setAudiobooksLoading(false);
+      }
+    }
+
+    loadAudiobooks();
+    return () => { cancelled = true; };
+  }, [kidProfile, audiobooksLoaded, getCuratedAudiobooks]);
 
   const kidId = kidProfile?._id as Id<"kids"> | undefined;
 
@@ -143,6 +177,10 @@ export default function KidHomePage() {
   const preApprovedBooks = useQuery(
     api.preApprovedBooks.getPreApprovedBooks,
     kidId ? { age: kidProfile?.age, kidId } : "skip"
+  );
+  const savedVerses = useQuery(
+    api.bible.getSavedVerses,
+    kidId ? { kidId } : "skip"
   );
 
   // Build book identifiers for cover cache lookups
@@ -323,6 +361,51 @@ export default function KidHomePage() {
         </section>
       )}
 
+      {/* Read the Bible */}
+      <section className="animate-fade-up mt-6" style={{ animationDelay: "0.12s" }}>
+        <button
+          onClick={() => router.push("/play/bible")}
+          className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-4 shadow-md ring-1 ring-amber-200/60 transition-all hover:shadow-lg active:scale-[0.98]"
+        >
+          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-2xl shadow-lg shadow-amber-200">
+            <BookOpen className="h-7 w-7 text-white" />
+          </div>
+          <div className="min-w-0 flex-1 text-left">
+            <p className="text-base font-bold text-amber-900">Read the Bible</p>
+            <p className="mt-0.5 text-xs text-amber-700/70">
+              ESV, NIV, NLT, NKJV, KJV and more
+            </p>
+          </div>
+          <div className="flex-shrink-0 text-amber-400">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </button>
+      </section>
+
+      {/* Latest Saved Verse */}
+      {savedVerses && (savedVerses as Array<{ bookName: string; chapter: number; verse: number; verseText: string; translation: string; color?: string }>).length > 0 && (
+        <section className="animate-fade-up mt-4" style={{ animationDelay: "0.13s" }}>
+          <button
+            onClick={() => router.push("/play/bible/saved")}
+            className={`kid-touch w-full rounded-2xl border-l-4 border-l-amber-400 bg-amber-50 p-4 text-left shadow-sm ring-1 ring-amber-200/60 transition-all hover:shadow-md active:scale-[0.98]`}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+              My Latest Saved Verse
+            </p>
+            <p className="mt-1.5 font-serif text-sm leading-relaxed text-gray-800 italic">
+              &ldquo;{(savedVerses as Array<{ verseText: string }>)[0].verseText.slice(0, 120)}{(savedVerses as Array<{ verseText: string }>)[0].verseText.length > 120 ? "..." : ""}&rdquo;
+            </p>
+            <p className="mt-1.5 text-xs font-medium text-amber-700">
+              {(savedVerses as Array<{ bookName: string; chapter: number; verse: number; translation: string }>)[0].bookName}{" "}
+              {(savedVerses as Array<{ chapter: number }>)[0].chapter}:{(savedVerses as Array<{ verse: number }>)[0].verse}{" "}
+              ({(savedVerses as Array<{ translation: string }>)[0].translation})
+            </p>
+          </button>
+        </section>
+      )}
+
       {/* Genre Browse */}
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.15s" }}>
         <div className="flex items-center gap-2">
@@ -487,6 +570,106 @@ export default function KidHomePage() {
           </div>
         </div>
       )}
+
+      {/* Audiobooks Section */}
+      <section className="animate-fade-up mt-7" style={{ animationDelay: "0.28s" }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Headphones className="h-4 w-4 text-violet-500" />
+            <h2 className="text-lg font-bold text-gray-800">
+              Audiobooks
+            </h2>
+          </div>
+          <Link
+            href="/play/search?tab=audio"
+            className="kid-touch flex items-center gap-1 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-100"
+          >
+            See All
+          </Link>
+        </div>
+        <p className="mt-0.5 text-xs text-gray-400">
+          Listen to free audiobooks from LibriVox
+        </p>
+        <div className="mt-3">
+          {audiobooksLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+            </div>
+          ) : audiobooks.length > 0 ? (
+            <div className="flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
+              {audiobooks.map((book) => {
+                const rawId = book.id.replace(/^librivox:/, "");
+                const cachedUrl = cachedCovers?.[rawId]?.coverUrl;
+                const displayUrl = cachedUrl || book.coverUrl;
+                return (
+                  <button
+                    key={book.id}
+                    onClick={() => router.push("/play/search?tab=audio")}
+                    className="group flex flex-shrink-0 flex-col items-start text-left"
+                  >
+                    <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5 transition-all group-active:scale-[0.97]">
+                      {displayUrl ? (
+                        <Image
+                          src={displayUrl}
+                          alt={book.title}
+                          fill
+                          sizes="112px"
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <StylizedCover
+                          title={book.title}
+                          author={book.authors.join(", ") || "Unknown"}
+                          size="md"
+                        />
+                      )}
+                      {/* Audio badge overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-violet-700/90 to-transparent px-2 pb-1.5 pt-4 text-center">
+                        <span className="flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-wider text-white">
+                          <Headphones className="h-2.5 w-2.5" />
+                          Listen
+                        </span>
+                      </div>
+                      {/* Headphones icon overlay */}
+                      <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-[8px] text-white shadow-sm">
+                        {"\uD83C\uDFA7"}
+                      </div>
+                    </div>
+                    <p
+                      className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-violet-700"
+                      style={{ maxWidth: "112px" }}
+                    >
+                      {book.title}
+                    </p>
+                    <p
+                      className="mt-0.5 line-clamp-1 text-[9px] text-gray-400"
+                      style={{ maxWidth: "112px" }}
+                    >
+                      {book.authors.join(", ")}
+                    </p>
+                    {book.totalTime && (
+                      <p
+                        className="mt-0.5 text-[9px] font-medium text-violet-400"
+                        style={{ maxWidth: "112px" }}
+                      >
+                        {book.totalTime}
+                      </p>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ) : audiobooksLoaded ? (
+            <div className="flex flex-col items-center rounded-2xl bg-white px-4 py-8 text-center shadow-sm">
+              <Headphones className="h-8 w-8 text-violet-200" />
+              <p className="mt-2 text-sm font-medium text-gray-500">
+                Audiobooks will appear here soon!
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </section>
 
       {/* Free Books to Explore */}
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.3s" }}>

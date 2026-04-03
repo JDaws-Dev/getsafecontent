@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { BookSearch } from "@/components/kid/BookSearch";
 import { FreeBookSearch } from "@/components/kid/FreeBookSearch";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
-import { ArrowLeft, BookOpen, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, Sparkles, Headphones } from "lucide-react";
 import Link from "next/link";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
-type SearchTab = "all" | "free";
+type SearchTab = "all" | "free" | "audio";
 
 const SEARCH_SUGGESTIONS = [
   { label: "Dragons", emoji: "\uD83D\uDC09" },
@@ -44,8 +44,11 @@ export default function KidSearchPage() {
   // Check for tab param in URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("tab") === "free") {
+    const tab = params.get("tab");
+    if (tab === "free") {
       setActiveTab("free");
+    } else if (tab === "audio") {
+      setActiveTab("audio");
     }
   }, []);
 
@@ -82,7 +85,6 @@ export default function KidSearchPage() {
           <button
             key={s.label}
             onClick={() => {
-              // Scroll to search input and set query -- just switch to all tab
               setActiveTab("all");
             }}
             className="kid-touch flex flex-shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-gray-600 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md active:scale-95"
@@ -103,7 +105,7 @@ export default function KidSearchPage() {
         />
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — three tabs: All Books, Free Books, Audiobooks */}
       <div className="animate-fade-up mb-4 flex gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/5" style={{ animationDelay: "0.15s" }}>
         <button
           onClick={() => setActiveTab("all")}
@@ -127,7 +129,7 @@ export default function KidSearchPage() {
           }`}
         >
           <span className="flex items-center justify-center gap-1.5">
-            Free Books
+            Free
             <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
               activeTab === "free"
                 ? "bg-white/20 text-white"
@@ -137,11 +139,26 @@ export default function KidSearchPage() {
             </span>
           </span>
         </button>
+        <button
+          onClick={() => setActiveTab("audio")}
+          className={`kid-touch min-h-[44px] flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
+            activeTab === "audio"
+              ? "bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-md"
+              : "text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          <span className="flex items-center justify-center gap-1.5">
+            <Headphones className={`h-3.5 w-3.5 ${activeTab === "audio" ? "text-white" : "text-gray-300"}`} />
+            Audio
+          </span>
+        </button>
       </div>
 
       {/* Search Content */}
       {activeTab === "all" ? (
         <BookSearch kidId={kidId} />
+      ) : activeTab === "audio" ? (
+        <FreeBookSearch kidId={kidId} audioOnly />
       ) : (
         <FreeBookSearch kidId={kidId} />
       )}

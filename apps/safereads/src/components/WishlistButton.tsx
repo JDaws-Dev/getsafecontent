@@ -5,14 +5,23 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Heart, X, Check, Loader2 } from "lucide-react";
+import { Heart, X, Check, Loader2, BookMarked, Eye, XCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+
+type WishlistStatus = "want_to_read" | "reading" | "finished" | "not_interested";
 
 type Kid = {
   _id: Id<"kids">;
   name: string;
   age?: number;
 };
+
+const STATUS_OPTIONS: { value: WishlistStatus; label: string; icon: React.ReactNode }[] = [
+  { value: "want_to_read", label: "Want to Read", icon: <BookMarked className="h-3.5 w-3.5" /> },
+  { value: "reading", label: "Reading", icon: <Eye className="h-3.5 w-3.5" /> },
+  { value: "finished", label: "Finished", icon: <Check className="h-3.5 w-3.5" /> },
+  { value: "not_interested", label: "Not Interested", icon: <XCircle className="h-3.5 w-3.5" /> },
+];
 
 export function WishlistButton({ bookId }: { bookId: Id<"books"> }) {
   const { user: authUser } = useAuth();
@@ -88,41 +97,96 @@ function WishlistKidRow({
   const addToWishlist = useMutation(api.wishlists.add);
   const removeFromWishlist = useMutation(api.wishlists.removeByKidAndBook);
   const [loading, setLoading] = useState(false);
+  const [showStatusPicker, setShowStatusPicker] = useState(false);
 
-  async function handleToggle() {
+  async function handleAdd(status: WishlistStatus = "want_to_read") {
     setLoading(true);
     try {
-      if (isOnWishlist) {
-        await removeFromWishlist({ kidId: kid._id, bookId });
-      } else {
-        await addToWishlist({ kidId: kid._id, bookId });
-      }
+      await addToWishlist({ kidId: kid._id, bookId, status });
+      setShowStatusPicker(false);
     } finally {
       setLoading(false);
     }
   }
 
+  async function handleRemove() {
+    setLoading(true);
+    try {
+      await removeFromWishlist({ kidId: kid._id, bookId });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (isOnWishlist) {
+    return (
+      <button
+        onClick={handleRemove}
+        disabled={loading}
+        className="flex w-full items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-left transition-colors hover:bg-emerald-100 disabled:opacity-50"
+      >
+        <div>
+          <span className="font-medium text-ink-900">{kid.name}</span>
+          {kid.age !== undefined && (
+            <span className="ml-2 text-xs text-ink-400">Age {kid.age}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin text-ink-400" />
+          ) : (
+            <>
+              <Check className="h-4 w-4 text-verdict-safe" />
+              <span className="text-xs text-verdict-safe">Added</span>
+            </>
+          )}
+        </div>
+      </button>
+    );
+  }
+
   return (
-    <button
-      onClick={handleToggle}
-      disabled={loading || isOnWishlist === undefined}
-      className="flex w-full items-center justify-between rounded-lg border border-parchment-200 bg-white px-4 py-3 text-left transition-colors hover:bg-parchment-50 disabled:opacity-50"
-    >
-      <div>
-        <span className="font-medium text-ink-900">{kid.name}</span>
-        {kid.age !== undefined && (
-          <span className="ml-2 text-xs text-ink-400">Age {kid.age}</span>
-        )}
-      </div>
-      <div className="shrink-0">
-        {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin text-ink-400" />
-        ) : isOnWishlist ? (
-          <Check className="h-4 w-4 text-verdict-safe" />
-        ) : (
+    <div className="rounded-lg border border-parchment-200 bg-white transition-colors">
+      {!showStatusPicker ? (
+        <button
+          onClick={() => setShowStatusPicker(true)}
+          disabled={loading || isOnWishlist === undefined}
+          className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-parchment-50 disabled:opacity-50"
+        >
+          <div>
+            <span className="font-medium text-ink-900">{kid.name}</span>
+            {kid.age !== undefined && (
+              <span className="ml-2 text-xs text-ink-400">Age {kid.age}</span>
+            )}
+          </div>
           <Heart className="h-4 w-4 text-ink-300" />
-        )}
-      </div>
-    </button>
+        </button>
+      ) : (
+        <div className="px-4 py-3">
+          <p className="mb-2 text-xs font-medium text-ink-500">
+            Add to {kid.name}&apos;s list as:
+          </p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {STATUS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => handleAdd(opt.value)}
+                disabled={loading}
+                className="flex items-center gap-1.5 rounded-md border border-parchment-200 px-2.5 py-2 text-xs font-medium text-ink-600 transition-colors hover:bg-parchment-50 disabled:opacity-50"
+              >
+                {opt.icon}
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setShowStatusPicker(false)}
+            className="mt-1.5 text-xs text-ink-400 hover:text-ink-600"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

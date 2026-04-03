@@ -15,8 +15,9 @@ export default function PlayLayout({
 }) {
   const pathname = usePathname();
 
-  // Don't show kid nav on the code entry page, profile selection, or reader
+  // Don't show kid nav on the code entry page, profile selection, reader, or Bible reading view
   const isReaderRoute = pathname?.startsWith("/play/read/");
+  const isBibleRoute = pathname?.startsWith("/play/bible");
   const showNav =
     pathname !== "/play" &&
     pathname !== "/play/profiles" &&

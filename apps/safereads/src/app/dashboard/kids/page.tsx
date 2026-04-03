@@ -6,7 +6,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { KidForm, KidFormValues } from "@/components/KidForm";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, Pencil, Trash2, X, User, BookOpen, Shield } from "lucide-react";
+import { Plus, Pencil, Trash2, X, User, BookOpen, Shield, Library } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -232,17 +232,19 @@ function KidCard({
         </div>
         <div className="flex items-center gap-1">
           <Link
+            href={`/dashboard/kids/${kid._id}/books`}
+            className="flex items-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+          >
+            <Library className="h-3.5 w-3.5" />
+            Books{approvedCount !== undefined ? ` (${approvedCount})` : ""}
+          </Link>
+          <Link
             href={`/dashboard/kids/${kid._id}/wishlist`}
             className="flex items-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-parchment-700 transition-colors hover:bg-parchment-100"
           >
             <BookOpen className="h-3.5 w-3.5" />
             Wishlist{wishlistCount !== undefined ? ` (${wishlistCount})` : ""}
           </Link>
-          {approvedCount !== undefined && approvedCount > 0 && (
-            <span className="rounded px-2 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50">
-              {approvedCount} approved
-            </span>
-          )}
           <button
             onClick={onEdit}
             className="rounded p-1.5 text-ink-400 transition-colors hover:bg-parchment-100 hover:text-ink-600"

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Search, BookMarked, LogOut, Users } from "lucide-react";
+import { Home, Search, BookMarked, LogOut, Users, BookOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const COLOR_GRADIENTS: Record<string, { bg: string; text: string; dot: string }> = {
@@ -50,6 +50,7 @@ export function KidNav() {
   const NAV_ITEMS = [
     { href: "/play/home", icon: Home, label: "Home", match: (p: string) => p === "/play/home" },
     { href: "/play/search", icon: Search, label: "Explore", match: (p: string) => p?.startsWith("/play/search") || false },
+    { href: "/play/bible", icon: BookOpen, label: "Bible", match: (p: string) => p?.startsWith("/play/bible") || false },
     { href: "/play/home#bookshelf", icon: BookMarked, label: "My Books", match: () => false },
   ];
 
