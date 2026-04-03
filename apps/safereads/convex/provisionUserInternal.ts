@@ -24,6 +24,7 @@ export const provisionUserInternal = internalMutation({
     stripeCustomerId: v.union(v.string(), v.null()),
     subscriptionId: v.union(v.string(), v.null()),
     isOAuthUser: v.optional(v.boolean()), // Accepted but ignored (auth handled by Marketing)
+    familyCode: v.optional(v.string()), // Optional: shared family code across apps
   },
   handler: async (ctx, args) => {
     console.log(`[provisionUser] Starting for ${args.email} (OAuth: ${args.isOAuthUser ?? false})`);
@@ -73,6 +74,7 @@ export const provisionUserInternal = internalMutation({
         trialExpiresAt: mappedStatus === "trial" ? Date.now() + TRIAL_DURATION_MS : undefined,
         analysisCount: 0,
         onboardingComplete: false,
+        familyCode: args.familyCode,
       });
       wasCreated = true;
 
@@ -81,9 +83,14 @@ export const provisionUserInternal = internalMutation({
 
     // Auth is handled centrally by Marketing (JWT). No local authAccounts needed.
 
+    // Get the user's family code to return (for cross-app sync)
+    const updatedUser = await ctx.db.get(userId);
+    const familyCode = updatedUser?.familyCode;
+
     return {
       success: true,
       userId: userId,
+      familyCode,
       provisioned: wasCreated,
       updated: !wasCreated,
       authAccountCreated: false,

@@ -101,6 +101,7 @@ export default httpAction(async (ctx, request): Promise<Response> => {
       stripeCustomerId: body.stripeCustomerId || null,
       subscriptionId: body.subscriptionId || null,
       isOAuthUser: body.isOAuthUser ?? false,
+      familyCode: body.familyCode || undefined,
     });
 
     return new Response(JSON.stringify(result), {

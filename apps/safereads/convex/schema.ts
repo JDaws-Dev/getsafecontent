@@ -95,12 +95,16 @@ export default defineSchema({
       )
     ),
     migratedAt: v.optional(v.number()),
+
+    // Family code for kid login (shared across all Safe Family apps)
+    familyCode: v.optional(v.string()),
   })
     .index("email", ["email"])
     .index("phone", ["phone"])
     .index("by_stripe_customer_id", ["stripeCustomerId"])
     .index("by_stripe_subscription_id", ["stripeSubscriptionId"])
-    .index("by_subscription_status", ["subscriptionStatus"]),
+    .index("by_subscription_status", ["subscriptionStatus"])
+    .index("by_family_code", ["familyCode"]),
 
   couponCodes: defineTable({
     code: v.string(), // The coupon code (e.g., "DAWSFRIEND", "DEWITT")
