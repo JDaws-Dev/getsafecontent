@@ -64,6 +64,7 @@ export default httpAction(async (ctx, request): Promise<Response> => {
     stripeCustomerId?: string | null;
     entitledToThisApp?: boolean;
     isOAuthUser?: boolean; // If true, skip authAccounts creation
+    familyCode?: string; // Shared family code across apps
   };
 
   try {
