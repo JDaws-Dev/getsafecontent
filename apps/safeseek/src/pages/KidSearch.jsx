@@ -699,28 +699,33 @@ export default function KidSearch() {
   const expandSection = useAction(api.search.expandSection);
   const createTopicRequest = useMutation(api.topicRequests.createRequest);
 
-  // PIN verification
-  const pinVerification = useQuery(
-    api.kidProfiles.verifyKidPin,
-    pinProfile && pinInput.every(d => d !== '')
-      ? { profileId: pinProfile._id, pin: pinInput.join('') }
-      : 'skip'
-  );
+  // PIN verification (mutation-based for rate limiting)
+  const verifyPin = useMutation(api.kidProfiles.verifyKidPin);
 
   useEffect(() => {
-    if (pinVerification?.valid === true) {
-      setSelectedProfile(pinProfile);
-      setPinProfile(null);
-      setPinInput(['', '', '', '']);
-    } else if (pinVerification?.valid === false) {
-      setPinError('Wrong PIN');
-      setPinInput(['', '', '', '']);
-      pinRefs[0].current?.focus();
-    }
-  }, [pinVerification]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!pinProfile || !pinInput.every(d => d !== '')) return;
+    const pin = pinInput.join('');
+    verifyPin({ profileId: pinProfile._id, pin }).then((result) => {
+      if (result.valid) {
+        setSelectedProfile(pinProfile);
+        setPinProfile(null);
+        setPinInput(['', '', '', '']);
+        setPinError('');
+      } else if (result.locked) {
+        const mins = Math.ceil((result.remainingSeconds || 600) / 60);
+        setPinError(`Too many attempts. Try again in ${mins} minute${mins > 1 ? 's' : ''}.`);
+        setPinInput(['', '', '', '']);
+      } else {
+        const remaining = result.attemptsRemaining;
+        setPinError(remaining != null ? `Wrong PIN (${remaining} attempt${remaining !== 1 ? 's' : ''} left)` : 'Wrong PIN');
+        setPinInput(['', '', '', '']);
+        pinRefs[0].current?.focus();
+      }
+    });
+  }, [pinInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleProfileClick = (profile) => {
-    if (profile.pin) {
+    if (profile.hasPin) {
       setPinProfile(profile);
       setPinInput(['', '', '', '']);
       setPinError('');
@@ -1452,7 +1457,7 @@ export default function KidSearch() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-gray-900 dark:text-white font-semibold text-lg">{profile.name}</span>
-                    {profile.pin && (
+                    {profile.hasPin && (
                       <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                     )}
                   </div>

@@ -23,4 +23,14 @@ crons.daily(
   internal.searchCache.cleanExpiredCache
 );
 
+/**
+ * Clean stale rate limit records daily at 3 AM UTC.
+ * Removes records where the newest timestamp is older than 1 hour.
+ */
+crons.daily(
+  "clean-rate-limits",
+  { hourUTC: 3, minuteUTC: 0 },
+  internal.rateLimit.cleanupOldRecords
+);
+
 export default crons;

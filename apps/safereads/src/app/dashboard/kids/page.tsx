@@ -6,14 +6,28 @@ import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { KidForm, KidFormValues } from "@/components/KidForm";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, Pencil, Trash2, X, User, BookOpen } from "lucide-react";
+import { Plus, Pencil, Trash2, X, User, BookOpen, Shield } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+
+const COLOR_MAP: Record<string, string> = {
+  red: "bg-red-400",
+  blue: "bg-blue-400",
+  green: "bg-green-400",
+  purple: "bg-purple-400",
+  orange: "bg-orange-400",
+  pink: "bg-pink-400",
+  teal: "bg-teal-400",
+  yellow: "bg-yellow-400",
+};
 
 type Kid = {
   _id: Id<"kids">;
   name: string;
   age?: number;
+  color?: string;
+  pin?: string;
+  readingLevel?: string;
 };
 
 export default function KidsPage() {
@@ -55,12 +69,18 @@ export default function KidsPage() {
           kidId: editing._id,
           name: values.name,
           age: values.age,
+          color: values.color,
+          pin: values.pin,
+          readingLevel: values.readingLevel,
         });
       } else {
         await createKid({
           userId: currentUser._id,
           name: values.name,
           age: values.age,
+          color: values.color,
+          pin: values.pin,
+          readingLevel: values.readingLevel,
         });
       }
       setDialogOpen(false);
@@ -159,6 +179,9 @@ export default function KidsPage() {
                   ? {
                       name: editing.name,
                       age: editing.age,
+                      color: editing.color,
+                      pin: editing.pin,
+                      readingLevel: editing.readingLevel,
                     }
                   : undefined
               }
@@ -185,19 +208,26 @@ function KidCard({
   deleting: boolean;
 }) {
   const wishlistCount = useQuery(api.wishlists.countByKid, { kidId: kid._id });
+  const approvedCount = useQuery(api.approvedBooks.countForKid, { kidId: kid._id });
+  const colorClass = COLOR_MAP[kid.color || "purple"] || COLOR_MAP.purple;
 
   return (
     <div className="rounded-lg border border-parchment-200 bg-white px-4 py-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-parchment-100">
-            <User className="h-4 w-4 text-parchment-600" />
+          <div className={`flex h-9 w-9 items-center justify-center rounded-full ${colorClass} text-sm font-bold text-white`}>
+            {kid.name.charAt(0).toUpperCase()}
           </div>
           <div>
             <span className="font-medium text-ink-900">{kid.name}</span>
-            {kid.age !== undefined && (
-              <div className="text-xs text-ink-400">Age {kid.age}</div>
-            )}
+            <div className="flex items-center gap-2 text-xs text-ink-400">
+              {kid.age !== undefined && <span>Age {kid.age}</span>}
+              {kid.pin && (
+                <span className="flex items-center gap-0.5">
+                  <Shield className="h-3 w-3" /> PIN
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -208,6 +238,11 @@ function KidCard({
             <BookOpen className="h-3.5 w-3.5" />
             Wishlist{wishlistCount !== undefined ? ` (${wishlistCount})` : ""}
           </Link>
+          {approvedCount !== undefined && approvedCount > 0 && (
+            <span className="rounded px-2 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50">
+              {approvedCount} approved
+            </span>
+          )}
           <button
             onClick={onEdit}
             className="rounded p-1.5 text-ink-400 transition-colors hover:bg-parchment-100 hover:text-ink-600"

@@ -6,6 +6,7 @@ import AppleMusicAuth from './AppleMusicAuth';
 import { COLORS } from '../../constants/avatars';
 import { useToast } from '../common/Toast';
 import BillingHistory from './BillingHistory';
+import ExportPlaylistsModal from './ExportPlaylistsModal';
 import { useIsNativeApp } from '../../hooks/useIsNativeApp';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ThemeSelector } from '../common/ThemeToggle';
@@ -98,6 +99,10 @@ function Settings({ user, onLogout, initialSection }) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelOtherReason, setCancelOtherReason] = useState('');
+
+  // Export playlists modal state
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportKidProfile, setExportKidProfile] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
 
   // Form state for editing/creating kids - SIMPLIFIED
@@ -1183,9 +1188,25 @@ function Settings({ user, onLogout, initialSection }) {
                     </button>
                   </div>
 
-                  {/* Reset & Delete Profile Buttons - Only show when editing */}
+                  {/* Export & Reset & Delete Profile Buttons - Only show when editing */}
                   {!isCreatingKid && editingKidId && (
                     <div className="pt-4 border-t border-gray-200 mt-4 space-y-3">
+                      {/* Export Playlists to Apple Music Button */}
+                      <button
+                        onClick={() => {
+                          const kid = kidProfiles.find(k => k._id === editingKidId);
+                          if (kid) {
+                            setExportKidProfile(kid);
+                            setShowExportModal(true);
+                          }
+                        }}
+                        className="w-full px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 text-purple-700 rounded-lg font-medium transition border border-purple-200 flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        Export Playlists to Apple Music
+                      </button>
                       {/* Reset Profile Button */}
                       <button
                         onClick={() => {
@@ -1909,6 +1930,17 @@ function Settings({ user, onLogout, initialSection }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Export Playlists Modal */}
+      {showExportModal && exportKidProfile && (
+        <ExportPlaylistsModal
+          kidProfile={exportKidProfile}
+          onClose={() => {
+            setShowExportModal(false);
+            setExportKidProfile(null);
+          }}
+        />
       )}
 
       {ToastContainer}

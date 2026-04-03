@@ -17,6 +17,9 @@ import {
   ChevronRight,
   MessageCircle,
   X,
+  Bell,
+  Copy,
+  Check,
 } from "lucide-react";
 import { SubscriptionSuccessModal } from "@/components/SubscriptionSuccessModal";
 
@@ -31,6 +34,7 @@ export default function DashboardPage() {
   const { user: authUser } = useAuth();
   const searchParams = useSearchParams();
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   // Derive subscription banner from URL params (React pattern: derive state during render)
   const subscriptionParam = searchParams.get("subscription");
@@ -48,6 +52,14 @@ export default function DashboardPage() {
   );
 
   const recentAnalyses = useQuery(api.analyses.listRecent, { count: 5 });
+  const pendingRequestCount = useQuery(
+    api.bookRequests.countPendingByUser,
+    userId ? { userId } : "skip"
+  );
+  const familyCode = useQuery(
+    api.familyCodes.getByUser,
+    userId ? { userId } : "skip"
+  );
 
   // Extract first name from user name
   const firstName = convexUser?.name?.split(" ")[0];
@@ -228,6 +240,64 @@ export default function DashboardPage() {
           </div>
         )}
       </section>
+
+      {/* Pending Book Requests */}
+      {pendingRequestCount !== undefined && pendingRequestCount > 0 && (
+        <Link
+          href="/dashboard/requests"
+          className="mt-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 transition-colors hover:bg-amber-100"
+        >
+          <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-amber-500 text-white">
+            <Bell className="h-5 w-5" />
+            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+              {pendingRequestCount}
+            </span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-amber-900">
+              {pendingRequestCount} Book Request{pendingRequestCount > 1 ? "s" : ""}
+            </p>
+            <p className="text-xs text-amber-700">
+              Your kids want to read new books — tap to review
+            </p>
+          </div>
+          <ChevronRight className="h-5 w-5 flex-shrink-0 text-amber-400" />
+        </Link>
+      )}
+
+      {/* Family Code */}
+      {familyCode && (
+        <div className="mt-4 flex items-center gap-3 rounded-xl border border-parchment-200 bg-white p-4">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-ink-500">
+              Family Code (for kid login at /play)
+            </p>
+            <p className="mt-0.5 font-mono text-lg font-bold tracking-widest text-ink-900">
+              {familyCode.code}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(familyCode.code);
+              setCodeCopied(true);
+              setTimeout(() => setCodeCopied(false), 2000);
+            }}
+            className="flex items-center gap-1 rounded-lg border border-parchment-200 px-3 py-2 text-xs font-medium text-ink-600 transition-colors hover:bg-parchment-50"
+          >
+            {codeCopied ? (
+              <>
+                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="h-3.5 w-3.5" />
+                Copy
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Kids Overview */}
       {kids !== undefined && (

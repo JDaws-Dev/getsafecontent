@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, query } from "./_generated/server";
+import { cascadeDeleteUser } from "./lib/cascadeDelete";
 
 // Get all users with kid counts for admin dashboard
 export const getAllUsersWithKids = query({
@@ -67,58 +68,11 @@ export const deleteUserByEmail = internalMutation({
       throw new Error(`User not found: ${args.email}`);
     }
 
-    // Delete kid profiles and all their associated data
-    const kidProfiles = await ctx.db
-      .query("kidProfiles")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
-
-    for (const kid of kidProfiles) {
-      // Delete search history for this kid
-      const searchHistory = await ctx.db
-        .query("searchHistory")
-        .withIndex("by_kid", (q) => q.eq("kidProfileId", kid._id))
-        .collect();
-      for (const h of searchHistory) {
-        await ctx.db.delete(h._id);
-      }
-
-      // Delete blocked searches for this kid
-      const blockedSearches = await ctx.db
-        .query("blockedSearches")
-        .withIndex("by_kid", (q) => q.eq("kidProfileId", kid._id))
-        .collect();
-      for (const b of blockedSearches) {
-        await ctx.db.delete(b._id);
-      }
-
-      // Delete time limits for this kid
-      const timeLimits = await ctx.db
-        .query("timeLimits")
-        .withIndex("by_kid", (q) => q.eq("kidProfileId", kid._id))
-        .collect();
-      for (const t of timeLimits) {
-        await ctx.db.delete(t._id);
-      }
-
-      await ctx.db.delete(kid._id);
-    }
-
-    // Delete search settings
-    const searchSettings = await ctx.db
-      .query("searchSettings")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
-    for (const s of searchSettings) {
-      await ctx.db.delete(s._id);
-    }
-
-    // Delete the user
-    await ctx.db.delete(user._id);
+    const result = await cascadeDeleteUser(ctx, user._id);
 
     return {
       deletedUser: args.email,
-      deletedKids: kidProfiles.length,
+      ...result,
     };
   },
 });

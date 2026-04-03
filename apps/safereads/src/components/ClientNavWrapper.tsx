@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 
 // Dynamically import nav components that use auth (no SSR to avoid prerender errors)
 const Navbar = dynamic(() => import("@/components/Navbar").then((mod) => mod.Navbar), {
@@ -20,6 +21,15 @@ const BottomNav = dynamic(() => import("@/components/BottomNav").then((mod) => m
 });
 
 export function ClientNavWrapper({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  // Hide parent nav on kid-facing /play pages
+  const isPlayPage = pathname?.startsWith("/play");
+
+  if (isPlayPage) {
+    return <main>{children}</main>;
+  }
+
   return (
     <>
       <Navbar />

@@ -3,12 +3,29 @@ import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import stripeWebhook from "./stripe";
 
-// CORS headers for cross-origin API access from marketing site
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  "https://getsafestudy.com",
+  "https://getsafefamily.com",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+/**
+ * Build CORS headers for a given request.
+ * Returns the matching origin in Access-Control-Allow-Origin, or rejects
+ * with an empty origin (browser will block the response).
+ */
+function getCorsHeaders(request: Request): Record<string, string> {
+  const origin = request.headers.get("Origin") || "";
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    ...(allowedOrigin ? { "Vary": "Origin" } : {}),
+  };
+}
 
 // TEMPORARY WORKAROUND: Convex has a bug where env vars set via CLI don't propagate
 // to HTTP actions. Using a hardcoded key until Convex fixes this.
@@ -19,7 +36,7 @@ const CORS_HEADERS = {
 const adminDashboard = httpAction(async (ctx, request) => {
   // Handle CORS preflight
   if (request.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return new Response(null, { status: 204, headers: getCorsHeaders(request) });
   }
 
   try {
@@ -30,7 +47,7 @@ const adminDashboard = httpAction(async (ctx, request) => {
     if (!ADMIN_SECRET) {
       return new Response(JSON.stringify({ error: "Server misconfigured" }), {
         status: 500,
-        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
       });
     }
 
@@ -38,7 +55,7 @@ const adminDashboard = httpAction(async (ctx, request) => {
       if (format === "json") {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 403,
-          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+          headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
         });
       }
       return new Response(
@@ -82,7 +99,7 @@ const adminDashboard = httpAction(async (ctx, request) => {
 
       return new Response(JSON.stringify(jsonUsers), {
         status: 200,
-        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
       });
     }
 
@@ -218,7 +235,7 @@ const adminDashboard = httpAction(async (ctx, request) => {
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
       }
     );
   }
@@ -235,7 +252,7 @@ const provisionUser = httpAction(async (ctx, request) => {
   if (!key || key !== ADMIN_KEY) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 
@@ -246,7 +263,7 @@ const provisionUser = httpAction(async (ctx, request) => {
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
       status: 400,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 
@@ -254,7 +271,7 @@ const provisionUser = httpAction(async (ctx, request) => {
   if (!body.email) {
     return new Response(JSON.stringify({ error: "Missing required field: email" }), {
       status: 400,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 
@@ -272,7 +289,7 @@ const provisionUser = httpAction(async (ctx, request) => {
 
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   } catch (error) {
     console.error("[provisionUser] Error provisioning user:", error);
@@ -281,7 +298,7 @@ const provisionUser = httpAction(async (ctx, request) => {
       provisioned: false,
     }), {
       status: 500,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 });
@@ -298,7 +315,7 @@ const deleteUser = httpAction(async (ctx, request) => {
   if (!key || key !== ADMIN_KEY) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 
@@ -306,7 +323,7 @@ const deleteUser = httpAction(async (ctx, request) => {
   if (!email) {
     return new Response(JSON.stringify({ error: "Missing email parameter" }), {
       status: 400,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 
@@ -321,7 +338,7 @@ const deleteUser = httpAction(async (ctx, request) => {
       result,
     }), {
       status: 200,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   } catch (error) {
     console.error("Error deleting user:", error);
@@ -329,7 +346,7 @@ const deleteUser = httpAction(async (ctx, request) => {
       error: error instanceof Error ? error.message : "Unknown error"
     }), {
       status: 500,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 });
@@ -349,7 +366,7 @@ const setSubscriptionStatus = httpAction(async (ctx, request) => {
   if (!key || key !== ADMIN_KEY) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 
@@ -357,14 +374,14 @@ const setSubscriptionStatus = httpAction(async (ctx, request) => {
   if (!email) {
     return new Response(JSON.stringify({ error: "Missing email parameter" }), {
       status: 400,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 
   if (!status) {
     return new Response(JSON.stringify({ error: "Missing status parameter" }), {
       status: 400,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 
@@ -375,7 +392,7 @@ const setSubscriptionStatus = httpAction(async (ctx, request) => {
       error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`
     }), {
       status: 400,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 
@@ -392,7 +409,7 @@ const setSubscriptionStatus = httpAction(async (ctx, request) => {
       message: `Set ${email} subscription status to ${status}${stripeCustomerId ? ` (customer: ${stripeCustomerId})` : ''}`
     }), {
       status: 200,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   } catch (error) {
     console.error("Error setting subscription status:", error);
@@ -400,8 +417,141 @@ const setSubscriptionStatus = httpAction(async (ctx, request) => {
       error: error instanceof Error ? error.message : "Unknown error"
     }), {
       status: 500,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
+  }
+});
+
+// ==================== Admin Orphans ====================
+
+const adminOrphans = httpAction(async (ctx, request) => {
+  // Handle CORS preflight
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: getCorsHeaders(request) });
+  }
+
+  try {
+    const url = new URL(request.url);
+    const secretKey = url.searchParams.get("key");
+    const format = url.searchParams.get("format");
+    const ADMIN_SECRET = process.env.ADMIN_KEY;
+
+    if (!ADMIN_SECRET) {
+      return new Response(JSON.stringify({ error: "Server misconfigured" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
+      });
+    }
+
+    if (!secretKey || secretKey !== ADMIN_SECRET) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
+      });
+    }
+
+    // Run the orphan detection query
+    const result = await ctx.runQuery(api.orphanDetection.findOrphanedRecords);
+
+    // JSON format
+    if (format === "json") {
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
+      });
+    }
+
+    // HTML format
+    const summaryRows = Object.entries(result.summary)
+      .map(([table, count]) => `<tr><td>${table}</td><td>${count}</td></tr>`)
+      .join("");
+
+    const recordRows = result.orphanedRecords
+      .map(
+        (r: any) => `<tr>
+          <td>${r.table}</td>
+          <td><code>${r.recordId}</code></td>
+          <td><code>${r.missingParentId}</code></td>
+          <td>${r.recordInfo}</td>
+          <td>${r.createdAt ? new Date(r.createdAt).toLocaleString() : "-"}</td>
+        </tr>`
+      )
+      .join("");
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeStudy Orphan Detection</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f3f4f6; padding: 24px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { font-size: 28px; font-weight: bold; color: #111827; margin-bottom: 8px; }
+    .subtitle { color: #6b7280; margin-bottom: 24px; }
+    .summary-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; }
+    .status { font-size: 24px; font-weight: bold; margin-bottom: 16px; }
+    .status.clean { color: #059669; }
+    .status.dirty { color: #dc2626; }
+    table { width: 100%; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-collapse: collapse; margin-bottom: 24px; }
+    th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+    tr:hover { background: #f9fafb; }
+    code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+    .refresh { display: inline-block; background: #7c3aed; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; margin-top: 16px; }
+    .refresh:hover { background: #6d28d9; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SafeStudy Orphan Detection</h1>
+    <p class="subtitle">Records referencing non-existent parent records</p>
+
+    <div class="summary-card">
+      <div class="status ${result.totalOrphans === 0 ? "clean" : "dirty"}">
+        ${result.totalOrphans === 0 ? "All clear - no orphaned records found" : `${result.totalOrphans} orphaned record${result.totalOrphans !== 1 ? "s" : ""} found`}
+      </div>
+      ${
+        summaryRows
+          ? `<h3 style="margin-bottom: 8px; color: #374151;">Summary by Table</h3>
+             <table><thead><tr><th>Table</th><th>Count</th></tr></thead><tbody>${summaryRows}</tbody></table>`
+          : ""
+      }
+    </div>
+
+    ${
+      result.orphanedRecords.length > 0
+        ? `<h3 style="margin-bottom: 8px; color: #374151;">Orphaned Records</h3>
+           <table>
+             <thead><tr><th>Table</th><th>Record ID</th><th>Missing Parent</th><th>Info</th><th>Created</th></tr></thead>
+             <tbody>${recordRows}</tbody>
+           </table>
+           <p style="color: #6b7280; font-size: 13px;">To clean up, run: <code>npx convex run orphanDetection:deleteOrphanedRecords</code></p>`
+        : ""
+    }
+
+    <a href="?key=${encodeURIComponent(secretKey || "")}" class="refresh">Refresh</a>
+  </div>
+</body>
+</html>`;
+
+    return new Response(html, {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    });
+  } catch (error) {
+    console.error("Admin orphans error:", error);
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
+      }
+    );
   }
 });
 
@@ -415,7 +565,7 @@ const warmCache = httpAction(async (ctx, request) => {
   if (!key || key !== ADMIN_KEY) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 
@@ -425,7 +575,7 @@ const warmCache = httpAction(async (ctx, request) => {
 
     return new Response(JSON.stringify({ success: true, message: "Cache warming complete" }), {
       status: 200,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   } catch (error) {
     console.error("[warmCache] Error:", error);
@@ -433,7 +583,7 @@ const warmCache = httpAction(async (ctx, request) => {
       error: error instanceof Error ? error.message : "Unknown error",
     }), {
       status: 500,
-      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(request) },
     });
   }
 });
@@ -443,7 +593,7 @@ const warmCache = httpAction(async (ctx, request) => {
 const stripeCorsHandler = httpAction(async (ctx, request) => {
   return new Response(null, {
     status: 204,
-    headers: CORS_HEADERS,
+    headers: getCorsHeaders(request),
   });
 });
 
@@ -496,6 +646,19 @@ http.route({
   path: "/setSubscriptionStatus",
   method: "GET",
   handler: setSubscriptionStatus,
+});
+
+// Admin orphan detection
+http.route({
+  path: "/adminOrphans",
+  method: "GET",
+  handler: adminOrphans,
+});
+
+http.route({
+  path: "/adminOrphans",
+  method: "OPTIONS",
+  handler: adminOrphans,
 });
 
 // Warm cache

@@ -1,19 +1,40 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalQuery } from "./_generated/server";
+import { cascadeDeleteKidProfile } from "./lib/cascadeDelete";
 
-// Get all kid profiles for a user
+/**
+ * Strip sensitive fields (pin, rate-limit internals) from a profile
+ * before returning it to the client. Adds `hasPin: boolean` instead.
+ */
+function sanitizeProfile(profile: Record<string, any>) {
+  const { pin, pinFailedAttempts, pinLockedUntil, ...rest } = profile;
+  return { ...rest, hasPin: !!pin };
+}
+
+// Get all kid profiles for a user (client-safe: no PIN value)
 export const getProfiles = query({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const profiles = await ctx.db
       .query("kidProfiles")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .collect();
+    return profiles.map(sanitizeProfile);
   },
 });
 
-// Get a single kid profile by ID
+// Get a single kid profile by ID (client-safe: no PIN value)
 export const getProfile = query({
+  args: { kidProfileId: v.id("kidProfiles") },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db.get(args.kidProfileId);
+    if (!profile) return null;
+    return sanitizeProfile(profile);
+  },
+});
+
+// Internal query: get full profile including PIN (for server-side use only)
+export const getProfileInternal = internalQuery({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.kidProfileId);
@@ -116,7 +137,12 @@ export const updateProfile = mutation({
     if (args.allowImageSearch !== undefined) updates.allowImageSearch = args.allowImageSearch;
     if (args.allowFollowUp !== undefined) updates.allowFollowUp = args.allowFollowUp;
     if (args.allowTopicRequests !== undefined) updates.allowTopicRequests = args.allowTopicRequests;
-    if (args.pin !== undefined) updates.pin = args.pin === '' ? undefined : args.pin;
+    if (args.pin !== undefined) {
+      updates.pin = args.pin === '' ? undefined : args.pin;
+      // Reset rate-limit counters when PIN is changed
+      updates.pinFailedAttempts = 0;
+      updates.pinLockedUntil = undefined;
+    }
 
     if (Object.keys(updates).length > 0) {
       await ctx.db.patch(args.kidProfileId, updates);
@@ -126,17 +152,71 @@ export const updateProfile = mutation({
   },
 });
 
-// Verify a kid's PIN
-export const verifyKidPin = query({
+// Rate-limit constants for PIN verification
+const MAX_PIN_ATTEMPTS = 5; // max failures within the window
+const PIN_ATTEMPT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+const PIN_LOCKOUT_DURATION_MS = 10 * 60 * 1000; // 10 minutes
+
+// Verify a kid's PIN (mutation so we can track failed attempts & lockout)
+export const verifyKidPin = mutation({
   args: {
     profileId: v.id("kidProfiles"),
     pin: v.string(),
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db.get(args.profileId);
-    if (!profile) return { valid: false };
-    if (!profile.pin) return { valid: true };
-    return { valid: profile.pin === args.pin };
+    if (!profile) return { valid: false, locked: false };
+    if (!profile.pin) return { valid: true, locked: false };
+
+    const now = Date.now();
+
+    // Check if currently locked out
+    if (profile.pinLockedUntil && profile.pinLockedUntil > now) {
+      const remainingSeconds = Math.ceil((profile.pinLockedUntil - now) / 1000);
+      return { valid: false, locked: true, remainingSeconds };
+    }
+
+    // If lockout has expired, reset counters
+    if (profile.pinLockedUntil && profile.pinLockedUntil <= now) {
+      await ctx.db.patch(args.profileId, {
+        pinFailedAttempts: 0,
+        pinLockedUntil: undefined,
+      });
+    }
+
+    // Verify PIN
+    if (profile.pin === args.pin) {
+      // Success — reset failed attempts
+      if (profile.pinFailedAttempts && profile.pinFailedAttempts > 0) {
+        await ctx.db.patch(args.profileId, {
+          pinFailedAttempts: 0,
+          pinLockedUntil: undefined,
+        });
+      }
+      return { valid: true, locked: false };
+    }
+
+    // Failed attempt — increment counter
+    const failedAttempts = (profile.pinFailedAttempts || 0) + 1;
+    const updates: Record<string, any> = { pinFailedAttempts: failedAttempts };
+
+    if (failedAttempts >= MAX_PIN_ATTEMPTS) {
+      // Lock the profile
+      updates.pinLockedUntil = now + PIN_LOCKOUT_DURATION_MS;
+      await ctx.db.patch(args.profileId, updates);
+      return {
+        valid: false,
+        locked: true,
+        remainingSeconds: Math.ceil(PIN_LOCKOUT_DURATION_MS / 1000),
+      };
+    }
+
+    await ctx.db.patch(args.profileId, updates);
+    return {
+      valid: false,
+      locked: false,
+      attemptsRemaining: MAX_PIN_ATTEMPTS - failedAttempts,
+    };
   },
 });
 
@@ -149,41 +229,14 @@ export const deleteProfile = mutation({
       throw new Error("Kid profile not found");
     }
 
-    // Delete search history
-    const searchHistory = await ctx.db
-      .query("searchHistory")
-      .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
-      .collect();
-    for (const h of searchHistory) {
-      await ctx.db.delete(h._id);
-    }
-
-    // Delete blocked searches
-    const blockedSearches = await ctx.db
-      .query("blockedSearches")
-      .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
-      .collect();
-    for (const b of blockedSearches) {
-      await ctx.db.delete(b._id);
-    }
-
-    // Delete time limits
-    const timeLimits = await ctx.db
-      .query("timeLimits")
-      .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
-      .collect();
-    for (const t of timeLimits) {
-      await ctx.db.delete(t._id);
-    }
+    const result = await cascadeDeleteKidProfile(ctx, args.kidProfileId);
 
     // Delete the profile itself
     await ctx.db.delete(args.kidProfileId);
 
     return {
       success: true,
-      deletedSearchHistory: searchHistory.length,
-      deletedBlockedSearches: blockedSearches.length,
-      deletedTimeLimits: timeLimits.length,
+      ...result,
     };
   },
 });

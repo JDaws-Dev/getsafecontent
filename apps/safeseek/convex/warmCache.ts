@@ -2,6 +2,7 @@
 
 import { internalAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
+import { normalizeQuery } from "./lib/utils";
 
 // Common kid searches to pre-cache
 const POPULAR_SEARCHES = [
@@ -37,24 +38,6 @@ const POPULAR_SEARCHES = [
   "how does the internet work",
 ];
 
-// Stop words (same as search.ts)
-const STOP_WORDS = new Set([
-  "the", "a", "an", "is", "are", "was", "were", "what", "how", "why",
-  "who", "where", "when", "do", "does", "did", "can", "could", "will",
-  "would", "should", "tell", "me", "about", "please",
-]);
-
-function normalizeQuery(query: string): string {
-  return query
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s]/g, "")
-    .split(/\s+/)
-    .filter((word) => word.length > 0 && !STOP_WORDS.has(word))
-    .sort()
-    .join(" ");
-}
-
 /**
  * Pre-populate the search cache with common kid searches.
  * Uses a generic profile: age 10, moderate strictness, auto reading level.
@@ -65,7 +48,7 @@ export const warmPopularSearches = internalAction({
     const ageMax = 12;
     const ageGroup = "10-12";
     const strictness = "moderate";
-    const profileKey = [ageGroup, strictness, "auto"].join("|");
+    const profileKey = [ageGroup, strictness, "auto", "bt:"].join("|");
 
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) {

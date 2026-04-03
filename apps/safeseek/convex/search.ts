@@ -3,25 +3,8 @@
 import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { internal, api } from "./_generated/api";
-
-// --- Query normalization (inline since "use node" files can't import from non-node) ---
-
-const STOP_WORDS = new Set([
-  "the", "a", "an", "is", "are", "was", "were", "what", "how", "why",
-  "who", "where", "when", "do", "does", "did", "can", "could", "will",
-  "would", "should", "tell", "me", "about", "please",
-]);
-
-function normalizeQuery(query: string): string {
-  return query
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s]/g, "")
-    .split(/\s+/)
-    .filter((word) => word.length > 0 && !STOP_WORDS.has(word))
-    .sort()
-    .join(" ");
-}
+import { sanitizeQuery as sanitizeInput, detectPromptInjection, filterResponse } from "./ai/inputFilter";
+import { normalizeQuery } from "./lib/utils";
 
 // --- Query classification ---
 
@@ -107,8 +90,9 @@ export const performSearch = internalAction({
 
     // --- Step 1: Check cache ---
     const normalized = normalizeQuery(args.query);
-    // profileKey captures all settings that affect the response
-    const profileKey = [ageGroup, strictness, lexileLevel, ...accessibilityNeeds.sort()].join("|");
+    // profileKey captures all settings that affect the response (including blocked topics)
+    const sortedBlocked = [...blockedTopics].sort();
+    const profileKey = [ageGroup, strictness, lexileLevel, ...accessibilityNeeds.sort(), "bt:" + sortedBlocked.join(",")].join("|");
     const cacheResult = await ctx.runQuery(api.searchCache.checkCache, {
       normalizedQuery: normalized,
       ageGroup,
@@ -238,6 +222,44 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
       throw new Error("Failed to parse search results");
     }
 
+    // --- Response filtering: check AI output for unsafe content ---
+    if (parsed.safe && parsed.answer) {
+      // Build full response text for filtering (answer + all section content)
+      const fullResponseText = [
+        parsed.answer,
+        ...(parsed.sections || []).map((s: any) => s.content || ""),
+        ...(parsed.funFacts || []),
+      ].join(" ");
+
+      const responseCheck = filterResponse(fullResponseText, blockedTopics);
+
+      if (!responseCheck.safe) {
+        console.warn(`[performSearch] Response filtered: ${responseCheck.reason}`);
+        parsed.safe = false;
+        parsed.flagged = true;
+        parsed.flagReason = "Content filtered by safety system";
+        parsed.answer = "I found some information, but it wasn't quite right for you. Try asking in a different way!";
+        parsed.sections = [];
+        parsed.funFacts = [];
+      } else if (responseCheck.cleaned) {
+        // URLs were stripped — update the answer text
+        parsed.answer = parsed.answer.replace(
+          /https?:\/\/[^\s)<>]+|www\.[^\s)<>]+|\b[\w-]+\.(com|org|net|edu|gov|io|co)\b(\/[^\s)<>]*)?/gi,
+          "[link removed]"
+        );
+        if (parsed.sections) {
+          for (const section of parsed.sections) {
+            if (section.content) {
+              section.content = section.content.replace(
+                /https?:\/\/[^\s)<>]+|www\.[^\s)<>]+|\b[\w-]+\.(com|org|net|edu|gov|io|co)\b(\/[^\s)<>]*)?/gi,
+                "[link removed]"
+              );
+            }
+          }
+        }
+      }
+    }
+
     const now = Date.now();
 
     if (!parsed.safe) {
@@ -361,6 +383,37 @@ export const searchFromKid = action({
     query: v.string(),
   },
   handler: async (ctx, args) => {
+    // Check subscription status before any AI calls
+    const kidProfile = await ctx.runQuery(api.kidProfiles.getProfile, {
+      kidProfileId: args.kidProfileId,
+    });
+    if (!kidProfile) {
+      return {
+        safe: false,
+        results: [],
+        summary: "Profile not found. Please try again.",
+        flagged: false,
+        blocked: true,
+        reason: "no_profile",
+        images: [],
+      };
+    }
+
+    const subCheck = await ctx.runQuery(internal.users.checkSubscriptionActive, {
+      userId: kidProfile.userId,
+    });
+    if (!subCheck.allowed) {
+      return {
+        safe: false,
+        results: [],
+        summary: subCheck.message,
+        flagged: false,
+        blocked: true,
+        reason: "subscription_expired",
+        images: [],
+      };
+    }
+
     // Check if kid can search (time limits)
     const searchCheck = await ctx.runQuery(api.timeLimits.canSearch, {
       kidProfileId: args.kidProfileId,
@@ -393,10 +446,46 @@ export const searchFromKid = action({
       };
     }
 
-    // Perform the search
+    // --- Pre-filter: sanitize and check for prompt injection ---
+    const sanitized = sanitizeInput(trimmedQuery);
+    const injectionCheck = detectPromptInjection(sanitized);
+
+    if (!injectionCheck.safe) {
+      console.warn(`[searchFromKid] Prompt injection blocked: ${injectionCheck.reason} | query: "${trimmedQuery.slice(0, 100)}"`);
+      return {
+        safe: false,
+        results: [],
+        summary: "I can't help with that question. Try asking something else!",
+        flagged: true,
+        blocked: true,
+        reason: "injection_blocked",
+        images: [],
+      };
+    }
+
+    // Rate limit check
+    if (kidProfile) {
+      const rateCheck = await ctx.runMutation(api.rateLimit.checkAndRecord, {
+        userId: kidProfile.userId,
+        action: "search",
+      });
+      if (!rateCheck.allowed) {
+        return {
+          safe: false,
+          results: [],
+          summary: rateCheck.message || "Too many searches. Please wait a moment and try again.",
+          flagged: false,
+          blocked: true,
+          reason: "rate_limited",
+          images: [],
+        };
+      }
+    }
+
+    // Perform the search with sanitized query
     const result = await ctx.runAction(internal.search.performSearch, {
       kidProfileId: args.kidProfileId,
-      query: trimmedQuery,
+      query: sanitized,
     });
 
     return result;
@@ -415,10 +504,39 @@ export const expandSection = action({
     currentContent: v.string(),
   },
   handler: async (ctx, args) => {
+    // Pre-filter the subtopic and topic for injection attempts
+    const sanitizedTopic = sanitizeInput(args.topic);
+    const sanitizedSubtopic = sanitizeInput(args.subtopic);
+
+    const topicCheck = detectPromptInjection(sanitizedTopic);
+    const subtopicCheck = detectPromptInjection(sanitizedSubtopic);
+
+    if (!topicCheck.safe || !subtopicCheck.safe) {
+      console.warn(`[expandSection] Prompt injection blocked in expand`);
+      return { content: "I can't help with that question. Try asking something else!" };
+    }
+
     const kidProfile = await ctx.runQuery(api.kidProfiles.getProfile, {
       kidProfileId: args.kidProfileId,
     });
     if (!kidProfile) throw new Error("Profile not found");
+
+    // Check subscription status before AI call
+    const subCheck = await ctx.runQuery(internal.users.checkSubscriptionActive, {
+      userId: kidProfile.userId,
+    });
+    if (!subCheck.allowed) {
+      return { content: subCheck.message };
+    }
+
+    // Rate limit check (expand counts as a search action)
+    const rateCheck = await ctx.runMutation(api.rateLimit.checkAndRecord, {
+      userId: kidProfile.userId,
+      action: "search",
+    });
+    if (!rateCheck.allowed) {
+      return { content: rateCheck.message || "Too many requests. Please wait a moment and try again." };
+    }
 
     const age = kidProfile.ageRange?.min || 10;
     const lexile = kidProfile.lexileLevel || "auto";
@@ -454,7 +572,7 @@ export const expandSection = action({
           },
           {
             role: "user",
-            content: `The topic is "${args.topic}". I already know this about "${args.subtopic}": "${args.currentContent}". Tell me much more about ${args.subtopic}. Go deeper with specific details I don't already know.`,
+            content: `The topic is "${sanitizedTopic}". I already know this about "${sanitizedSubtopic}": "${args.currentContent}". Tell me much more about ${sanitizedSubtopic}. Go deeper with specific details I don't already know.`,
           },
         ],
         temperature: 0,
@@ -464,6 +582,19 @@ export const expandSection = action({
 
     if (!response.ok) throw new Error("OpenAI error");
     const data = await response.json();
-    return { content: data.choices?.[0]?.message?.content || "" };
+    const expandedContent = data.choices?.[0]?.message?.content || "";
+
+    // Filter expanded response
+    const blockedTopics = kidProfile.blockedTopics || [];
+    const responseCheck = filterResponse(expandedContent, blockedTopics);
+
+    if (!responseCheck.safe) {
+      console.warn(`[expandSection] Response filtered: ${responseCheck.reason}`);
+      return { content: "I found some information, but it wasn't quite right for you. Try asking in a different way!" };
+    }
+
+    // Strip any URLs that leaked through
+    const cleanedContent = responseCheck.cleaned || expandedContent;
+    return { content: cleanedContent };
   },
 });

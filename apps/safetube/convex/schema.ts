@@ -208,6 +208,9 @@ export default defineSchema({
     })),
     recommendation: v.string(), // "Recommended", "Review Videos First", "Not Recommended"
     ageRecommendation: v.string(),
+    parentCommunityNotes: v.optional(v.array(v.string())),
+    knownControversies: v.optional(v.array(v.string())),
+    commonSenseMediaRating: v.optional(v.union(v.string(), v.null())),
     reviewedAt: v.number(),
     timesReused: v.number(),
     lastAccessedAt: v.number(),

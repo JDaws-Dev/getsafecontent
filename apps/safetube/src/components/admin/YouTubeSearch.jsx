@@ -957,6 +957,58 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
                         </div>
                       </div>
                     )}
+
+                    {/* Common Sense Media Rating */}
+                    {channelReview.commonSenseMediaRating && (
+                      <div className="mt-2">
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          Common Sense Media: {channelReview.commonSenseMediaRating}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Community & Parent Feedback */}
+                    {channelReview.parentCommunityNotes?.length > 0 && (
+                      <div className="mt-3 p-2 bg-indigo-50 rounded-lg">
+                        <p className="text-indigo-700 text-xs font-medium mb-1 flex items-center gap-1">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          Community & Parent Feedback
+                        </p>
+                        <ul className="space-y-1">
+                          {channelReview.parentCommunityNotes.map((note, idx) => (
+                            <li key={idx} className="text-indigo-600 text-xs flex items-start gap-1">
+                              <span className="mt-0.5 flex-shrink-0">&#8226;</span>
+                              <span>{note}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Known Controversies */}
+                    {channelReview.knownControversies?.length > 0 && (
+                      <div className="mt-2 p-2 bg-orange-50 rounded-lg border border-orange-200">
+                        <p className="text-orange-700 text-xs font-medium mb-1 flex items-center gap-1">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          Known Controversies
+                        </p>
+                        <ul className="space-y-1">
+                          {channelReview.knownControversies.map((item, idx) => (
+                            <li key={idx} className="text-orange-600 text-xs flex items-start gap-1">
+                              <span className="mt-0.5 flex-shrink-0">&#8226;</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

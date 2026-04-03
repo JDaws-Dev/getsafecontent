@@ -1,27 +1,8 @@
 import { v } from "convex/values";
 import { query, internalMutation } from "./_generated/server";
 
-const STOP_WORDS = new Set([
-  "the", "a", "an", "is", "are", "was", "were", "what", "how", "why",
-  "who", "where", "when", "do", "does", "did", "can", "could", "will",
-  "would", "should", "tell", "me", "about", "please",
-]);
-
-/**
- * Normalize a search query for cache lookups:
- * lowercase, trim, remove punctuation, remove stop words, sort words alphabetically.
- */
-export function normalizeQuery(query: string): string {
-  const cleaned = query
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s]/g, "") // remove punctuation
-    .split(/\s+/)
-    .filter((word) => word.length > 0 && !STOP_WORDS.has(word))
-    .sort()
-    .join(" ");
-  return cleaned;
-}
+// Re-export normalizeQuery from shared utils for backward compatibility
+export { normalizeQuery } from "./lib/utils";
 
 /**
  * Check if a cached response exists for this query+ageGroup+strictness.

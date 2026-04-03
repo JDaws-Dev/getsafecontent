@@ -1043,6 +1043,149 @@ class MusicKitService {
   getMusicKitInstance() {
     return this.music;
   }
+
+  // ─── Library Write Methods (Playlist Export) ───────────────────────
+
+  /**
+   * Create a new playlist in the authorized user's Apple Music library.
+   * Requires the user to be authorized with MusicKit.
+   * @param {string} name - Playlist name
+   * @param {string} description - Playlist description
+   * @returns {Promise<string>} The library playlist ID (e.g., "p.xxxxxxxx")
+   */
+  async createLibraryPlaylist(name, description = '') {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    if (!this.music) {
+      throw new Error('MusicKit not initialized');
+    }
+
+    if (!this.isAuthorized) {
+      throw new Error('User must be authorized with Apple Music to create library playlists');
+    }
+
+    try {
+      const result = await this.music.api.music(
+        '/v1/me/library/playlists',
+        {},
+        {
+          fetchOptions: {
+            method: 'POST',
+            body: JSON.stringify({
+              attributes: {
+                name,
+                description,
+              },
+            }),
+          },
+        }
+      );
+
+      const playlistData = result?.data?.data;
+      if (playlistData && playlistData.length > 0) {
+        const playlistId = playlistData[0].id;
+        console.log(`Created library playlist "${name}" with ID: ${playlistId}`);
+        return playlistId;
+      }
+
+      throw new Error('No playlist data returned from Apple Music API');
+    } catch (error) {
+      console.error('Failed to create library playlist:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add songs to an existing library playlist.
+   * Batches requests in groups of 25 with a delay between batches.
+   * @param {string} playlistId - The library playlist ID
+   * @param {Array<string>} catalogSongIds - Array of Apple Music catalog song IDs
+   * @param {function} onProgress - Optional callback(added, total) for progress tracking
+   * @returns {Promise<{added: number, skipped: number}>} Results
+   */
+  async addSongsToLibraryPlaylist(playlistId, catalogSongIds, onProgress = null) {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    if (!this.music) {
+      throw new Error('MusicKit not initialized');
+    }
+
+    if (!this.isAuthorized) {
+      throw new Error('User must be authorized with Apple Music');
+    }
+
+    const BATCH_SIZE = 25;
+    const DELAY_MS = 200;
+    let added = 0;
+    let skipped = 0;
+
+    // Filter out any invalid IDs (library IDs starting with "i." or "l.", or empty strings)
+    // Only catalog IDs (numeric strings) work with the Apple Music API
+    const validIds = catalogSongIds.filter(id => id && !id.startsWith('i.') && !id.startsWith('l.'));
+    skipped += catalogSongIds.length - validIds.length;
+
+    for (let i = 0; i < validIds.length; i += BATCH_SIZE) {
+      const batch = validIds.slice(i, i + BATCH_SIZE);
+      const trackData = batch.map(id => ({ id, type: 'songs' }));
+
+      try {
+        await this.music.api.music(
+          `/v1/me/library/playlists/${playlistId}/tracks`,
+          {},
+          {
+            fetchOptions: {
+              method: 'POST',
+              body: JSON.stringify({ data: trackData }),
+            },
+          }
+        );
+
+        added += batch.length;
+      } catch (error) {
+        console.error(`Failed to add batch of ${batch.length} songs to playlist ${playlistId}:`, error);
+
+        // If we get a 429 (rate limit), wait and retry once
+        if (error?.status === 429 || error?.message?.includes('429')) {
+          console.log('Rate limited, waiting 2 seconds before retry...');
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          try {
+            await this.music.api.music(
+              `/v1/me/library/playlists/${playlistId}/tracks`,
+              {},
+              {
+                fetchOptions: {
+                  method: 'POST',
+                  body: JSON.stringify({ data: trackData }),
+                },
+              }
+            );
+            added += batch.length;
+          } catch (retryError) {
+            console.error('Retry failed:', retryError);
+            skipped += batch.length;
+          }
+        } else {
+          skipped += batch.length;
+        }
+      }
+
+      if (onProgress) {
+        onProgress(added + skipped, catalogSongIds.length);
+      }
+
+      // Delay between batches to respect rate limits
+      if (i + BATCH_SIZE < validIds.length) {
+        await new Promise(resolve => setTimeout(resolve, DELAY_MS));
+      }
+    }
+
+    console.log(`Playlist ${playlistId}: added ${added} songs, skipped ${skipped}`);
+    return { added, skipped };
+  }
 }
 
 // Export singleton instance

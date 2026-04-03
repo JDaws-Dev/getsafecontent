@@ -7,7 +7,7 @@
 | SafeTunes | getsafetunes.com | `formal-chihuahua-623` | React + Vite |
 | SafeTube | getsafetube.com | `rightful-rabbit-333` | React + Vite |
 | SafeReads | getsafereads.com | `exuberant-puffin-838` | Next.js |
-| SafeStudy | getsafestudy.com (TBD) | `strong-scorpion-227` | React + Vite + OpenAI |
+| SafeStudy | getsafestudy.com | `strong-scorpion-227` | React + Vite + OpenAI |
 | Marketing | getsafefamily.com | `adamant-crow-705` | Next.js |
 | Blog | getsafefamily.com/blog | N/A (shares Marketing) | MDX + Velite |
 
@@ -559,7 +559,7 @@ Logs include: timestamp, admin email, action, target, IP address.
 ## What's Next
 
 ### SafeStudy Launch (Highest Priority)
-- [ ] Purchase domain (getsafestudy.com or similar)
+- [x] Domain live (getsafestudy.com)
 - [ ] Add Stripe checkout UI button in admin Settings
 - [ ] Build UpgradePrompt component (trial countdown)
 - [ ] Add `useSubscriptionSync` hook (sync with Marketing Central)

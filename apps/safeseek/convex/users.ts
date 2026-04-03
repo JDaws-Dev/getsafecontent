@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { api } from "./_generated/api";
+import { cascadeDeleteKidProfile, cascadeDeleteUser } from "./lib/cascadeDelete";
 
 // Generate a random 6-character family code
 function generateFamilyCode(): string {
@@ -138,6 +139,48 @@ export const createOrUpdateUser = mutation({
     });
 
     return userId;
+  },
+});
+
+/**
+ * Internal query: check if a user's subscription allows AI usage.
+ * Returns { allowed: true } or { allowed: false, message: string }.
+ * Used by search/tutor/research actions before making OpenAI calls.
+ */
+export const checkSubscriptionActive = internalQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) {
+      return {
+        allowed: false,
+        message: "Your family's SafeStudy account was not found. Ask your parent to sign in at getsafefamily.com",
+      };
+    }
+
+    const status = user.subscriptionStatus;
+
+    // Lifetime and active are always allowed
+    if (status === "lifetime" || status === "active") {
+      return { allowed: true };
+    }
+
+    // Trial is allowed only if not expired
+    if (status === "trial") {
+      if (user.trialEndsAt && Date.now() > user.trialEndsAt) {
+        return {
+          allowed: false,
+          message: "Your family's SafeStudy free trial has expired. Ask your parent to subscribe at getsafefamily.com",
+        };
+      }
+      return { allowed: true };
+    }
+
+    // Everything else (cancelled, expired, inactive, etc.)
+    return {
+      allowed: false,
+      message: "Your family's SafeStudy access has expired. Ask your parent to renew at getsafefamily.com",
+    };
   },
 });
 
@@ -294,69 +337,11 @@ export const deleteUserInternal = internalMutation({
       throw new Error("User not found");
     }
 
-    // Delete kid profiles and all their associated data
-    const kidProfiles = await ctx.db
-      .query("kidProfiles")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
-
-    let deletedSearchHistory = 0;
-    let deletedBlockedSearches = 0;
-    let deletedTimeLimits = 0;
-
-    for (const kid of kidProfiles) {
-      // Delete search history for this kid
-      const searchHistory = await ctx.db
-        .query("searchHistory")
-        .withIndex("by_kid", (q) => q.eq("kidProfileId", kid._id))
-        .collect();
-      for (const h of searchHistory) {
-        await ctx.db.delete(h._id);
-        deletedSearchHistory++;
-      }
-
-      // Delete blocked searches for this kid
-      const blockedSearches = await ctx.db
-        .query("blockedSearches")
-        .withIndex("by_kid", (q) => q.eq("kidProfileId", kid._id))
-        .collect();
-      for (const b of blockedSearches) {
-        await ctx.db.delete(b._id);
-        deletedBlockedSearches++;
-      }
-
-      // Delete time limits for this kid
-      const timeLimits = await ctx.db
-        .query("timeLimits")
-        .withIndex("by_kid", (q) => q.eq("kidProfileId", kid._id))
-        .collect();
-      for (const t of timeLimits) {
-        await ctx.db.delete(t._id);
-        deletedTimeLimits++;
-      }
-
-      // Delete the kid profile
-      await ctx.db.delete(kid._id);
-    }
-
-    // Delete search settings
-    const searchSettings = await ctx.db
-      .query("searchSettings")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
-    for (const s of searchSettings) {
-      await ctx.db.delete(s._id);
-    }
-
-    // Delete the user
-    await ctx.db.delete(user._id);
+    const result = await cascadeDeleteUser(ctx, user._id);
 
     return {
       deletedUser: args.email,
-      deletedKids: kidProfiles.length,
-      deletedSearchHistory,
-      deletedBlockedSearches,
-      deletedTimeLimits,
+      ...result,
     };
   },
 });

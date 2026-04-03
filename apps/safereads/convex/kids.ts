@@ -32,47 +32,113 @@ export const create = mutation({
     userId: v.id("users"),
     name: v.string(),
     age: v.optional(v.number()),
+    color: v.optional(v.string()),
+    pin: v.optional(v.string()),
+    readingLevel: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("kids", {
       userId: args.userId,
       name: args.name,
       age: args.age,
+      color: args.color || "purple",
+      pin: args.pin,
+      readingLevel: args.readingLevel,
+      createdAt: Date.now(),
     });
   },
 });
 
 /**
- * Update a kid's name, age, or linked profile.
+ * Update a kid's name, age, color, pin, or reading level.
  */
 export const update = mutation({
   args: {
     kidId: v.id("kids"),
-    name: v.string(),
+    name: v.optional(v.string()),
     age: v.optional(v.number()),
+    color: v.optional(v.string()),
+    pin: v.optional(v.string()),
+    readingLevel: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { kidId, ...fields } = args;
-    await ctx.db.patch(kidId, fields);
+    const { kidId, ...updates } = args;
+    // Filter out undefined values
+    const definedUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([, value]) => value !== undefined)
+    );
+    await ctx.db.patch(kidId, definedUpdates);
   },
 });
 
 /**
- * Delete a kid and all their wishlist entries.
+ * Delete a kid and all their wishlist entries, approved books, requests, and reading progress.
  */
 export const remove = mutation({
   args: { kidId: v.id("kids") },
   handler: async (ctx, args) => {
+    // Delete wishlist entries
     const wishlistItems = await ctx.db
       .query("wishlists")
       .withIndex("by_kid", (q) => q.eq("kidId", args.kidId))
       .collect();
-
     for (const item of wishlistItems) {
       await ctx.db.delete(item._id);
     }
 
+    // Delete approved books
+    const approvedBooks = await ctx.db
+      .query("approvedBooks")
+      .withIndex("by_kid", (q) => q.eq("kidId", args.kidId))
+      .collect();
+    for (const book of approvedBooks) {
+      await ctx.db.delete(book._id);
+    }
+
+    // Delete book requests
+    const bookRequests = await ctx.db
+      .query("bookRequests")
+      .withIndex("by_kid", (q) => q.eq("kidId", args.kidId))
+      .collect();
+    for (const request of bookRequests) {
+      await ctx.db.delete(request._id);
+    }
+
+    // Delete reading progress
+    const readingProgress = await ctx.db
+      .query("readingProgress")
+      .withIndex("by_kid", (q) => q.eq("kidId", args.kidId))
+      .collect();
+    for (const progress of readingProgress) {
+      await ctx.db.delete(progress._id);
+    }
+
     await ctx.db.delete(args.kidId);
+  },
+});
+
+/**
+ * Verify a kid's PIN.
+ */
+export const verifyPin = query({
+  args: {
+    kidId: v.id("kids"),
+    pin: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const kid = await ctx.db.get(args.kidId);
+    if (!kid) return false;
+    return kid.pin === args.pin;
+  },
+});
+
+/**
+ * Clear a kid's PIN (remove PIN protection).
+ */
+export const clearPin = mutation({
+  args: { kidId: v.id("kids") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.kidId, { pin: undefined });
   },
 });
 

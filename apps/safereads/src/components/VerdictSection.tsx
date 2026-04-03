@@ -6,6 +6,7 @@ import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { VerdictCard, VerdictCardAnalysis } from "./VerdictCard";
 import { ContentFlagList, ContentFlag } from "./ContentFlagList";
+import { ParentInsightsCard, ParentInsightsData } from "./ParentInsightsCard";
 import { AnalyzeButton } from "./AnalyzeButton";
 import { ReportButton } from "./ReportButton";
 import { ShareVerdictButton } from "./ShareVerdictButton";
@@ -79,11 +80,14 @@ export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
   }
 
   // Determine which analysis to display (cached query result or fresh action result)
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const rawAnalysis = cachedAnalysis ?? actionResult;
   const analysis: VerdictCardAnalysis | null = cachedAnalysis
     ? {
         verdict: cachedAnalysis.verdict,
         summary: cachedAnalysis.summary,
         ageRecommendation: cachedAnalysis.ageRecommendation,
+        ageGuidance: (cachedAnalysis as any)?.ageGuidance ?? undefined,
         reasoning: cachedAnalysis.reasoning,
       }
     : actionResult
@@ -91,6 +95,7 @@ export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
           verdict: actionResult.verdict as VerdictCardAnalysis["verdict"],
           summary: actionResult.summary,
           ageRecommendation: actionResult.ageRecommendation,
+          ageGuidance: (actionResult as any)?.ageGuidance ?? undefined,
           reasoning: actionResult.reasoning,
         }
       : null;
@@ -99,6 +104,18 @@ export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
     (cachedAnalysis?.contentFlags as ContentFlag[] | undefined) ??
     actionResult?.contentFlags ??
     [];
+
+  // Build parent insights from whichever source has data
+  const parentInsights: ParentInsightsData | null = rawAnalysis
+    ? {
+        parentCommunityNotes: (rawAnalysis as any)?.parentCommunityNotes ?? undefined,
+        challengedBookStatus: (rawAnalysis as any)?.challengedBookStatus ?? undefined,
+        seriesContext: (rawAnalysis as any)?.seriesContext ?? undefined,
+        parentTalkingPoints: (rawAnalysis as any)?.parentTalkingPoints ?? undefined,
+        comparableBooks: (rawAnalysis as any)?.comparableBooks ?? undefined,
+      }
+    : null;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   return (
     <div className="space-y-4">
@@ -110,6 +127,7 @@ export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
         <>
           <VerdictCard analysis={analysis} />
           <ContentFlagList flags={flags} />
+          {parentInsights && <ParentInsightsCard insights={parentInsights} />}
           <div className="flex items-center justify-end gap-2">
             {analysis && (
               <ShareVerdictButton

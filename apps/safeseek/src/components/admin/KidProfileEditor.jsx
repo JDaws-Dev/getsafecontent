@@ -98,8 +98,8 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
       setAccessibilityNeeds(profile.accessibilityNeeds || []);
       setAllowImageSearch(profile.allowImageSearch ?? true);
       setAllowTopicRequests(profile.allowTopicRequests ?? true);
-      setPin(profile.pin || '');
-      setPinEnabled(!!profile.pin);
+      setPin(''); // PIN is never returned from server; parent sets a new one if needed
+      setPinEnabled(!!profile.hasPin);
     }
   }, [profile]);
 

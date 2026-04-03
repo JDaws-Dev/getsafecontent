@@ -160,6 +160,11 @@ export default defineSchema({
     name: v.string(),
     age: v.optional(v.number()),
     profileId: v.optional(v.id("profiles")),
+    // Kid-side login fields (added for kid-facing bookshelf experience)
+    color: v.optional(v.string()),        // Avatar color
+    pin: v.optional(v.string()),          // Optional 4-digit PIN
+    readingLevel: v.optional(v.string()), // e.g. "early-reader", "chapter-books", "middle-grade", "ya"
+    createdAt: v.optional(v.number()),    // Creation timestamp
   }).index("by_user", ["userId"]),
 
   wishlists: defineTable({
@@ -169,6 +174,62 @@ export default defineSchema({
   })
     .index("by_kid", ["kidId"])
     .index("by_kid_and_book", ["kidId", "bookId"]),
+
+  // ========================================================================
+  // Kid-Facing Tables (for kid bookshelf + request system)
+  // ========================================================================
+  approvedBooks: defineTable({
+    userId: v.id("users"),          // parent
+    kidId: v.id("kids"),            // which kid
+    googleBookId: v.string(),       // Google Books ID
+    title: v.string(),
+    author: v.string(),
+    coverUrl: v.optional(v.string()),
+    addedAt: v.number(),
+    addedBy: v.string(),            // "parent" | "request_approved"
+    notes: v.optional(v.string()),  // parent notes
+  })
+    .index("by_user", ["userId"])
+    .index("by_kid", ["kidId"])
+    .index("by_kid_and_book", ["kidId", "googleBookId"]),
+
+  bookRequests: defineTable({
+    kidId: v.id("kids"),
+    userId: v.id("users"),          // parent
+    googleBookId: v.string(),
+    title: v.string(),
+    author: v.string(),
+    coverUrl: v.optional(v.string()),
+    status: v.string(),             // "pending" | "approved" | "denied"
+    requestedAt: v.number(),
+    respondedAt: v.optional(v.number()),
+    denyReason: v.optional(v.string()),
+  })
+    .index("by_kid", ["kidId"])
+    .index("by_user", ["userId"])
+    .index("by_user_and_status", ["userId", "status"])
+    .index("by_kid_and_book", ["kidId", "googleBookId"]),
+
+  readingProgress: defineTable({
+    kidId: v.id("kids"),
+    googleBookId: v.string(),
+    currentPage: v.optional(v.number()),
+    totalPages: v.optional(v.number()),
+    percentComplete: v.number(),
+    lastReadAt: v.number(),
+    startedAt: v.number(),
+    finishedAt: v.optional(v.number()),
+  })
+    .index("by_kid", ["kidId"])
+    .index("by_kid_and_book", ["kidId", "googleBookId"]),
+
+  familyCodes: defineTable({
+    userId: v.id("users"),
+    code: v.string(),               // 6-char uppercase alphanumeric
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_code", ["code"]),
 
   analyses: defineTable({
     bookId: v.id("books"),
@@ -194,6 +255,31 @@ export default defineSchema({
       })
     ),
     reasoning: v.optional(v.string()),
+    // Enhanced analysis fields (v2, Apr 2026)
+    parentCommunityNotes: v.optional(v.string()),
+    challengedBookStatus: v.optional(
+      v.object({
+        isChallenged: v.boolean(),
+        reason: v.string(),
+        context: v.string(),
+      })
+    ),
+    seriesContext: v.optional(
+      v.object({
+        seriesName: v.string(),
+        bookNumber: v.optional(v.string()),
+        contentProgression: v.string(),
+      })
+    ),
+    ageGuidance: v.optional(
+      v.object({
+        readAloud: v.optional(v.string()),
+        independentReader: v.optional(v.string()),
+        matureEnoughToProcess: v.optional(v.string()),
+      })
+    ),
+    parentTalkingPoints: v.optional(v.array(v.string())),
+    comparableBooks: v.optional(v.string()),
   }).index("by_book", ["bookId"]),
 
   notes: defineTable({

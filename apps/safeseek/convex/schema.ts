@@ -31,6 +31,8 @@ export default defineSchema({
     color: v.string(),
     icon: v.optional(v.string()),
     pin: v.optional(v.string()), // 4-digit PIN for profile access
+    pinFailedAttempts: v.optional(v.number()), // rate limiting: consecutive failed PIN attempts
+    pinLockedUntil: v.optional(v.number()), // rate limiting: lockout timestamp (ms)
     ageRange: v.object({
       min: v.number(),
       max: v.number(),
@@ -130,4 +132,12 @@ export default defineSchema({
     .index("by_query", ["normalizedQuery", "ageGroup", "strictness"])
     .index("by_query_full", ["normalizedQuery", "profileKey"])
     .index("by_expires", ["expiresAt"]),
+
+  // Rate limiting — sliding window counters per user per action
+  rateLimits: defineTable({
+    userId: v.id("users"),
+    action: v.string(), // "search", "tutor", "research", "global"
+    timestamps: v.array(v.number()), // request timestamps within the window
+  })
+    .index("by_user_action", ["userId", "action"]),
 }, { schemaValidation: false });

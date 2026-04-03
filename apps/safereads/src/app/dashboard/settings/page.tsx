@@ -22,12 +22,19 @@ import {
   AlertTriangle,
   Trash2,
   LogOut,
+  Copy,
+  Check,
+  RefreshCw,
+  Users,
 } from "lucide-react";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { logout, user: authUser } = useAuth();
   const user = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
+  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
+  const familyCode = useQuery(api.familyCodes.getByUser, userId ? { userId } : "skip");
+  const generateFamilyCode = useMutation(api.familyCodes.generate);
   const details = useQuery(
     api.subscriptions.getDetails,
     authUser?.email ? { email: authUser.email } : "skip"
@@ -43,6 +50,8 @@ export default function SettingsPage() {
 
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [codeGenerating, setCodeGenerating] = useState(false);
 
   // Account deletion state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -198,6 +207,95 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Family Code Section — for kid-side login */}
+      <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500">
+            <Users className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h2 className="font-serif text-lg font-bold text-ink-900">
+              Kid Login
+            </h2>
+            <p className="text-sm text-ink-500">
+              Your kids use this code to access their bookshelf
+            </p>
+          </div>
+        </div>
+
+        {familyCode ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-white p-4">
+              <p className="flex-1 font-mono text-2xl font-bold tracking-[0.3em] text-emerald-700">
+                {familyCode.code}
+              </p>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(familyCode.code);
+                  setCodeCopied(true);
+                  setTimeout(() => setCodeCopied(false), 2000);
+                }}
+                className="flex items-center gap-1 rounded-lg border border-emerald-200 px-3 py-2 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+              >
+                {codeCopied ? (
+                  <>
+                    <Check className="h-3.5 w-3.5" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
+
+            <p className="text-xs text-ink-500">
+              Go to <span className="font-medium">getsafereads.com/play</span> on your kid&apos;s device and enter this code.
+            </p>
+
+            <button
+              onClick={async () => {
+                if (!userId) return;
+                setCodeGenerating(true);
+                try {
+                  await generateFamilyCode({ userId });
+                } finally {
+                  setCodeGenerating(false);
+                }
+              }}
+              disabled={codeGenerating}
+              className="flex items-center gap-1 text-xs font-medium text-ink-400 transition-colors hover:text-ink-600 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-3 w-3 ${codeGenerating ? "animate-spin" : ""}`} />
+              Generate new code
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={async () => {
+              if (!userId) return;
+              setCodeGenerating(true);
+              try {
+                await generateFamilyCode({ userId });
+              } finally {
+                setCodeGenerating(false);
+              }
+            }}
+            disabled={codeGenerating || !userId}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:opacity-50"
+          >
+            {codeGenerating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Users className="h-4 w-4" />
+            )}
+            Generate Family Code
+          </button>
         )}
       </div>
 

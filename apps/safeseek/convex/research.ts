@@ -294,6 +294,26 @@ export const researchFromKid = action({
     query: v.string(),
   },
   handler: async (ctx, args) => {
+    // Check subscription status before any AI calls
+    const kidProfile = await ctx.runQuery(api.kidProfiles.getProfile, {
+      kidProfileId: args.kidProfileId,
+    });
+    if (!kidProfile) {
+      return { sources: [], blocked: true, reason: "no_profile" };
+    }
+
+    const subCheck = await ctx.runQuery(internal.users.checkSubscriptionActive, {
+      userId: kidProfile.userId,
+    });
+    if (!subCheck.allowed) {
+      return {
+        sources: [],
+        blocked: true,
+        reason: "subscription_expired",
+        message: subCheck.message,
+      };
+    }
+
     // Check if kid can search (time limits)
     const searchCheck = await ctx.runQuery(api.timeLimits.canSearch, {
       kidProfileId: args.kidProfileId,
@@ -314,6 +334,22 @@ export const researchFromKid = action({
         sources: [],
         blocked: false,
       };
+    }
+
+    // Rate limit check
+    if (kidProfile) {
+      const rateCheck = await ctx.runMutation(api.rateLimit.checkAndRecord, {
+        userId: kidProfile.userId,
+        action: "research",
+      });
+      if (!rateCheck.allowed) {
+        return {
+          sources: [],
+          blocked: true,
+          reason: "rate_limited",
+          message: rateCheck.message || "Too many research requests. Please wait a moment and try again.",
+        };
+      }
     }
 
     // Perform research

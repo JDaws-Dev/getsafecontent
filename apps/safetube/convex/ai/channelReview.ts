@@ -30,6 +30,9 @@ export const reviewChannel = action({
           concerns: cached.concerns,
           recommendation: cached.recommendation,
           ageRecommendation: cached.ageRecommendation,
+          parentCommunityNotes: cached.parentCommunityNotes || [],
+          knownControversies: cached.knownControversies || [],
+          commonSenseMediaRating: cached.commonSenseMediaRating || null,
           _id: cached._id,
         },
         fromCache: true,
@@ -59,7 +62,7 @@ export const reviewChannel = action({
 **Recent Videos:**
 ${videoListText}
 
-Analyze this YouTube channel and provide a comprehensive assessment for parents:
+Analyze this YouTube channel and provide a comprehensive assessment for parents. IMPORTANT: In addition to analyzing the metadata above, draw on your training knowledge of this channel. If you recognize this channel, include what you know from Common Sense Media reviews, parent forums (Reddit, Facebook groups), news articles, or any public controversies involving the creator.
 
 1. **Summary** (2-3 sentences): What is this channel about? What type of content does it typically create?
 
@@ -86,6 +89,12 @@ Analyze this YouTube channel and provide a comprehensive assessment for parents:
 
 5. **Age Recommendation**: Suggest an appropriate minimum age (e.g., "3+", "7+", "10+", "13+", "16+")
 
+6. **Community & Parent Feedback**: Based on your knowledge, provide 1-4 notes about what parents and the online community have said about this channel. These could be endorsements, warnings, or observations from Common Sense Media, Reddit, parenting blogs, or news coverage. If you do not recognize this channel or have no community knowledge, return an empty array.
+
+7. **Known Controversies**: List any known controversies, incidents, or public concerns involving the channel creator(s). Only include things you are confident about — do not speculate. If none are known, return an empty array.
+
+8. **Common Sense Media Rating**: If you know the Common Sense Media rating for this channel (e.g., "3/5", "4/5"), include it. If you do not know it, return null.
+
 Return ONLY valid JSON (no markdown) in this format:
 {
   "summary": "This channel is about...",
@@ -98,10 +107,13 @@ Return ONLY valid JSON (no markdown) in this format:
     }
   ],
   "recommendation": "Review Videos First",
-  "ageRecommendation": "7+"
+  "ageRecommendation": "7+",
+  "parentCommunityNotes": ["Parents on Common Sense Media praise this channel for...", "Reddit users note that..."],
+  "knownControversies": [],
+  "commonSenseMediaRating": "4/5"
 }
 
-If the channel appears to be clearly kid-friendly with no concerns, return an empty array for concerns.`;
+If the channel appears to be clearly kid-friendly with no concerns, return an empty array for concerns. For parentCommunityNotes and knownControversies, only include items you are confident about from your training data. If you do not recognize the channel, return empty arrays and null for the rating.`;
 
     try {
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -115,7 +127,7 @@ If the channel appears to be clearly kid-friendly with no concerns, return an em
           messages: [
             {
               role: "system",
-              content: "You are a content advisor helping parents make informed decisions about YouTube channels for their children. Be thorough but fair - not all entertainment is harmful, but parents deserve to know about any potentially concerning content. Always return valid JSON only, no markdown formatting.",
+              content: "You are a content advisor helping parents make informed decisions about YouTube channels for their children. Be thorough but fair - not all entertainment is harmful, but parents deserve to know about any potentially concerning content. When you recognize a channel from your training data, share relevant community feedback, Common Sense Media ratings, and any known controversies. Only state things you are confident about. Always return valid JSON only, no markdown formatting.",
             },
             {
               role: "user",
@@ -123,7 +135,7 @@ If the channel appears to be clearly kid-friendly with no concerns, return an em
             },
           ],
           temperature: 0.3,
-          max_tokens: 1500,
+          max_tokens: 2000,
         }),
       });
 
@@ -158,6 +170,9 @@ If the channel appears to be clearly kid-friendly with no concerns, return an em
         concerns: review.concerns || [],
         recommendation: review.recommendation,
         ageRecommendation: review.ageRecommendation,
+        parentCommunityNotes: review.parentCommunityNotes || [],
+        knownControversies: review.knownControversies || [],
+        commonSenseMediaRating: review.commonSenseMediaRating || null,
       });
 
       return {
@@ -202,6 +217,9 @@ export const saveToCache = mutation({
     })),
     recommendation: v.string(),
     ageRecommendation: v.string(),
+    parentCommunityNotes: v.optional(v.array(v.string())),
+    knownControversies: v.optional(v.array(v.string())),
+    commonSenseMediaRating: v.optional(v.union(v.string(), v.null())),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("channelReviewCache", {
