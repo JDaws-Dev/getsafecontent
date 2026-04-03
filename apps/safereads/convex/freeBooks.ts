@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { action, query, mutation, internalMutation } from "./_generated/server";
+import { api } from "./_generated/api";
 
 // ============================================================================
 // Project Gutenberg Integration (via Gutendex API)
@@ -321,7 +322,15 @@ export const browseByGenre = action({
   args: {
     genre: v.string(),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
+    const cacheKey = `genre:${args.genre}`;
+
+    // Check cache first
+    const cached = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
+    if (cached) {
+      return JSON.parse(cached.results);
+    }
+
     // Map genre keys to Gutendex search terms and topics
     const genreMap: Record<string, { search: string; topic?: string }> = {
       adventure: { search: "adventure", topic: "children" },
@@ -336,6 +345,9 @@ export const browseByGenre = action({
       humor: { search: "funny humor", topic: "children" },
       sports: { search: "sports games", topic: "children" },
       "art-music": { search: "art music", topic: "children" },
+      scary: { search: "ghost horror scary" },
+      comics: { search: "comic illustrated picture" },
+      action: { search: "action battle war hero" },
     };
 
     const genreConfig = genreMap[args.genre] || { search: args.genre, topic: "children" };
@@ -360,11 +372,19 @@ export const browseByGenre = action({
 
       const data = (await response.json()) as GutendexResponse;
 
-      return data.results
+      const results = data.results
         .filter(isKidFriendly)
         .filter((b) => b.languages.includes("en"))
         .slice(0, 20)
         .map(parseGutenbergBook);
+
+      // Cache the results
+      await ctx.runMutation(api.freeBooks.saveToCache, {
+        cacheKey,
+        results: JSON.stringify(results),
+      });
+
+      return results;
     } catch {
       return [];
     }
@@ -463,14 +483,24 @@ export const searchStoryWeaver = action({
  * Get curated free books for a kid's age group.
  * Returns popular children's classics from Project Gutenberg.
  */
+// Cache TTL: 24 hours for curated/genre results (Gutenberg updates rarely)
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
 export const getCuratedFreeBooks = action({
   args: {
     age: v.optional(v.number()),
   },
-  handler: async (_ctx, args) => {
-    // Pick age-appropriate search terms
+  handler: async (ctx, args) => {
     const age = args.age || 8;
+    const cacheKey = `curated:${age <= 6 ? "young" : age <= 9 ? "mid" : age <= 12 ? "tween" : "teen"}`;
 
+    // Check cache first
+    const cached = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
+    if (cached) {
+      return JSON.parse(cached.results);
+    }
+
+    // Pick age-appropriate search terms
     let topic = "children";
     let searchTerm = "";
 
@@ -501,13 +531,89 @@ export const getCuratedFreeBooks = action({
 
       const data = (await response.json()) as GutendexResponse;
 
-      return data.results
+      const results = data.results
         .filter(isKidFriendly)
         .filter((b) => b.languages.includes("en"))
         .slice(0, 8)
         .map(parseGutenbergBook);
+
+      // Cache the results
+      await ctx.runMutation(api.freeBooks.saveToCache, {
+        cacheKey,
+        results: JSON.stringify(results),
+      });
+
+      return results;
     } catch {
       return [];
     }
+  },
+});
+
+// ============================================================================
+// Free Book Search Cache
+// ============================================================================
+
+/**
+ * Get cached free book results. Returns null if cache miss or expired.
+ */
+export const getFromCache = query({
+  args: { cacheKey: v.string() },
+  handler: async (ctx, args) => {
+    const cached = await ctx.db
+      .query("freeBookCache")
+      .withIndex("by_key", (q) => q.eq("cacheKey", args.cacheKey))
+      .first();
+
+    if (!cached || cached.expiresAt < Date.now()) {
+      return null;
+    }
+    return cached;
+  },
+});
+
+/**
+ * Save free book results to cache. Overwrites existing entry for same key.
+ */
+export const saveToCache = mutation({
+  args: {
+    cacheKey: v.string(),
+    results: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Delete existing entry
+    const existing = await ctx.db
+      .query("freeBookCache")
+      .withIndex("by_key", (q) => q.eq("cacheKey", args.cacheKey))
+      .first();
+    if (existing) {
+      await ctx.db.delete(existing._id);
+    }
+
+    await ctx.db.insert("freeBookCache", {
+      cacheKey: args.cacheKey,
+      results: args.results,
+      cachedAt: Date.now(),
+      expiresAt: Date.now() + CACHE_TTL_MS,
+    });
+  },
+});
+
+/**
+ * Clear expired cache entries. Called weekly by cron.
+ * Next page load will fetch fresh results from Gutenberg.
+ */
+export const clearExpiredCache = internalMutation({
+  handler: async (ctx) => {
+    const all = await ctx.db.query("freeBookCache").collect();
+    let deleted = 0;
+    for (const entry of all) {
+      if (entry.expiresAt < Date.now()) {
+        await ctx.db.delete(entry._id);
+        deleted++;
+      }
+    }
+    console.log(`[freeBookCache] Cleared ${deleted} expired entries`);
+    return { deleted };
   },
 });

@@ -13,4 +13,14 @@ crons.daily(
   internal.trialExpirationActions.runTrialExpirationCheck
 );
 
+/**
+ * Refresh free book cache weekly (Gutenberg adds ~50-100 books/month, mostly not children's)
+ * Clears expired cache entries so the next page load fetches fresh results
+ */
+crons.weekly(
+  "refresh-free-book-cache",
+  { dayOfWeek: "sunday", hourUTC: 6, minuteUTC: 0 },
+  internal.freeBooks.clearExpiredCache
+);
+
 export default crons;

@@ -22,6 +22,9 @@ const GENRES = [
   { key: "humor", label: "Humor", emoji: "\uD83D\uDE02", gradient: "from-yellow-400 to-orange-400", bg: "bg-yellow-50" },
   { key: "sports", label: "Sports", emoji: "\u26BD", gradient: "from-green-400 to-teal-500", bg: "bg-green-50" },
   { key: "art-music", label: "Art & Music", emoji: "\uD83C\uDFA8", gradient: "from-fuchsia-400 to-pink-600", bg: "bg-fuchsia-50" },
+  { key: "scary", label: "Scary Stories", emoji: "\uD83D\uDC7B", gradient: "from-gray-600 to-gray-900", bg: "bg-gray-100" },
+  { key: "comics", label: "Comics", emoji: "\uD83D\uDCAC", gradient: "from-sky-400 to-blue-500", bg: "bg-sky-50" },
+  { key: "action", label: "Action", emoji: "\uD83D\uDCA5", gradient: "from-red-500 to-rose-600", bg: "bg-red-50" },
 ];
 
 interface GenreBrowserProps {

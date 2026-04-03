@@ -95,9 +95,11 @@ export const getPreApprovedBooks = query({
     const exclusionSet = new Set(exclusions);
 
     // Filter to age-appropriate books, excluding parent-removed ones
+    // Sort by closest to kid's age first (so 8-year-olds see age 7-9 books before age 3-6)
     return PRE_APPROVED_BOOKS
       .filter((book) => book.minAge <= maxAge)
       .filter((book) => !exclusionSet.has(book.gutenbergId))
+      .sort((a, b) => b.minAge - a.minAge)
       .map((book) => ({
         gutenbergId: book.gutenbergId,
         googleBookId: `gutenberg:${book.gutenbergId}`,

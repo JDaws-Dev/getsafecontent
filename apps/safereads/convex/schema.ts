@@ -450,4 +450,13 @@ export default defineSchema({
     storageId: v.optional(v.id("_storage")), // Convex file storage ID for DALL-E generated covers
     generatedAt: v.number(),
   }).index("by_book", ["bookIdentifier"]),
+  // ========================================================================
+  // Free Books Search Cache (avoids hitting Gutenberg API on every page load)
+  // ========================================================================
+  freeBookCache: defineTable({
+    cacheKey: v.string(), // e.g., "curated:8", "genre:adventure", "search:treasure"
+    results: v.string(), // JSON stringified array of parsed books
+    cachedAt: v.number(),
+    expiresAt: v.number(), // TTL — refresh after expiry
+  }).index("by_key", ["cacheKey"]),
 }, { schemaValidation: false });
