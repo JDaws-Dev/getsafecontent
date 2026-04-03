@@ -166,7 +166,7 @@ export function FreeBookSearch({ kidId }: FreeBookSearchProps) {
             className="flex gap-3.5 rounded-2xl border-2 border-transparent bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:border-purple-100 hover:shadow-lg"
           >
             {/* Cover */}
-            <div className="h-28 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
+            <div className="relative h-28 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
               {(() => {
                 const cachedUrl = cachedCovers?.[book.id]?.coverUrl;
                 const displayUrl = cachedUrl || book.coverUrl;
@@ -175,9 +175,9 @@ export function FreeBookSearch({ kidId }: FreeBookSearchProps) {
                     <Image
                       src={displayUrl}
                       alt={book.title}
-                      width={80}
-                      height={112}
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="80px"
+                      className="object-cover"
                       unoptimized
                     />
                   );

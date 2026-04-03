@@ -20,8 +20,8 @@ export function KidNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-purple-100 bg-white/95 backdrop-blur-md safe-area-bottom">
-      <div className="mx-auto flex max-w-lg items-center justify-around px-2 py-1.5">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-purple-100 bg-white/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
+      <div className="mx-auto flex max-w-lg items-center justify-around px-1 py-1.5 sm:px-2">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href ||
             (item.label === "My Books" && pathname === "/play/home") ||
@@ -32,7 +32,7 @@ export function KidNav() {
             <Link
               key={item.label}
               href={item.href}
-              className={`kid-touch flex flex-col items-center gap-0.5 rounded-2xl px-5 py-2 transition-all duration-200 ${
+              className={`kid-touch flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-2 transition-all duration-200 sm:px-5 ${
                 isActive
                   ? "bg-purple-50 text-purple-600"
                   : "text-gray-400 hover:text-gray-600"
@@ -51,7 +51,7 @@ export function KidNav() {
         })}
         <button
           onClick={handleLogout}
-          className="kid-touch flex flex-col items-center gap-0.5 rounded-2xl px-5 py-2 text-gray-400 transition-all duration-200 hover:text-gray-600"
+          className="kid-touch flex min-h-[44px] min-w-[44px] flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-2 text-gray-400 transition-all duration-200 hover:text-gray-600 sm:px-5"
         >
           <LogOut className="h-6 w-6" strokeWidth={1.8} />
           <span className="text-[10px] font-semibold">Exit</span>

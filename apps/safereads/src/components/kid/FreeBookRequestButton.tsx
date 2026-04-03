@@ -40,9 +40,9 @@ export function FreeBookRequestButton({
 
   if (requestStatus === "pending" || justRequested) {
     return (
-      <span className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 px-3.5 py-2 text-xs font-bold text-amber-700 ring-1 ring-amber-200">
+      <span className={`flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 px-3.5 py-2 text-xs font-bold text-amber-700 ring-1 ring-amber-200 ${justRequested ? "animate-bounce-once" : ""}`}>
         <Clock className="h-3.5 w-3.5" />
-        Waiting on Parent
+        {justRequested ? "Requested! \uD83D\uDE4F" : "Waiting on Parent"}
       </span>
     );
   }
@@ -88,7 +88,7 @@ export function FreeBookRequestButton({
     <button
       onClick={handleRequest}
       disabled={isLoading}
-      className="kid-touch flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-purple-200 transition-all duration-200 hover:from-violet-600 hover:to-purple-700 hover:shadow-lg active:scale-95 disabled:opacity-50"
+      className="kid-touch flex min-h-[44px] items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-purple-200 transition-all duration-200 hover:from-violet-600 hover:to-purple-700 hover:shadow-lg active:scale-95 disabled:opacity-50"
     >
       {isLoading ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" />

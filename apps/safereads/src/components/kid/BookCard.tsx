@@ -36,10 +36,10 @@ export function BookCard({
     lg: "text-sm",
   };
 
-  const maxWidths = {
-    sm: "96px",
-    md: "112px",
-    lg: "128px",
+  const maxWidthClasses = {
+    sm: "max-w-[96px]",
+    md: "max-w-[112px]",
+    lg: "max-w-[128px]",
   };
 
   // Use the best available cover: cached > original > stylized fallback
@@ -91,14 +91,12 @@ export function BookCard({
 
       {/* Title & Author */}
       <p
-        className={`mt-2 line-clamp-2 font-semibold leading-tight text-gray-800 transition-colors group-hover:text-purple-700 ${textSizeClasses[size]}`}
-        style={{ maxWidth: maxWidths[size] }}
+        className={`mt-2 line-clamp-2 font-semibold leading-tight text-gray-800 transition-colors group-hover:text-purple-700 ${textSizeClasses[size]} ${maxWidthClasses[size]}`}
       >
         {title}
       </p>
       <p
-        className={`mt-0.5 line-clamp-1 text-gray-400 ${size === "lg" ? "text-xs" : "text-[10px]"}`}
-        style={{ maxWidth: maxWidths[size] }}
+        className={`mt-0.5 line-clamp-1 text-gray-400 ${size === "lg" ? "text-xs" : "text-[10px]"} ${maxWidthClasses[size]}`}
       >
         {author}
       </p>

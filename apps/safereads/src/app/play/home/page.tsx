@@ -8,7 +8,7 @@ import { KidBookshelf } from "@/components/kid/KidBookshelf";
 import { BookCard } from "@/components/kid/BookCard";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
 import { StylizedCover } from "@/components/kid/StylizedCover";
-import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles } from "lucide-react";
+import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -178,17 +178,17 @@ export default function KidHomePage() {
   return (
     <div className="py-6">
       {/* Welcome Header - Hero */}
-      <div className={`animate-fade-up overflow-hidden rounded-3xl bg-gradient-to-r ${gradientClass} p-6 text-white shadow-xl`}
+      <div className={`animate-fade-up overflow-hidden rounded-3xl bg-gradient-to-r ${gradientClass} p-4 text-white shadow-xl sm:p-6`}
            style={{ animationDelay: "0s" }}>
-        <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 text-3xl backdrop-blur-sm">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 text-2xl backdrop-blur-sm sm:h-16 sm:w-16 sm:text-3xl">
             {greetingEmoji}
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-bold sm:text-2xl">
               Hi, {kidProfile.name}!
             </h1>
-            <p className="mt-1 text-base font-medium text-white/80">
+            <p className="mt-1 text-sm font-medium text-white/80 sm:text-base">
               Ready for a reading adventure?
             </p>
           </div>
@@ -196,21 +196,21 @@ export default function KidHomePage() {
 
         {/* Quick Stats inline */}
         {stats && (stats.totalBooks > 0 || stats.finishedBooks > 0) && (
-          <div className="mt-5 flex gap-2">
-            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 backdrop-blur-sm">
-              <BookOpen className="h-4 w-4" />
-              <span className="text-sm font-bold">{stats.currentlyReading}</span>
-              <span className="text-xs text-white/70">reading</span>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
+              <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="text-xs font-bold sm:text-sm">{stats.currentlyReading}</span>
+              <span className="text-[10px] text-white/70 sm:text-xs">reading</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 backdrop-blur-sm">
-              <Trophy className="h-4 w-4" />
-              <span className="text-sm font-bold">{stats.finishedBooks}</span>
-              <span className="text-xs text-white/70">finished</span>
+            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
+              <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="text-xs font-bold sm:text-sm">{stats.finishedBooks}</span>
+              <span className="text-[10px] text-white/70 sm:text-xs">finished</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 backdrop-blur-sm">
-              <TrendingUp className="h-4 w-4" />
-              <span className="text-sm font-bold">{stats.totalPages}</span>
-              <span className="text-xs text-white/70">pages</span>
+            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="text-xs font-bold sm:text-sm">{stats.totalPages}</span>
+              <span className="text-[10px] text-white/70 sm:text-xs">pages</span>
             </div>
           </div>
         )}
@@ -222,22 +222,49 @@ export default function KidHomePage() {
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-purple-500" />
             <h2 className="text-lg font-bold text-gray-800">
-              Keep Reading
+              Continue Reading
             </h2>
           </div>
-          <div className="mt-3 flex gap-4 overflow-x-auto pb-2 scrollbar-none">
+          <div className="mt-3 space-y-3">
             {currentlyReadingBooks.map((book) => (
-              <BookCard
+              <button
                 key={book._id}
-                title={book.title}
-                author={book.author}
-                coverUrl={book.coverUrl}
-                progress={book.progress}
-                onClick={() =>
-                  router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)
-                }
-                size="lg"
-              />
+                onClick={() => router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)}
+                className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
+              >
+                <div className="book-tilt relative h-20 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
+                  {book.coverUrl ? (
+                    <Image
+                      src={book.coverUrl}
+                      alt={book.title}
+                      fill
+                      sizes="56px"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <StylizedCover title={book.title} author={book.author} size="sm" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1 text-left">
+                  <p className="line-clamp-1 text-sm font-bold text-gray-900">{book.title}</p>
+                  <p className="mt-0.5 text-xs text-gray-400">{book.author}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-purple-100">
+                      <div
+                        className="progress-gradient h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(book.progress, 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-bold text-purple-600">
+                      {Math.round(book.progress)}%
+                    </span>
+                  </div>
+                </div>
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 to-purple-600 shadow-md">
+                  <BookOpen className="h-4 w-4 text-white" />
+                </div>
+              </button>
             ))}
           </div>
         </section>
@@ -271,7 +298,7 @@ export default function KidHomePage() {
           <p className="mt-0.5 text-xs text-gray-400">
             Timeless stories ready to read now
           </p>
-          <div className="mt-3 flex gap-3 overflow-x-auto pb-2 scrollbar-none">
+          <div className="mt-3 flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
             {preApprovedBooks.slice(0, 12).map((book) => {
               const cachedUrl = cachedCovers?.[book.gutenbergId]?.coverUrl;
               const displayUrl = cachedUrl || book.coverUrl;
@@ -322,6 +349,72 @@ export default function KidHomePage() {
         </section>
       )}
 
+      {/* Recommended for You — shows when bookshelf is empty */}
+      {approvedBooks !== undefined && approvedBooks.length === 0 && preApprovedBooks && preApprovedBooks.length > 0 && (
+        <section className="animate-fade-up mt-7" style={{ animationDelay: "0.2s" }}>
+          <div className="flex items-center gap-2">
+            <Star className="h-4 w-4 text-yellow-500" />
+            <h2 className="text-lg font-bold text-gray-800">
+              Recommended for You
+            </h2>
+          </div>
+          <p className="mt-0.5 text-xs text-gray-400">
+            {kidProfile.age && kidProfile.age <= 6
+              ? "Great first books to start your reading journey!"
+              : kidProfile.age && kidProfile.age <= 9
+                ? "Adventures and stories picked just for you!"
+                : "Classics you might enjoy — tap to start reading!"}
+          </p>
+          <div className="mt-3 flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
+            {preApprovedBooks.slice(0, 5).map((book) => {
+              const cachedUrl = cachedCovers?.[book.gutenbergId]?.coverUrl;
+              const displayUrl = cachedUrl || book.coverUrl;
+              return (
+                <button
+                  key={book.gutenbergId}
+                  onClick={() => router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)}
+                  className="group flex flex-shrink-0 flex-col items-start text-left"
+                >
+                  <div className="book-tilt relative h-44 w-32 overflow-hidden rounded-xl bg-gray-100 shadow-lg ring-1 ring-black/5 transition-all group-active:scale-[0.97]">
+                    {displayUrl ? (
+                      <Image
+                        src={displayUrl}
+                        alt={book.title}
+                        fill
+                        sizes="128px"
+                        className="object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <StylizedCover
+                        title={book.title}
+                        author={book.author}
+                        size="lg"
+                      />
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-violet-700/90 to-transparent px-2 pb-2 pt-5 text-center">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-white">Start Reading</span>
+                    </div>
+                  </div>
+                  <p
+                    className="mt-2 line-clamp-2 text-xs font-semibold leading-tight text-gray-800 group-hover:text-purple-700"
+                    style={{ maxWidth: "128px" }}
+                  >
+                    {book.title}
+                  </p>
+                  <p
+                    className="mt-0.5 line-clamp-1 text-[10px] text-gray-400"
+                    style={{ maxWidth: "128px" }}
+                  >
+                    {book.author}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* Pending Requests */}
       {pendingCount > 0 && (
         <div className="animate-fade-up mt-5 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 p-4 shadow-sm ring-1 ring-amber-200" style={{ animationDelay: "0.25s" }}>
@@ -359,7 +452,7 @@ export default function KidHomePage() {
               <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
             </div>
           ) : freeBooks.length > 0 ? (
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
+            <div className="flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
               {freeBooks.map((book) => {
                 const cachedUrl = cachedCovers?.[book.id]?.coverUrl;
                 const displayUrl = cachedUrl || book.coverUrl;
@@ -435,7 +528,7 @@ export default function KidHomePage() {
         </div>
         <div className="mt-3">
           {approvedBooks === undefined ? (
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}

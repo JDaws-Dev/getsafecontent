@@ -198,15 +198,16 @@ export default function KidReadPage() {
       </Link>
 
       {/* Book Header */}
-      <div className="flex gap-5">
-        <div className="h-52 w-36 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 shadow-xl ring-1 ring-black/5">
+      <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+        <div className="relative h-52 w-36 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 shadow-xl ring-1 ring-black/5">
           {effectiveBook.coverUrl ? (
             <Image
               src={effectiveBook.coverUrl}
               alt={effectiveBook.title}
-              width={144}
-              height={208}
-              className="h-full w-full object-cover"
+              fill
+              sizes="144px"
+              className="object-cover"
+              unoptimized
             />
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-violet-50 to-purple-100 p-3">
@@ -218,13 +219,13 @@ export default function KidReadPage() {
           )}
         </div>
 
-        <div className="flex flex-col justify-center">
-          <h1 className="text-xl font-bold leading-tight text-gray-900">{effectiveBook.title}</h1>
+        <div className="flex flex-col justify-center text-center sm:text-left">
+          <h1 className="text-xl font-bold leading-tight text-gray-900 sm:text-2xl">{effectiveBook.title}</h1>
           <p className="mt-1.5 text-sm font-medium text-gray-400">{effectiveBook.author}</p>
 
           {/* Free book badge */}
           {isFreeBook && (
-            <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-50 to-green-50 px-3 py-1.5 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200">
+            <span className="mx-auto mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-50 to-green-50 px-3 py-1.5 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200 sm:mx-0">
               <Sparkles className="h-3 w-3" />
               Free to Read
             </span>
@@ -341,12 +342,12 @@ export default function KidReadPage() {
             <p className="text-sm text-gray-500">
               How far along are you?
             </p>
-            <div className="flex gap-2.5">
+            <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
               {[25, 50, 75, 100].map((percent) => (
                 <button
                   key={percent}
                   onClick={() => handleUpdateProgress(percent)}
-                  className={`kid-touch flex-1 rounded-2xl py-3 text-sm font-bold transition-all duration-200 ${
+                  className={`kid-touch min-h-[44px] rounded-2xl py-3 text-sm font-bold transition-all duration-200 ${
                     currentPercent >= percent
                       ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md"
                       : "bg-gray-50 text-gray-500 ring-1 ring-gray-200 hover:bg-purple-50 hover:text-purple-600"

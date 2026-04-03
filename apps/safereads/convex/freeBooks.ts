@@ -271,6 +271,45 @@ function stripGutenbergBoilerplate(html: string): string {
     }
   }
 
+  // Remove edition info and Gutenberg metadata lines
+  const metadataPatterns = [
+    // Edition references (e.g., "THE MILLENNIUM FULCRUM EDITION 3.0")
+    /<[^>]*>[^<]*MILLENNIUM FULCRUM[^<]*<\/[^>]*>/gi,
+    /<[^>]*>[^<]*EDITION\s+\d+(\.\d+)?[^<]*<\/[^>]*>/gi,
+    // Project Gutenberg references in text
+    /<[^>]*>[^<]*Project Gutenberg[^<]*<\/[^>]*>/gi,
+    // Transcriber/editor notes
+    /<[^>]*>[^<]*Transcriber'?s?\s+Note[^<]*<\/[^>]*>/gi,
+    /<[^>]*>[^<]*\[Transcriber[^<]*<\/[^>]*>/gi,
+    /<[^>]*>[^<]*Editor'?s?\s+Note[^<]*<\/[^>]*>/gi,
+    // eBook identifiers
+    /<[^>]*>[^<]*eBook[^<]*<\/[^>]*>/gi,
+    // Release/posting dates
+    /<[^>]*>[^<]*Release Date[^<]*<\/[^>]*>/gi,
+    /<[^>]*>[^<]*Posting Date[^<]*<\/[^>]*>/gi,
+    /<[^>]*>[^<]*Last Updated[^<]*<\/[^>]*>/gi,
+    // Character set encoding notices
+    /<[^>]*>[^<]*Character set encoding[^<]*<\/[^>]*>/gi,
+    // "Produced by" credits that may remain
+    /<[^>]*>[^<]*Produced by[^<]*<\/[^>]*>/gi,
+  ];
+
+  for (const pattern of metadataPatterns) {
+    content = content.replace(pattern, "");
+  }
+
+  // Remove leading cover image (the book detail page shows the cover already).
+  // Match an <img> tag at the very start (allowing surrounding whitespace,
+  // wrapper divs, or <a> tags) before any <p> or heading content.
+  content = content.replace(
+    /^\s*(?:<div[^>]*>\s*)?(?:<a[^>]*>\s*)?<img[^>]*>(?:\s*<\/a>)?(?:\s*<\/div>)?\s*/i,
+    ""
+  );
+
+  // Clean up multiple consecutive blank lines / empty elements left after stripping
+  content = content.replace(/(<br\s*\/?>[\s\n]*){3,}/gi, "<br><br>");
+  content = content.replace(/(<p>\s*<\/p>\s*){2,}/gi, "");
+
   return content.trim();
 }
 

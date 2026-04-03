@@ -155,7 +155,7 @@ export function ProfileSelector({
       </div>
 
       {/* Profile Grid */}
-      <div className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-3">
+      <div className="mt-8 grid w-full max-w-md grid-cols-2 gap-4 sm:max-w-lg sm:grid-cols-3 sm:gap-5 lg:max-w-2xl lg:grid-cols-4">
         {kids.map((kid) => {
           const gradientClass = COLOR_GRADIENTS[kid.color] || COLOR_GRADIENTS.purple;
           const ringClass = COLOR_RINGS[kid.color] || COLOR_RINGS.purple;
@@ -164,11 +164,11 @@ export function ProfileSelector({
             <button
               key={kid._id}
               onClick={() => handleProfileSelect(kid)}
-              className="animate-bounce-in group flex flex-col items-center gap-3 rounded-3xl border-2 border-transparent bg-white p-6 shadow-md transition-all duration-200 hover:border-purple-200 hover:shadow-lg hover:-translate-y-1 active:scale-95"
+              className="animate-bounce-in group flex min-h-[120px] flex-col items-center gap-3 rounded-3xl border-2 border-transparent bg-white p-4 shadow-md transition-all duration-200 hover:border-purple-200 hover:shadow-lg hover:-translate-y-1 active:scale-95 sm:p-6"
             >
               {/* Avatar with gradient + icon */}
-              <div className={`relative flex h-22 w-22 items-center justify-center rounded-full bg-gradient-to-br ${gradientClass} ring-4 ${ringClass} shadow-lg transition-transform duration-200 group-hover:scale-110`}>
-                <span className="text-4xl">{icon}</span>
+              <div className={`relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br ${gradientClass} ring-4 ${ringClass} shadow-lg transition-transform duration-200 group-hover:scale-110 sm:h-[88px] sm:w-[88px]`}>
+                <span className="text-3xl sm:text-4xl">{icon}</span>
                 {kid.hasPin && (
                   <div className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md">
                     <Lock className="h-3.5 w-3.5 text-gray-400" />
@@ -234,7 +234,7 @@ export function ProfileSelector({
                       <button
                         key="back"
                         onClick={handlePinBackspace}
-                        className="kid-touch flex h-14 items-center justify-center rounded-2xl bg-gray-100 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-200 active:bg-gray-300"
+                        className="kid-touch flex min-h-[48px] items-center justify-center rounded-2xl bg-gray-100 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-200 active:bg-gray-300"
                       >
                         Del
                       </button>
@@ -244,7 +244,7 @@ export function ProfileSelector({
                     <button
                       key={key}
                       onClick={() => handlePinDigit(key)}
-                      className="kid-touch flex h-14 items-center justify-center rounded-2xl bg-gray-50 text-xl font-bold text-gray-800 transition-all hover:bg-purple-50 hover:text-purple-600 active:bg-purple-100 active:scale-95"
+                      className="kid-touch flex min-h-[48px] items-center justify-center rounded-2xl bg-gray-50 text-xl font-bold text-gray-800 transition-all hover:bg-purple-50 hover:text-purple-600 active:bg-purple-100 active:scale-95"
                     >
                       {key}
                     </button>

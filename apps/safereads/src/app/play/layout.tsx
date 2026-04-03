@@ -15,14 +15,21 @@ export default function PlayLayout({
 }) {
   const pathname = usePathname();
 
-  // Don't show kid nav on the code entry page or profile selection
+  // Don't show kid nav on the code entry page, profile selection, or reader
+  const isReaderRoute = pathname?.startsWith("/play/read/");
   const showNav =
     pathname !== "/play" &&
-    pathname !== "/play/profiles";
+    pathname !== "/play/profiles" &&
+    !isReaderRoute;
+
+  // Reader route gets a clean full-screen wrapper (no padding, no bg pattern)
+  if (isReaderRoute) {
+    return <>{children}</>;
+  }
 
   return (
-    <div className="kid-bg-pattern min-h-screen">
-      <div className={`mx-auto max-w-2xl px-4 ${showNav ? "pb-28" : ""}`}>
+    <div className="kid-bg-pattern min-h-screen overflow-x-hidden">
+      <div className={`mx-auto max-w-2xl px-4 lg:max-w-4xl ${showNav ? "pb-28" : ""}`}>
         {children}
       </div>
       {showNav && <KidNav />}

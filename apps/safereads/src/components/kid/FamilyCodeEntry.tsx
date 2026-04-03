@@ -89,8 +89,8 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
 
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4">
-      {/* Floating decorative emojis */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* Floating decorative emojis -- hidden on very small screens */}
+      <div className="pointer-events-none absolute inset-0 hidden overflow-hidden sm:block">
         <span className="animate-float absolute left-[10%] top-[15%] text-3xl opacity-20" style={{ animationDelay: "0s" }}>
           {"📖"}
         </span>
@@ -129,7 +129,7 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
 
       {/* Code Input */}
       <div
-        className={`flex gap-2.5 sm:gap-3.5 ${shake ? "animate-shake" : ""}`}
+        className={`flex gap-1.5 sm:gap-3 ${shake ? "animate-shake" : ""}`}
         onPaste={handlePaste}
       >
         {digits.map((digit, index) => (
@@ -142,7 +142,7 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
             value={digit}
             onChange={(e) => handleChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
-            className={`h-16 w-12 rounded-2xl border-3 bg-white text-center text-2xl font-bold uppercase shadow-md transition-all duration-200 focus:outline-none focus:ring-3 sm:h-18 sm:w-15 sm:text-3xl ${
+            className={`h-14 w-11 rounded-2xl border-3 bg-white text-center text-xl font-bold uppercase shadow-md transition-all duration-200 focus:outline-none focus:ring-3 sm:h-16 sm:w-14 sm:text-2xl md:h-[72px] md:w-16 md:text-3xl ${
               error
                 ? "border-red-300 text-red-600 focus:border-red-400 focus:ring-red-100"
                 : digit

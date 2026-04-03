@@ -191,9 +191,9 @@ export function StylizedCover({
   const style = (effectiveGenre && GENRE_STYLES[effectiveGenre.toLowerCase()]) || DEFAULT_STYLE;
 
   const sizeClasses = {
-    sm: "w-24 h-36",
-    md: "w-28 h-40",
-    lg: "w-32 h-48",
+    sm: "w-full h-full",
+    md: "w-full h-full",
+    lg: "w-full h-full",
   };
 
   const emojiSizes = {

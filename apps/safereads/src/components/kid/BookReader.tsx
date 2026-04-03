@@ -67,6 +67,14 @@ export function BookReader({
     word: string;
     position: { x: number; y: number };
   } | null>(null);
+  const [scrollPercent, setScrollPercent] = useState(0);
+  const [showTapHint, setShowTapHint] = useState(() => {
+    try {
+      return !localStorage.getItem("safereads_tap_hint_seen");
+    } catch {
+      return true;
+    }
+  });
 
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -96,6 +104,20 @@ export function BookReader({
       // Ignore
     }
   }, [fontSize, theme]);
+
+  // Auto-dismiss tap hint after 5 seconds
+  useEffect(() => {
+    if (!showTapHint) return;
+    const timer = setTimeout(() => {
+      setShowTapHint(false);
+      try {
+        localStorage.setItem("safereads_tap_hint_seen", "1");
+      } catch {
+        // Ignore
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [showTapHint]);
 
   // Fetch book content
   useEffect(() => {
@@ -133,6 +155,9 @@ export function BookReader({
     const scrollTop = el.scrollTop;
     const scrollHeight = el.scrollHeight - el.clientHeight;
     const percent = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
+
+    // Update visual progress bar
+    setScrollPercent(Math.min(percent, 100));
 
     // Only save progress every 10 seconds and if percent changed meaningfully
     const now = Date.now();
@@ -274,7 +299,29 @@ export function BookReader({
   }
 
   return (
-    <div className={`fixed inset-0 flex flex-col ${currentTheme.bg}`}>
+    <div className={`fixed inset-0 z-[60] flex flex-col ${currentTheme.bg}`}>
+      {/* Reading progress bar — always visible at the very top */}
+      <div
+        className="h-[3px] w-full flex-shrink-0"
+        style={{
+          background:
+            theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
+        }}
+      >
+        <div
+          className="h-full transition-[width] duration-300 ease-out"
+          style={{
+            width: `${scrollPercent}%`,
+            background:
+              theme === "dark"
+                ? "#6ee7b7"
+                : theme === "sepia"
+                  ? "#92400e"
+                  : "#10b981",
+          }}
+        />
+      </div>
+
       {/* Top Controls Bar */}
       {showControls && (
         <div
@@ -289,12 +336,12 @@ export function BookReader({
           {/* Back button */}
           <button
             onClick={onBack}
-            className={`flex items-center gap-1.5 text-sm font-medium ${
+            className={`flex min-h-[44px] min-w-[44px] items-center gap-1.5 text-sm font-medium ${
               theme === "dark" ? "text-gray-300" : "text-gray-600"
             }`}
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            <span className="hidden sm:inline">Back</span>
           </button>
 
           {/* Title */}
@@ -309,7 +356,7 @@ export function BookReader({
           {/* Theme toggle */}
           <button
             onClick={cycleTheme}
-            className={`flex h-8 w-8 items-center justify-center rounded-full ${
+            className={`flex h-10 w-10 items-center justify-center rounded-full ${
               theme === "dark"
                 ? "bg-gray-700 text-gray-300"
                 : theme === "sepia"
@@ -331,7 +378,7 @@ export function BookReader({
       >
         <div
           ref={contentRef}
-          className={`book-reader-content mx-auto max-w-2xl px-5 py-8 sm:px-8 ${currentTheme.text}`}
+          className={`book-reader-content mx-auto max-w-[680px] px-4 py-8 sm:px-8 ${currentTheme.text}`}
           style={{
             fontSize: `${fontSize}px`,
             lineHeight: "1.8",
@@ -344,7 +391,7 @@ export function BookReader({
       {/* Bottom Controls Bar */}
       {showControls && (
         <div
-          className={`flex items-center justify-center gap-6 border-t px-4 py-3 ${
+          className={`flex items-center justify-center gap-6 border-t px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] ${
             theme === "dark"
               ? "border-gray-700 bg-gray-800"
               : theme === "sepia"
@@ -357,7 +404,7 @@ export function BookReader({
             <button
               onClick={() => changeFontSize(-2)}
               disabled={fontSize <= MIN_FONT_SIZE}
-              className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors disabled:opacity-30 ${
+              className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors disabled:opacity-30 ${
                 theme === "dark"
                   ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -367,8 +414,8 @@ export function BookReader({
               <Minus className="h-4 w-4" />
             </button>
             <span
-              className={`w-8 text-center text-xs font-medium ${
-                theme === "dark" ? "text-gray-400" : "text-gray-500"
+              className={`w-10 text-center text-sm font-bold ${
+                theme === "dark" ? "text-gray-200" : "text-gray-700"
               }`}
             >
               {fontSize}
@@ -376,7 +423,7 @@ export function BookReader({
             <button
               onClick={() => changeFontSize(2)}
               disabled={fontSize >= MAX_FONT_SIZE}
-              className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors disabled:opacity-30 ${
+              className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors disabled:opacity-30 ${
                 theme === "dark"
                   ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -387,14 +434,16 @@ export function BookReader({
             </button>
           </div>
 
-          {/* Tap hint */}
-          <span
-            className={`text-[10px] ${
-              theme === "dark" ? "text-gray-500" : "text-gray-400"
-            }`}
-          >
-            Tap a word to see its definition
-          </span>
+          {/* Tap hint — fades out after 5s, then hidden permanently */}
+          {showTapHint && (
+            <span
+              className={`text-xs transition-opacity duration-1000 ${
+                theme === "dark" ? "text-gray-500" : "text-gray-400"
+              }`}
+            >
+              Tap a word for its definition
+            </span>
+          )}
         </div>
       )}
 

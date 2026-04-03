@@ -143,14 +143,15 @@ export function BookSearch({ kidId }: BookSearchProps) {
             className="flex gap-3.5 rounded-2xl border-2 border-transparent bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:border-purple-100 hover:shadow-lg"
           >
             {/* Cover */}
-            <div className="h-28 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
+            <div className="relative h-28 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
               {book.coverUrl ? (
                 <Image
                   src={book.coverUrl}
                   alt={book.title}
-                  width={80}
-                  height={112}
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                  unoptimized
                 />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-violet-50 to-purple-100 p-2">

@@ -52,7 +52,7 @@ export default function KidSearchPage() {
       <div className="mb-4 flex items-center gap-3">
         <Link
           href="/play/home"
-          className="kid-touch flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-500 shadow-md transition-all hover:shadow-lg active:scale-95"
+          className="kid-touch flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 shadow-md transition-all hover:shadow-lg active:scale-95"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
@@ -77,7 +77,7 @@ export default function KidSearchPage() {
       <div className="mb-4 flex gap-1 rounded-2xl bg-white p-1 shadow-sm ring-1 ring-black/5">
         <button
           onClick={() => setActiveTab("all")}
-          className={`kid-touch flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
+          className={`kid-touch min-h-[44px] flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
             activeTab === "all"
               ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md"
               : "text-gray-400 hover:text-gray-600"
@@ -87,7 +87,7 @@ export default function KidSearchPage() {
         </button>
         <button
           onClick={() => setActiveTab("free")}
-          className={`kid-touch flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
+          className={`kid-touch min-h-[44px] flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
             activeTab === "free"
               ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md"
               : "text-gray-400 hover:text-gray-600"

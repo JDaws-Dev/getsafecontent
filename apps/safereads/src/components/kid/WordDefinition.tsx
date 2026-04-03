@@ -117,16 +117,18 @@ export function WordDefinition({ word, position, onClose }: WordDefinitionProps)
     }
   };
 
-  // Position the popup - keep it on screen
+  // Position the popup - keep it on screen, clamp for narrow viewports
+  const popupWidth = Math.min(280, typeof window !== "undefined" ? window.innerWidth - 24 : 280);
   const style: React.CSSProperties = {
     position: "fixed",
-    left: Math.min(Math.max(position.x - 140, 12), window.innerWidth - 300),
-    top: Math.min(position.y + 20, window.innerHeight - 200),
+    left: Math.min(Math.max(position.x - popupWidth / 2, 12), (typeof window !== "undefined" ? window.innerWidth : 375) - popupWidth - 12),
+    top: Math.min(position.y + 20, (typeof window !== "undefined" ? window.innerHeight : 667) - 220),
+    width: popupWidth,
     zIndex: 9999,
   };
 
   return (
-    <div ref={popupRef} style={style} className="w-[280px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+    <div ref={popupRef} style={style} className="animate-in fade-in slide-in-from-bottom-2 duration-200">
       <div className="rounded-2xl border border-emerald-200 bg-white shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-emerald-100 px-4 py-2.5">

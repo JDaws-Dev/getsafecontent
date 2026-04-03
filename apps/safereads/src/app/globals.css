@@ -138,6 +138,17 @@ body {
 .animate-bounce-in:nth-child(5) { animation-delay: 0.25s; }
 .animate-bounce-in:nth-child(6) { animation-delay: 0.3s; }
 
+/* Quick bounce for request confirmation */
+@keyframes bounce-once {
+  0% { transform: scale(0.9); }
+  40% { transform: scale(1.1); }
+  70% { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+.animate-bounce-once {
+  animation: bounce-once 0.4s ease-out;
+}
+
 /* Fade-up animation for sections */
 @keyframes fade-up {
   0% { transform: translateY(12px); opacity: 0; }

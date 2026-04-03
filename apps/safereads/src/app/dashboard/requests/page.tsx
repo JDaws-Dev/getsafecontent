@@ -195,7 +195,7 @@ export default function RequestsPage() {
     .slice(0, 10);
 
   return (
-    <div>
+    <div className="mx-auto max-w-3xl">
       {/* Header */}
       <div className="mb-6 flex items-center gap-3">
         <Link
@@ -238,14 +238,15 @@ export default function RequestsPage() {
               >
                 <div className="flex gap-3">
                   {/* Cover */}
-                  <div className="h-20 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-parchment-100">
+                  <div className="relative h-20 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-parchment-100">
                     {request.coverUrl ? (
                       <Image
                         src={request.coverUrl}
                         alt={request.title}
-                        width={56}
-                        height={80}
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="56px"
+                        className="object-cover"
+                        unoptimized
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">
@@ -313,10 +314,10 @@ export default function RequestsPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <Link
                       href={`/dashboard/search?q=${encodeURIComponent(request.title)}`}
-                      className="flex items-center gap-1 rounded-lg border border-parchment-200 px-3 py-2 text-xs font-medium text-ink-600 transition-colors hover:bg-parchment-50"
+                      className="flex min-h-[40px] items-center gap-1 rounded-lg border border-parchment-200 px-3 py-2 text-xs font-medium text-ink-600 transition-colors hover:bg-parchment-50"
                     >
                       <AlertCircle className="h-3.5 w-3.5" />
                       Review
@@ -324,7 +325,7 @@ export default function RequestsPage() {
                     <button
                       onClick={() => setDenyingId(request._id)}
                       disabled={isProcessing}
-                      className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                      className="flex min-h-[40px] items-center gap-1 rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                     >
                       <X className="h-3.5 w-3.5" />
                       Deny
@@ -332,7 +333,7 @@ export default function RequestsPage() {
                     <button
                       onClick={() => handleApprove(request._id)}
                       disabled={isProcessing}
-                      className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-600 disabled:opacity-50"
+                      className="flex min-h-[40px] flex-1 items-center justify-center gap-1 rounded-lg bg-emerald-500 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-600 disabled:opacity-50"
                     >
                       {isProcessing ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
