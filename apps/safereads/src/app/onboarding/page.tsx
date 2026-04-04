@@ -35,6 +35,8 @@ export default function OnboardingPage() {
   const [showKidForm, setShowKidForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [preApprovedLevel, setPreApprovedLevel] = useState<"safe_only" | "safe_and_caution" | "all_classics">("safe_and_caution");
+  const updatePreApprovedLevel = useMutation(api.users.updatePreApprovedLevel);
 
   // Redirect if already onboarded
   if (currentUser?.onboardingComplete) {
@@ -80,6 +82,11 @@ export default function OnboardingPage() {
           readingLevel: kid.readingLevel,
         });
       }
+      // Save content preferences
+      if (authUser?.email) {
+        await updatePreApprovedLevel({ email: authUser.email, level: preApprovedLevel });
+      }
+
       // Mark onboarding complete
       if (!authUser?.email) {
         throw new Error("Not authenticated");
@@ -95,7 +102,7 @@ export default function OnboardingPage() {
     <div className="mx-auto max-w-lg px-4 py-12">
       {/* Progress dots */}
       <div className="mb-8 flex items-center justify-center gap-2">
-        {[0, 1, 2, 3].map((i) => (
+        {[0, 1, 2, 3, 4].map((i) => (
           <div
             key={i}
             className={`h-2 rounded-full transition-all ${
@@ -293,8 +300,94 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      {/* Step 3: Done */}
+      {/* Step 3: Content Preferences */}
       {step === 3 && (
+        <div>
+          <h2 className="font-serif text-2xl font-bold text-ink-900">
+            Reading Comfort Level
+          </h2>
+          <p className="mt-2 text-ink-600">
+            SafeReads includes a library of classic books your kids can read freely.
+            Choose which classics are pre-approved:
+          </p>
+
+          <div className="mt-6 space-y-3">
+            {[
+              {
+                level: "safe_only" as const,
+                label: "Safe Only",
+                description: "Picture books, gentle fairy tales, simple adventures (Peter Rabbit, Wizard of Oz, Alice in Wonderland)",
+                color: "emerald",
+                border: "border-emerald-200",
+                bg: "bg-emerald-50",
+                ring: "ring-emerald-400",
+              },
+              {
+                level: "safe_and_caution" as const,
+                label: "Safe + Moderate",
+                description: "Includes adventure classics with mild themes (Treasure Island, Tom Sawyer, Sherlock Holmes)",
+                color: "amber",
+                border: "border-amber-200",
+                bg: "bg-amber-50",
+                ring: "ring-amber-400",
+                recommended: true,
+              },
+              {
+                level: "all_classics" as const,
+                label: "All Classics",
+                description: "Includes all classic literature, some with darker themes (Dracula, Frankenstein, Jane Eyre)",
+                color: "orange",
+                border: "border-orange-200",
+                bg: "bg-orange-50",
+                ring: "ring-orange-400",
+              },
+            ].map((option) => (
+              <button
+                key={option.level}
+                onClick={() => setPreApprovedLevel(option.level)}
+                className={`w-full rounded-xl border-2 p-4 text-left transition-all ${
+                  preApprovedLevel === option.level
+                    ? `${option.border} ${option.bg} ring-2 ${option.ring}`
+                    : "border-parchment-200 bg-white hover:border-parchment-300"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-ink-900">{option.label}</span>
+                  {option.recommended && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                      RECOMMENDED
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-sm text-ink-500">{option.description}</p>
+              </button>
+            ))}
+          </div>
+
+          <p className="mt-4 text-xs text-ink-400">
+            You can change this anytime in Settings. You can also exclude individual books per child.
+          </p>
+
+          <div className="mt-6 flex gap-3">
+            <button
+              onClick={() => setStep(2)}
+              className="flex-1 rounded-lg border border-parchment-300 px-4 py-3 text-sm font-medium text-ink-600 transition-colors hover:bg-parchment-50"
+            >
+              Back
+            </button>
+            <button
+              onClick={() => setStep(4)}
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-parchment-700 px-4 py-3 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+            >
+              Continue
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 4: Done */}
+      {step === 4 && (
         <div className="text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-verdict-safe/10">
             <BookOpen className="h-8 w-8 text-verdict-safe" />
@@ -321,7 +414,7 @@ export default function OnboardingPage() {
               {!saving && <ArrowRight className="h-4 w-4" />}
             </button>
             <button
-              onClick={() => setStep(2)}
+              onClick={() => setStep(3)}
               className="text-sm text-ink-400 hover:text-ink-600"
             >
               Back
