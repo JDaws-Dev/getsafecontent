@@ -757,10 +757,10 @@ export const getCuratedAudiobooks = action({
     }
 
     try {
-      // Search specific popular kids' titles on LibriVox (generic searches return nothing)
+      // Search popular kids' titles on LibriVox (generic searches return nothing with ^ prefix)
       const titles = age <= 8
-        ? ["alice", "peter rabbit", "wizard of oz", "wind in the willows", "peter pan", "secret garden", "velveteen rabbit", "jungle book"]
-        : ["treasure island", "sherlock holmes", "tom sawyer", "huckleberry finn", "christmas carol", "call of the wild", "around the world", "twenty thousand leagues"];
+        ? ["alice", "peter rabbit", "wizard of oz", "wind in the willows", "peter pan", "secret garden", "velveteen rabbit", "jungle book", "pinocchio", "black beauty", "heidi", "anne of green gables"]
+        : ["treasure island", "sherlock holmes", "tom sawyer", "huckleberry finn", "christmas carol", "call of the wild", "around the world", "twenty thousand leagues", "dracula", "robin hood", "three musketeers", "count of monte", "moby dick", "swiss family", "oliver twist", "david copperfield", "little women", "pride and prejudice", "frankenstein", "war of the worlds"];
 
       const allResults: unknown[] = [];
       for (const title of titles) {
@@ -774,7 +774,7 @@ export const getCuratedAudiobooks = action({
         } catch {
           // Skip failed individual searches
         }
-        if (allResults.length >= 8) break;
+        if (allResults.length >= 16) break; // Show more audiobooks
       }
 
       await ctx.runMutation(api.freeBooks.saveToCache, {

@@ -32,8 +32,10 @@ export default function PlayLayout({
 
   return (
     <div className="kid-bg-pattern min-h-screen overflow-x-hidden">
-      <div className={`mx-auto max-w-2xl px-4 lg:max-w-4xl ${showNav ? "pb-40" : ""}`}>
-        {children}
+      <div className={`${showNav ? "lg:pl-[200px]" : ""}`}>
+        <div className={`mx-auto max-w-2xl px-4 lg:max-w-4xl ${showNav ? "pb-40 lg:pb-8" : ""}`}>
+          {children}
+        </div>
       </div>
       {showNav && <KidNav />}
     </div>

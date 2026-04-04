@@ -37,18 +37,47 @@ export default function ListenPage() {
 
   const getChapters = useAction(api.librivox.getLibriVoxChapters);
 
-  // Load book metadata from localStorage (set by the home page before navigating)
+  const searchLibriVox = useAction(api.librivox.searchLibriVox);
+
+  // Load book metadata from localStorage, or fetch from LibriVox if missing
   useEffect(() => {
     try {
       const stored = localStorage.getItem("safereads_listen_book");
       if (stored) {
         const meta = JSON.parse(stored);
-        setBookMeta(meta);
+        if (meta.rssUrl) {
+          setBookMeta(meta);
+          return;
+        }
       }
     } catch {
-      // Ignore
+      // Fall through to fetch
     }
-  }, []);
+
+    // If no localStorage data or missing rssUrl, try to fetch from LibriVox
+    const librivoxId = bookId.replace(/^librivox:/, "");
+    async function fetchMeta() {
+      try {
+        // Search by the ID or a broad query
+        const results = await searchLibriVox({ query: librivoxId });
+        if (results && results.length > 0) {
+          const book = results[0] as { title: string; authors?: string[]; coverUrl?: string; rssUrl?: string; totalTime?: string };
+          const meta = {
+            title: book.title || "Audiobook",
+            author: book.authors?.join(", ") || "Unknown",
+            coverUrl: book.coverUrl,
+            rssUrl: book.rssUrl,
+            totalTime: book.totalTime,
+          };
+          setBookMeta(meta);
+          localStorage.setItem("safereads_listen_book", JSON.stringify(meta));
+        }
+      } catch {
+        // Will show "not found" state
+      }
+    }
+    fetchMeta();
+  }, [bookId, searchLibriVox]);
 
   // Load chapters from RSS feed
   useEffect(() => {

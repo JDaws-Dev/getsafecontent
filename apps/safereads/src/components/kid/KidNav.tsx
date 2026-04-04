@@ -5,15 +5,15 @@ import { usePathname, useRouter } from "next/navigation";
 import { Home, Library, BookMarked, LogOut, Users, BookOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const COLOR_GRADIENTS: Record<string, { bg: string; text: string; dot: string }> = {
-  red: { bg: "bg-red-50", text: "text-red-600", dot: "from-red-500 to-rose-500" },
-  blue: { bg: "bg-blue-50", text: "text-blue-600", dot: "from-blue-500 to-indigo-500" },
-  green: { bg: "bg-emerald-50", text: "text-emerald-600", dot: "from-emerald-500 to-teal-500" },
-  purple: { bg: "bg-purple-50", text: "text-purple-600", dot: "from-purple-500 to-violet-500" },
-  orange: { bg: "bg-orange-50", text: "text-orange-600", dot: "from-orange-500 to-amber-500" },
-  pink: { bg: "bg-pink-50", text: "text-pink-600", dot: "from-pink-500 to-rose-500" },
-  teal: { bg: "bg-teal-50", text: "text-teal-600", dot: "from-teal-500 to-cyan-500" },
-  yellow: { bg: "bg-yellow-50", text: "text-yellow-600", dot: "from-yellow-500 to-amber-500" },
+const COLOR_GRADIENTS: Record<string, { bg: string; text: string; dot: string; gradient: string; border: string }> = {
+  red: { bg: "bg-red-50", text: "text-red-600", dot: "from-red-500 to-rose-500", gradient: "from-red-500 to-rose-500", border: "border-red-500" },
+  blue: { bg: "bg-blue-50", text: "text-blue-600", dot: "from-blue-500 to-indigo-500", gradient: "from-blue-500 to-indigo-500", border: "border-blue-500" },
+  green: { bg: "bg-emerald-50", text: "text-emerald-600", dot: "from-emerald-500 to-teal-500", gradient: "from-emerald-500 to-teal-500", border: "border-emerald-500" },
+  purple: { bg: "bg-purple-50", text: "text-purple-600", dot: "from-purple-500 to-violet-500", gradient: "from-purple-500 to-violet-500", border: "border-purple-500" },
+  orange: { bg: "bg-orange-50", text: "text-orange-600", dot: "from-orange-500 to-amber-500", gradient: "from-orange-500 to-amber-500", border: "border-orange-500" },
+  pink: { bg: "bg-pink-50", text: "text-pink-600", dot: "from-pink-500 to-rose-500", gradient: "from-pink-500 to-rose-500", border: "border-pink-500" },
+  teal: { bg: "bg-teal-50", text: "text-teal-600", dot: "from-teal-500 to-cyan-500", gradient: "from-teal-500 to-cyan-500", border: "border-teal-500" },
+  yellow: { bg: "bg-yellow-50", text: "text-yellow-600", dot: "from-yellow-500 to-amber-500", gradient: "from-yellow-500 to-amber-500", border: "border-yellow-500" },
 };
 
 interface KidProfile {
@@ -54,59 +54,125 @@ export function KidNav() {
     { href: "/read/home#bookshelf", icon: BookMarked, label: "My Books", match: () => false },
   ];
 
-  return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-100 bg-white/98 backdrop-blur-lg pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto flex max-w-lg items-center justify-around px-1 py-1 sm:px-2">
-        {NAV_ITEMS.map((item) => {
-          const isActive = item.match(pathname || "");
-          const Icon = item.icon;
+  const firstName = kidProfile?.name?.split(" ")[0] || "Reader";
 
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`kid-touch flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 transition-all duration-200 sm:px-5 ${
-                isActive
-                  ? `${colors.bg} ${colors.text}`
-                  : "text-gray-400 hover:text-gray-600 active:scale-95"
-              }`}
-            >
-              <div className="relative">
+  return (
+    <>
+      {/* ===== Mobile bottom nav (< lg) ===== */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-gray-100 bg-white/98 backdrop-blur-lg pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <div className="mx-auto flex max-w-lg items-center justify-around px-1 py-1 sm:px-2">
+          {NAV_ITEMS.map((item) => {
+            const isActive = item.match(pathname || "");
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`kid-touch flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 transition-all duration-200 sm:px-5 ${
+                  isActive
+                    ? `${colors.bg} ${colors.text}`
+                    : "text-gray-400 hover:text-gray-600 active:scale-95"
+                }`}
+              >
+                <div className="relative">
+                  <Icon
+                    className={`h-[22px] w-[22px] transition-all duration-200 ${isActive ? "scale-110" : ""}`}
+                    strokeWidth={isActive ? 2.5 : 1.8}
+                  />
+                  {isActive && (
+                    <div
+                      className={`absolute -bottom-1.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-gradient-to-r ${colors.dot}`}
+                    />
+                  )}
+                </div>
+                <span className={`mt-0.5 text-[10px] font-bold ${isActive ? colors.text : ""}`}>
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+
+          {/* Switch Profile button */}
+          <button
+            onClick={handleSwitchProfile}
+            className="kid-touch flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 text-gray-400 transition-all duration-200 hover:text-gray-600 active:scale-95 sm:px-5"
+          >
+            <Users className="h-[22px] w-[22px]" strokeWidth={1.8} />
+            <span className="mt-0.5 text-[10px] font-bold">Switch</span>
+          </button>
+
+          {/* Exit button */}
+          <button
+            onClick={handleLogout}
+            className="kid-touch flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 text-gray-400 transition-all duration-200 hover:text-gray-600 active:scale-95 sm:px-5"
+          >
+            <LogOut className="h-[22px] w-[22px]" strokeWidth={1.8} />
+            <span className="mt-0.5 text-[10px] font-bold">Exit</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* ===== Desktop sidebar (lg+) ===== */}
+      <nav className="fixed left-0 top-0 z-50 hidden h-full w-[200px] flex-col border-r border-gray-200/60 bg-white/95 backdrop-blur-lg lg:flex">
+        {/* Kid avatar + name */}
+        <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-5">
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${colors.gradient} text-white font-bold text-sm shadow-sm`}
+          >
+            {firstName.charAt(0).toUpperCase()}
+          </div>
+          <span className="truncate text-sm font-semibold text-gray-700">
+            {firstName}
+          </span>
+        </div>
+
+        {/* Nav items */}
+        <div className="flex flex-1 flex-col gap-1 px-3 py-4">
+          {NAV_ITEMS.map((item) => {
+            const isActive = item.match(pathname || "");
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ${
+                  isActive
+                    ? `${colors.bg} ${colors.text} border-l-[3px] ${colors.border}`
+                    : "border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                }`}
+              >
                 <Icon
-                  className={`h-[22px] w-[22px] transition-all duration-200 ${isActive ? "scale-110" : ""}`}
+                  className={`h-5 w-5 shrink-0 ${isActive ? "" : ""}`}
                   strokeWidth={isActive ? 2.5 : 1.8}
                 />
-                {isActive && (
-                  <div
-                    className={`absolute -bottom-1.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-gradient-to-r ${colors.dot}`}
-                  />
-                )}
-              </div>
-              <span className={`mt-0.5 text-[10px] font-bold ${isActive ? colors.text : ""}`}>
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+                <span className={`text-sm ${isActive ? "font-semibold" : "font-medium"}`}>
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
 
-        {/* Switch Profile button */}
-        <button
-          onClick={handleSwitchProfile}
-          className="kid-touch flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 text-gray-400 transition-all duration-200 hover:text-gray-600 active:scale-95 sm:px-5"
-        >
-          <Users className="h-[22px] w-[22px]" strokeWidth={1.8} />
-          <span className="mt-0.5 text-[10px] font-bold">Switch</span>
-        </button>
-
-        {/* Exit button */}
-        <button
-          onClick={handleLogout}
-          className="kid-touch flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 text-gray-400 transition-all duration-200 hover:text-gray-600 active:scale-95 sm:px-5"
-        >
-          <LogOut className="h-[22px] w-[22px]" strokeWidth={1.8} />
-          <span className="mt-0.5 text-[10px] font-bold">Exit</span>
-        </button>
-      </div>
-    </nav>
+        {/* Bottom actions */}
+        <div className="mt-auto border-t border-gray-100 px-3 py-4">
+          <button
+            onClick={handleSwitchProfile}
+            className="flex w-full items-center gap-3 rounded-xl border-l-[3px] border-transparent px-3 py-2.5 text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-gray-700"
+          >
+            <Users className="h-5 w-5 shrink-0" strokeWidth={1.8} />
+            <span className="text-sm font-medium">Switch</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-xl border-l-[3px] border-transparent px-3 py-2.5 text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-gray-700"
+          >
+            <LogOut className="h-5 w-5 shrink-0" strokeWidth={1.8} />
+            <span className="text-sm font-medium">Exit</span>
+          </button>
+        </div>
+      </nav>
+    </>
   );
 }
