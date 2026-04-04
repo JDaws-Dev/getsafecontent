@@ -153,7 +153,7 @@ export default function Home() {
 
               <p className="text-lg text-ink-500 mb-8 max-w-lg mx-auto lg:mx-0">
                 More than just book reviews — SafeReads is a complete reading platform.
-                AI content analysis, a kid-safe reading experience with 70K+ free books,
+                AI content analysis, a kid-safe reading experience with hundreds of free classic books,
                 Bible reading with study notes, audiobooks, and parental controls
                 your family can trust.
               </p>
@@ -504,7 +504,7 @@ export default function Home() {
             <Feature
               icon={<BookOpen className="h-6 w-6 text-emerald-600" />}
               title="In-App Book Reader"
-              description="Over 70,000 free classic books from Project Gutenberg, Open Library, and Standard Ebooks. Tap any word to see its definition."
+              description="Over Free classic books from Project Gutenberg and other sources. Tap any word to see its definition."
             />
             <Feature
               icon={<BookMarked className="h-6 w-6 text-amber-600" />}
@@ -575,7 +575,7 @@ export default function Home() {
                   'Full AI content breakdowns',
                   'Barcode & cover scanning',
                   'Kid-side reading experience',
-                  '70K+ free books & audiobooks',
+                  'hundreds of free classic books & audiobooks',
                   'Bible reading with 6 translations',
                   'AI study notes & saved verses',
                   'Kids profiles & wishlists',

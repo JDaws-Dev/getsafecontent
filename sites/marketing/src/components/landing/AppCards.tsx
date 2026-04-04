@@ -41,7 +41,7 @@ const apps = [
     id: "safereads",
     name: "SafeReads",
     tagline: "A complete reading platform",
-    description: "More than book reviews. Kids get their own reading experience with 70K+ free books, Bible reading with study notes, free audiobooks, and a tap-to-define dictionary. Parents control everything.",
+    description: "More than book reviews. Kids get their own reading experience with free classic books, Bible reading with study notes, free audiobooks, and a tap-to-define dictionary. Parents control everything.",
     icon: BookOpen,
     gradient: "from-emerald-500 to-teal-500",
     href: "https://getsafereads.com",
