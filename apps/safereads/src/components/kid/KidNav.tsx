@@ -37,21 +37,21 @@ export function KidNav() {
   const handleLogout = () => {
     localStorage.removeItem("safereads_kid_profile");
     localStorage.removeItem("safereads_family_code");
-    window.location.href = "/play";
+    window.location.href = "/read";
   };
 
   const handleSwitchProfile = () => {
     localStorage.removeItem("safereads_kid_profile");
-    router.push("/play");
+    router.push("/read");
   };
 
   const colors = COLOR_GRADIENTS[kidProfile?.color || "purple"] || COLOR_GRADIENTS.purple;
 
   const NAV_ITEMS = [
-    { href: "/play/home", icon: Home, label: "Home", match: (p: string) => p === "/play/home" },
-    { href: "/play/search", icon: Search, label: "Explore", match: (p: string) => p?.startsWith("/play/search") || false },
-    { href: "/play/bible", icon: BookOpen, label: "Bible", match: (p: string) => p?.startsWith("/play/bible") || false },
-    { href: "/play/home#bookshelf", icon: BookMarked, label: "My Books", match: () => false },
+    { href: "/read/home", icon: Home, label: "Home", match: (p: string) => p === "/read/home" },
+    { href: "/read/search", icon: Search, label: "Explore", match: (p: string) => p?.startsWith("/read/search") || false },
+    { href: "/read/bible", icon: BookOpen, label: "Bible", match: (p: string) => p?.startsWith("/read/bible") || false },
+    { href: "/read/home#bookshelf", icon: BookMarked, label: "My Books", match: () => false },
   ];
 
   return (

@@ -49,14 +49,14 @@ export function KidBookshelf({ books, progress, onBookClick }: KidBookshelfProps
         </p>
         <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
           <Link
-            href="/play/search"
+            href="/read/search"
             className="kid-touch flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-200 transition-all hover:shadow-xl hover:shadow-purple-300 active:scale-95"
           >
             <Search className="h-4 w-4" />
             Search for Books
           </Link>
           <Link
-            href="/play/search?tab=free"
+            href="/read/search?tab=free"
             className="kid-touch flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-bold text-emerald-700 shadow-md ring-1 ring-emerald-200 transition-all hover:shadow-lg active:scale-95"
           >
             <Sparkles className="h-4 w-4" />

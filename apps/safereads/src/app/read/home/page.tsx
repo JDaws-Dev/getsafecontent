@@ -153,13 +153,13 @@ export default function KidHomePage() {
     localStorage.removeItem("safereads_kid_profile");
     localStorage.removeItem("safereads_family_code");
     localStorage.removeItem("safereads_session_started");
-    router.replace("/play");
+    router.replace("/read");
   }, [router]);
 
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
     if (!profileData) {
-      router.replace("/play");
+      router.replace("/read");
       return;
     }
 
@@ -174,7 +174,7 @@ export default function KidHomePage() {
     try {
       setKidProfile(JSON.parse(profileData));
     } catch {
-      router.replace("/play");
+      router.replace("/read");
     }
   }, [router, clearSession]);
 
@@ -362,7 +362,7 @@ export default function KidHomePage() {
         cachedCoverUrl: cachedUrl,
         hasAudio: bookHasAudio,
         isClassic: isWellKnownClassic(book.title),
-        href: "/play/search",
+        href: "/read/search",
         source: "free",
       });
     }
@@ -388,7 +388,7 @@ export default function KidHomePage() {
         cachedCoverUrl: cachedUrl,
         hasAudio: true,
         isClassic: isWellKnownClassic(book.title),
-        href: "/play/search?tab=audio",
+        href: "/read/search?tab=audio",
         source: "audiobook",
         totalTime: book.totalTime,
       });
@@ -417,7 +417,7 @@ export default function KidHomePage() {
         cachedCoverUrl: cachedUrl,
         hasAudio: true,
         isClassic: false,
-        href: "/play/search?tab=audio",
+        href: "/read/search?tab=audio",
         source: "audiobook",
         totalTime: book.totalTime,
       });
@@ -477,7 +477,7 @@ export default function KidHomePage() {
           </div>
         </div>
         <Link
-          href="/play/search"
+          href="/read/search"
           className="kid-touch flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-500 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md active:scale-95"
         >
           <Search className="h-4 w-4" />
@@ -613,7 +613,7 @@ export default function KidHomePage() {
             </h2>
           </div>
           <Link
-            href="/play/search"
+            href="/read/search"
             className="kid-touch flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
           >
             See All
@@ -708,7 +708,7 @@ export default function KidHomePage() {
             </h2>
           </div>
           <Link
-            href="/play/search?tab=audio"
+            href="/read/search?tab=audio"
             className="kid-touch flex items-center gap-1 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-100"
           >
             See All
@@ -799,7 +799,7 @@ export default function KidHomePage() {
       {/* 6. Read the Bible */}
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.28s" }}>
         <button
-          onClick={() => router.push("/play/bible")}
+          onClick={() => router.push("/read/bible")}
           className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-4 shadow-md ring-1 ring-amber-200/60 transition-all hover:shadow-lg active:scale-[0.98]"
         >
           <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-2xl shadow-lg shadow-amber-200">
@@ -823,7 +823,7 @@ export default function KidHomePage() {
       {savedVerses && (savedVerses as Array<{ bookName: string; chapter: number; verse: number; verseText: string; translation: string; color?: string }>).length > 0 && (
         <section className="animate-fade-up mt-4" style={{ animationDelay: "0.3s" }}>
           <button
-            onClick={() => router.push("/play/bible/saved")}
+            onClick={() => router.push("/read/bible/saved")}
             className={`kid-touch w-full rounded-2xl border-l-4 border-l-amber-400 bg-amber-50 p-4 text-left shadow-sm ring-1 ring-amber-200/60 transition-all hover:shadow-md active:scale-[0.98]`}
           >
             <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
@@ -869,7 +869,7 @@ export default function KidHomePage() {
             <h2 className="text-lg font-bold text-gray-800">My Bookshelf</h2>
           </div>
           <Link
-            href="/play/search"
+            href="/read/search"
             className="kid-touch flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
           >
             <Search className="h-3.5 w-3.5" />

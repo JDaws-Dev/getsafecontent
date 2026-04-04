@@ -116,7 +116,7 @@ export default function Home() {
           </Link>
           <div className="flex items-center gap-3">
             <Link
-              href="/play"
+              href="/read"
               className="rounded-full bg-purple-100 px-4 py-2 text-sm font-semibold text-purple-700 transition-colors hover:bg-purple-200"
             >
               Kid Login

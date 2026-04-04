@@ -48,7 +48,7 @@ export default function PlayPage() {
 
     if (savedCode && savedProfile) {
       // Already logged in as a kid - go to home
-      router.replace("/play/home");
+      router.replace("/read/home");
       return;
     }
 

@@ -174,7 +174,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
                     Browse Genres
                   </button>
                   <button
-                    onClick={() => router.push("/play/search")}
+                    onClick={() => router.push("/read/search")}
                     className="kid-touch rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95"
                   >
                     Search Books

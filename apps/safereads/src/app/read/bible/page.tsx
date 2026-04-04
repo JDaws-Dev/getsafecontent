@@ -193,7 +193,7 @@ export default function BiblePage() {
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
     if (!profileData) {
-      router.replace("/play");
+      router.replace("/read");
       return;
     }
     try {
@@ -201,7 +201,7 @@ export default function BiblePage() {
       setKidId(profile._id as Id<"kids">);
       if (profile.age) setKidAge(profile.age);
     } catch {
-      router.replace("/play");
+      router.replace("/read");
     }
   }, [router]);
 
@@ -361,7 +361,7 @@ export default function BiblePage() {
     } else if (viewState.view === "chapters") {
       setViewState({ view: "books" });
     } else {
-      router.push("/play/home");
+      router.push("/read/home");
     }
   };
 
@@ -1123,7 +1123,7 @@ export default function BiblePage() {
   return (
     <div className="py-6">
       {/* Header */}
-      <button onClick={() => router.push("/play/home")} className="mb-4 flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900">
+      <button onClick={() => router.push("/read/home")} className="mb-4 flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900">
         <ArrowLeft className="h-4 w-4" />
         Home
       </button>
@@ -1146,7 +1146,7 @@ export default function BiblePage() {
       {/* Quick actions */}
       <div className="mb-5 flex gap-2">
         <button
-          onClick={() => router.push("/play/bible/saved")}
+          onClick={() => router.push("/read/bible/saved")}
           className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-amber-700 shadow-sm ring-1 ring-amber-200 transition-all hover:bg-amber-50 active:scale-95"
         >
           <Heart className="h-3.5 w-3.5" />

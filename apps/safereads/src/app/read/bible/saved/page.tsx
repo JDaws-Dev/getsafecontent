@@ -54,14 +54,14 @@ export default function SavedVersesPage() {
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
     if (!profileData) {
-      router.replace("/play");
+      router.replace("/read");
       return;
     }
     try {
       const profile = JSON.parse(profileData);
       setKidId(profile._id as Id<"kids">);
     } catch {
-      router.replace("/play");
+      router.replace("/read");
     }
   }, [router]);
 
@@ -104,7 +104,7 @@ export default function SavedVersesPage() {
     <div className="py-6">
       {/* Header */}
       <button
-        onClick={() => router.push("/play/bible")}
+        onClick={() => router.push("/read/bible")}
         className="mb-4 flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -216,7 +216,7 @@ export default function SavedVersesPage() {
                     onClick={() => {
                       // Navigate to this verse in the Bible reader
                       localStorage.setItem("safereads_bible_translation", verse.translation);
-                      router.push("/play/bible");
+                      router.push("/read/bible");
                       // We can't deep-link perfectly, but at least set the translation
                     }}
                     className="min-w-0 flex-1 text-left"

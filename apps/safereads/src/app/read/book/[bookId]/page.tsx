@@ -33,14 +33,14 @@ export default function KidReadPage() {
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
     if (!profileData) {
-      router.replace("/play");
+      router.replace("/read");
       return;
     }
     try {
       const profile = JSON.parse(profileData);
       setKidId(profile._id as Id<"kids">);
     } catch {
-      router.replace("/play");
+      router.replace("/read");
     }
   }, [router]);
 
@@ -174,7 +174,7 @@ export default function KidReadPage() {
           This book may not be on your shelf yet.
         </p>
         <Link
-          href="/play/home"
+          href="/read/home"
           className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200"
         >
           Back to Bookshelf
@@ -211,7 +211,7 @@ export default function KidReadPage() {
           Our AI is analyzing the content. Check back soon!
         </p>
         <Link
-          href="/play/home"
+          href="/read/home"
           className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200"
         >
           Back to Bookshelf
@@ -243,7 +243,7 @@ export default function KidReadPage() {
     <div className="reading-cozy py-6">
       {/* Back */}
       <Link
-        href="/play/home"
+        href="/read/home"
         className="kid-touch mb-5 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-500 shadow-sm transition-all hover:shadow-md active:scale-95"
       >
         <ArrowLeft className="h-4 w-4" />

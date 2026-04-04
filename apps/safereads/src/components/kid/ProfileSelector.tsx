@@ -99,7 +99,7 @@ export function ProfileSelector({
     );
     // Store session start time for TTL enforcement (24h)
     localStorage.setItem("safereads_session_started", Date.now().toString());
-    router.push("/play/home");
+    router.push("/read/home");
   };
 
   const handlePinSubmit = async () => {

@@ -29,14 +29,14 @@ export default function KidSearchPage() {
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
     if (!profileData) {
-      router.replace("/play");
+      router.replace("/read");
       return;
     }
     try {
       const profile = JSON.parse(profileData);
       setKidId(profile._id as Id<"kids">);
     } catch {
-      router.replace("/play");
+      router.replace("/read");
     }
   }, [router]);
 
@@ -66,7 +66,7 @@ export default function KidSearchPage() {
       {/* Header with back button */}
       <div className="animate-fade-up mb-5 flex items-center gap-3">
         <Link
-          href="/play/home"
+          href="/read/home"
           className="kid-touch flex h-11 w-11 items-center justify-center rounded-full bg-white text-gray-500 shadow-md ring-1 ring-black/5 transition-all hover:shadow-lg active:scale-95"
         >
           <ArrowLeft className="h-4 w-4" />
