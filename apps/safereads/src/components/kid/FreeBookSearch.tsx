@@ -9,6 +9,7 @@ import { StylizedCover } from "./StylizedCover";
 import { AudioIndicator } from "./SourceBadge";
 import Image from "next/image";
 import type { Id } from "../../../convex/_generated/dataModel";
+import { useCoverFetcher } from "@/hooks/useCoverFetcher";
 
 interface FreeBookSearchProps {
   kidId: Id<"kids">;
@@ -61,6 +62,23 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
     api.bookCovers.getCachedCovers,
     bookIdentifiers.length > 0 ? { bookIdentifiers } : "skip"
   );
+
+  // Background cover fetching for search results without cached covers
+  const booksForCoverFetch = useMemo(
+    () =>
+      results.map((b) => {
+        const rawId = b.id.replace(/^(gutenberg|bloom|lit2go|librivox|bookdash):/, "");
+        return {
+          identifier: rawId,
+          title: b.title,
+          author: b.authors?.join(", ") || "Unknown",
+          hasCachedCover: !!cachedCovers?.[rawId]?.coverUrl,
+          hasSourceCover: !!b.coverUrl && !b.coverUrl.includes("gutenberg.org"),
+        };
+      }),
+    [results, cachedCovers]
+  );
+  useCoverFetcher(booksForCoverFetch);
 
   // Get approved books to check status
   const approvedBooks = useQuery(api.approvedBooks.listForKid, { kidId });

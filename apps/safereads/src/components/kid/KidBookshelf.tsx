@@ -56,7 +56,7 @@ export function KidBookshelf({ books, progress, onBookClick }: KidBookshelfProps
             Search for Books
           </Link>
           <Link
-            href="/read/home#recommended"
+            href="/read/library"
             className="kid-touch flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-bold text-emerald-700 shadow-md ring-1 ring-emerald-200 transition-all hover:shadow-lg active:scale-95"
           >
             <Sparkles className="h-4 w-4" />

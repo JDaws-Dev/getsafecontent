@@ -12,6 +12,7 @@ import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star,
 import Link from "next/link";
 import Image from "next/image";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { useCoverFetcher } from "@/hooks/useCoverFetcher";
 
 interface KidProfile {
   _id: string;
@@ -428,6 +429,25 @@ export default function KidHomePage() {
 
     return books.slice(0, 8);
   }, [audiobooks, cachedCovers]);
+
+  // ---- Background cover fetching for books without cached covers ----
+  const booksNeedingCovers = useMemo(() => {
+    const all = [...recommendedBooks, ...listenBooks];
+    return all.map((book) => {
+      const rawId = book.id
+        .replace(/^(pre|free|audio|listen)-/, "")
+        .replace(/^(gutenberg|bloom|lit2go|librivox|bookdash):/, "");
+      return {
+        identifier: rawId,
+        title: book.title,
+        author: book.author,
+        hasCachedCover: !!book.cachedCoverUrl,
+        hasSourceCover: !!book.coverUrl && !book.coverUrl.includes("gutenberg.org"),
+      };
+    });
+  }, [recommendedBooks, listenBooks]);
+
+  useCoverFetcher(booksNeedingCovers);
 
   const recommendedLoading = freeBooksLoading || audiobooksLoading;
   const recommendedLoaded = freeBooksLoaded || audiobooksLoaded || (preApprovedBooks && preApprovedBooks.length > 0);

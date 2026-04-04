@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { useAction } from "convex/react";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { useAction, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { ArrowLeft, Loader2, BookOpen } from "lucide-react";
 import { StylizedCover } from "./StylizedCover";
+import { useCoverFetcher } from "@/hooks/useCoverFetcher";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -47,6 +48,33 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
   const [genreBooks, setGenreBooks] = useState<FreeBook[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const browseByGenre = useAction(api.freeBooks.browseByGenre);
+
+  // Batch lookup cached covers for genre results
+  const genreBookIds = useMemo(
+    () => genreBooks.map((b) => b.id.replace(/^(gutenberg|bloom|lit2go|librivox|bookdash):/, "")),
+    [genreBooks]
+  );
+  const cachedCovers = useQuery(
+    api.bookCovers.getCachedCovers,
+    genreBookIds.length > 0 ? { bookIdentifiers: genreBookIds } : "skip"
+  );
+
+  // Background cover fetching
+  const booksForCoverFetch = useMemo(
+    () =>
+      genreBooks.map((b) => {
+        const rawId = b.id.replace(/^(gutenberg|bloom|lit2go|librivox|bookdash):/, "");
+        return {
+          identifier: rawId,
+          title: b.title,
+          author: b.authors?.join(", ") || "Unknown",
+          hasCachedCover: !!cachedCovers?.[rawId]?.coverUrl,
+          hasSourceCover: !!b.coverUrl && !b.coverUrl.includes("gutenberg.org"),
+        };
+      }),
+    [genreBooks, cachedCovers]
+  );
+  useCoverFetcher(booksForCoverFetch);
 
   const handleGenreClick = useCallback(async (genreKey: string) => {
     if (onGenreSelect) {
@@ -121,16 +149,19 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
               </div>
             ) : genreBooks.length > 0 ? (
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
-                {genreBooks.map((book) => (
+                {genreBooks.map((book) => {
+                  const rawId = book.id.replace(/^(gutenberg|bloom|lit2go|librivox|bookdash):/, "");
+                  const displayUrl = cachedCovers?.[rawId]?.coverUrl || book.coverUrl;
+                  return (
                   <button
                     key={book.id}
                     onClick={() => router.push(`/read/book/${encodeURIComponent(`gutenberg:${book.id}`)}`)}
                     className="group flex flex-col items-start text-left"
                   >
                     <div className="book-tilt relative h-40 w-full overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5">
-                      {book.coverUrl ? (
+                      {displayUrl ? (
                         <Image
-                          src={book.coverUrl}
+                          src={displayUrl}
                           alt={book.title}
                           fill
                           sizes="120px"
@@ -155,7 +186,8 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
                       {book.authors.join(", ")}
                     </p>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center rounded-2xl bg-white px-4 py-8 text-center shadow-sm">

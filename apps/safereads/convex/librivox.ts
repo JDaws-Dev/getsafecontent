@@ -397,6 +397,230 @@ export const findAudioMatch = action({
   },
 });
 
+/**
+ * Browse LibriVox children's audiobooks directly via the genre parameter.
+ * Returns up to 50 children's audiobooks per call without title-based searching.
+ */
+export const browseLibriVoxChildren = action({
+  args: {
+    offset: v.optional(v.number()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<Array<Record<string, unknown>>> => {
+    const offset = args.offset ?? 0;
+    const limit = args.limit ?? 50;
+    const cacheKey = `librivox:children:${offset}:${limit}`;
+
+    const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
+    if (cached) {
+      return JSON.parse(cached.results);
+    }
+
+    try {
+      // Try multiple genre spellings — LibriVox API is inconsistent
+      const genreVariants = [
+        "Children's Fiction",
+        "Children",
+        "Children's Literature",
+      ];
+
+      let allBooks: LibriVoxBook[] = [];
+
+      for (const genre of genreVariants) {
+        if (allBooks.length >= limit) break;
+        const params = new URLSearchParams({
+          genre: genre,
+          format: "json",
+          limit: String(limit),
+          offset: String(offset),
+        });
+
+        const url = `${LIBRIVOX_API}?${params.toString()}`;
+        const response = await fetch(url, {
+          headers: {
+            "User-Agent": "SafeReads/1.0 (getsafereads.com)",
+            Accept: "application/json",
+          },
+        });
+
+        if (!response.ok) continue;
+
+        const text = await response.text();
+        // LibriVox returns XML error pages when no results — guard against that
+        if (!text.startsWith("{") && !text.startsWith("[")) continue;
+
+        try {
+          const data = JSON.parse(text) as LibriVoxResponse;
+          if (data.books && Array.isArray(data.books)) {
+            allBooks = allBooks.concat(data.books);
+          }
+        } catch {
+          continue;
+        }
+      }
+
+      // Deduplicate by id
+      const seenIds = new Set<string>();
+      const unique: LibriVoxBook[] = [];
+      for (const book of allBooks) {
+        if (!seenIds.has(book.id)) {
+          seenIds.add(book.id);
+          unique.push(book);
+        }
+      }
+
+      const results = unique
+        .filter(isKidSafe)
+        .filter((b) => b.language === "English")
+        .slice(0, limit)
+        .map(parseLibriVoxBook);
+
+      await ctx.runMutation(api.freeBooks.saveToCache, {
+        cacheKey,
+        results: JSON.stringify(results),
+      });
+
+      return results;
+    } catch (error) {
+      console.error("LibriVox children browse failed:", error);
+      return [];
+    }
+  },
+});
+
+/**
+ * Browse LibriVox audiobooks by a specific genre keyword.
+ * Uses both the genre param and title search for broader results.
+ */
+export const browseLibriVoxByGenre = action({
+  args: {
+    genre: v.string(),
+    offset: v.optional(v.number()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<Array<Record<string, unknown>>> => {
+    const offset = args.offset ?? 0;
+    const limit = args.limit ?? 50;
+    const cacheKey = `librivox:genre:${args.genre}:${offset}:${limit}`;
+
+    const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
+    if (cached) {
+      return JSON.parse(cached.results);
+    }
+
+    try {
+      // Map genre keys to LibriVox genre names and search terms
+      const genreMap: Record<string, { genres: string[]; titleSearch?: string }> = {
+        adventure: { genres: ["Adventure Fiction"], titleSearch: "adventure" },
+        animals: { genres: ["Animals"], titleSearch: "animal" },
+        fantasy: { genres: ["Fantasy"], titleSearch: "fairy" },
+        science: { genres: ["Science", "Science Fiction"], titleSearch: "science" },
+        history: { genres: ["History", "Historical Fiction"], titleSearch: "history" },
+        "fairy-tales": { genres: ["Fairy Tales", "Myths, Legends & Fairy Tales"], titleSearch: "fairy" },
+        mystery: { genres: ["Mystery", "Detective Fiction"], titleSearch: "mystery" },
+        space: { genres: ["Science Fiction"], titleSearch: "space" },
+        nature: { genres: ["Nature"], titleSearch: "nature" },
+        humor: { genres: ["Humor", "Humorous Fiction"], titleSearch: "humor" },
+        classics: { genres: ["General Fiction"], titleSearch: "classic" },
+      };
+
+      const config = genreMap[args.genre] || { genres: [], titleSearch: args.genre };
+      let allBooks: LibriVoxBook[] = [];
+
+      // Try genre-based search
+      for (const genre of config.genres) {
+        if (allBooks.length >= limit) break;
+        const params = new URLSearchParams({
+          genre: genre,
+          format: "json",
+          limit: String(limit),
+          offset: String(offset),
+        });
+
+        const url = `${LIBRIVOX_API}?${params.toString()}`;
+        const response = await fetch(url, {
+          headers: {
+            "User-Agent": "SafeReads/1.0 (getsafereads.com)",
+            Accept: "application/json",
+          },
+        });
+
+        if (!response.ok) continue;
+
+        const text = await response.text();
+        if (!text.startsWith("{") && !text.startsWith("[")) continue;
+
+        try {
+          const data = JSON.parse(text) as LibriVoxResponse;
+          if (data.books && Array.isArray(data.books)) {
+            allBooks = allBooks.concat(data.books);
+          }
+        } catch {
+          continue;
+        }
+      }
+
+      // Also try title-based search as fallback
+      if (allBooks.length < limit && config.titleSearch) {
+        const params = new URLSearchParams({
+          title: config.titleSearch,
+          format: "json",
+          limit: String(Math.min(limit, 50)),
+          offset: String(offset),
+        });
+
+        const url = `${LIBRIVOX_API}?${params.toString()}`;
+        try {
+          const response = await fetch(url, {
+            headers: {
+              "User-Agent": "SafeReads/1.0 (getsafereads.com)",
+              Accept: "application/json",
+            },
+          });
+
+          if (response.ok) {
+            const text = await response.text();
+            if (text.startsWith("{") || text.startsWith("[")) {
+              const data = JSON.parse(text) as LibriVoxResponse;
+              if (data.books && Array.isArray(data.books)) {
+                allBooks = allBooks.concat(data.books);
+              }
+            }
+          }
+        } catch {
+          // Fallback search failed, that's okay
+        }
+      }
+
+      // Deduplicate by id
+      const seenIds = new Set<string>();
+      const unique: LibriVoxBook[] = [];
+      for (const book of allBooks) {
+        if (!seenIds.has(book.id)) {
+          seenIds.add(book.id);
+          unique.push(book);
+        }
+      }
+
+      const results = unique
+        .filter(isKidSafe)
+        .filter((b) => b.language === "English")
+        .slice(0, limit)
+        .map(parseLibriVoxBook);
+
+      await ctx.runMutation(api.freeBooks.saveToCache, {
+        cacheKey,
+        results: JSON.stringify(results),
+      });
+
+      return results;
+    } catch (error) {
+      console.error("LibriVox genre browse failed:", error);
+      return [];
+    }
+  },
+});
+
 /** Strip XML/HTML entities */
 function cleanXml(text: string): string {
   return text

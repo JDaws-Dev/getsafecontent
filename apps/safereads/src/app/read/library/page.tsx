@@ -9,6 +9,7 @@ import { Search, Headphones, Loader2, BookOpen, ArrowUpDown, Library } from "luc
 import Image from "next/image";
 import Link from "next/link";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { useCoverFetcher } from "@/hooks/useCoverFetcher";
 
 // ============================================================================
 // Types
@@ -105,24 +106,20 @@ export default function LibraryPage() {
   const [genreFilter, setGenreFilter] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("popular");
 
-  // Data
-  const [freeBooks, setFreeBooks] = useState<FreeBook[]>([]);
-  const [freeBooksLoaded, setFreeBooksLoaded] = useState(false);
-  const [freeBooksLoading, setFreeBooksLoading] = useState(false);
-  const [audiobooks, setAudiobooks] = useState<FreeBook[]>([]);
-  const [audiobooksLoaded, setAudiobooksLoaded] = useState(false);
-  const [audiobooksLoading, setAudiobooksLoading] = useState(false);
-  const [genreBooks, setGenreBooks] = useState<FreeBook[]>([]);
-  const [genreBooksLoading, setGenreBooksLoading] = useState(false);
+  // Paginated data from getLibraryBooks
+  const [libraryBooks, setLibraryBooks] = useState<FreeBook[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalEstimate, setTotalEstimate] = useState(0);
+  const [pageLoading, setPageLoading] = useState(false);
+  const [initialLoaded, setInitialLoaded] = useState(false);
 
   // Infinite scroll
-  const [visibleCount, setVisibleCount] = useState(30);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const loadingRef = useRef(false); // Guards against duplicate loads
 
   // Actions
-  const getCuratedFreeBooks = useAction(api.freeBooks.getCuratedFreeBooks);
-  const getCuratedAudiobooks = useAction(api.freeBooks.getCuratedAudiobooks);
-  const browseByGenre = useAction(api.freeBooks.browseByGenre);
+  const getLibraryBooks = useAction(api.freeBooks.getLibraryBooks);
 
   // ---- Session check ----
   useEffect(() => {
@@ -140,107 +137,97 @@ export default function LibraryPage() {
 
   const kidId = kidProfile?._id as Id<"kids"> | undefined;
 
-  // ---- Queries ----
+  // ---- Pre-approved books (always loaded via query, only shown page 1) ----
   const preApprovedBooks = useQuery(
     api.preApprovedBooks.getPreApprovedBooks,
     kidId ? { age: kidProfile?.age, kidId } : "skip"
   );
 
-  // ---- Load curated free books ----
-  useEffect(() => {
-    if (!kidProfile || freeBooksLoaded) return;
-    let cancelled = false;
-    async function load() {
-      setFreeBooksLoading(true);
-      try {
-        const books = await getCuratedFreeBooks({ age: kidProfile?.age || undefined });
-        if (!cancelled) {
-          setFreeBooks(books as unknown as FreeBook[]);
-          setFreeBooksLoaded(true);
-        }
-      } catch (err) {
-        console.error("Failed to load free books:", err);
-      } finally {
-        if (!cancelled) setFreeBooksLoading(false);
-      }
-    }
-    load();
-    return () => { cancelled = true; };
-  }, [kidProfile, freeBooksLoaded, getCuratedFreeBooks]);
+  // ---- Load library books (paginated) ----
+  const loadPage = useCallback(
+    async (page: number, reset: boolean = false) => {
+      if (loadingRef.current) return;
+      loadingRef.current = true;
+      setPageLoading(true);
 
-  // ---- Load curated audiobooks ----
-  useEffect(() => {
-    if (!kidProfile || audiobooksLoaded) return;
-    let cancelled = false;
-    async function load() {
-      setAudiobooksLoading(true);
       try {
-        const books = await getCuratedAudiobooks({ age: kidProfile?.age || undefined });
-        if (!cancelled) {
-          setAudiobooks(books as unknown as FreeBook[]);
-          setAudiobooksLoaded(true);
-        }
-      } catch (err) {
-        console.error("Failed to load audiobooks:", err);
-      } finally {
-        if (!cancelled) setAudiobooksLoading(false);
-      }
-    }
-    load();
-    return () => { cancelled = true; };
-  }, [kidProfile, audiobooksLoaded, getCuratedAudiobooks]);
+        const result = await getLibraryBooks({
+          page,
+          genre: genreFilter || undefined,
+          format: formatFilter,
+          sort: sortMode,
+        });
 
-  // ---- Load genre books when genre filter changes ----
-  useEffect(() => {
-    if (!genreFilter) {
-      setGenreBooks([]);
-      return;
-    }
-    let cancelled = false;
-    async function load() {
-      setGenreBooksLoading(true);
-      try {
-        const books = await browseByGenre({ genre: genreFilter! });
-        if (!cancelled) {
-          setGenreBooks(books as unknown as FreeBook[]);
-        }
-      } catch (err) {
-        console.error("Failed to browse genre:", err);
-      } finally {
-        if (!cancelled) setGenreBooksLoading(false);
-      }
-    }
-    load();
-    return () => { cancelled = true; };
-  }, [genreFilter, browseByGenre]);
+        const books = (result.books || []) as unknown as FreeBook[];
 
-  // ---- Build cover identifiers for batch lookup ----
-  const classicIds = useMemo(
-    () => (preApprovedBooks || []).map((b) => b.gutenbergId),
-    [preApprovedBooks]
-  );
-  const freeIds = useMemo(() => freeBooks.map((b) => b.id), [freeBooks]);
-  const genreIds = useMemo(() => genreBooks.map((b) => b.id), [genreBooks]);
-  const allIdentifiers = useMemo(
-    () => [...new Set([...classicIds, ...freeIds, ...genreIds])],
-    [classicIds, freeIds, genreIds]
+        if (reset) {
+          setLibraryBooks(books);
+        } else {
+          setLibraryBooks((prev) => {
+            // Deduplicate when appending
+            const existingTitles = new Set(
+              prev.map((b) => b.title.toLowerCase().replace(/[^a-z0-9]/g, ""))
+            );
+            const newBooks = books.filter((b) => {
+              const norm = b.title.toLowerCase().replace(/[^a-z0-9]/g, "");
+              return !existingTitles.has(norm);
+            });
+            return [...prev, ...newBooks];
+          });
+        }
+
+        setHasMore(result.hasMore);
+        setTotalEstimate(result.totalEstimate || 0);
+        setCurrentPage(page);
+        setInitialLoaded(true);
+      } catch (err) {
+        console.error("Failed to load library books:", err);
+      } finally {
+        setPageLoading(false);
+        loadingRef.current = false;
+      }
+    },
+    [getLibraryBooks, genreFilter, formatFilter, sortMode]
   );
 
-  const cachedCovers = useQuery(
-    api.bookCovers.getCachedCovers,
-    allIdentifiers.length > 0 ? { bookIdentifiers: allIdentifiers } : "skip"
-  );
+  // Load first page on mount and when filters change
+  useEffect(() => {
+    if (!kidProfile) return;
+    setLibraryBooks([]);
+    setCurrentPage(1);
+    setHasMore(true);
+    setInitialLoaded(false);
+    loadPage(1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kidProfile, formatFilter, genreFilter, sortMode]);
 
-  // ---- Merge all books ----
+  // ---- Infinite scroll observer ----
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingRef.current) {
+          loadPage(currentPage + 1, false);
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, currentPage, loadPage]);
+
+  // ---- Merge pre-approved + library books into display list ----
   const allBooks = useMemo(() => {
     const merged: LibraryBook[] = [];
     const seenTitles = new Set<string>();
 
     function addBook(book: LibraryBook) {
-      const key = book.title.toLowerCase().trim();
+      const key = book.title.toLowerCase().replace(/[^a-z0-9]/g, "");
       if (seenTitles.has(key)) {
         // If the existing entry doesn't have audio but this one does, mark it
-        const existing = merged.find((m) => m.title.toLowerCase().trim() === key);
+        const existing = merged.find(
+          (m) => m.title.toLowerCase().replace(/[^a-z0-9]/g, "") === key
+        );
         if (existing && book.hasAudio) existing.hasAudio = true;
         return;
       }
@@ -248,119 +235,124 @@ export default function LibraryPage() {
       merged.push(book);
     }
 
-    // If genre is selected, genre books are the primary source
-    if (genreFilter && genreBooks.length > 0) {
-      for (const book of genreBooks) {
-        const rawId = book.id.replace(/^(gutenberg|bloom|lit2go|librivox|bookdash):/, "");
-        const cachedUrl = cachedCovers?.[rawId]?.coverUrl;
-        const bookHasAudio = book.hasAudio || book.source === "librivox" || book.source === "lit2go";
+    // Pre-approved classics on page 1, books/all format, no genre filter
+    if (
+      currentPage <= 1 &&
+      (formatFilter === "all" || formatFilter === "books") &&
+      !genreFilter
+    ) {
+      for (const book of preApprovedBooks || []) {
         addBook({
-          id: `genre-${book.id}`,
+          id: `pre-${book.gutenbergId}`,
+          title: book.title,
+          author: book.author,
+          coverUrl: book.coverUrl,
+          hasAudio: false,
+          source: "preApproved",
+          href: `/read/book/${encodeURIComponent(book.googleBookId)}`,
+        });
+      }
+    }
+
+    // Library books from getLibraryBooks
+    for (const book of libraryBooks) {
+      const isAudio =
+        book.hasAudio || book.source === "librivox" || book.source === "lit2go";
+      const rawId = book.id
+        .replace(/^(gutenberg|bloom|lit2go|librivox|bookdash):/, "");
+
+      if (isAudio && book.source === "librivox") {
+        addBook({
+          id: `audio-${book.id}`,
           title: book.title,
           author: book.authors?.join(", ") || "Unknown",
           coverUrl: book.coverUrl,
-          cachedCoverUrl: cachedUrl,
-          hasAudio: bookHasAudio,
+          hasAudio: true,
+          source: "audiobook",
+          href: `/read/listen/${encodeURIComponent(book.id)}`,
+          rssUrl: book.rssUrl,
+          totalTime: book.totalTime,
+        });
+      } else {
+        addBook({
+          id: `free-${book.id}`,
+          title: book.title,
+          author: book.authors?.join(", ") || "Unknown",
+          coverUrl: book.coverUrl,
+          hasAudio: isAudio,
           source: "free",
           href: `/read/book/${encodeURIComponent(`gutenberg:${rawId}`)}`,
         });
       }
     }
 
-    // Pre-approved classics
-    for (const book of preApprovedBooks || []) {
-      const cachedUrl = cachedCovers?.[book.gutenbergId]?.coverUrl;
-      addBook({
-        id: `pre-${book.gutenbergId}`,
+    return merged;
+  }, [
+    preApprovedBooks,
+    libraryBooks,
+    formatFilter,
+    genreFilter,
+    currentPage,
+  ]);
+
+  // ---- Build cover identifiers for batch lookup ----
+  const allIdentifiers = useMemo(() => {
+    const ids: string[] = [];
+    for (const book of allBooks) {
+      const rawId = book.id
+        .replace(/^(pre|free|genre|audio)-/, "")
+        .replace(/^(gutenberg|bloom|lit2go|librivox|bookdash):/, "");
+      ids.push(rawId);
+    }
+    return [...new Set(ids)];
+  }, [allBooks]);
+
+  const cachedCovers = useQuery(
+    api.bookCovers.getCachedCovers,
+    allIdentifiers.length > 0 ? { bookIdentifiers: allIdentifiers } : "skip"
+  );
+
+  // Attach cached covers to books
+  const displayBooks = useMemo(() => {
+    if (!cachedCovers) return allBooks;
+    return allBooks.map((book) => {
+      const rawId = book.id
+        .replace(/^(pre|free|genre|audio)-/, "")
+        .replace(/^(gutenberg|bloom|lit2go|librivox|bookdash):/, "");
+      const cached = cachedCovers[rawId];
+      return {
+        ...book,
+        cachedCoverUrl: cached?.coverUrl || undefined,
+      };
+    });
+  }, [allBooks, cachedCovers]);
+
+  // Apply sort for A-Z (server already sorts "popular", but we need client sort for merged list)
+  const sortedBooks = useMemo(() => {
+    if (sortMode === "az") {
+      return [...displayBooks].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    return displayBooks;
+  }, [displayBooks, sortMode]);
+
+  // ---- Background cover fetching for books without cached covers ----
+  const booksNeedingCovers = useMemo(() => {
+    return sortedBooks.map((book) => {
+      const rawId = book.id
+        .replace(/^(pre|free|genre|audio)-/, "")
+        .replace(/^(gutenberg|bloom|lit2go|librivox|bookdash):/, "");
+      return {
+        identifier: rawId,
         title: book.title,
         author: book.author,
-        coverUrl: book.coverUrl,
-        cachedCoverUrl: cachedUrl,
-        hasAudio: false,
-        source: "preApproved",
-        href: `/read/book/${encodeURIComponent(book.googleBookId)}`,
-      });
-    }
+        hasCachedCover: !!book.cachedCoverUrl,
+        hasSourceCover:
+          !!book.coverUrl && !book.coverUrl.includes("gutenberg.org"),
+      };
+    });
+  }, [sortedBooks]);
 
-    // Curated free books
-    for (const book of freeBooks) {
-      const cachedUrl = cachedCovers?.[book.id]?.coverUrl;
-      const bookHasAudio = book.hasAudio || book.source === "librivox" || book.source === "lit2go";
-      addBook({
-        id: `free-${book.id}`,
-        title: book.title,
-        author: book.authors?.join(", ") || "Unknown",
-        coverUrl: book.coverUrl,
-        cachedCoverUrl: cachedUrl,
-        hasAudio: bookHasAudio,
-        source: "free",
-        href: `/read/book/${encodeURIComponent(`gutenberg:${book.id}`)}`,
-      });
-    }
-
-    // Audiobooks
-    for (const book of audiobooks) {
-      const rawId = book.id.replace(/^librivox:/, "");
-      const cachedUrl = cachedCovers?.[rawId]?.coverUrl;
-      addBook({
-        id: `audio-${book.id}`,
-        title: book.title,
-        author: book.authors?.join(", ") || "Unknown",
-        coverUrl: book.coverUrl,
-        cachedCoverUrl: cachedUrl,
-        hasAudio: true,
-        source: "audiobook",
-        href: `/read/listen/${encodeURIComponent(book.id)}`,
-        rssUrl: book.rssUrl,
-        totalTime: book.totalTime,
-      });
-    }
-
-    return merged;
-  }, [preApprovedBooks, freeBooks, audiobooks, genreBooks, genreFilter, cachedCovers]);
-
-  // ---- Apply filters and sort ----
-  const filteredBooks = useMemo(() => {
-    let books = [...allBooks];
-
-    // Format filter
-    if (formatFilter === "audio") {
-      books = books.filter((b) => b.hasAudio);
-    } else if (formatFilter === "books") {
-      books = books.filter((b) => !b.hasAudio || b.source !== "audiobook");
-    }
-
-    // Sort
-    if (sortMode === "az") {
-      books.sort((a, b) => a.title.localeCompare(b.title));
-    }
-    // "popular" keeps the natural order (pre-approved first, then curated)
-
-    return books;
-  }, [allBooks, formatFilter, sortMode]);
-
-  // Visible slice for infinite scroll
-  const visibleBooks = filteredBooks.slice(0, visibleCount);
-
-  // ---- Infinite scroll observer ----
-  useEffect(() => {
-    if (!sentinelRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && visibleCount < filteredBooks.length) {
-          setVisibleCount((prev) => Math.min(prev + 20, filteredBooks.length));
-        }
-      },
-      { rootMargin: "200px" }
-    );
-    observer.observe(sentinelRef.current);
-    return () => observer.disconnect();
-  }, [visibleCount, filteredBooks.length]);
-
-  // Reset visible count when filters change
-  useEffect(() => {
-    setVisibleCount(30);
-  }, [formatFilter, genreFilter, sortMode]);
+  useCoverFetcher(booksNeedingCovers);
 
   // ---- Handle book tap ----
   const handleBookTap = useCallback(
@@ -383,8 +375,7 @@ export default function LibraryPage() {
   );
 
   // ---- Loading state ----
-  const isLoading = freeBooksLoading || audiobooksLoading || genreBooksLoading;
-  const hasLoadedSomething = freeBooksLoaded || audiobooksLoaded || (preApprovedBooks && preApprovedBooks.length > 0);
+  const isLoading = pageLoading && libraryBooks.length === 0;
 
   if (!kidProfile) {
     return (
@@ -454,7 +445,7 @@ export default function LibraryPage() {
           </button>
         </div>
 
-        {/* Genre pills — horizontal scroll */}
+        {/* Genre pills -- horizontal scroll */}
         <div className="flex gap-2 overflow-x-auto overscroll-contain pb-1 scrollbar-none">
           <button
             onClick={() => setGenreFilter(null)}
@@ -484,31 +475,40 @@ export default function LibraryPage() {
       </div>
 
       {/* ---- Book count ---- */}
-      {hasLoadedSomething && !isLoading && (
+      {initialLoaded && !isLoading && (
         <div className="mb-3 mt-1">
           <p className="text-[11px] font-medium text-gray-400">
-            {filteredBooks.length} book{filteredBooks.length !== 1 ? "s" : ""}
+            {sortedBooks.length}
+            {hasMore ? "+" : ""} book
+            {sortedBooks.length !== 1 ? "s" : ""}
             {genreFilter
               ? ` in ${GENRES.find((g) => g.key === genreFilter)?.label || genreFilter}`
               : ""}
-            {formatFilter === "audio" ? " with audio" : formatFilter === "books" ? " to read" : ""}
+            {formatFilter === "audio"
+              ? " with audio"
+              : formatFilter === "books"
+                ? " to read"
+                : ""}
+            {totalEstimate > sortedBooks.length
+              ? ` (${totalEstimate.toLocaleString()} available)`
+              : ""}
           </p>
         </div>
       )}
 
       {/* ---- Loading skeletons ---- */}
-      {isLoading && visibleBooks.length === 0 && (
+      {isLoading && (
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {Array.from({ length: 12 }).map((_, i) => (
+          {Array.from({ length: 18 }).map((_, i) => (
             <BookSkeleton key={i} />
           ))}
         </div>
       )}
 
       {/* ---- Book Grid ---- */}
-      {visibleBooks.length > 0 && (
+      {sortedBooks.length > 0 && (
         <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {visibleBooks.map((book) => {
+          {sortedBooks.map((book) => {
             const displayUrl = book.cachedCoverUrl || book.coverUrl;
             return (
               <button
@@ -574,8 +574,8 @@ export default function LibraryPage() {
         </div>
       )}
 
-      {/* ---- Empty state (should rarely happen) ---- */}
-      {!isLoading && hasLoadedSomething && filteredBooks.length === 0 && (
+      {/* ---- Empty state ---- */}
+      {!isLoading && initialLoaded && sortedBooks.length === 0 && (
         <div className="flex flex-col items-center rounded-2xl bg-white px-6 py-12 text-center shadow-sm">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-50">
             <BookOpen className="h-8 w-8 text-purple-300" />
@@ -598,10 +598,23 @@ export default function LibraryPage() {
         </div>
       )}
 
-      {/* ---- Infinite scroll sentinel ---- */}
-      {visibleCount < filteredBooks.length && (
+      {/* ---- Infinite scroll sentinel / loading more ---- */}
+      {hasMore && sortedBooks.length > 0 && (
         <div ref={sentinelRef} className="flex items-center justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+          {pageLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+          ) : (
+            <div className="h-4" />
+          )}
+        </div>
+      )}
+
+      {/* End of results indicator */}
+      {!hasMore && sortedBooks.length > 0 && (
+        <div className="flex items-center justify-center py-6">
+          <p className="text-[11px] text-gray-300">
+            You&apos;ve reached the end
+          </p>
         </div>
       )}
 

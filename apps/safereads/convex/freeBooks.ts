@@ -739,6 +739,195 @@ export const searchAllSources = action({
   },
 });
 
+// ============================================================================
+// Library Page — Comprehensive paginated browsing
+// ============================================================================
+
+/**
+ * Get a page of library books from ALL sources.
+ * Used by the Library page for comprehensive browsing with hundreds of results.
+ *
+ * - "all" / "books" format: Gutendex children's books + pre-approved classics (page 1 only)
+ * - "audio" format: LibriVox children's audiobooks
+ * - Genre filtering narrows results via Gutendex topic+search and LibriVox genre
+ *
+ * Returns 30 results per page, cached for 24 hours.
+ */
+export const getLibraryBooks = action({
+  args: {
+    page: v.number(),
+    genre: v.optional(v.string()),
+    format: v.optional(v.union(v.literal("all"), v.literal("books"), v.literal("audio"))),
+    sort: v.optional(v.union(v.literal("popular"), v.literal("az"))),
+  },
+  handler: async (ctx, args): Promise<{
+    books: Array<Record<string, unknown>>;
+    hasMore: boolean;
+    totalEstimate: number;
+  }> => {
+    const page = args.page || 1;
+    const format = args.format || "all";
+    const genre = args.genre || "all";
+    const sort = args.sort || "popular";
+    const cacheKey = `library:${format}:${genre}:${sort}:${page}`;
+
+    // Check cache
+    const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
+    if (cached) {
+      return JSON.parse(cached.results);
+    }
+
+    const PAGE_SIZE = 30;
+    const allResults: Array<Record<string, unknown>> = [];
+    const seenTitles = new Set<string>();
+    let totalEstimate = 0;
+    let hasMore = false;
+
+    function addResult(book: Record<string, unknown>) {
+      const title = (book.title as string) || "";
+      const normalizedTitle = title.toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (normalizedTitle && !seenTitles.has(normalizedTitle)) {
+        seenTitles.add(normalizedTitle);
+        allResults.push(book);
+      }
+    }
+
+    // ---- Fetch books based on format ----
+    const includeBooks = format === "all" || format === "books";
+    const includeAudio = format === "all" || format === "audio";
+
+    const fetches: Promise<void>[] = [];
+
+    // --- Gutendex (books) ---
+    if (includeBooks) {
+      fetches.push(
+        (async () => {
+          try {
+            const params = new URLSearchParams({
+              languages: "en",
+              sort: "popular",
+              page: String(page),
+            });
+
+            // Always filter to children's topic
+            params.set("topic", "children");
+
+            // Add genre search if specified
+            if (genre !== "all") {
+              const genreSearchMap: Record<string, string> = {
+                adventure: "adventure",
+                animals: "animals",
+                fantasy: "fairy tales magic",
+                science: "science nature",
+                history: "history",
+                "fairy-tales": "fairy tales",
+                mystery: "mystery detective",
+                space: "space moon stars",
+                nature: "nature garden forest",
+                humor: "funny humor",
+                sports: "sports games",
+                "art-music": "art music",
+                scary: "ghost horror scary",
+                comics: "comic illustrated picture",
+                action: "action battle war hero",
+              };
+              const searchTerm = genreSearchMap[genre] || genre;
+              params.set("search", searchTerm);
+            }
+
+            const url = `https://gutendex.com/books/?${params.toString()}`;
+            const response = await fetch(url);
+            if (!response.ok) return;
+
+            const data = (await response.json()) as GutendexResponse;
+            totalEstimate = Math.max(totalEstimate, data.count || 0);
+            hasMore = !!data.next;
+
+            const books = data.results
+              .filter(isKidFriendly)
+              .filter((b) => b.languages.includes("en"))
+              .map(parseGutenbergBook);
+
+            for (const book of books) {
+              addResult(book);
+            }
+          } catch (err) {
+            console.error("Gutendex fetch failed for library:", err);
+          }
+        })()
+      );
+    }
+
+    // --- LibriVox (audiobooks) ---
+    if (includeAudio) {
+      fetches.push(
+        (async () => {
+          try {
+            const offset = (page - 1) * PAGE_SIZE;
+            let results: Array<Record<string, unknown>>;
+
+            if (genre !== "all") {
+              results = await ctx.runAction(api.librivox.browseLibriVoxByGenre, {
+                genre,
+                offset,
+                limit: PAGE_SIZE,
+              });
+            } else {
+              results = await ctx.runAction(api.librivox.browseLibriVoxChildren, {
+                offset,
+                limit: PAGE_SIZE,
+              });
+            }
+
+            if (results.length > 0) {
+              hasMore = true; // LibriVox doesn't give total count, assume more
+            }
+
+            for (const book of results) {
+              addResult(book);
+            }
+          } catch (err) {
+            console.error("LibriVox fetch failed for library:", err);
+          }
+        })()
+      );
+    }
+
+    // Run all fetches in parallel
+    await Promise.allSettled(fetches);
+
+    // Sort results
+    if (sort === "az") {
+      allResults.sort((a, b) =>
+        ((a.title as string) || "").localeCompare((b.title as string) || "")
+      );
+    }
+    // "popular" keeps natural order — Gutendex returns by download_count
+
+    // Trim to page size
+    const pageResults = allResults.slice(0, PAGE_SIZE);
+
+    // If we got fewer than PAGE_SIZE results, probably no more pages
+    if (pageResults.length < PAGE_SIZE) {
+      hasMore = false;
+    }
+
+    const result = {
+      books: pageResults,
+      hasMore,
+      totalEstimate: Math.max(totalEstimate, pageResults.length),
+    };
+
+    // Cache
+    await ctx.runMutation(api.freeBooks.saveToCache, {
+      cacheKey,
+      results: JSON.stringify(result),
+    });
+
+    return result;
+  },
+});
+
 /**
  * Get curated audiobooks for the kid home page.
  * Pulls from LibriVox children's section.
