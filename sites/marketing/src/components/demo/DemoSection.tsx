@@ -59,7 +59,7 @@ export default function DemoSection() {
             See it in action
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Search any book, song, or YouTube channel and instantly see what parents should know about the content.
+            Search any book, song, YouTube channel, or topic and instantly see what parents should know about the content.
           </p>
         </div>
 
@@ -76,6 +76,8 @@ export default function DemoSection() {
                       ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-sm"
                       : tab.color === "purple"
                       ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-sm"
+                      : tab.color === "cyan"
+                      ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-sm"
                       : "bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-sm"
                     : "text-gray-600 hover:text-gray-900"
                 }`}
@@ -88,7 +90,7 @@ export default function DemoSection() {
         </div>
 
         {/* Desktop: Three Demo Cards side by side */}
-        <div className="hidden lg:grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="hidden lg:grid lg:grid-cols-4 gap-6">
           {/* SafeReads Demo Card */}
           <div
             className="bg-white overflow-hidden border border-cream-dark"
@@ -151,6 +153,27 @@ export default function DemoSection() {
               <ChannelDemoCard />
             </div>
           </div>
+
+          {/* SafeStudy Demo Card */}
+          <div
+            className="bg-white overflow-hidden border border-cream-dark"
+            style={{ borderRadius: "var(--radius-card)", boxShadow: "var(--shadow-card)" }}
+          >
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
+                  <Search className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">SafeStudy</h3>
+                  <p className="text-sm text-white/80">Kid-Safe Search & Tutor</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <SearchDemoCard />
+            </div>
+          </div>
         </div>
 
         {/* Mobile: Single Card with Tabs */}
@@ -166,6 +189,8 @@ export default function DemoSection() {
                   ? "bg-gradient-to-r from-emerald-500 to-teal-500"
                   : activeTab === "songs"
                   ? "bg-gradient-to-r from-purple-600 to-pink-600"
+                  : activeTab === "search"
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-500"
                   : "bg-gradient-to-r from-red-500 to-orange-500"
               }`}
             >
@@ -174,16 +199,19 @@ export default function DemoSection() {
                   {activeTab === "books" && <Book className="h-5 w-5 text-white" />}
                   {activeTab === "songs" && <Music className="h-5 w-5 text-white" />}
                   {activeTab === "channels" && <PlaySquare className="h-5 w-5 text-white" />}
+                  {activeTab === "search" && <Search className="h-5 w-5 text-white" />}
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white">
-                    {activeTab === "books" ? "SafeReads" : activeTab === "songs" ? "SafeTunes" : "SafeTube"}
+                    {activeTab === "books" ? "SafeReads" : activeTab === "songs" ? "SafeTunes" : activeTab === "search" ? "SafeStudy" : "SafeTube"}
                   </h3>
                   <p className="text-sm text-white/80">
                     {activeTab === "books"
                       ? "Book Content Analysis"
                       : activeTab === "songs"
                       ? "Song Content Analysis"
+                      : activeTab === "search"
+                      ? "Kid-Safe Search & Tutor"
                       : "Channel Safety Review"}
                   </p>
                 </div>
