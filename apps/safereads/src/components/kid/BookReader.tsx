@@ -133,6 +133,21 @@ export function BookReader({
           setError(result.error || "Could not load book content.");
         } else {
           setContent(result.content);
+          // Restore scroll position after content renders
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              try {
+                const savedPercent = localStorage.getItem(`safereads_book_scroll:${gutenbergId}`);
+                if (savedPercent && scrollRef.current) {
+                  const percent = parseFloat(savedPercent);
+                  if (percent > 1) {
+                    const scrollHeight = scrollRef.current.scrollHeight - scrollRef.current.clientHeight;
+                    scrollRef.current.scrollTop = (percent / 100) * scrollHeight;
+                  }
+                }
+              } catch { /* ignore */ }
+            }, 200); // Small delay for content to fully render
+          });
         }
       } catch (err) {
         if (cancelled) return;
@@ -163,6 +178,10 @@ export function BookReader({
     const now = Date.now();
     if (now - lastProgressSave.current > 10000 && percent > 0) {
       lastProgressSave.current = now;
+      // Save scroll position to localStorage for instant restore
+      try {
+        localStorage.setItem(`safereads_book_scroll:${gutenbergId}`, String(percent));
+      } catch { /* ignore */ }
       updateProgress({
         kidId,
         googleBookId,
