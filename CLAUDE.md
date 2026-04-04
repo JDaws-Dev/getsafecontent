@@ -558,16 +558,46 @@ Logs include: timestamp, admin email, action, target, IP address.
 
 ## What's Next
 
-### SafeStudy Launch (Highest Priority)
+### SafeStudy
 - [x] Domain live (getsafestudy.com)
-- [ ] Add Stripe checkout UI button in admin Settings
-- [ ] Build UpgradePrompt component (trial countdown)
-- [ ] Add `useSubscriptionSync` hook (sync with Marketing Central)
-- [ ] Add "safestudy" to Marketing Central entitledApps
+- [x] KidSearch.jsx refactored (2,435 → 962 lines, 23 components)
+- [x] Security fixes: prompt injection, rate limiting, CORS, PIN security, subscription checks, orphan detection
+- [ ] Stripe checkout UI button in admin Settings
+- [ ] UpgradePrompt component (trial countdown)
+- [ ] useSubscriptionSync hook (sync with Marketing Central)
 - [ ] Promo code validation (DAWSFRIEND, DEWITT)
 - [ ] Landing page polish (testimonials, FAQ, hero images)
 - [ ] Mobile hamburger menu
-- [ ] KidSearch.jsx refactor (2,429 lines needs component extraction)
+
+### SafeReads Kid Side (NEW — Deployed Apr 3-4)
+Full kid-facing reading platform:
+- **Kid routes at `/read`** (getsafereads.com/read)
+- Family code login (synced across all apps via `users.familyCode`)
+- Library page: Netflix-style browsing with genre/format/sort filters, infinite scroll
+- In-app book reader (Gutenberg HTML, serif typography, font controls, themes)
+- Bible reading: 6 translations (ESV, NIV, NLT, NKJV, NASB, KJV) via Bolls.life API
+- AI Study Notes: conservative Baptist perspective per chapter via OpenAI
+- Saved verses with color highlights + personal notes
+- Bible full-text search across translations
+- Audiobooks via LibriVox (20K+ free), chapter player with position memory
+- Tap-to-define dictionary (free Dictionary API)
+- Book request system (kid requests → auto AI analysis → parent approves/denies)
+- Pre-approved classics: 37 books, classified Safe/Caution/Mature
+- Parent comfort level setting (Safe Only / Safe+Moderate / All Classics)
+- Content safety gate (blocks unanalyzed books from reader)
+- Book cover waterfall (Open Library → Google Books → DALL-E 3 → StylizedCover)
+- Genre browser (15 genres), multiple book sources (Gutenberg, LibriVox, Bloom, Lit2Go, Book Dash)
+- Desktop sidebar nav (lg+), bottom nav on mobile
+- Parent side: manage books per kid, improved wishlists with status, pending request notifications
+
+### SafeTunes
+- [x] Playlist export feature for graduating teens (MusicKit library write API)
+- [ ] Kid request button (request songs/albums/artists for parent approval)
+
+### SafeTube
+- [x] AI Review enhancement built (on branch, NOT deployed — YouTube API review in progress)
+- [ ] Kid request button (request channels/videos for parent approval)
+- **DO NOT deploy SafeTube changes while YouTube API compliance review is active**
 
 ### Immediate
 - [ ] Register for FPEA Florida Homeschool Convention (May 21-23, 2026)
@@ -579,15 +609,27 @@ Logs include: timestamp, admin email, action, target, IP address.
 - [x] **Email Automation** - All types deployed (Apr 1)
 - [x] **SafeStudy MVP** - Core search, tutor, profiles, time limits, Stripe webhooks
 - [x] **Convex Auth Removal** - Removed from all 3 original apps (Mar 27)
-- [x] **Homepage Updates** - On branch `marketing-homepage-updates`
+- [x] **Trial-First Signup** - 7-day free trial, no credit card (Apr 2)
+- [x] **Unified Family Codes** - Synced across all apps during provisioning (Apr 2)
+- [x] **SafeStudy Security** - 10 audit fixes deployed (Apr 3)
+- [x] **SafeReads Kid Side** - Full reading platform (Apr 3-4)
+- [x] **SafeReads AI Enhancement** - Granular age guidance, community notes, series context (Apr 3)
+- [x] **Customer Email** - SafeStudy launch email sent to all users (Apr 2)
+- [x] **YouTube API Response** - Sent to YouTube API review team (Apr 3)
 
-### Marketing
-- [ ] Publish Substack article (saved in `docs/client-acquisition-research.md`)
-- [ ] Send outreach emails to Chris McKenna & Andrew Hogan
-- [ ] Apply to Southeast Homeschool Expo (Atlanta, Jul 24-25)
-- [ ] Add more blog posts (target: 2/week)
-- [ ] Create convention promo code (e.g., `FPEA2026`)
-- [ ] Design booth materials (banner, brochures)
+### TODO
+- [ ] SafeReads: /pricing page (currently 404)
+- [ ] SafeReads: footer (Privacy, Terms, Contact)
+- [ ] SafeReads: kid onboarding (pick genres, set reading goal)
+- [ ] SafeReads: reading streaks/badges/gamification
+- [ ] SafeReads: personalized "Recommended for You" based on reading activity
+- [ ] SafeTube: kid request button for channels/videos
+- [ ] SafeTunes: kid request button for songs/albums
+- [ ] Marketing: dark mode support (currently forced light)
+- [ ] Marketing: Publish Substack article
+- [ ] Marketing: Apply to Southeast Homeschool Expo (Atlanta, Jul 24-25)
+- [ ] Marketing: blog posts (target: 2/week)
+- [ ] Marketing: FPEA convention promo code + booth materials
 
 ---
 
@@ -597,4 +639,4 @@ Logs include: timestamp, admin email, action, target, IP address.
 
 ---
 
-*Last updated: April 1, 2026*
+*Last updated: April 4, 2026*
