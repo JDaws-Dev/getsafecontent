@@ -62,6 +62,7 @@ function cleanBibleText(text: string): string {
     .replace(/<a[^>]*>.*?<\/a>/g, "")      // Strip cross-ref links
     .replace(/<br\s*\/?>/g, "\n")          // Convert <br> to newline
     .replace(/<\/?i>/g, "")                // Strip italic tags (render client-side via verse styling)
+    .replace(/<\/?mark>/g, "")             // Strip search highlight marks (frontend handles highlighting)
     .replace(/\s+/g, " ")                  // Collapse whitespace
     .trim();
 }
