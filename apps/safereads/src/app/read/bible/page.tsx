@@ -794,10 +794,11 @@ export default function BiblePage() {
                           });
                           setSelectedVerse(null);
                         }}
-                        className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                        className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold ${
                           theme === "dark" ? "bg-red-900/50 text-red-300" : "bg-red-50 text-red-600"
                         }`}
                       >
+                        <Heart className="h-3 w-3 fill-current" />
                         Unsave
                       </button>
                     ) : (
@@ -816,11 +817,12 @@ export default function BiblePage() {
                           });
                           setSelectedVerse(null);
                         }}
-                        className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                        className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold ${
                           theme === "dark" ? "bg-amber-900/50 text-amber-300" : "bg-amber-50 text-amber-700"
                         }`}
                       >
-                        Save
+                        <Heart className="h-3 w-3" />
+                        Favorite
                       </button>
                     )}
 
