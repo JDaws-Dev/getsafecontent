@@ -35,6 +35,19 @@ interface AudioPlayerProps {
   onClose?: () => void;
   /** Embedded mode — renders inline, not as a floating bar */
   embedded?: boolean;
+  /** Unique key for persisting playback position (defaults to title) */
+  persistKey?: string;
+}
+
+/** Get the localStorage key for a given book */
+function getProgressKey(key: string): string {
+  return `safereads_audio_progress:${key.toLowerCase().replace(/[^a-z0-9]/g, "_")}`;
+}
+
+interface SavedProgress {
+  chapterIndex: number;
+  currentTime: number;
+  savedAt: number;
 }
 
 const PLAYBACK_RATES = [0.75, 1, 1.25, 1.5];
@@ -47,8 +60,12 @@ export function AudioPlayer({
   chapters,
   onClose,
   embedded,
+  persistKey,
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const progressKey = getProgressKey(persistKey || title);
+  const lastSaveRef = useRef(0);
+  const restoredRef = useRef(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +80,56 @@ export function AudioPlayer({
   const hasChapters = chapters && chapters.length > 0;
   const currentChapter = hasChapters ? chapters[currentChapterIndex] : null;
   const activeUrl = currentChapter?.url || audioUrl;
+
+  // Save playback position to localStorage
+  const saveProgress = useCallback(() => {
+    try {
+      const audio = audioRef.current;
+      if (!audio || audio.currentTime < 1) return;
+      const progress: SavedProgress = {
+        chapterIndex: currentChapterIndex,
+        currentTime: audio.currentTime,
+        savedAt: Date.now(),
+      };
+      localStorage.setItem(progressKey, JSON.stringify(progress));
+    } catch {
+      // Ignore storage errors
+    }
+  }, [progressKey, currentChapterIndex]);
+
+  // Restore playback position on mount
+  useEffect(() => {
+    if (restoredRef.current) return;
+    try {
+      const stored = localStorage.getItem(progressKey);
+      if (stored) {
+        const progress: SavedProgress = JSON.parse(stored);
+        // Only restore if saved within last 30 days
+        if (Date.now() - progress.savedAt < 30 * 24 * 60 * 60 * 1000) {
+          if (hasChapters && progress.chapterIndex > 0 && progress.chapterIndex < (chapters?.length || 0)) {
+            setCurrentChapterIndex(progress.chapterIndex);
+          }
+          // Time will be restored after audio loads (see onLoadedMetadata)
+          restoredRef.current = true;
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }, [progressKey, hasChapters, chapters?.length]);
+
+  // Save progress every 10 seconds during playback
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => saveProgress(), 10000);
+    return () => clearInterval(interval);
+  }, [isPlaying, saveProgress]);
+
+  // Save progress on unmount
+  useEffect(() => {
+    return () => { saveProgress(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Load audio source
   useEffect(() => {
@@ -84,6 +151,19 @@ export function AudioPlayer({
     const onLoadedMetadata = () => {
       setDuration(audio.duration || 0);
       setIsLoading(false);
+      // Restore saved position
+      if (restoredRef.current) {
+        try {
+          const stored = localStorage.getItem(progressKey);
+          if (stored) {
+            const progress: SavedProgress = JSON.parse(stored);
+            if (progress.chapterIndex === currentChapterIndex && progress.currentTime > 1) {
+              audio.currentTime = progress.currentTime;
+            }
+          }
+        } catch { /* ignore */ }
+        restoredRef.current = false; // Only restore once
+      }
     };
 
     const onTimeUpdate = () => {
@@ -133,6 +213,7 @@ export function AudioPlayer({
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
+      saveProgress();
     } else {
       setIsLoading(true);
       audio

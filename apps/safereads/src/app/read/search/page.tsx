@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FreeBookSearch } from "@/components/kid/FreeBookSearch";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
 import { ArrowLeft, BookOpen, Sparkles, Headphones } from "lucide-react";
@@ -40,18 +40,23 @@ export default function KidSearchPage() {
     }
   }, [router]);
 
-  // Check for tab param in URL
+  // Check for tab and query params in URL (reactive to navigation)
+  const searchParams = useSearchParams();
+  const [initialQuery, setInitialQuery] = useState<string | null>(null);
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get("tab");
+    const tab = searchParams.get("tab");
+    const q = searchParams.get("q");
     if (tab === "audio") {
       setActiveTab("audio");
-    }
-    // Legacy support: "free" tab now maps to "books"
-    if (tab === "free") {
+      // Auto-search for audiobooks if no query specified
+      if (!q) setInitialQuery("children classics");
+    } else if (tab === "free") {
       setActiveTab("books");
     }
-  }, []);
+    if (q) {
+      setInitialQuery(q);
+    }
+  }, [searchParams]);
 
   if (!kidId) {
     return (
@@ -138,9 +143,9 @@ export default function KidSearchPage() {
 
       {/* Search Content */}
       {activeTab === "books" ? (
-        <FreeBookSearch kidId={kidId} />
+        <FreeBookSearch kidId={kidId} initialQuery={activeTab === "books" ? initialQuery : undefined} />
       ) : (
-        <FreeBookSearch kidId={kidId} audioOnly />
+        <FreeBookSearch kidId={kidId} audioOnly initialQuery={activeTab === "audio" ? initialQuery : undefined} />
       )}
     </div>
   );

@@ -14,6 +14,8 @@ interface FreeBookSearchProps {
   kidId: Id<"kids">;
   /** If true, only show results with audio available */
   audioOnly?: boolean;
+  /** Pre-fill search query and auto-search on mount */
+  initialQuery?: string | null;
 }
 
 interface FreeBookResult {
@@ -37,9 +39,9 @@ interface FreeBookResult {
   description?: string;
 }
 
-export function FreeBookSearch({ kidId, audioOnly }: FreeBookSearchProps) {
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearchProps) {
+  const [query, setQuery] = useState(initialQuery || "");
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery || "");
   const [results, setResults] = useState<FreeBookResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
