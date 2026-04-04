@@ -409,6 +409,16 @@ export default function KidHomePage() {
 
       const rawId = book.id.replace(/^librivox:/, "");
       const cachedUrl = cachedCovers?.[rawId]?.coverUrl;
+
+      // Try to match to a pre-approved Gutenberg book for direct reading
+      const matchingClassic = preApprovedBooks?.find(
+        (p) => p.title.toLowerCase().includes(book.title.toLowerCase().split("(")[0].trim()) ||
+               book.title.toLowerCase().includes(p.title.toLowerCase().split("(")[0].trim())
+      );
+      const href = matchingClassic
+        ? `/read/book/${encodeURIComponent(matchingClassic.googleBookId)}`
+        : `/read/search?tab=audio&q=${encodeURIComponent(book.title)}`;
+
       books.push({
         id: `listen-${book.id}`,
         title: book.title,
@@ -417,7 +427,7 @@ export default function KidHomePage() {
         cachedCoverUrl: cachedUrl,
         hasAudio: true,
         isClassic: false,
-        href: "/read/search?tab=audio",
+        href,
         source: "audiobook",
         totalTime: book.totalTime,
       });
