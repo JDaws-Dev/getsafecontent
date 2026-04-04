@@ -98,6 +98,13 @@ export default defineSchema({
 
     // Family code for kid login (shared across all Safe Family apps)
     familyCode: v.optional(v.string()),
+
+    // Pre-approved books comfort level (controls which classics auto-approve for kids)
+    preApprovedLevel: v.optional(v.union(
+      v.literal("safe_only"),        // Only auto-approve "safe" rated books
+      v.literal("safe_and_caution"), // Auto-approve "safe" + "caution" (default)
+      v.literal("all_classics")      // Auto-approve everything in the list
+    )),
   })
     .index("email", ["email"])
     .index("phone", ["phone"])

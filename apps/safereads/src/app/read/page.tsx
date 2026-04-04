@@ -153,6 +153,7 @@ export default function PlayPage() {
         familyName={familyData.familyName ?? "Your Family"}
         kids={familyData.kids}
         familyCode={familyCode}
+        userId={familyData.userId}
         onBack={handleBack}
       />
     );

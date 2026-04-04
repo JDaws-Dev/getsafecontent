@@ -56,6 +56,7 @@ interface ProfileSelectorProps {
   familyName: string;
   kids: KidProfile[];
   familyCode: string;
+  userId: string;
   onBack: () => void;
 }
 
@@ -63,6 +64,7 @@ export function ProfileSelector({
   familyName,
   kids,
   familyCode,
+  userId,
   onBack,
 }: ProfileSelectorProps) {
   const router = useRouter();
@@ -95,6 +97,7 @@ export function ProfileSelector({
         name: kid.name,
         age: kid.age,
         color: kid.color,
+        userId: userId,
       })
     );
     // Store session start time for TTL enforcement (24h)

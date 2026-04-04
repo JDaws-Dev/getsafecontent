@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { StylizedCover } from "@/components/kid/StylizedCover";
-import { Search, Headphones, Loader2, BookOpen, ArrowUpDown, Library, CheckCircle2, Clock } from "lucide-react";
+import { Search, Headphones, Loader2, BookOpen, ArrowUpDown, Library, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -37,6 +37,8 @@ interface LibraryBook {
   /** For listen nav, store rss and time */
   rssUrl?: string;
   totalTime?: string;
+  /** Content level for pre-approved books */
+  contentLevel?: "safe" | "caution" | "mature";
 }
 
 interface FreeBook {
@@ -292,6 +294,7 @@ export default function LibraryPage() {
           source: "preApproved",
           href: `/read/book/${encodeURIComponent(book.googleBookId)}`,
           googleBookId: book.googleBookId,
+          contentLevel: book.contentLevel,
         });
       }
     }
@@ -595,10 +598,25 @@ export default function LibraryPage() {
                       <Headphones className="h-2.5 w-2.5 text-white" />
                     </div>
                   )}
-                  {/* Ready to Read badge (pre-approved or parent-approved) */}
+                  {/* Ready to Read badge (pre-approved or parent-approved) with content level */}
                   {isReadyToRead && !isPendingRequest && book.source !== "audiobook" && (
-                    <div className="absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-emerald-500/90 px-1.5 py-0.5 shadow-sm backdrop-blur-sm">
-                      <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                    <div className={`absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 shadow-sm backdrop-blur-sm ${
+                      book.contentLevel === "mature"
+                        ? "bg-orange-500/90"
+                        : book.contentLevel === "caution"
+                          ? "bg-amber-500/90"
+                          : "bg-emerald-500/90"
+                    }`}>
+                      {book.contentLevel === "caution" ? (
+                        <>
+                          <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                          <AlertTriangle className="h-2 w-2 text-white" />
+                        </>
+                      ) : book.contentLevel === "mature" ? (
+                        <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                      ) : (
+                        <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                      )}
                       <span className="text-[7px] font-bold text-white">Ready</span>
                     </div>
                   )}

@@ -26,6 +26,7 @@ import {
   Check,
   RefreshCw,
   Users,
+  Library,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -48,6 +49,7 @@ export default function SettingsPage() {
     analysisCount: number;
   } | undefined;
   const deleteOwnAccount = useMutation(api.admin.deleteOwnAccount);
+  const updatePreApprovedLevel = useMutation(api.users.updatePreApprovedLevel);
 
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -301,6 +303,103 @@ export default function SettingsPage() {
             )}
             Generate Family Code
           </button>
+        )}
+      </div>
+
+      {/* Pre-Approved Library Classics Section */}
+      <div className="rounded-xl border border-parchment-200 bg-white p-6">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100">
+            <Library className="h-5 w-5 text-amber-700" />
+          </div>
+          <div>
+            <h2 className="font-serif text-lg font-bold text-ink-900">
+              Pre-Approved Library Classics
+            </h2>
+            <p className="text-sm text-ink-500">
+              Choose which classics your kids can read without asking
+            </p>
+          </div>
+        </div>
+
+        {!user ? (
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-5 w-5 animate-spin text-parchment-400" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {([
+              {
+                value: "safe_only" as const,
+                label: "Safe Only",
+                description: "Picture books, gentle fairy tales, simple adventures (Peter Rabbit, Wizard of Oz, Heidi, etc.)",
+                color: "text-emerald-600",
+                ring: "ring-emerald-200 bg-emerald-50",
+              },
+              {
+                value: "safe_and_caution" as const,
+                label: "Safe + Moderate",
+                description: "Includes adventure classics with mild themes (Treasure Island, Tom Sawyer, Sherlock Holmes, etc.)",
+                color: "text-amber-600",
+                ring: "ring-amber-200 bg-amber-50",
+                isDefault: true,
+              },
+              {
+                value: "all_classics" as const,
+                label: "All Classics",
+                description: "Includes all classic literature including darker themes (Dracula, Frankenstein, Jane Eyre, etc.)",
+                color: "text-orange-600",
+                ring: "ring-orange-200 bg-orange-50",
+              },
+            ]).map((option) => {
+              const currentLevel = user.preApprovedLevel ?? "safe_and_caution";
+              const isSelected = currentLevel === option.value;
+              return (
+                <button
+                  key={option.value}
+                  onClick={async () => {
+                    if (!authUser?.email || isSelected) return;
+                    await updatePreApprovedLevel({
+                      email: authUser.email,
+                      level: option.value,
+                    });
+                  }}
+                  className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-all ${
+                    isSelected
+                      ? `${option.ring} ring-1`
+                      : "border-parchment-200 hover:border-parchment-300 hover:bg-parchment-50"
+                  }`}
+                >
+                  <div className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
+                    isSelected ? "border-parchment-700 bg-parchment-700" : "border-parchment-300"
+                  }`}>
+                    {isSelected && (
+                      <div className="h-2 w-2 rounded-full bg-white" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm font-semibold ${isSelected ? option.color : "text-ink-800"}`}>
+                        {option.label}
+                      </p>
+                      {option.isDefault && (
+                        <span className="rounded-full bg-parchment-100 px-1.5 py-0.5 text-[10px] font-medium text-parchment-600">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-0.5 text-xs text-ink-500">
+                      {option.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+
+            <p className="text-xs text-ink-400">
+              You can always exclude specific books from individual kid profiles.
+            </p>
+          </div>
         )}
       </div>
 

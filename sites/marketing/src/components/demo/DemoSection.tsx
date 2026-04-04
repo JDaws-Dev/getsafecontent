@@ -1,12 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import { Book, Music, PlaySquare, Sparkles, ChevronRight } from "lucide-react";
+import { Book, Music, PlaySquare, Search, Sparkles, ChevronRight } from "lucide-react";
 import BookDemoCard from "./BookDemoCard";
 import SongDemoCard from "./SongDemoCard";
 import ChannelDemoCard from "./ChannelDemoCard";
 
-type DemoTab = "books" | "songs" | "channels";
+type DemoTab = "books" | "songs" | "channels" | "search";
+
+function SearchDemoCard() {
+  return (
+    <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl p-5 text-white">
+      <div className="flex items-center gap-2 mb-3">
+        <Search className="h-5 w-5" />
+        <span className="text-sm font-bold opacity-90">SafeStudy</span>
+      </div>
+      <div className="bg-white/10 backdrop-blur rounded-lg p-3 mb-3">
+        <p className="text-sm font-medium opacity-70 mb-1">Question</p>
+        <p className="text-base font-bold">&ldquo;Why is the sky blue?&rdquo;</p>
+      </div>
+      <div className="bg-white/10 backdrop-blur rounded-lg p-3 mb-3">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="bg-cyan-300 text-cyan-900 text-[10px] font-bold px-2 py-0.5 rounded-full">Ages 8-10</span>
+        </div>
+        <p className="text-sm leading-relaxed">
+          Sunlight has all the colors of the rainbow mixed together. When it hits the air, blue light bounces around the most because it travels in shorter waves. That&apos;s why when you look up, you see blue!
+        </p>
+      </div>
+      <div className="flex items-center gap-2 text-xs opacity-70">
+        <span>✓ Age-appropriate</span>
+        <span>✓ No links or ads</span>
+        <span>✓ Parent-controlled</span>
+      </div>
+    </div>
+  );
+}
 
 export default function DemoSection() {
   const [activeTab, setActiveTab] = useState<DemoTab>("books");
@@ -15,6 +43,7 @@ export default function DemoSection() {
     { id: "books" as DemoTab, label: "Books", icon: Book, color: "emerald", app: "SafeReads" },
     { id: "songs" as DemoTab, label: "Songs", icon: Music, color: "purple", app: "SafeTunes" },
     { id: "channels" as DemoTab, label: "Channels", icon: PlaySquare, color: "orange", app: "SafeTube" },
+    { id: "search" as DemoTab, label: "Search", icon: Search, color: "cyan", app: "SafeStudy" },
   ];
 
   return (
@@ -164,6 +193,7 @@ export default function DemoSection() {
               {activeTab === "books" && <BookDemoCard />}
               {activeTab === "songs" && <SongDemoCard />}
               {activeTab === "channels" && <ChannelDemoCard />}
+              {activeTab === "search" && <SearchDemoCard />}
             </div>
           </div>
         </div>

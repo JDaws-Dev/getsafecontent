@@ -5,6 +5,30 @@ import { internal } from "./_generated/api";
 // Central accounts service URL (marketing site)
 const CENTRAL_ACCOUNTS_URL = process.env.CENTRAL_ACCOUNTS_URL || "https://getsafefamily.com";
 
+/**
+ * Update the parent's pre-approved books comfort level.
+ * Controls which classic books are auto-approved for their kids.
+ */
+export const updatePreApprovedLevel = mutation({
+  args: {
+    email: v.string(),
+    level: v.union(
+      v.literal("safe_only"),
+      v.literal("safe_and_caution"),
+      v.literal("all_classics")
+    ),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
+      .first();
+
+    if (!user) throw new Error("User not found");
+    await ctx.db.patch(user._id, { preApprovedLevel: args.level });
+  },
+});
+
 // Cache duration for central access verification (5 minutes)
 const CENTRAL_ACCESS_CACHE_MS = 5 * 60 * 1000;
 

@@ -17,6 +17,7 @@ export default function KidReadPage() {
   const bookId = decodeURIComponent(params.bookId as string);
   const [kidId, setKidId] = useState<Id<"kids"> | null>(null);
   const [kidAge, setKidAge] = useState<number | undefined>(undefined);
+  const [parentUserId, setParentUserId] = useState<Id<"users"> | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
@@ -32,6 +33,8 @@ export default function KidReadPage() {
   const [audioLoading, setAudioLoading] = useState(false);
   const updateProgress = useMutation(api.readingProgress.update);
   const createBookRequest = useMutation(api.bookRequests.create);
+  const addToShelf = useMutation(api.approvedBooks.addForKid);
+  const [addedToShelf, setAddedToShelf] = useState(false);
   const findAudioMatch = useAction(api.librivox.findAudioMatch);
   const getLibriVoxChapters = useAction(api.librivox.getLibriVoxChapters);
 
@@ -45,6 +48,7 @@ export default function KidReadPage() {
       const profile = JSON.parse(profileData);
       setKidId(profile._id as Id<"kids">);
       setKidAge(profile.age);
+      if (profile.userId) setParentUserId(profile.userId as Id<"users">);
       // Read book metadata stored by Library page for request flow
       try {
         const meta = localStorage.getItem("safereads_book_meta");
@@ -507,6 +511,41 @@ export default function KidReadPage() {
                   ? "Read Again"
                   : "Start Reading"}
             </button>
+
+            {/* Add to My Books — for pre-approved books not yet on kid's shelf */}
+            {!book && preApprovedBook && kidId && parentUserId && !addedToShelf && (
+              <button
+                onClick={async () => {
+                  if (!kidId || !effectiveBook || !parentUserId) return;
+                  try {
+                    await addToShelf({
+                      userId: parentUserId,
+                      kidId,
+                      googleBookId: bookId,
+                      title: effectiveBook.title,
+                      author: effectiveBook.author,
+                      coverUrl: effectiveBook.coverUrl,
+                      gutenbergId: effectiveBook.gutenbergId,
+                      isFreeBook: true,
+                      addedBy: "pre_approved",
+                    });
+                    setAddedToShelf(true);
+                  } catch (err) {
+                    console.error("Failed to add to shelf:", err);
+                  }
+                }}
+                className="kid-touch flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-50 to-green-50 py-4 text-base font-bold text-emerald-700 shadow-sm ring-1 ring-emerald-200 transition-all hover:shadow-md active:scale-[0.98]"
+              >
+                <BookMarked className="h-5 w-5" />
+                Add to My Books
+              </button>
+            )}
+            {addedToShelf && (
+              <div className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-50 py-4 text-base font-bold text-emerald-600 ring-1 ring-emerald-200">
+                <CheckCircle2 className="h-5 w-5" />
+                Added to My Books!
+              </div>
+            )}
 
             {/* Listen button — shown when LibriVox audio is available */}
             {audioMatch && !isListening && (
