@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
-import { ArrowLeft, BookOpen, Clock, BookMarked, ExternalLink, ShieldAlert, ShieldCheck, Loader2, Sparkles, Headphones } from "lucide-react";
+import { ArrowLeft, BookOpen, Clock, BookMarked, ExternalLink, ShieldAlert, ShieldCheck, Loader2, Sparkles, Headphones, Send, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { BookReader } from "@/components/kid/BookReader";
@@ -16,8 +16,12 @@ export default function KidReadPage() {
   const params = useParams();
   const bookId = decodeURIComponent(params.bookId as string);
   const [kidId, setKidId] = useState<Id<"kids"> | null>(null);
+  const [kidAge, setKidAge] = useState<number | undefined>(undefined);
   const [isReading, setIsReading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [bookMeta, setBookMeta] = useState<{ title: string; author: string; coverUrl?: string } | null>(null);
   const [audioMatch, setAudioMatch] = useState<{
     rssUrl?: string;
     audioUrl?: string;
@@ -27,6 +31,7 @@ export default function KidReadPage() {
   const [audioChapters, setAudioChapters] = useState<Array<{ title: string; url: string; duration?: string }>>([]);
   const [audioLoading, setAudioLoading] = useState(false);
   const updateProgress = useMutation(api.readingProgress.update);
+  const createBookRequest = useMutation(api.bookRequests.create);
   const findAudioMatch = useAction(api.librivox.findAudioMatch);
   const getLibriVoxChapters = useAction(api.librivox.getLibriVoxChapters);
 
@@ -39,6 +44,12 @@ export default function KidReadPage() {
     try {
       const profile = JSON.parse(profileData);
       setKidId(profile._id as Id<"kids">);
+      setKidAge(profile.age);
+      // Read book metadata stored by Library page for request flow
+      try {
+        const meta = localStorage.getItem("safereads_book_meta");
+        if (meta) setBookMeta(JSON.parse(meta));
+      } catch { /* ignore */ }
     } catch {
       router.replace("/read");
     }
@@ -60,10 +71,16 @@ export default function KidReadPage() {
     { googleBookId: bookId }
   );
 
-  // Get pre-approved books list for this kid (to check exclusions)
+  // Get pre-approved books list for this kid (to check exclusions and age filtering)
   const preApprovedBooks = useQuery(
     api.preApprovedBooks.getPreApprovedBooks,
-    kidId ? { kidId } : "skip"
+    kidId ? { kidId, age: kidAge } : "skip"
+  );
+
+  // Check if kid already has a pending request for this book
+  const requestStatus = useQuery(
+    api.bookRequests.getRequestStatus,
+    kidId ? { kidId, googleBookId: bookId } : "skip"
   );
 
   // Check for content analysis (for free books that went through request flow)
@@ -162,23 +179,172 @@ export default function KidReadPage() {
   }
 
   if (!effectiveBook) {
-    return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-        <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-purple-50">
-          <BookOpen className="h-10 w-10 text-purple-300" />
+    // Book is not on their shelf and not pre-approved -- show request flow
+    const alreadyRequested = requestSent || requestStatus?.status === "pending";
+    const wasDenied = requestStatus?.status === "denied";
+    const metaTitle = bookMeta?.title || "This Book";
+    const metaAuthor = bookMeta?.author || "";
+    const metaCover = bookMeta?.coverUrl;
+
+    // Extract gutenberg ID for the request
+    const gutenbergIdForRequest = bookId.startsWith("gutenberg:")
+      ? bookId.replace("gutenberg:", "")
+      : undefined;
+
+    const handleRequestBook = async () => {
+      if (!kidId || requestLoading) return;
+      setRequestLoading(true);
+      try {
+        await createBookRequest({
+          kidId,
+          googleBookId: bookId,
+          title: metaTitle,
+          author: metaAuthor,
+          coverUrl: metaCover,
+          gutenbergId: gutenbergIdForRequest,
+          isFreeBook: bookId.startsWith("gutenberg:"),
+        });
+        setRequestSent(true);
+      } catch (err) {
+        console.error("Failed to request book:", err);
+      } finally {
+        setRequestLoading(false);
+      }
+    };
+
+    // If we have no metadata at all, show a minimal fallback
+    if (!bookMeta && !bookId.startsWith("gutenberg:")) {
+      return (
+        <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
+          <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-purple-50">
+            <BookOpen className="h-10 w-10 text-purple-300" />
+          </div>
+          <p className="mt-5 text-xl font-bold text-gray-700">
+            Book not found
+          </p>
+          <p className="mt-2 text-sm text-gray-500">
+            This book may not be on your shelf yet.
+          </p>
+          <Link
+            href="/read/home"
+            className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200"
+          >
+            Back to Bookshelf
+          </Link>
         </div>
-        <p className="mt-5 text-xl font-bold text-gray-700">
-          Book not found
-        </p>
-        <p className="mt-2 text-sm text-gray-500">
-          This book may not be on your shelf yet.
-        </p>
+      );
+    }
+
+    return (
+      <div className="reading-cozy py-6">
+        {/* Back */}
         <Link
-          href="/read/home"
-          className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200"
+          href="/read/library"
+          className="kid-touch mb-5 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-500 shadow-sm transition-all hover:shadow-md active:scale-95"
         >
-          Back to Bookshelf
+          <ArrowLeft className="h-4 w-4" />
+          Back to Library
         </Link>
+
+        {/* Book Header */}
+        <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+          <div className="relative h-52 w-36 flex-shrink-0 overflow-hidden rounded-2xl bg-gray-100 shadow-xl ring-1 ring-black/5">
+            {metaCover ? (
+              <Image
+                src={metaCover}
+                alt={metaTitle}
+                fill
+                sizes="144px"
+                className="object-cover"
+                unoptimized
+              />
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-violet-50 to-purple-100 p-3">
+                <BookOpen className="h-8 w-8 text-purple-300" />
+                <p className="text-center text-xs font-medium text-purple-600">
+                  {metaTitle}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col justify-center text-center sm:text-left">
+            <h1 className="text-xl font-bold leading-tight text-gray-900 sm:text-2xl">{metaTitle}</h1>
+            {metaAuthor && <p className="mt-1.5 text-sm font-medium text-gray-400">{metaAuthor}</p>}
+          </div>
+        </div>
+
+        {/* Request Flow */}
+        <div className="mt-8">
+          {alreadyRequested ? (
+            <div className="flex flex-col items-center rounded-3xl bg-gradient-to-b from-amber-50 to-orange-50 p-8 text-center ring-1 ring-amber-200">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+                <CheckCircle2 className="h-8 w-8 text-amber-500" />
+              </div>
+              <p className="mt-4 text-lg font-bold text-gray-800">
+                Requested!
+              </p>
+              <p className="mt-2 max-w-xs text-sm text-gray-500">
+                Your parent will review this book soon. Check back later!
+              </p>
+              <Link
+                href="/read/library"
+                className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200 transition-all active:scale-95"
+              >
+                Browse More Books
+              </Link>
+            </div>
+          ) : wasDenied ? (
+            <div className="flex flex-col items-center rounded-3xl bg-gradient-to-b from-gray-50 to-gray-100 p-8 text-center ring-1 ring-gray-200">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                <ShieldAlert className="h-8 w-8 text-gray-400" />
+              </div>
+              <p className="mt-4 text-lg font-bold text-gray-700">
+                Not Available
+              </p>
+              <p className="mt-2 max-w-xs text-sm text-gray-500">
+                Your parent reviewed this book and decided it&apos;s not right for you yet.
+                {requestStatus?.denyReason && (
+                  <span className="mt-1 block text-xs italic text-gray-400">
+                    &quot;{requestStatus.denyReason}&quot;
+                  </span>
+                )}
+              </p>
+              <Link
+                href="/read/library"
+                className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200 transition-all active:scale-95"
+              >
+                Browse More Books
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center rounded-3xl bg-gradient-to-b from-violet-50 to-purple-50 p-8 text-center ring-1 ring-purple-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
+                <Send className="h-8 w-8 text-purple-500" />
+              </div>
+              <p className="mt-4 text-lg font-bold text-gray-800">
+                Want to read this book?
+              </p>
+              <p className="mt-2 max-w-xs text-sm text-gray-500">
+                Ask your parent to add it to your bookshelf. They&apos;ll review it first.
+              </p>
+              <button
+                onClick={handleRequestBook}
+                disabled={requestLoading}
+                className="kid-touch mt-5 flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-200 transition-all hover:shadow-xl active:scale-95 disabled:opacity-60"
+              >
+                {requestLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+                {requestLoading ? "Sending..." : "Ask Parent to Approve"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="h-4" />
       </div>
     );
   }

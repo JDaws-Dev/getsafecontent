@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { StylizedCover } from "@/components/kid/StylizedCover";
-import { Search, Headphones, Loader2, BookOpen, ArrowUpDown, Library } from "lucide-react";
+import { Search, Headphones, Loader2, BookOpen, ArrowUpDown, Library, CheckCircle2, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -32,6 +32,8 @@ interface LibraryBook {
   source: "preApproved" | "free" | "audiobook";
   /** For navigating to reader or listen */
   href: string;
+  /** The googleBookId used for approval/request lookups */
+  googleBookId: string;
   /** For listen nav, store rss and time */
   rssUrl?: string;
   totalTime?: string;
@@ -143,6 +145,45 @@ export default function LibraryPage() {
     kidId ? { age: kidProfile?.age, kidId } : "skip"
   );
 
+  // ---- Approved books for this kid (for badge display) ----
+  const approvedBooks = useQuery(
+    api.approvedBooks.listForKid,
+    kidId ? { kidId } : "skip"
+  );
+
+  // ---- Pending book requests for this kid (for badge display) ----
+  const pendingRequests = useQuery(
+    api.bookRequests.listByKid,
+    kidId ? { kidId } : "skip"
+  );
+
+  // Build lookup sets for badge display
+  const approvedBookIds = useMemo(() => {
+    const set = new Set<string>();
+    if (approvedBooks) {
+      for (const b of approvedBooks) set.add(b.googleBookId);
+    }
+    return set;
+  }, [approvedBooks]);
+
+  const preApprovedBookIds = useMemo(() => {
+    const set = new Set<string>();
+    if (preApprovedBooks) {
+      for (const b of preApprovedBooks) set.add(b.googleBookId);
+    }
+    return set;
+  }, [preApprovedBooks]);
+
+  const pendingRequestIds = useMemo(() => {
+    const set = new Set<string>();
+    if (pendingRequests) {
+      for (const r of pendingRequests) {
+        if (r.status === "pending") set.add(r.googleBookId);
+      }
+    }
+    return set;
+  }, [pendingRequests]);
+
   // ---- Load library books (paginated) ----
   const loadPage = useCallback(
     async (page: number, reset: boolean = false) => {
@@ -250,6 +291,7 @@ export default function LibraryPage() {
           hasAudio: false,
           source: "preApproved",
           href: `/read/book/${encodeURIComponent(book.googleBookId)}`,
+          googleBookId: book.googleBookId,
         });
       }
     }
@@ -270,6 +312,7 @@ export default function LibraryPage() {
           hasAudio: true,
           source: "audiobook",
           href: `/read/listen/${encodeURIComponent(book.id)}`,
+          googleBookId: `gutenberg:${rawId}`,
           rssUrl: book.rssUrl,
           totalTime: book.totalTime,
         });
@@ -282,6 +325,7 @@ export default function LibraryPage() {
           hasAudio: isAudio,
           source: "free",
           href: `/read/book/${encodeURIComponent(`gutenberg:${rawId}`)}`,
+          googleBookId: `gutenberg:${rawId}`,
         });
       }
     }
@@ -369,6 +413,16 @@ export default function LibraryPage() {
           })
         );
       }
+      // Store book metadata so the detail page can show request flow
+      // even if the book isn't on the kid's shelf yet
+      localStorage.setItem(
+        "safereads_book_meta",
+        JSON.stringify({
+          title: book.title,
+          author: book.author,
+          coverUrl: book.cachedCoverUrl || book.coverUrl,
+        })
+      );
       router.push(book.href);
     },
     [router]
@@ -510,6 +564,8 @@ export default function LibraryPage() {
         <div className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {sortedBooks.map((book) => {
             const displayUrl = book.cachedCoverUrl || book.coverUrl;
+            const isReadyToRead = preApprovedBookIds.has(book.googleBookId) || approvedBookIds.has(book.googleBookId);
+            const isPendingRequest = pendingRequestIds.has(book.googleBookId);
             return (
               <button
                 key={book.id}
@@ -537,6 +593,20 @@ export default function LibraryPage() {
                   {book.hasAudio && (
                     <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-violet-500/85 shadow-sm backdrop-blur-sm">
                       <Headphones className="h-2.5 w-2.5 text-white" />
+                    </div>
+                  )}
+                  {/* Ready to Read badge (pre-approved or parent-approved) */}
+                  {isReadyToRead && !isPendingRequest && book.source !== "audiobook" && (
+                    <div className="absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-emerald-500/90 px-1.5 py-0.5 shadow-sm backdrop-blur-sm">
+                      <CheckCircle2 className="h-2.5 w-2.5 text-white" />
+                      <span className="text-[7px] font-bold text-white">Ready</span>
+                    </div>
+                  )}
+                  {/* Pending request badge */}
+                  {isPendingRequest && (
+                    <div className="absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-amber-500/90 px-1.5 py-0.5 shadow-sm backdrop-blur-sm">
+                      <Clock className="h-2.5 w-2.5 text-white" />
+                      <span className="text-[7px] font-bold text-white">Requested</span>
                     </div>
                   )}
                   {/* Pre-approved "Classic" badge */}
