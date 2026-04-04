@@ -17,14 +17,16 @@ export default function PlayLayout({
 
   // Don't show kid nav on the code entry page, profile selection, reader, or Bible reading view
   const isReaderRoute = pathname?.startsWith("/read/book/");
+  const isListenRoute = pathname?.startsWith("/read/listen/");
   const isBibleRoute = pathname?.startsWith("/read/bible");
+  const isFullScreenRoute = isReaderRoute || isListenRoute;
   const showNav =
     pathname !== "/read" &&
     pathname !== "/read/profiles" &&
-    !isReaderRoute;
+    !isFullScreenRoute;
 
-  // Reader route gets a clean full-screen wrapper (no padding, no bg pattern)
-  if (isReaderRoute) {
+  // Reader and listen routes get a clean full-screen wrapper (no padding, no bg pattern)
+  if (isFullScreenRoute) {
     return <>{children}</>;
   }
 

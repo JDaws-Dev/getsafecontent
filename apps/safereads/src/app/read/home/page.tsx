@@ -132,6 +132,7 @@ interface MergedBook {
   /** Navigation target */
   href: string;
   totalTime?: string;
+  rssUrl?: string;
   source: "preApproved" | "free" | "audiobook";
 }
 
@@ -410,15 +411,6 @@ export default function KidHomePage() {
       const rawId = book.id.replace(/^librivox:/, "");
       const cachedUrl = cachedCovers?.[rawId]?.coverUrl;
 
-      // Try to match to a pre-approved Gutenberg book for direct reading
-      const matchingClassic = preApprovedBooks?.find(
-        (p) => p.title.toLowerCase().includes(book.title.toLowerCase().split("(")[0].trim()) ||
-               book.title.toLowerCase().includes(p.title.toLowerCase().split("(")[0].trim())
-      );
-      const href = matchingClassic
-        ? `/read/book/${encodeURIComponent(matchingClassic.googleBookId)}`
-        : `/read/search?tab=audio&q=${encodeURIComponent(book.title)}`;
-
       books.push({
         id: `listen-${book.id}`,
         title: book.title,
@@ -427,9 +419,10 @@ export default function KidHomePage() {
         cachedCoverUrl: cachedUrl,
         hasAudio: true,
         isClassic: false,
-        href,
+        href: `/read/listen/${encodeURIComponent(book.id)}`,
         source: "audiobook",
         totalTime: book.totalTime,
+        rssUrl: book.rssUrl,
       });
     }
 
@@ -762,7 +755,16 @@ export default function KidHomePage() {
                 return (
                   <button
                     key={book.id}
-                    onClick={() => router.push(book.href)}
+                    onClick={() => {
+                      localStorage.setItem("safereads_listen_book", JSON.stringify({
+                        title: book.title,
+                        author: book.author,
+                        coverUrl: displayUrl,
+                        rssUrl: book.rssUrl,
+                        totalTime: book.totalTime,
+                      }));
+                      router.push(book.href);
+                    }}
                     className="group flex flex-shrink-0 flex-col items-start text-left"
                   >
                     <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-violet-50 shadow-md ring-1 ring-violet-200/50 transition-all group-active:scale-[0.97]">
