@@ -587,7 +587,30 @@ export default function KidHomePage() {
         </section>
       )}
 
-      {/* 3. Browse by Genre */}
+      {/* 3. Read the Bible — prominent for homeschool audience */}
+      <section className="animate-fade-up mt-5" style={{ animationDelay: "0.12s" }}>
+        <button
+          onClick={() => router.push("/read/bible")}
+          className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-4 shadow-md ring-1 ring-amber-200/60 transition-all hover:shadow-lg active:scale-[0.98]"
+        >
+          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-2xl shadow-lg shadow-amber-200">
+            <BookOpen className="h-7 w-7 text-white" />
+          </div>
+          <div className="min-w-0 flex-1 text-left">
+            <p className="text-base font-bold text-amber-900">Read the Bible</p>
+            <p className="mt-0.5 text-xs text-amber-700/70">
+              ESV, NIV, NLT, NKJV, KJV and more
+            </p>
+          </div>
+          <div className="flex-shrink-0 text-amber-400">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </button>
+      </section>
+
+      {/* 4. Browse by Genre */}
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.15s" }}>
         <div className="flex items-center gap-2">
           <span className="text-lg">{"\uD83C\uDF1F"}</span>
@@ -796,28 +819,7 @@ export default function KidHomePage() {
         </div>
       </section>
 
-      {/* 6. Read the Bible */}
-      <section className="animate-fade-up mt-7" style={{ animationDelay: "0.28s" }}>
-        <button
-          onClick={() => router.push("/read/bible")}
-          className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-4 shadow-md ring-1 ring-amber-200/60 transition-all hover:shadow-lg active:scale-[0.98]"
-        >
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-2xl shadow-lg shadow-amber-200">
-            <BookOpen className="h-7 w-7 text-white" />
-          </div>
-          <div className="min-w-0 flex-1 text-left">
-            <p className="text-base font-bold text-amber-900">Read the Bible</p>
-            <p className="mt-0.5 text-xs text-amber-700/70">
-              ESV, NIV, NLT, NKJV, KJV and more
-            </p>
-          </div>
-          <div className="flex-shrink-0 text-amber-400">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </div>
-        </button>
-      </section>
+      {/* Bible section moved to position 3 above */}
 
       {/* My Saved Verses */}
       {savedVerses && (savedVerses as Array<{ bookName: string; chapter: number; verse: number; verseText: string; translation: string; color?: string }>).length > 0 && (
