@@ -598,17 +598,10 @@ export default function KidReadPage() {
         </div>
       )}
 
-      {/* Progress Tracker */}
-      <div className="mt-7 rounded-2xl bg-white p-5 shadow-md ring-1 ring-black/5">
-        <h3 className="text-base font-bold text-gray-800">Track Your Progress</h3>
-        {currentPercent === 0 ? (
-          <button
-            onClick={handleStartReading}
-            className="kid-touch mt-4 w-full rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 py-4 text-center text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-[0.98]"
-          >
-            {isFreeBook ? "Read This Book" : "Start Reading This Book"}
-          </button>
-        ) : (
+      {/* Progress Tracker — only show when there's actual reading progress */}
+      {currentPercent > 0 && (
+        <div className="mt-7 rounded-2xl bg-white p-5 shadow-md ring-1 ring-black/5">
+          <h3 className="text-base font-bold text-gray-800">Track Your Progress</h3>
           <div className="mt-4 space-y-3">
             <p className="text-sm text-gray-500">
               How far along are you?
@@ -629,8 +622,8 @@ export default function KidReadPage() {
               ))}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
