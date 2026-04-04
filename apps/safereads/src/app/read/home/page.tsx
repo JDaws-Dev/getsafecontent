@@ -639,7 +639,7 @@ export default function KidHomePage() {
             </h2>
           </div>
           <Link
-            href="/read/search"
+            href="/read/library"
             className="kid-touch flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
           >
             See All
@@ -734,7 +734,7 @@ export default function KidHomePage() {
             </h2>
           </div>
           <Link
-            href="/read/search?tab=audio"
+            href="/read/library?format=audio"
             className="kid-touch flex items-center gap-1 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-100"
           >
             See All
