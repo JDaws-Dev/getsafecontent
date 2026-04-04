@@ -256,7 +256,7 @@ export default function SettingsPage() {
             </div>
 
             <p className="text-xs text-ink-500">
-              Go to <span className="font-medium">getsafereads.com/play</span> on your kid&apos;s device and enter this code.
+              Go to <span className="font-medium">getsafereads.com/read</span> on your kid&apos;s device and enter this code.
             </p>
 
             <button

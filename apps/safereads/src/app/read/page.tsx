@@ -13,7 +13,7 @@ import { BookOpen } from "lucide-react";
  *
  * Flow:
  * 1. Check localStorage for saved family code + profile
- * 2. If both exist, redirect to /play/home
+ * 2. If both exist, redirect to /read/home
  * 3. If only code exists, show profile selection
  * 4. If neither, show family code entry
  */

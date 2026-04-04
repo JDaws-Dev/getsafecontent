@@ -264,7 +264,7 @@ export default function OnboardingPage() {
               </div>
               <p className="text-sm text-ink-500">
                 Kids go to{" "}
-                <span className="font-semibold text-emerald-700">getsafereads.com/play</span>{" "}
+                <span className="font-semibold text-emerald-700">getsafereads.com/read</span>{" "}
                 and enter this code.
               </p>
             </div>

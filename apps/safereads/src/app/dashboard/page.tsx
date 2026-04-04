@@ -115,7 +115,7 @@ export default function DashboardPage() {
               {familyCode.code}
             </p>
             <p className="mt-0.5 text-[10px] text-purple-500">
-              Kids go to getsafereads.com/play and enter this code
+              Kids go to getsafereads.com/read and enter this code
             </p>
           </div>
           <button

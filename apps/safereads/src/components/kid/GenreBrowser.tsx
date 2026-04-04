@@ -124,7 +124,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
                 {genreBooks.map((book) => (
                   <button
                     key={book.id}
-                    onClick={() => router.push(`/play/read/${encodeURIComponent(`gutenberg:${book.id}`)}`)}
+                    onClick={() => router.push(`/read/book/${encodeURIComponent(`gutenberg:${book.id}`)}`)}
                     className="group flex flex-col items-start text-left"
                   >
                     <div className="book-tilt relative h-40 w-full overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5">

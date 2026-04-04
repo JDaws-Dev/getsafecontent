@@ -341,7 +341,7 @@ export default function KidHomePage() {
         cachedCoverUrl: cachedUrl,
         hasAudio: false,
         isClassic: isWellKnownClassic(book.title),
-        href: `/play/read/${encodeURIComponent(book.googleBookId)}`,
+        href: `/read/book/${encodeURIComponent(book.googleBookId)}`,
         source: "preApproved",
       });
     }
@@ -545,7 +545,7 @@ export default function KidHomePage() {
             {currentlyReadingBooks.map((book, index) => (
               <button
                 key={book._id}
-                onClick={() => router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)}
+                onClick={() => router.push(`/read/book/${encodeURIComponent(book.googleBookId)}`)}
                 className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
@@ -893,7 +893,7 @@ export default function KidHomePage() {
               books={approvedBooks}
               progress={readingProgress || []}
               onBookClick={(book) =>
-                router.push(`/play/read/${encodeURIComponent(book.googleBookId)}`)
+                router.push(`/read/book/${encodeURIComponent(book.googleBookId)}`)
               }
             />
           )}
