@@ -25,8 +25,9 @@ export function ClientNavWrapper({ children }: { children: React.ReactNode }) {
 
   // Hide parent nav on kid-facing /play pages
   const isPlayPage = pathname?.startsWith("/read");
+  const isLandingPage = pathname === "/";
 
-  if (isPlayPage) {
+  if (isPlayPage || isLandingPage) {
     return <main>{children}</main>;
   }
 

@@ -20,7 +20,6 @@ import {
   Library,
   BookMarked,
   GraduationCap,
-  Search,
   Fingerprint,
 } from "lucide-react";
 
@@ -108,24 +107,60 @@ export default function Home() {
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       {/* Top Nav */}
-      <nav className="sticky top-0 z-40 border-b border-parchment-200 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      <nav className="sticky top-0 z-50 border-b border-parchment-200 bg-white/95 shadow-sm backdrop-blur-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2">
             <BookOpen className="h-6 w-6 text-parchment-700" />
             <span className="font-serif text-lg font-bold text-ink-900">SafeReads</span>
           </Link>
-          <div className="flex items-center gap-3">
+
+          <div className="hidden items-center gap-6 lg:flex">
+            <a
+              href="#how-it-works"
+              className="text-sm font-medium text-ink-500 transition-colors hover:text-ink-900"
+            >
+              How It Works
+            </a>
+            <a
+              href="#pricing"
+              className="text-sm font-medium text-ink-500 transition-colors hover:text-ink-900"
+            >
+              Pricing
+            </a>
+            <a
+              href="#faq"
+              className="text-sm font-medium text-ink-500 transition-colors hover:text-ink-900"
+            >
+              FAQ
+            </a>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href="https://getsafefamily.com"
+              className="hidden text-sm font-medium text-ink-400 transition-colors hover:text-ink-700 xl:inline-flex"
+            >
+              Safe Family
+            </a>
+            <span className="hidden text-ink-200 xl:inline">|</span>
+            <Link
+              href="/dashboard"
+              className="hidden text-sm font-medium text-ink-600 transition-colors hover:text-ink-900 sm:inline-flex"
+            >
+              Parent Login
+            </Link>
             <Link
               href="/read"
-              className="rounded-full bg-purple-100 px-4 py-2 text-sm font-semibold text-purple-700 transition-colors hover:bg-purple-200"
+              className="rounded-full bg-purple-100 px-3 py-2 text-sm font-semibold text-purple-700 transition-colors hover:bg-purple-200 sm:px-4"
             >
               Kid Login
             </Link>
             <Link
-              href="/dashboard"
-              className="rounded-full bg-parchment-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-parchment-800"
+              href="/signup"
+              className="rounded-full bg-parchment-700 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-parchment-800 sm:px-4"
             >
-              Parent Login
+              <span className="sm:hidden">Try Free</span>
+              <span className="hidden sm:inline">Start Free Trial</span>
             </Link>
           </div>
         </div>
@@ -267,7 +302,7 @@ export default function Home() {
       {/* How It Works */}
       <section
         id="how-it-works"
-        className="border-y border-parchment-200 bg-parchment-100/50 py-16 sm:py-20"
+        className="scroll-mt-24 border-y border-parchment-200 bg-parchment-100/50 py-16 sm:py-20"
       >
         <div className="mx-auto max-w-5xl px-4">
           <h2 className="text-center font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
@@ -920,7 +955,7 @@ function FAQSection() {
   };
 
   return (
-    <section className="py-16 sm:py-20 bg-white">
+    <section id="faq" className="scroll-mt-24 py-16 sm:py-20 bg-white">
       <div className="mx-auto max-w-3xl px-4">
         <div className="text-center mb-12">
           <h2 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
