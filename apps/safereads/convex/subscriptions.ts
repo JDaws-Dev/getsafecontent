@@ -138,7 +138,10 @@ export const updateSubscription = mutation({
       )
       .unique();
 
-    if (!user) throw new Error("User not found for Stripe customer");
+    if (!user) {
+      console.warn(`[updateSubscription] No user found for stripeCustomerId: ${args.stripeCustomerId} — skipping`);
+      return;
+    }
 
     await ctx.db.patch(user._id, {
       stripeSubscriptionId: args.stripeSubscriptionId,
