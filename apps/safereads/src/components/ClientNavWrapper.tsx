@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
+import { Footer } from "@/components/Footer";
 
 // Dynamically import nav components that use auth (no SSR to avoid prerender errors)
 const Navbar = dynamic(() => import("@/components/Navbar").then((mod) => mod.Navbar), {
@@ -20,10 +21,13 @@ const BottomNav = dynamic(() => import("@/components/BottomNav").then((mod) => m
   ssr: false,
 });
 
+// Public pages that should show a footer (not auth flows or app pages)
+const footerPages = ["/privacy", "/terms", "/contact", "/about"];
+
 export function ClientNavWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Hide parent nav on kid-facing /play pages
+  // Hide parent nav on kid-facing /read pages and landing page (has its own nav)
   const isPlayPage = pathname?.startsWith("/read");
   const isLandingPage = pathname === "/";
 
@@ -31,10 +35,13 @@ export function ClientNavWrapper({ children }: { children: React.ReactNode }) {
     return <main>{children}</main>;
   }
 
+  const showFooter = footerPages.some((p) => pathname?.startsWith(p));
+
   return (
     <>
       <Navbar />
       <main className="pb-20 sm:pb-0">{children}</main>
+      {showFooter && <Footer />}
       <BottomNav />
     </>
   );

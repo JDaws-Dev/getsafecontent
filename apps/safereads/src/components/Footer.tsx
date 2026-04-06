@@ -4,11 +4,13 @@ const apps = [
   { name: "SafeTunes", href: "https://getsafetunes.com" },
   { name: "SafeTube", href: "https://getsafetube.com" },
   { name: "SafeReads", href: "https://getsafereads.com" },
+  { name: "SafeStudy", href: "https://getsafestudy.com" },
 ];
 
 const legalLinks = [
   { name: "Privacy", href: "/privacy" },
   { name: "Terms", href: "/terms" },
+  { name: "Contact", href: "/contact" },
 ];
 
 export function Footer() {
