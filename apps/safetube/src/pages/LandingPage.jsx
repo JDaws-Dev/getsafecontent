@@ -1099,6 +1099,9 @@ export default function LandingPage() {
             <a href="https://getsafereads.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeReads
             </a>
+            <a href="https://getsafestudy.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+              SafeStudy
+            </a>
           </div>
 
           {/* Legal Links */}
@@ -1109,6 +1112,10 @@ export default function LandingPage() {
             </span>
             <span className="flex items-center gap-4 sm:gap-6">
               <Link to="/terms" className="text-sm text-white/50 hover:text-white/70 transition-colors">Terms</Link>
+              <span className="text-white/30 hidden sm:inline">|</span>
+            </span>
+            <span className="flex items-center gap-4 sm:gap-6">
+              <a href="mailto:jeremiah@getsafefamily.com" className="text-sm text-white/50 hover:text-white/70 transition-colors">Contact</a>
             </span>
           </div>
 

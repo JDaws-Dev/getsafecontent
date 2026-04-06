@@ -873,7 +873,7 @@ function LandingPageSimple() {
       </section>
 
       {/* Pricing - White section */}
-      <section className="py-16 bg-white">
+      <section id="pricing" className="py-16 bg-white scroll-mt-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-8">
@@ -962,9 +962,17 @@ function LandingPageSimple() {
             <div className="flex gap-6 text-sm">
               <Link to="/privacy" className="hover:text-white transition">Privacy</Link>
               <Link to="/terms" className="hover:text-white transition">Terms</Link>
+              <a href="mailto:jeremiah@getsafefamily.com" className="hover:text-white transition">Contact</a>
               <Link to="/login" className="hover:text-white transition">Parent Login</Link>
               <Link to="/kids" className="hover:text-white transition">Kid Login</Link>
             </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-800 flex flex-wrap items-center justify-center gap-4 text-xs">
+            <span className="text-gray-500">Safe Family Apps:</span>
+            <a href="https://getsafetube.com" className="hover:text-white transition">SafeTube</a>
+            <a href="https://getsafereads.com" className="hover:text-white transition">SafeReads</a>
+            <a href="https://getsafestudy.com" className="hover:text-white transition">SafeStudy</a>
+            <a href="https://getsafefamily.com" className="hover:text-white transition">Safe Family</a>
           </div>
         </div>
       </footer>
