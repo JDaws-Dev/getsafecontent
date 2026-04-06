@@ -28,89 +28,87 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        // Customer ID is already set in the checkout route before creating the session,
-        // so we don't need to do anything here. The subscription events handle the rest.
-        break;
-      }
-
-      case "customer.subscription.created": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId =
-          typeof subscription.customer === "string"
-            ? subscription.customer
-            : subscription.customer.id;
-        const periodEnd =
-          subscription.items.data[0]?.current_period_end ?? 0;
-
-        await convex.mutation(api.subscriptions.updateSubscription, {
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscription.id,
-          subscriptionStatus: mapSubscriptionStatus(subscription.status),
-          subscriptionCurrentPeriodEnd: periodEnd * 1000,
-        });
-
-        // Send welcome email for new subscriptions
-        if (process.env.RESEND_API_KEY) {
-          try {
-            const customer = await stripe.customers.retrieve(customerId);
-            if (customer && !customer.deleted && customer.email) {
-              const resend = new Resend(process.env.RESEND_API_KEY);
-              await resend.emails.send({
-                from: "SafeReads <hello@getsafefamily.com>",
-                to: customer.email,
-                subject: "Welcome to SafeReads!",
-                html: getWelcomeEmailHtml(customer.name || "there"),
-              });
-            }
-          } catch (emailError) {
-            console.error("Failed to send welcome email:", emailError);
-          }
-        }
-        break;
-      }
-
-      case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId =
-          typeof subscription.customer === "string"
-            ? subscription.customer
-            : subscription.customer.id;
-        const periodEnd =
-          subscription.items.data[0]?.current_period_end ?? 0;
-
-        await convex.mutation(api.subscriptions.updateSubscription, {
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscription.id,
-          subscriptionStatus: mapSubscriptionStatus(subscription.status),
-          subscriptionCurrentPeriodEnd: periodEnd * 1000,
-        });
-        break;
-      }
-
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId =
-          typeof subscription.customer === "string"
-            ? subscription.customer
-            : subscription.customer.id;
-        const periodEnd =
-          subscription.items.data[0]?.current_period_end ?? 0;
-
-        await convex.mutation(api.subscriptions.updateSubscription, {
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscription.id,
-          subscriptionStatus: "canceled",
-          subscriptionCurrentPeriodEnd: periodEnd * 1000,
-        });
-        break;
-      }
+  switch (event.type) {
+    case "checkout.session.completed": {
+      // Customer ID is already set in the checkout route before creating the session,
+      // so we don't need to do anything here. The subscription events handle the rest.
+      break;
     }
-  } catch (error) {
-    console.error(`[Stripe Webhook] Error processing ${event.type}:`, error);
-    // Return 200 so Stripe stops retrying — the error is logged for investigation
+
+    case "customer.subscription.created": {
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId =
+        typeof subscription.customer === "string"
+          ? subscription.customer
+          : subscription.customer.id;
+      const periodEnd =
+        subscription.items.data[0]?.current_period_end ?? 0;
+
+      // updateSubscription handles missing users gracefully (warns + skips)
+      // Real infrastructure errors (Convex down) will throw and return 500
+      // so Stripe retries
+      await convex.mutation(api.subscriptions.updateSubscription, {
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: mapSubscriptionStatus(subscription.status),
+        subscriptionCurrentPeriodEnd: periodEnd * 1000,
+      });
+
+      // Send welcome email — non-critical, don't fail webhook
+      if (process.env.RESEND_API_KEY) {
+        try {
+          const customer = await stripe.customers.retrieve(customerId);
+          if (customer && !customer.deleted && customer.email) {
+            const resend = new Resend(process.env.RESEND_API_KEY);
+            await resend.emails.send({
+              from: "SafeReads <hello@getsafefamily.com>",
+              to: customer.email,
+              subject: "Welcome to SafeReads!",
+              html: getWelcomeEmailHtml(customer.name || "there"),
+            });
+          }
+        } catch (emailError) {
+          console.error("Failed to send welcome email:", emailError);
+        }
+      }
+      break;
+    }
+
+    case "customer.subscription.updated": {
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId =
+        typeof subscription.customer === "string"
+          ? subscription.customer
+          : subscription.customer.id;
+      const periodEnd =
+        subscription.items.data[0]?.current_period_end ?? 0;
+
+      await convex.mutation(api.subscriptions.updateSubscription, {
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: mapSubscriptionStatus(subscription.status),
+        subscriptionCurrentPeriodEnd: periodEnd * 1000,
+      });
+      break;
+    }
+
+    case "customer.subscription.deleted": {
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId =
+        typeof subscription.customer === "string"
+          ? subscription.customer
+          : subscription.customer.id;
+      const periodEnd =
+        subscription.items.data[0]?.current_period_end ?? 0;
+
+      await convex.mutation(api.subscriptions.updateSubscription, {
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: "canceled",
+        subscriptionCurrentPeriodEnd: periodEnd * 1000,
+      });
+      break;
+    }
   }
 
   return NextResponse.json({ received: true });
