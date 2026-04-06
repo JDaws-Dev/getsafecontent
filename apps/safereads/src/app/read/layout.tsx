@@ -20,10 +20,12 @@ export default function PlayLayout({
   const isListenRoute = pathname?.startsWith("/read/listen/");
   const isBibleRoute = pathname?.startsWith("/read/bible");
   const isFullScreenRoute = isReaderRoute || isListenRoute;
+  const isOnboardingRoute = pathname === "/read/onboarding";
   const showNav =
     pathname !== "/read" &&
     pathname !== "/read/profiles" &&
-    !isFullScreenRoute;
+    !isFullScreenRoute &&
+    !isOnboardingRoute;
 
   // Reader and listen routes get a clean full-screen wrapper (no padding, no bg pattern)
   if (isFullScreenRoute) {

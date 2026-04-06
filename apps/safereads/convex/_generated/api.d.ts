@@ -39,6 +39,8 @@ import type * as preApprovedBooks from "../preApprovedBooks.js";
 import type * as provisionUser from "../provisionUser.js";
 import type * as provisionUserInternal from "../provisionUserInternal.js";
 import type * as readingProgress from "../readingProgress.js";
+import type * as readingStreaks from "../readingStreaks.js";
+import type * as recommendations from "../recommendations.js";
 import type * as reports from "../reports.js";
 import type * as searchHistory from "../searchHistory.js";
 import type * as setSubscriptionStatus from "../setSubscriptionStatus.js";
@@ -88,6 +90,8 @@ declare const fullApi: ApiFromModules<{
   provisionUser: typeof provisionUser;
   provisionUserInternal: typeof provisionUserInternal;
   readingProgress: typeof readingProgress;
+  readingStreaks: typeof readingStreaks;
+  recommendations: typeof recommendations;
   reports: typeof reports;
   searchHistory: typeof searchHistory;
   setSubscriptionStatus: typeof setSubscriptionStatus;

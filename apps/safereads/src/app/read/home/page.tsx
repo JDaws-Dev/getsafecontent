@@ -8,7 +8,8 @@ import { KidBookshelf } from "@/components/kid/KidBookshelf";
 import { BookCard } from "@/components/kid/BookCard";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
 import { StylizedCover } from "@/components/kid/StylizedCover";
-import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star, Clock, Headphones } from "lucide-react";
+import { ReadingStreaks } from "@/components/kid/ReadingStreaks";
+import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star, Clock, Headphones, Wand2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -180,6 +181,18 @@ export default function KidHomePage() {
     }
   }, [router, clearSession]);
 
+  // Check if kid needs onboarding (redirect before showing home)
+  const needsOnboarding = useQuery(
+    api.kids.needsOnboarding,
+    kidProfile ? { kidId: kidProfile._id as Id<"kids"> } : "skip"
+  );
+
+  useEffect(() => {
+    if (needsOnboarding === true) {
+      router.replace("/read/onboarding");
+    }
+  }, [needsOnboarding, router]);
+
   // Re-validate session against Convex (checks: code still valid, subscription active, profile exists)
   // Also fetches fresh profile data (fixes stale name/color after parent edits)
   const savedCode = typeof window !== "undefined" ? localStorage.getItem("safereads_family_code") : null;
@@ -294,6 +307,18 @@ export default function KidHomePage() {
     api.bookRequests.listByKid,
     kidId ? { kidId } : "skip"
   );
+  const streakData = useQuery(
+    api.readingStreaks.getStreak,
+    kidId ? { kidId } : "skip"
+  );
+  const badgeData = useQuery(
+    api.readingStreaks.getBadges,
+    kidId ? { kidId } : "skip"
+  );
+  const recommendations = useQuery(
+    api.recommendations.getRecommendations,
+    kidId ? { kidId } : "skip"
+  );
   const preApprovedBooks = useQuery(
     api.preApprovedBooks.getPreApprovedBooks,
     kidId ? { age: kidProfile?.age, kidId } : "skip"
@@ -312,9 +337,13 @@ export default function KidHomePage() {
     () => freeBooks.map((b) => b.id),
     [freeBooks]
   );
+  const recommendationIdentifiers = useMemo(
+    () => (recommendations || []).map((b) => b.gutenbergId),
+    [recommendations]
+  );
   const allIdentifiers = useMemo(
-    () => [...classicIdentifiers, ...freeBookIdentifiers],
-    [classicIdentifiers, freeBookIdentifiers]
+    () => [...classicIdentifiers, ...freeBookIdentifiers, ...recommendationIdentifiers],
+    [classicIdentifiers, freeBookIdentifiers, recommendationIdentifiers]
   );
 
   // Batch lookup cached covers
@@ -431,6 +460,16 @@ export default function KidHomePage() {
   }, [audiobooks, cachedCovers]);
 
   // ---- Background cover fetching for books without cached covers ----
+  const recsNeedingCovers = useMemo(() => {
+    return (recommendations || []).map((book) => ({
+      identifier: book.gutenbergId,
+      title: book.title,
+      author: book.author,
+      hasCachedCover: !!cachedCovers?.[book.gutenbergId]?.coverUrl,
+      hasSourceCover: !!book.coverUrl && !book.coverUrl.includes("gutenberg.org"),
+    }));
+  }, [recommendations, cachedCovers]);
+
   const booksNeedingCovers = useMemo(() => {
     const all = [...recommendedBooks, ...listenBooks];
     return all.map((book) => {
@@ -447,7 +486,7 @@ export default function KidHomePage() {
     });
   }, [recommendedBooks, listenBooks]);
 
-  useCoverFetcher(booksNeedingCovers);
+  useCoverFetcher([...booksNeedingCovers, ...recsNeedingCovers]);
 
   const recommendedLoading = freeBooksLoading || audiobooksLoading;
   const recommendedLoaded = freeBooksLoaded || audiobooksLoaded || (preApprovedBooks && preApprovedBooks.length > 0);
@@ -547,8 +586,24 @@ export default function KidHomePage() {
             <span className="text-xs font-bold sm:text-sm">{approvedBooks?.length || 0}</span>
             <span className="text-[10px] text-white/70 sm:text-xs">books</span>
           </div>
+          {streakData && streakData.currentStreak > 0 && (
+            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
+              <span className="text-xs sm:text-sm">{"\uD83D\uDD25"}</span>
+              <span className="text-xs font-bold sm:text-sm">{streakData.currentStreak}</span>
+              <span className="text-[10px] text-white/70 sm:text-xs">streak</span>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Reading Streaks & Badges */}
+      <section className="animate-fade-up mt-5" style={{ animationDelay: "0.08s" }}>
+        <ReadingStreaks
+          streak={streakData}
+          badges={badgeData}
+          kidColor={kidProfile.color}
+        />
+      </section>
 
       {/* 2. Continue Reading */}
       {currentlyReadingBooks.length > 0 && (
@@ -633,6 +688,95 @@ export default function KidHomePage() {
         </button>
       </section>
 
+      {/* 3b. Recommended for You (personalized) */}
+      {recommendations !== undefined && (
+        <section className="animate-fade-up mt-7" style={{ animationDelay: "0.14s" }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Wand2 className="h-4 w-4 text-purple-500" />
+              <h2 className="font-serif text-lg font-bold text-gray-800">
+                Recommended for You
+              </h2>
+            </div>
+            <Link
+              href="/read/search"
+              className="kid-touch flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
+            >
+              Explore
+            </Link>
+          </div>
+          <p className="mt-0.5 text-xs text-gray-400">
+            Picked just for you based on what you love
+          </p>
+          <div className="mt-3">
+            {recommendations.length > 0 ? (
+              <div className="flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
+                {recommendations.map((book) => {
+                  const cachedUrl = cachedCovers?.[book.gutenbergId]?.coverUrl;
+                  const displayUrl = cachedUrl || book.coverUrl;
+                  return (
+                    <button
+                      key={book.gutenbergId}
+                      onClick={() => router.push(`/read/book/${encodeURIComponent(book.googleBookId)}`)}
+                      className="group flex flex-shrink-0 flex-col items-start text-left"
+                    >
+                      <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5 transition-all group-active:scale-[0.97]">
+                        {displayUrl ? (
+                          <Image
+                            src={displayUrl}
+                            alt={book.title}
+                            fill
+                            sizes="112px"
+                            className="object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <StylizedCover
+                            title={book.title}
+                            author={book.author}
+                            size="md"
+                          />
+                        )}
+                      </div>
+                      <p
+                        className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-purple-700"
+                        style={{ maxWidth: "112px" }}
+                      >
+                        {book.title}
+                      </p>
+                      <p
+                        className="mt-0.5 line-clamp-1 text-[9px] text-gray-400"
+                        style={{ maxWidth: "112px" }}
+                      >
+                        {book.author}
+                      </p>
+                      <span
+                        className="mt-1 inline-block max-w-[112px] truncate rounded-full bg-purple-50 px-2 py-0.5 text-[8px] font-semibold text-purple-600 ring-1 ring-purple-100"
+                      >
+                        {book.reason}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center rounded-2xl bg-white px-4 py-8 text-center shadow-sm">
+                <Wand2 className="h-8 w-8 text-purple-200" />
+                <p className="mt-2 text-sm font-medium text-gray-600">
+                  Start reading to get personalized picks!
+                </p>
+                <Link
+                  href="/read/search"
+                  className="kid-touch mt-3 rounded-full bg-purple-100 px-4 py-2 text-xs font-bold text-purple-700 transition-colors hover:bg-purple-200"
+                >
+                  Browse Books
+                </Link>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 4. Browse by Genre */}
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.15s" }}>
         <div className="flex items-center gap-2">
@@ -649,13 +793,13 @@ export default function KidHomePage() {
         </div>
       </section>
 
-      {/* 4. Recommended for You (merged classics + free books + audiobooks) */}
+      {/* 5. Discover More Books (merged classics + free books + audiobooks) */}
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.2s" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Star className="h-4 w-4 text-yellow-500" />
             <h2 className="text-lg font-bold text-gray-800">
-              Recommended for You
+              Discover More Books
             </h2>
           </div>
           <Link

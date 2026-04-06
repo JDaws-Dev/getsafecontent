@@ -51,8 +51,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    // Force light mode — dark theme not properly designed yet
-    const initialTheme = stored || "light";
+    const initialTheme = stored || "system";
     setThemeState(initialTheme);
     applyTheme(resolveTheme(initialTheme));
     setMounted(true);
@@ -82,7 +81,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           __html: `
             (function() {
               const stored = localStorage.getItem('${STORAGE_KEY}');
-              const theme = stored || 'light';
+              const theme = stored || 'system';
               const resolved = theme === 'system'
                 ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
                 : theme;

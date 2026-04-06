@@ -82,6 +82,14 @@ export function BookReader({
 
   const getBookContent = useAction(api.freeBooks.getFreeBookContent);
   const updateProgress = useMutation(api.readingProgress.update);
+  const recordReadingTime = useMutation(api.readingStreaks.recordReadingTime);
+  const recordBookFinished = useMutation(api.readingStreaks.recordBookFinished);
+  const checkAndAwardBadges = useMutation(api.readingStreaks.checkAndAwardBadges);
+
+  // Track reading time: count seconds the reader is open
+  const readingStartTime = useRef(Date.now());
+  const lastTimeRecord = useRef(Date.now());
+  const hasRecordedFinish = useRef(false);
 
   // Load saved preferences
   useEffect(() => {
@@ -162,6 +170,37 @@ export function BookReader({
     return () => { cancelled = true; };
   }, [gutenbergId, getBookContent]);
 
+  // Track reading time — record incremental minutes every 30 seconds
+  useEffect(() => {
+    readingStartTime.current = Date.now();
+    lastTimeRecord.current = Date.now();
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const elapsedMs = now - lastTimeRecord.current;
+      const elapsedMinutes = elapsedMs / (1000 * 60);
+
+      if (elapsedMinutes >= 0.5) {
+        // Record the time and check for badges
+        recordReadingTime({ kidId, minutesRead: elapsedMinutes }).catch(() => {});
+        checkAndAwardBadges({ kidId }).catch(() => {});
+        lastTimeRecord.current = now;
+      }
+    }, 30000); // every 30 seconds
+
+    return () => {
+      clearInterval(interval);
+      // Record remaining time on unmount
+      const now = Date.now();
+      const remaining = (now - lastTimeRecord.current) / (1000 * 60);
+      if (remaining >= 0.1) {
+        recordReadingTime({ kidId, minutesRead: remaining }).catch(() => {});
+        checkAndAwardBadges({ kidId }).catch(() => {});
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kidId]);
+
   // Track scroll progress and save periodically
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -182,14 +221,21 @@ export function BookReader({
       try {
         localStorage.setItem(`safereads_book_scroll:${gutenbergId}`, String(percent));
       } catch { /* ignore */ }
+      const isFinished = percent >= 98;
       updateProgress({
         kidId,
         googleBookId,
         percentComplete: Math.min(percent, 100),
-        finished: percent >= 98,
+        finished: isFinished,
       }).catch(() => {});
+      // Record book completion once
+      if (isFinished && !hasRecordedFinish.current) {
+        hasRecordedFinish.current = true;
+        recordBookFinished({ kidId }).catch(() => {});
+        checkAndAwardBadges({ kidId }).catch(() => {});
+      }
     }
-  }, [kidId, googleBookId, updateProgress]);
+  }, [kidId, googleBookId, updateProgress, recordBookFinished, checkAndAwardBadges]);
 
   useEffect(() => {
     const el = scrollRef.current;

@@ -50,6 +50,7 @@ interface KidProfile {
   color: string;
   hasPin: boolean;
   readingLevel?: string;
+  onboardingCompleted?: boolean;
 }
 
 interface ProfileSelectorProps {
@@ -102,7 +103,12 @@ export function ProfileSelector({
     );
     // Store session start time for TTL enforcement (24h)
     localStorage.setItem("safereads_session_started", Date.now().toString());
-    router.push("/read/home");
+    // Redirect to onboarding if not completed, otherwise go to home
+    if (!kid.onboardingCompleted) {
+      router.push("/read/onboarding");
+    } else {
+      router.push("/read/home");
+    }
   };
 
   const handlePinSubmit = async () => {

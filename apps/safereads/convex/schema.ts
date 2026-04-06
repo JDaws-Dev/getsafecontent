@@ -181,6 +181,10 @@ export default defineSchema({
     pinLockedUntil: v.optional(v.number()),     // Unix timestamp when lockout expires
     // Pre-approved book exclusions (parent can remove specific classics)
     excludedPreApproved: v.optional(v.array(v.string())), // Array of gutenbergIds to exclude
+    // Kid onboarding fields
+    favoriteGenres: v.optional(v.array(v.string())),  // e.g. ["Adventure", "Science", "Fantasy"]
+    dailyReadingGoalMinutes: v.optional(v.number()),   // e.g. 15, 30, 45, 60
+    onboardingCompleted: v.optional(v.boolean()),
   }).index("by_user", ["userId"]),
 
   wishlists: defineTable({
@@ -196,6 +200,24 @@ export default defineSchema({
   })
     .index("by_kid", ["kidId"])
     .index("by_kid_and_book", ["kidId", "bookId"]),
+
+  // ========================================================================
+  // Reading Streaks & Badges (gamification)
+  // ========================================================================
+  readingStreaks: defineTable({
+    kidId: v.id("kids"),
+    date: v.string(),              // "2026-04-06" format
+    minutesRead: v.number(),       // total minutes read that day
+    booksRead: v.number(),         // books finished that day
+    goalMet: v.optional(v.boolean()), // did they meet their daily goal
+  }).index("by_kid", ["kidId"])
+    .index("by_kid_date", ["kidId", "date"]),
+
+  badges: defineTable({
+    kidId: v.id("kids"),
+    badgeId: v.string(),           // e.g. "first_book", "streak_3", "bookworm_10"
+    earnedAt: v.number(),          // timestamp
+  }).index("by_kid", ["kidId"]),
 
   // ========================================================================
   // Kid-Facing Tables (for kid bookshelf + request system)

@@ -188,6 +188,7 @@ export const validateCode = query({
         color: kid.color || "purple",
         hasPin: !!kid.pin,
         readingLevel: kid.readingLevel,
+        onboardingCompleted: kid.onboardingCompleted === true,
       })),
     };
   },

@@ -207,6 +207,40 @@ export const clearPin = mutation({
 });
 
 /**
+ * Check if a kid needs onboarding (onboardingCompleted is not true).
+ */
+export const needsOnboarding = query({
+  args: { kidId: v.id("kids") },
+  handler: async (ctx, args) => {
+    const kid = await ctx.db.get(args.kidId);
+    if (!kid) return false;
+    return kid.onboardingCompleted !== true;
+  },
+});
+
+/**
+ * Complete kid onboarding — save favorite genres, reading goal, and mark complete.
+ */
+export const completeOnboarding = mutation({
+  args: {
+    kidId: v.id("kids"),
+    favoriteGenres: v.array(v.string()),
+    dailyReadingGoalMinutes: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const kid = await ctx.db.get(args.kidId);
+    if (!kid) {
+      throw new Error("Kid not found");
+    }
+    await ctx.db.patch(args.kidId, {
+      favoriteGenres: args.favoriteGenres,
+      dailyReadingGoalMinutes: args.dailyReadingGoalMinutes,
+      onboardingCompleted: true,
+    });
+  },
+});
+
+/**
  * Internal mutation to create a kid (used by HTTP endpoint for onboarding).
  */
 export const createKidInternal = internalMutation({
