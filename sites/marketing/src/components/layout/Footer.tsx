@@ -16,7 +16,7 @@ const legalLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-navy text-white">
+    <footer className="bg-[#1a1a2e] text-white">
       {/* Extra padding at top to allow for overlapping pricing section */}
       <div className="pt-32 sm:pt-40">
         <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">

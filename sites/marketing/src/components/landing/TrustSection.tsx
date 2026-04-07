@@ -25,7 +25,7 @@ const trustItems = [
 
 export default function TrustSection() {
   return (
-    <section className="bg-navy py-16 sm:py-20">
+    <section className="bg-[#1a1a2e] py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* Money-back guarantee badge */}
         <div className="flex justify-center mb-10">

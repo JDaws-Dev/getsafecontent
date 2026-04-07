@@ -228,21 +228,21 @@ export default function DemoSection() {
 
         {/* Bottom CTA */}
         <div className="mt-8 text-center">
-          <div className="bg-white/80 rounded-3xl p-6 sm:p-8 border border-cream-dark max-w-2xl mx-auto" style={{ boxShadow: "var(--shadow-soft)" }}>
-            <h3 className="text-xl sm:text-2xl font-bold text-navy mb-2">
+          <div className="bg-white/80 dark:bg-slate-800/80 rounded-3xl p-6 sm:p-8 border border-cream-dark dark:border-slate-700 max-w-2xl mx-auto" style={{ boxShadow: "var(--shadow-soft)" }}>
+            <h3 className="text-xl sm:text-2xl font-bold text-navy dark:text-white mb-2">
               Ready to take control?
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-slate-300 mb-6">
               Get full access to SafeReads, SafeTunes, SafeTube, and SafeStudy with one simple subscription.
             </p>
             <a
               href="#pricing"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-navy text-white rounded-full font-semibold hover:bg-navy/90 transition-all shadow-lg hover:shadow-xl hover:scale-105"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-navy dark:bg-orange-500 text-white rounded-full font-semibold hover:bg-navy/90 dark:hover:bg-orange-600 transition-all shadow-lg hover:shadow-xl hover:scale-105"
             >
               Get All 4 Apps for $9.99/month
               <ChevronRight className="h-5 w-5" />
             </a>
-            <p className="text-sm text-gray-500 mt-4">
+            <p className="text-sm text-gray-500 dark:text-slate-400 mt-4">
               7-day free trial included. Cancel anytime.
             </p>
           </div>

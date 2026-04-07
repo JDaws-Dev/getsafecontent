@@ -53,7 +53,7 @@ const components = {
   ),
   pre: (props: any) => (
     <pre
-      className="bg-navy text-white p-4 rounded-xl overflow-x-auto my-6 text-sm"
+      className="bg-[#1a1a2e] text-white p-4 rounded-xl overflow-x-auto my-6 text-sm"
       {...props}
     />
   ),
