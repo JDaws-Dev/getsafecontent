@@ -592,12 +592,12 @@ Full kid-facing reading platform:
 
 ### SafeTunes
 - [x] Playlist export feature for graduating teens (MusicKit library write API)
-- [ ] Kid request button (request songs/albums/artists for parent approval)
+- [x] Kid request button (already built — verified Apr 6)
 
 ### SafeTube
 - [x] AI Review enhancement built (on branch, NOT deployed — YouTube API review in progress)
-- [ ] Kid request button (request channels/videos for parent approval)
-- **DO NOT deploy SafeTube changes while YouTube API compliance review is active**
+- [x] Kid request button (already built — verified Apr 6)
+- **DO NOT deploy SafeTube backend changes while YouTube API compliance review is active**
 
 ### Immediate
 - [ ] Register for FPEA Florida Homeschool Convention (May 21-23, 2026)
@@ -616,20 +616,24 @@ Full kid-facing reading platform:
 - [x] **SafeReads AI Enhancement** - Granular age guidance, community notes, series context (Apr 3)
 - [x] **Customer Email** - SafeStudy launch email sent to all users (Apr 2)
 - [x] **YouTube API Response** - Sent to YouTube API review team (Apr 3)
+- [x] **SafeReads Nav Fix** - Single nav on landing page, removed double-stack (Apr 5)
+- [x] **SafeReads Stripe Webhook** - Graceful handling of missing users, real errors return 500 (Apr 5-6)
+- [x] **SafeReads /pricing redirect** - Added redirect to /#pricing anchor (Apr 5)
+- [x] **All 4 Apps Footer Consistency** - Contact link, SafeStudy, app cross-links (Apr 5)
+- [x] **SafeReads Kid Onboarding** - 3-step wizard (genres, reading goal, confirmation) (Apr 6)
+- [x] **SafeReads Reading Streaks & Badges** - Daily tracking, 8 badges, weekly view (Apr 6)
+- [x] **SafeReads Recommendations** - Personalized "Recommended for You" by genre + history (Apr 6)
+- [x] **SafeReads New Icon** - White shield with book on orange (Apr 6)
+- [x] **Marketing Dark Mode** - System preference re-enabled, comprehensive CSS overrides (Apr 6)
+- [x] **Blog Post: "Why I Built SafeFamily"** - Founder story published (Apr 6)
 
 ### TODO
-- [ ] SafeReads: /pricing page (currently 404)
-- [ ] SafeReads: footer (Privacy, Terms, Contact)
-- [ ] SafeReads: kid onboarding (pick genres, set reading goal)
-- [ ] SafeReads: reading streaks/badges/gamification
-- [ ] SafeReads: personalized "Recommended for You" based on reading activity
-- [ ] SafeTube: kid request button for channels/videos
-- [ ] SafeTunes: kid request button for songs/albums
-- [ ] Marketing: dark mode support (currently forced light)
+- [ ] LRCLib migration (replace MusixMatch — saves $59/mo, plan in docs/LRCLIB-MIGRATION.md)
 - [ ] Marketing: Publish Substack article
 - [ ] Marketing: Apply to Southeast Homeschool Expo (Atlanta, Jul 24-25)
 - [ ] Marketing: blog posts (target: 2/week)
 - [ ] Marketing: FPEA convention promo code + booth materials
+- [ ] Register for FPEA Convention (May 21-23, 2026, $525-685)
 
 ---
 
@@ -639,4 +643,4 @@ Full kid-facing reading platform:
 
 ---
 
-*Last updated: April 4, 2026*
+*Last updated: April 7, 2026*
