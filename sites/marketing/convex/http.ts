@@ -1,6 +1,6 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { auth } from "./auth";
 import verifyCentralCredentials from "./verifyCentralCredentials";
 import { login, verifyToken, requestPasswordReset, resetPassword, generateOAuthToken } from "./authEndpoints";
@@ -1861,6 +1861,92 @@ http.route({
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+/**
+ * Report Trial Summary — receives trial check results from individual apps.
+ * Each app POSTs its expired/warned users here instead of sending its own admin email.
+ * Marketing Central aggregates all reports and sends one combined daily digest.
+ *
+ * POST /reportTrialSummary
+ * Header: x-admin-key
+ * Body: { app, expiredCount, expiredEmails, warningCount, warningEmails }
+ */
+http.route({
+  path: "/reportTrialSummary",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, x-admin-key",
+      "Content-Type": "application/json",
+    };
+
+    // Verify admin key
+    const expectedKey = process.env.ADMIN_KEY;
+    const providedKey = request.headers.get("x-admin-key");
+    if (!expectedKey || providedKey !== expectedKey) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers }
+      );
+    }
+
+    try {
+      const body = await request.json();
+      const { app, expiredCount, expiredEmails, warningCount, warningEmails } = body;
+
+      if (!app || expiredCount === undefined || warningCount === undefined) {
+        return new Response(
+          JSON.stringify({ error: "Missing required fields: app, expiredCount, warningCount" }),
+          { status: 400, headers }
+        );
+      }
+
+      const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
+      if (!validApps.includes(app)) {
+        return new Response(
+          JSON.stringify({ error: `Invalid app: ${app}` }),
+          { status: 400, headers }
+        );
+      }
+
+      await ctx.runMutation(internal.trialSummary.storeReport, {
+        app,
+        expiredCount,
+        expiredEmails: expiredEmails || [],
+        warningCount,
+        warningEmails: warningEmails || [],
+      });
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers }
+      );
+    } catch (error) {
+      console.error("[reportTrialSummary] Error:", error);
+      return new Response(
+        JSON.stringify({ error: "Internal server error" }),
+        { status: 500, headers }
+      );
+    }
+  }),
+});
+
+http.route({
+  path: "/reportTrialSummary",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, x-admin-key",
       },
     });
   }),

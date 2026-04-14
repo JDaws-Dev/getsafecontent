@@ -626,6 +626,7 @@ Full kid-facing reading platform:
 - [x] **SafeReads New Icon** - White shield with book on orange (Apr 6)
 - [x] **Marketing Dark Mode** - System preference re-enabled, comprehensive CSS overrides (Apr 6)
 - [x] **Blog Post: "Why I Built SafeFamily"** - Founder story published (Apr 6)
+- [x] **Consolidated Trial Emails** - All 4 apps POST trial results to Marketing Central; one customer email per user (with bundle upsell) + one admin digest instead of 3-4 separate emails (Apr 13)
 
 ### TODO
 - [ ] LRCLib migration (replace MusixMatch — saves $59/mo, plan in docs/LRCLIB-MIGRATION.md)
@@ -643,4 +644,4 @@ Full kid-facing reading platform:
 
 ---
 
-*Last updated: April 7, 2026*
+*Last updated: April 13, 2026*

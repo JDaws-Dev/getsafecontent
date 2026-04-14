@@ -5,10 +5,9 @@ import { internal } from "./_generated/api";
 
 /**
  * Run the full trial expiration check:
- * 1. Process expirations (mutation)
- * 2. Send warning emails
- * 3. Send expired emails
- * 4. Send admin summary
+ * 1. Process expirations (mutation) — updates local user statuses
+ * 2. Report results to Marketing Central — it handles ALL customer emails
+ *    (consolidated per-user with bundle upsell) and admin digest
  */
 export const runTrialExpirationCheck = internalAction({
   args: {},
@@ -17,42 +16,27 @@ export const runTrialExpirationCheck = internalAction({
 
     const { expired, expiringSoon } = result;
 
-    // Send warning emails
-    for (const user of expiringSoon) {
-      try {
-        await ctx.runAction(internal.emails.sendTrialExpiringWarning, {
-          email: user.email,
-          name: user.name,
+    // Report to Marketing Central — it sends customer emails + admin digest
+    try {
+      const adminKey = process.env.ADMIN_KEY;
+      if (adminKey) {
+        await fetch("https://adamant-crow-705.convex.site/reportTrialSummary", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": adminKey,
+          },
+          body: JSON.stringify({
+            app: "safetunes",
+            expiredCount: expired.length,
+            expiredEmails: expired.map((u: { email: string }) => u.email),
+            warningCount: expiringSoon.length,
+            warningEmails: expiringSoon.map((u: { email: string }) => u.email),
+          }),
         });
-      } catch (e) {
-        console.error(`[SafeTunes] Failed to send warning email to ${user.email}:`, e);
       }
-    }
-
-    // Send expired emails
-    for (const user of expired) {
-      try {
-        await ctx.runAction(internal.emails.sendTrialExpiredEmail, {
-          email: user.email,
-          name: user.name,
-        });
-      } catch (e) {
-        console.error(`[SafeTunes] Failed to send expired email to ${user.email}:`, e);
-      }
-    }
-
-    // Send admin summary if anything happened
-    if (expired.length > 0 || expiringSoon.length > 0) {
-      try {
-        await ctx.runAction(internal.emails.sendAdminTrialExpirationSummary, {
-          expiredCount: expired.length,
-          expiredEmails: expired.map((u) => u.email),
-          warningCount: expiringSoon.length,
-          warningEmails: expiringSoon.map((u) => u.email),
-        });
-      } catch (e) {
-        console.error("[SafeTunes] Failed to send admin trial summary:", e);
-      }
+    } catch (e) {
+      console.error("[SafeTunes] Failed to report trial summary to Marketing Central:", e);
     }
 
     console.log(

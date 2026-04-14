@@ -12,6 +12,7 @@ import type * as ResendOTPPasswordReset from "../ResendOTPPasswordReset.js";
 import type * as accounts from "../accounts.js";
 import type * as auth from "../auth.js";
 import type * as authEndpoints from "../authEndpoints.js";
+import type * as crons from "../crons.js";
 import type * as debugAuth from "../debugAuth.js";
 import type * as emails from "../emails.js";
 import type * as forceProvision from "../forceProvision.js";
@@ -19,6 +20,8 @@ import type * as http from "../http.js";
 import type * as migrations from "../migrations.js";
 import type * as passwordReset from "../passwordReset.js";
 import type * as signupInternal from "../signupInternal.js";
+import type * as trialSummary from "../trialSummary.js";
+import type * as trialSummaryDigest from "../trialSummaryDigest.js";
 import type * as verifyCentralCredentials from "../verifyCentralCredentials.js";
 
 import type {
@@ -32,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   accounts: typeof accounts;
   auth: typeof auth;
   authEndpoints: typeof authEndpoints;
+  crons: typeof crons;
   debugAuth: typeof debugAuth;
   emails: typeof emails;
   forceProvision: typeof forceProvision;
@@ -39,6 +43,8 @@ declare const fullApi: ApiFromModules<{
   migrations: typeof migrations;
   passwordReset: typeof passwordReset;
   signupInternal: typeof signupInternal;
+  trialSummary: typeof trialSummary;
+  trialSummaryDigest: typeof trialSummaryDigest;
   verifyCentralCredentials: typeof verifyCentralCredentials;
 }>;
 

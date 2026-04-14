@@ -76,6 +76,16 @@ const components = {
     <strong className="font-semibold text-navy" {...props} />
   ),
   em: (props: any) => <em className="italic" {...props} />,
+  img: ({ src, alt, ...props }: any) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt || "Blog image"}
+      loading="lazy"
+      className="rounded-lg my-6 w-full"
+      {...props}
+    />
+  ),
 };
 
 interface MDXContentProps {

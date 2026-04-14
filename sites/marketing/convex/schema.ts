@@ -210,4 +210,22 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_and_app", ["userId", "app"])
     .index("by_sync_status", ["syncStatus"]),
+
+  // Trial summary reports — each app POSTs its daily trial check results here.
+  // Marketing Central aggregates and sends one combined admin email.
+  trialSummaryReports: defineTable({
+    app: v.union(
+      v.literal("safetunes"),
+      v.literal("safetube"),
+      v.literal("safereads"),
+      v.literal("safestudy")
+    ),
+    expiredCount: v.number(),
+    expiredEmails: v.array(v.string()),
+    warningCount: v.number(),
+    warningEmails: v.array(v.string()),
+    reportedAt: v.number(), // Unix timestamp
+  })
+    .index("by_app", ["app"])
+    .index("by_reportedAt", ["reportedAt"]),
 });
