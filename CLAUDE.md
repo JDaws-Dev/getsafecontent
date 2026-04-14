@@ -627,14 +627,22 @@ Full kid-facing reading platform:
 - [x] **Marketing Dark Mode** - System preference re-enabled, comprehensive CSS overrides (Apr 6)
 - [x] **Blog Post: "Why I Built SafeFamily"** - Founder story published (Apr 6)
 - [x] **Consolidated Trial Emails** - All 4 apps POST trial results to Marketing Central; one customer email per user (with bundle upsell) + one admin digest instead of 3-4 separate emails (Apr 13)
+- [x] **Stripe Cleanup** - Archived duplicate SafeReads product, renamed bundle to "Safe Family Bundle" (Apr 14)
+- [x] **Blog: 6 Posts Scheduled** - SafeStudy intro, homeschool toolkit, Bible reading, kid requests, Bark/CE comparison, kids search (Apr 14-May 1, Mon/Thu cadence)
+- [x] **Blog SEO Fixes** - og:image + twitter card on listing page, BreadcrumbList JSON-LD on posts, MDX img lazy loading (Apr 14)
+- [x] **Outreach Research** - Competitor growth playbooks documented (docs/OUTREACH-RESEARCH-2026-04-08.md)
+- [x] **Email Warmup Research** - Warmup tool comparison, manual warmup recommended for pilot scale (docs/EMAIL-WARMUP-RESEARCH-2026-04-08.md)
+- [x] **Outscraper Pipeline Plan** - Full spec for FL homeschool co-op lead-gen pilot (docs/OUTSCRAPER-PIPELINE-PLAN.md)
 
 ### TODO
 - [ ] LRCLib migration (replace MusixMatch — saves $59/mo, plan in docs/LRCLIB-MIGRATION.md)
 - [ ] Marketing: Publish Substack article
 - [ ] Marketing: Apply to Southeast Homeschool Expo (Atlanta, Jul 24-25)
-- [ ] Marketing: blog posts (target: 2/week)
+- [ ] Marketing: blog posts (target: 2/week — 6 scheduled through May 1)
 - [ ] Marketing: FPEA convention promo code + booth materials
 - [ ] Register for FPEA Convention (May 21-23, 2026, $525-685)
+- [ ] Outscraper pipeline: build Phase 1 (schema + HTTP endpoint in Marketing Central)
+- [ ] Set up Instantly account + outreach.getsafefamily.com subdomain for cold email
 
 ---
 
@@ -644,4 +652,4 @@ Full kid-facing reading platform:
 
 ---
 
-*Last updated: April 13, 2026*
+*Last updated: April 14, 2026*
