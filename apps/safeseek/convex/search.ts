@@ -4,6 +4,8 @@ import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { internal, api } from "./_generated/api";
 import { sanitizeQuery as sanitizeInput, detectPromptInjection, filterResponse } from "./ai/inputFilter";
+import { classifyIntent, shouldBlockCategory, redirectMessage } from "./ai/intentClassifier";
+import { isLoop, loopMessage } from "./ai/loopDetector";
 import { normalizeQuery } from "./lib/utils";
 
 // --- Query classification ---
@@ -62,6 +64,9 @@ export const performSearch = internalAction({
   args: {
     kidProfileId: v.id("kidProfiles"),
     query: v.string(),
+    intentCategory: v.optional(v.string()),
+    intentConfidence: v.optional(v.number()),
+    intentRationale: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Get kid profile
@@ -268,6 +273,9 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
         query: args.query,
         blockedReason: parsed.flagReason || "Query deemed inappropriate for child",
         searchedAt: now,
+        intentCategory: args.intentCategory,
+        intentConfidence: args.intentConfidence,
+        intentRationale: args.intentRationale,
       });
 
       // Check if kid can request topic approval (defaults to true)
@@ -331,7 +339,9 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
         }
       }
 
-      allImages = deduplicateImages(allImages, 8);
+      // Cap at 6 (Apr 2026): keeps image search useful for "what does X look
+      // like" without giving the kid a feed to scroll. No "more like this".
+      allImages = deduplicateImages(allImages, 6);
     }
 
     // --- Step 7: Build final response ---
@@ -359,6 +369,9 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
       flagged: parsed.flagged || false,
       flagReason: parsed.flagReason || undefined,
       searchedAt: now,
+      intentCategory: args.intentCategory,
+      intentConfidence: args.intentConfidence,
+      intentRationale: args.intentRationale,
     });
 
     // --- Step 8: Write to cache ---
@@ -482,10 +495,103 @@ export const searchFromKid = action({
       }
     }
 
-    // Perform the search with sanitized query
+    // --- Intent classifier: catches synonym-shuffled aesthetic browsing,
+    //     self-image queries, ED/self-harm signals BEFORE the expensive
+    //     search runs. Fails open: classifier errors don't block the kid.
+    const intent = await classifyIntent(sanitized, process.env.OPENAI_API_KEY);
+
+    const decision = shouldBlockCategory(
+      intent.category as any,
+      kidProfile.contentStrictness || "moderate",
+      kidProfile.blockedTopics || [],
+      intent.confidence
+    );
+
+    if (decision.block) {
+      const now = Date.now();
+
+      // Record the block with intent metadata
+      await ctx.runMutation(internal.searchQueries.insertBlockedSearch, {
+        kidProfileId: args.kidProfileId,
+        query: sanitized,
+        blockedReason: decision.reason,
+        searchedAt: now,
+        intentCategory: intent.category,
+        intentConfidence: intent.confidence,
+        intentRationale: intent.rationale,
+      });
+
+      // Concern-level alerts (ED, self-harm) → log + schedule parent email.
+      // Schedule via internalAction so the public action returns fast.
+      if (decision.alert) {
+        await ctx.runMutation(internal.searchQueries.recordConcernAlert, {
+          kidProfileId: args.kidProfileId,
+          userId: kidProfile.userId,
+          query: sanitized,
+          category: intent.category,
+          confidence: intent.confidence,
+          rationale: intent.rationale,
+        });
+        await ctx.scheduler.runAfter(0, internal.concernAlerts.sendParentEmail, {
+          kidProfileId: args.kidProfileId,
+          userId: kidProfile.userId,
+          query: sanitized,
+          category: intent.category,
+          rationale: intent.rationale,
+        });
+      }
+
+      return {
+        safe: false,
+        results: [],
+        summary: redirectMessage(intent.category as any),
+        flagged: decision.alert,
+        blocked: true,
+        reason: decision.reason,
+        images: [],
+        intentCategory: intent.category,
+      };
+    }
+
+    // --- Loop detector: if the kid has searched ~the same thing 4+ times in
+    //     the last 30 minutes, gently redirect them. Catches synonym shuffling
+    //     against the blocker AND innocuous repetition (asking the same thing
+    //     dozens of times). Color-rotation collapses to a single key.
+    const recentQueries = await ctx.runQuery(internal.searchQueries.getRecentQueriesForLoopCheck, {
+      kidProfileId: args.kidProfileId,
+      sinceMs: 30 * 60 * 1000,
+    });
+    const loopCheck = isLoop(sanitized, recentQueries);
+    if (loopCheck.loop) {
+      const now = Date.now();
+      await ctx.runMutation(internal.searchQueries.insertBlockedSearch, {
+        kidProfileId: args.kidProfileId,
+        query: sanitized,
+        blockedReason: `loop_detected_${loopCheck.matchCount}_in_30min`,
+        searchedAt: now,
+        intentCategory: intent.category,
+        intentConfidence: intent.confidence,
+        intentRationale: intent.rationale,
+      });
+      return {
+        safe: false,
+        results: [],
+        summary: loopMessage(),
+        flagged: false,
+        blocked: true,
+        reason: "loop_detected",
+        images: [],
+        intentCategory: intent.category,
+      };
+    }
+
+    // Perform the search with sanitized query + intent metadata
     const result = await ctx.runAction(internal.search.performSearch, {
       kidProfileId: args.kidProfileId,
       query: sanitized,
+      intentCategory: intent.category,
+      intentConfidence: intent.confidence,
+      intentRationale: intent.rationale,
     });
 
     return result;

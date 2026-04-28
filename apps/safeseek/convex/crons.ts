@@ -33,4 +33,16 @@ crons.daily(
   internal.rateLimit.cleanupOldRecords
 );
 
+/**
+ * Weekly parent digest — Sundays at 23:00 UTC (Sunday evening in the US).
+ * Reports the past 7 days per kid: intent breakdown, blocked count,
+ * concerning patterns, heaviest day, total searches.
+ * Opt out via users.weeklyDigestOptOut.
+ */
+crons.weekly(
+  "send-weekly-parent-digest",
+  { dayOfWeek: "sunday", hourUTC: 23, minuteUTC: 0 },
+  internal.weeklyDigest.sendAll
+);
+
 export default crons;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { createPortal } from 'react-dom';
 import { api } from '../../../convex/_generated/api';
 
@@ -17,8 +17,19 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
   const containerRef = useRef(null);
   const progressIntervalRef = useRef(null);
   const watchIdRef = useRef(null);
-  const watchStartTimeRef = useRef(null);
+  const watchStartTimeRef = useRef(null); // legacy: first-play wall-clock anchor
   const endTriggeredRef = useRef(false); // Prevent multiple end triggers
+
+  // Apr 2026 fix: track *active playback time*, not wall-clock since the
+  // player loaded. Old behavior counted seconds while the video was paused,
+  // backgrounded, or left open overnight — Bella's account logged 19+ hour
+  // days through pure idle time.
+  //
+  // playStartedAtRef: Date.now() of the current PLAYING span, or null if not playing.
+  // accumulatedPlayMsRef: total ms spent in PLAYING state across all spans.
+  const playStartedAtRef = useRef(null);
+  const accumulatedPlayMsRef = useRef(0);
+  const periodicSaveIntervalRef = useRef(null);
 
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -32,6 +43,27 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
   const recordWatch = useMutation(api.watchHistory.recordWatch);
   const updateWatchDuration = useMutation(api.watchHistory.updateWatchDuration);
 
+  // Apr 2026: reactive canWatch check. Updates when periodic saves push new
+  // watchDurationSeconds to the DB. When the limit is hit mid-playback we
+  // auto-close instead of waiting for the next video to gate.
+  const canWatchStatus = useQuery(
+    api.timeLimits.canWatch,
+    kidProfileId ? { kidProfileId } : 'skip'
+  );
+
+  useEffect(() => {
+    if (canWatchStatus && canWatchStatus.canWatch === false && watchIdRef.current) {
+      // Limit reached during this session — wrap up and bounce to KidPlayer.
+      // KidPlayer's canWatchStatus will then show the time-limit modal.
+      endPlaySpan();
+      saveWatchDuration().finally(() => {
+        sendCommand('pauseVideo');
+        onClose();
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canWatchStatus?.canWatch]);
+
   // Format time as M:SS
   const formatTime = (seconds) => {
     if (!seconds || isNaN(seconds)) return '0:00';
@@ -40,20 +72,46 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Save watch duration
-  const saveWatchDuration = useCallback(async () => {
-    if (watchIdRef.current && watchStartTimeRef.current) {
-      const watchDurationSeconds = Math.round((Date.now() - watchStartTimeRef.current) / 1000);
-      try {
-        await updateWatchDuration({
-          watchId: watchIdRef.current,
-          watchDurationSeconds,
-        });
-      } catch (err) {
-        console.error('Failed to update watch duration:', err);
-      }
+  // Compute total active playback time so far (ms).
+  // = accumulated time from completed PLAYING spans + current span if playing.
+  const getActivePlayMs = useCallback(() => {
+    let total = accumulatedPlayMsRef.current;
+    if (playStartedAtRef.current !== null) {
+      total += Date.now() - playStartedAtRef.current;
     }
-  }, [updateWatchDuration]);
+    return total;
+  }, []);
+
+  // Mark the start of a PLAYING span. No-op if already playing.
+  const beginPlaySpan = useCallback(() => {
+    if (playStartedAtRef.current === null) {
+      playStartedAtRef.current = Date.now();
+    }
+  }, []);
+
+  // End the current PLAYING span and roll its time into the accumulator.
+  // Idempotent — safe to call when not playing.
+  const endPlaySpan = useCallback(() => {
+    if (playStartedAtRef.current !== null) {
+      accumulatedPlayMsRef.current += Date.now() - playStartedAtRef.current;
+      playStartedAtRef.current = null;
+    }
+  }, []);
+
+  // Save watch duration. Records active playback time only.
+  const saveWatchDuration = useCallback(async () => {
+    if (!watchIdRef.current) return;
+    const watchDurationSeconds = Math.round(getActivePlayMs() / 1000);
+    if (watchDurationSeconds <= 0) return;
+    try {
+      await updateWatchDuration({
+        watchId: watchIdRef.current,
+        watchDurationSeconds,
+      });
+    } catch (err) {
+      console.error('Failed to update watch duration:', err);
+    }
+  }, [updateWatchDuration, getActivePlayMs]);
 
   // Auto-hide controls after 3 seconds
   const resetControlsTimeout = useCallback(() => {
@@ -135,6 +193,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
           setIsReady(true);
           setIsPlaying(true);
           watchStartTimeRef.current = Date.now();
+          beginPlaySpan();
 
           // Record watch
           if (kidProfileId) {
@@ -158,15 +217,22 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
           if (state === 1) { // PLAYING
             setIsPlaying(true);
             setHasEnded(false);
-            endTriggeredRef.current = false; // Reset end trigger when playing
+            endTriggeredRef.current = false;
+            beginPlaySpan();
           } else if (state === 2) { // PAUSED
             setIsPlaying(false);
+            endPlaySpan();
+            // Persist what we have so canWatch sees up-to-date totals between videos
+            saveWatchDuration();
+          } else if (state === 3) { // BUFFERING — treat as not actively playing
+            endPlaySpan();
           } else if (state === 0) { // ENDED
             if (!endTriggeredRef.current) {
               console.log('%c[VideoPlayer] End detected via state change', 'color: lime; font-weight: bold;');
               endTriggeredRef.current = true;
               setIsPlaying(false);
               setHasEnded(true);
+              endPlaySpan();
               saveWatchDuration();
             }
           }
@@ -183,6 +249,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
               endTriggeredRef.current = true;
               setIsPlaying(false);
               setHasEnded(true);
+              endPlaySpan();
               saveWatchDuration();
             }
           }
@@ -206,6 +273,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
           setIsReady(true);
           setIsPlaying(true);
           watchStartTimeRef.current = Date.now();
+          beginPlaySpan();
 
           // Record watch
           if (kidProfileId) {
@@ -231,18 +299,28 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
           iframe.contentWindow.postMessage('{"event":"listening"}', '*');
         }
       }, 1000);
+
+      // Apr 2026: persist watch duration every 30s during playback so the
+      // server-side daily-limit check (timeLimits.canWatch) can reject the
+      // *next* video correctly. Without this, watchDurationSeconds stays at 0
+      // until the kid closes the video, and the limit gate misses session-long
+      // viewing.
+      periodicSaveIntervalRef.current = setInterval(() => {
+        saveWatchDuration();
+      }, 30 * 1000);
     };
 
     return () => {
       window.removeEventListener('message', handleMessage);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (periodicSaveIntervalRef.current) clearInterval(periodicSaveIntervalRef.current);
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
       container.remove();
       // Clean up the style element
       const styleEl = document.getElementById('yt-player-hide-branding');
       if (styleEl) styleEl.remove();
     };
-  }, [video.videoId, kidProfileId, recordWatch, saveWatchDuration]);
+  }, [video.videoId, kidProfileId, recordWatch, saveWatchDuration, beginPlaySpan, endPlaySpan]);
 
   // Control handlers
   const togglePlayPause = () => {
@@ -291,6 +369,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
 
   const handleClose = async () => {
     sendCommand('pauseVideo');
+    endPlaySpan();
     await saveWatchDuration();
     onClose();
   };
@@ -342,6 +421,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
     // Use the memoized nextShortCandidate so it matches the preview
     if (nextShortCandidate && onPlayNext) {
       sendCommand('pauseVideo');
+      endPlaySpan();
       await saveWatchDuration();
       onPlayNext(nextShortCandidate);
     }

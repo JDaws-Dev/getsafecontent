@@ -1,12 +1,17 @@
 import { Camera, ChevronRight } from 'lucide-react';
 import { stripMarkdown } from './utils';
 
+// Hard client cap matching backend cap (search.ts deduplicateImages limit=6).
+// Defensive: if the backend ever raises the cap, kid still doesn't get a feed.
+const MAX_IMAGES = 6;
+
 export default function ImagesResults({ images, aiSummary, onImageClick, onSwitchToLearn }) {
-  if (images.length > 0) {
+  const cappedImages = images.slice(0, MAX_IMAGES);
+  if (cappedImages.length > 0) {
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {images.map((image, index) => (
+          {cappedImages.map((image, index) => (
             <button
               key={index}
               onClick={() => onImageClick(index)}

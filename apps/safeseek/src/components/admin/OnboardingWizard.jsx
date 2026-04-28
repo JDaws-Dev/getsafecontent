@@ -28,6 +28,10 @@ const ALL_BLOCKED_TOPICS = [
   { id: 'gambling', label: 'Gambling', desc: 'Betting, casino, lottery' },
   { id: 'horror', label: 'Horror & Disturbing', desc: 'Scary imagery, disturbing content' },
   { id: 'dating', label: 'Dating & Romance', desc: 'Romantic relationships, dating culture' },
+  { id: 'aesthetic-browsing', label: 'Aesthetic / Pinterest', desc: 'Mood-board browsing, "X aesthetic collage" queries' },
+  { id: 'self-image', label: 'Self-Image', desc: '"Am I pretty," face shape, attractiveness self-eval' },
+  { id: 'appearance', label: 'Appearance & Fashion', desc: 'Hair colors, makeup, outfits — block if obsessive' },
+  { id: 'celebrities', label: 'Celebrity Gossip', desc: 'Celebrity personal life, scandals, dating' },
 ];
 
 const GRADE_OPTIONS = [
@@ -654,7 +658,9 @@ export default function OnboardingWizard({ userId, familyCode, onComplete }) {
     autoReadingLevel: true,
     blockedTopics: ALL_BLOCKED_TOPICS.map((t) => t.id),
     allowTopicRequests: true,
-    allowImageSearch: true,
+    // Default OFF — image search turns SafeStudy into a Pinterest substitute
+    // (Apr 2026 audit). Parent can enable per-kid in profile settings.
+    allowImageSearch: false,
     accessibilityNeeds: [],
   });
 

@@ -137,25 +137,37 @@ function getCurrentHourInTimezone(timezone: string | undefined): { hour: number;
   }
 }
 
-// Check if a kid can search (based on time limits and today's search count)
+// Strictness-based default daily query budget.
+// Apr 2026: a kid running 48 searches in one day is doom-scrolling, not learning.
+// Caps default to a level that's permissive for real curiosity but stops
+// synonym-shuffling behavior. Parents can override with explicit
+// `kidProfiles.dailyQueryBudget` or a `timeLimits` row.
+function strictnessDefaultBudget(strictness: string | undefined): number | null {
+  switch (strictness) {
+    case "strict":
+      return 15;
+    case "moderate":
+      return 25;
+    case "light":
+      return 50;
+    default:
+      return null; // unlimited
+  }
+}
+
+// Check if a kid can search (based on hours, profile budget, and explicit time-limit row)
 export const canSearch = query({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
-    const limit = await ctx.db
-      .query("timeLimits")
-      .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
-      .first();
-
-    // No limit set = can search
-    if (!limit || limit.dailyLimitMinutes === 0) {
-      return { canSearch: true, reason: null, remainingSearches: null };
-    }
-
-    // Get kid profile to find parent user
     const kidProfile = await ctx.db.get(args.kidProfileId);
     if (!kidProfile) {
       return { canSearch: true, reason: null, remainingSearches: null };
     }
+
+    const limit = await ctx.db
+      .query("timeLimits")
+      .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
+      .first();
 
     // Get parent user to get timezone
     const parentUser = await ctx.db.get(kidProfile.userId);
@@ -164,12 +176,11 @@ export const canSearch = query({
     // Get current time info in the family's timezone
     const { hour: currentHour, dayOfWeek, startOfDay: startOfToday } = getCurrentHourInTimezone(timezone);
 
-    // Check allowed hours
-    if (limit.allowedStartHour !== undefined && limit.allowedEndHour !== undefined) {
+    // Check allowed hours (only if a timeLimits row defines them)
+    if (limit?.allowedStartHour !== undefined && limit?.allowedEndHour !== undefined) {
       const start = limit.allowedStartHour;
       const end = limit.allowedEndHour;
 
-      // Handle normal and overnight windows
       if (start <= end) {
         // Normal window (e.g., 8am to 8pm)
         if (currentHour < start || currentHour >= end) {
@@ -182,7 +193,7 @@ export const canSearch = query({
           };
         }
       } else {
-        // Overnight window (e.g., 10pm to 6am would be blocked)
+        // Overnight window (e.g., 10pm to 6am)
         if (currentHour >= end && currentHour < start) {
           return {
             canSearch: false,
@@ -195,17 +206,36 @@ export const canSearch = query({
       }
     }
 
-    // Check daily limit (dailyLimitMinutes is used as daily search count limit)
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const dailyLimit = isWeekend && limit.weekendLimitMinutes !== undefined
-      ? limit.weekendLimitMinutes
-      : limit.dailyLimitMinutes;
+    // Compute effective daily budget.
+    // Sources, in priority:
+    // 1. timeLimits.dailyLimitMinutes (explicit parent-set, weekend-aware)
+    // 2. kidProfile.dailyQueryBudget (explicit parent override on the profile)
+    // 3. strictness default (15/25/50)
+    // 0 in any source means "unlimited".
+    let dailyLimit: number | null = null;
+    if (limit) {
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const explicit = isWeekend && limit.weekendLimitMinutes !== undefined
+        ? limit.weekendLimitMinutes
+        : limit.dailyLimitMinutes;
+      if (explicit > 0) dailyLimit = explicit;
+    }
+    if (dailyLimit === null) {
+      const profileBudget = (kidProfile as any).dailyQueryBudget;
+      if (typeof profileBudget === "number" && profileBudget > 0) {
+        dailyLimit = profileBudget;
+      } else if (typeof profileBudget === "number" && profileBudget === 0) {
+        dailyLimit = null; // explicit unlimited
+      } else {
+        dailyLimit = strictnessDefaultBudget(kidProfile.contentStrictness);
+      }
+    }
 
-    if (dailyLimit === 0) {
+    if (dailyLimit === null || dailyLimit === 0) {
       return { canSearch: true, reason: null, remainingSearches: null };
     }
 
-    // Get today's search count (using family's timezone for "today")
+    // Count today's searches (in family timezone)
     const history = await ctx.db
       .query("searchHistory")
       .withIndex("by_kid_recent", (q) => q.eq("kidProfileId", args.kidProfileId))

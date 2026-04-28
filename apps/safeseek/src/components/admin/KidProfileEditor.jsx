@@ -24,9 +24,18 @@ const BLOCKED_TOPICS = [
   { id: 'weapons', label: 'Weapon instructions' },
   { id: 'horror', label: 'Horror & scary content' },
   { id: 'dating', label: 'Dating & relationships' },
+  { id: 'aesthetic-browsing', label: 'Aesthetic / Pinterest browsing' },
+  { id: 'self-image', label: 'Self-image & “am I pretty” queries' },
+  { id: 'appearance', label: 'Appearance, hair & fashion' },
+  { id: 'celebrities', label: 'Celebrity gossip' },
 ];
 
-const DEFAULT_BLOCKED = ['violence', 'drugs', 'sexual', 'profanity', 'self-harm', 'weapons'];
+// Default blocked topics for new profiles. aesthetic-browsing + self-image
+// are default-on because they're a known harm vector for tweens (per Apr 2026 audit).
+const DEFAULT_BLOCKED = [
+  'violence', 'drugs', 'sexual', 'profanity', 'self-harm', 'weapons',
+  'aesthetic-browsing', 'self-image',
+];
 
 function getStrictnessFromAge(age) {
   if (age <= 7) return 'strict';
@@ -69,7 +78,8 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
   const [customInstructions, setCustomInstructions] = useState('');
   const [lexileLevel, setLexileLevel] = useState('auto');
   const [accessibilityNeeds, setAccessibilityNeeds] = useState([]);
-  const [allowImageSearch, setAllowImageSearch] = useState(true);
+  // Default OFF (Apr 2026): image search is the main Pinterest-substitute affordance
+  const [allowImageSearch, setAllowImageSearch] = useState(false);
   const [allowTopicRequests, setAllowTopicRequests] = useState(true);
   const [pin, setPin] = useState('');
   const [pinEnabled, setPinEnabled] = useState(false);
@@ -367,18 +377,25 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
               </div>
 
               {/* Image Search Toggle */}
-              <div className="flex items-center justify-between px-1">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Image search</p>
-                  <p className="text-xs text-gray-500">Show images in results</p>
+              <div className="px-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Image search</p>
+                    <p className="text-xs text-gray-500">Show images in results</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAllowImageSearch(!allowImageSearch)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${allowImageSearch ? 'bg-blue-500' : 'bg-gray-300'}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${allowImageSearch ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setAllowImageSearch(!allowImageSearch)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${allowImageSearch ? 'bg-blue-500' : 'bg-gray-300'}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${allowImageSearch ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
+                {allowImageSearch && (
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5 mt-2">
+                    Heads up: image search can turn SafeStudy into a Pinterest-style mood-board tool. Recommended off for tweens.
+                  </p>
+                )}
               </div>
 
               {/* Kid PIN */}

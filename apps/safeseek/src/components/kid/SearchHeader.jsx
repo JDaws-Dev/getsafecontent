@@ -1,7 +1,7 @@
 import {
-  Search, Clock, History, Shield, Sun, Moon, Users, ArrowLeft, AlertCircle
+  Search, Clock, Shield, Sun, Moon, Users, ArrowLeft, AlertCircle
 } from 'lucide-react';
-import { getColorClass } from './utils';
+import { getColorClass, getAvatarIcon } from './utils';
 
 export default function SearchHeader({
   selectedProfile,
@@ -10,14 +10,12 @@ export default function SearchHeader({
   hasSearchLimit,
   isSearchLimitLow,
   searchesRemaining,
-  showHistory,
   showRequestsInbox,
   newApprovedCount,
   searchInputRef,
   onBack,
   onSwitchProfile,
   onToggleDarkMode,
-  onToggleHistory,
   onToggleRequestsInbox,
 }) {
   return (
@@ -55,9 +53,9 @@ export default function SearchHeader({
           )}
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800">
             <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ${getColorClass(selectedProfile.color)}`}
+              className={`w-7 h-7 rounded-full flex items-center justify-center ${getColorClass(selectedProfile.color)}`}
             >
-              {selectedProfile.name?.charAt(0).toUpperCase()}
+              <span className="text-sm" aria-hidden="true">{getAvatarIcon(selectedProfile.color)}</span>
             </div>
             <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{selectedProfile.name}</span>
             <button
@@ -94,17 +92,12 @@ export default function SearchHeader({
               </span>
             )}
           </button>
-          <button
-            onClick={onToggleHistory}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 active:scale-[0.98] ${
-              showHistory
-                ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
-                : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-            }`}
-          >
-            <History className="w-4 h-4" />
-            <span className="hidden sm:inline">History</span>
-          </button>
+          {/*
+            Apr 2026: kid-side History button removed. Showing kids their
+            prior queries reinforces the synonym-shuffling loop ("let me try
+            one more variation"). Parent dashboard still has full history.
+            Component preserved for reference + admin views.
+          */}
         </div>
       </div>
     </header>

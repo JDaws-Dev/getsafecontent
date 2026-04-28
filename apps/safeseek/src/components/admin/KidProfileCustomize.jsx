@@ -13,6 +13,10 @@ const BLOCKED_TOPIC_OPTIONS = [
   { id: 'weapons', label: 'Weapon instructions' },
   { id: 'horror', label: 'Horror & scary content' },
   { id: 'dating', label: 'Dating & relationships' },
+  { id: 'aesthetic-browsing', label: 'Aesthetic / Pinterest browsing' },
+  { id: 'self-image', label: 'Self-image & “am I pretty” queries' },
+  { id: 'appearance', label: 'Appearance, hair & fashion' },
+  { id: 'celebrities', label: 'Celebrity gossip' },
 ];
 
 export default function KidProfileCustomize({ profile, onClose }) {

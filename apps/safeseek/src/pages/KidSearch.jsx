@@ -11,7 +11,8 @@ import TimeLimitModal from '../components/kid/TimeLimitModal';
 import SearchHeader from '../components/kid/SearchHeader';
 import SearchBar from '../components/kid/SearchBar';
 import RequestsInbox from '../components/kid/RequestsInbox';
-import SearchHistoryPanel from '../components/kid/SearchHistoryPanel';
+// SearchHistoryPanel: removed from kid UI Apr 2026 (reinforced loop behavior).
+// Component kept in repo for parent dashboard / admin use.
 import SearchSkeleton from '../components/kid/SearchSkeleton';
 import BlockedMessage from '../components/kid/BlockedMessage';
 import ImagesResults from '../components/kid/ImagesResults';
@@ -26,6 +27,7 @@ import {
   SUGGESTIONS,
   SEARCH_COOLDOWN_MS,
   SpeechRecognition,
+  pickCuriosityPrompts,
 } from '../components/kid/utils';
 
 // ========== Main Component ==========
@@ -52,7 +54,6 @@ export default function KidSearch() {
   const [canRequest, setCanRequest] = useState(false);
   const [alreadyRequested, setAlreadyRequested] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
   const [timesUp, setTimesUp] = useState(false);
   const [error, setError] = useState('');
   const [codeShake, setCodeShake] = useState(false);
@@ -167,11 +168,13 @@ export default function KidSearch() {
   const [diagram, setDiagram] = useState(null);
   const searchStartRef = useRef(null);
 
-  // Random suggestions (pick 6 from the pool)
+  // Age-bucketed curiosity prompts (Apr 2026): pick 8 prompts appropriate
+  // to the kid's age range, shuffled. Empty-state surface = "default action"
+  // — make curiosity the path of least resistance.
   const randomSuggestions = useMemo(() => {
-    const shuffled = [...SUGGESTIONS].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 6);
-  }, []);
+    return pickCuriosityPrompts(selectedProfile?.ageRange, 8);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProfile?._id]);
 
   // Get user by family code
   const user = useQuery(
@@ -191,11 +194,8 @@ export default function KidSearch() {
     selectedProfile?._id ? { kidProfileId: selectedProfile._id } : 'skip'
   );
 
-  // Get search history for this kid
-  const kidSearchHistory = useQuery(
-    api.searchQueries.getSearchHistory,
-    selectedProfile?._id ? { kidProfileId: selectedProfile._id, limit: 20 } : 'skip'
-  );
+  // Kid-side search history fetch removed (Apr 2026): no longer rendered
+  // anywhere on the kid surface. Parent dashboard fetches its own.
 
   // Kid's requests inbox
   const kidRequests = useQuery(
@@ -292,39 +292,19 @@ export default function KidSearch() {
     }
 
     const lowerQuery = query.toLowerCase();
-    const matched = [];
 
-    // Recent searches first (with type marker), deduplicated by query text
-    if (kidSearchHistory) {
-      const seen = new Set();
-      const recentMatches = kidSearchHistory
-        .filter((entry) => {
-          const lower = entry.query.toLowerCase();
-          if (seen.has(lower) || !lower.includes(lowerQuery)) return false;
-          seen.add(lower);
-          return true;
-        })
-        .slice(0, 3)
-        .map((entry) => ({ text: entry.query, type: 'recent' }));
-      matched.push(...recentMatches);
-    }
-
-    // Then SUGGESTIONS
-    const suggestionMatches = SUGGESTIONS
-      .filter((s) => {
-        const lower = s.toLowerCase();
-        // Avoid duplicates with recent searches
-        return lower.includes(lowerQuery) && !matched.some((m) => m.text.toLowerCase() === lower);
-      })
-      .slice(0, 6 - matched.length)
+    // Apr 2026: removed "recent searches" branch from autocomplete. Resurfacing
+    // the kid's prior queries reinforces the synonym-shuffle loop. Static
+    // SUGGESTIONS list only.
+    const matched = SUGGESTIONS
+      .filter((s) => s.toLowerCase().includes(lowerQuery))
+      .slice(0, 6)
       .map((s) => ({ text: s, type: 'suggestion' }));
-    matched.push(...suggestionMatches);
 
-    const capped = matched.slice(0, 6);
-    setFilteredSuggestions(capped);
-    setShowSuggestions(capped.length > 0);
+    setFilteredSuggestions(matched);
+    setShowSuggestions(matched.length > 0);
     setSelectedSuggestionIndex(-1);
-  }, [query, kidSearchHistory]);
+  }, [query]);
 
   const startCooldown = useCallback(() => {
     setCooldown(true);
@@ -788,7 +768,6 @@ export default function KidSearch() {
         hasSearchLimit={hasSearchLimit}
         isSearchLimitLow={isSearchLimitLow}
         searchesRemaining={searchesRemaining}
-        showHistory={showHistory}
         showRequestsInbox={showRequestsInbox}
         newApprovedCount={newApprovedCount}
         searchInputRef={searchInputRef}
@@ -803,7 +782,6 @@ export default function KidSearch() {
         }}
         onSwitchProfile={() => setSelectedProfile(null)}
         onToggleDarkMode={toggleDarkMode}
-        onToggleHistory={() => setShowHistory(!showHistory)}
         onToggleRequestsInbox={() => setShowRequestsInbox(!showRequestsInbox)}
       />
 
@@ -844,14 +822,11 @@ export default function KidSearch() {
           />
         )}
 
-        {/* Search History Panel */}
-        {showHistory && kidSearchHistory && kidSearchHistory.length > 0 && (
-          <SearchHistoryPanel
-            kidSearchHistory={kidSearchHistory}
-            onClose={() => setShowHistory(false)}
-            onSelectQuery={(q) => { handleSuggestionClick(q); setShowHistory(false); }}
-          />
-        )}
+        {/*
+          Apr 2026: SearchHistoryPanel is no longer rendered on the kid side.
+          Showing kids their prior searches reinforces the synonym-shuffling
+          loop. Parent dashboard (AdminDashboard) still has full history.
+        */}
 
         {/* Loading State - Skeleton */}
         {searching && <SearchSkeleton />}

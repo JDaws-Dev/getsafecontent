@@ -19,6 +19,10 @@ export default defineSchema({
 
     // Trial expiration tracking
     trialWarningEmailSent: v.optional(v.boolean()),
+
+    // Weekly parent digest opt-out (Apr 2026)
+    weeklyDigestOptOut: v.optional(v.boolean()),
+    lastDigestSentAt: v.optional(v.number()),
   })
     .index("email", ["email"])
     .index("by_familyCode", ["familyCode"])
@@ -46,6 +50,9 @@ export default defineSchema({
     allowImageSearch: v.boolean(),
     allowFollowUp: v.boolean(),
     allowTopicRequests: v.optional(v.boolean()),
+    // Daily query budget — null/undefined = use strictness default
+    // (strict: 15, moderate: 25, light: 50, anything else: unlimited)
+    dailyQueryBudget: v.optional(v.number()),
     createdAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"]),
@@ -59,6 +66,10 @@ export default defineSchema({
     flagged: v.boolean(),
     flagReason: v.optional(v.string()),
     searchedAt: v.number(),
+    // Intent classification (added Apr 2026 — see ai/intentClassifier.ts)
+    intentCategory: v.optional(v.string()),
+    intentConfidence: v.optional(v.number()),
+    intentRationale: v.optional(v.string()),
   })
     .index("by_kid", ["kidProfileId"])
     .index("by_kid_recent", ["kidProfileId", "searchedAt"]),
@@ -69,9 +80,31 @@ export default defineSchema({
     query: v.string(),
     blockedReason: v.string(),
     searchedAt: v.number(),
+    // Intent classification (added Apr 2026)
+    intentCategory: v.optional(v.string()),
+    intentConfidence: v.optional(v.number()),
+    intentRationale: v.optional(v.string()),
   })
     .index("by_kid", ["kidProfileId"])
     .index("by_kid_recent", ["kidProfileId", "searchedAt"]),
+
+  // Concern alerts — eating-disorder, self-harm, etc. signals that escalate
+  // immediately to parent. Separate table (not just blockedSearches) so it can
+  // be queried fast and cleared independently.
+  kidConcernAlerts: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    userId: v.id("users"),
+    query: v.string(),
+    category: v.string(), // intent category that triggered (e.g., "eating_disorder_adjacent")
+    confidence: v.number(),
+    rationale: v.string(),
+    notifiedAt: v.optional(v.number()),
+    acknowledgedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_kid", ["kidProfileId"])
+    .index("by_user_unack", ["userId", "acknowledgedAt"]),
 
   // Time limits for kids
   timeLimits: defineTable({
