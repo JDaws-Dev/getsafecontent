@@ -732,4 +732,4 @@ Full kid-facing reading platform:
 
 ---
 
-*Last updated: April 28, 2026 (SafeStudy hardening 1–10 deployed to `strong-scorpion-227`; SafeTube time-limit bug fixed in `VideoPlayer.jsx`, frontend-only — pending Vercel push)*
+*Last updated: April 28, 2026 (SafeStudy hardening 1–10 deployed to `strong-scorpion-227`; SafeTube `VideoPlayer.jsx` watchDuration fix shipped via Vercel — frontend-only, no SafeTube convex deploy under YouTube API review)*
