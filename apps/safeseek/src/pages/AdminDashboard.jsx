@@ -157,8 +157,8 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
       {/* Family Code Card */}
       {userData?.familyCode && (
         <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-5 text-white shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <Shield className="w-4 h-4 text-white/80" />
                 <span className="text-sm font-medium text-white/80">Family Code</span>
@@ -166,17 +166,38 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
               <p className="text-2xl font-mono font-bold tracking-wider">{userData.familyCode}</p>
               <p className="text-xs text-white/60 mt-1">Share this code so your kids can access SafeStudy</p>
             </div>
-            <button
-              onClick={onCopyCode}
-              className="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-xl transition"
-              title="Copy code"
-            >
-              {codeCopied ? (
-                <Check className="w-5 h-5 text-white" />
-              ) : (
-                <Copy className="w-5 h-5 text-white" />
-              )}
-            </button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <a
+                href={`/play/${userData.familyCode}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden sm:inline-flex items-center gap-1.5 bg-white text-blue-600 hover:bg-blue-50 font-semibold text-sm px-3.5 py-2 rounded-xl transition shadow-sm"
+                title="Open the kid portal in a new tab"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Open Kid Portal
+              </a>
+              <a
+                href={`/play/${userData.familyCode}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sm:hidden bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-xl transition"
+                title="Open the kid portal in a new tab"
+              >
+                <ExternalLink className="w-5 h-5 text-white" />
+              </a>
+              <button
+                onClick={onCopyCode}
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-xl transition"
+                title="Copy code"
+              >
+                {codeCopied ? (
+                  <Check className="w-5 h-5 text-white" />
+                ) : (
+                  <Copy className="w-5 h-5 text-white" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -934,7 +955,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
           Share this code with your kids so they can access SafeStudy on their own devices. Each kid selects their profile after entering the code.
         </p>
         {userData?.familyCode ? (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <code className="bg-gray-50 border border-gray-200 px-5 py-2.5 rounded-xl text-lg font-mono font-bold text-gray-900 tracking-wider">
               {userData.familyCode}
             </code>
@@ -945,6 +966,16 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
               {codeCopied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
               {codeCopied ? 'Copied!' : 'Copy'}
             </button>
+            <a
+              href={`/play/${userData.familyCode}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-sm text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 font-medium px-3 py-2 rounded-lg transition shadow-sm"
+              title="Open the kid portal in a new tab"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Open Kid Portal
+            </a>
           </div>
         ) : (
           <p className="text-sm text-gray-400 italic">No family code generated yet.</p>
