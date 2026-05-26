@@ -10,6 +10,7 @@ import deleteTestUsers from "./deleteTestUsers";
 import deleteUserHttpAction from "./deleteUserHttpAction";
 import setupOnboarding from "./setupOnboarding";
 import provisionUser from "./provisionUser";
+import syncFamilyCode from "./syncFamilyCode";
 
 const http = httpRouter();
 
@@ -108,6 +109,13 @@ http.route({
   path: "/stripe",
   method: "POST",
   handler: stripe,
+});
+
+// Sync family code route (admin - reads or sets familyCode by email)
+http.route({
+  path: "/syncFamilyCode",
+  method: "GET",
+  handler: syncFamilyCode,
 });
 
 export default http;

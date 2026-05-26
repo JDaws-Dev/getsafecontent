@@ -138,20 +138,21 @@ export default function Home() {
           <div className="flex items-center gap-2 sm:gap-3">
             <a
               href="https://getsafefamily.com"
-              className="hidden text-sm font-medium text-ink-400 transition-colors hover:text-ink-700 xl:inline-flex"
+              className="hidden text-sm font-medium text-ink-600 transition-colors hover:text-parchment-700 xl:inline-flex"
             >
               Safe Family
             </a>
             <span className="hidden text-ink-200 xl:inline">|</span>
             <Link
-              href="/dashboard"
-              className="hidden text-sm font-medium text-ink-600 transition-colors hover:text-ink-900 sm:inline-flex"
+              href="/login"
+              className="text-sm font-medium text-ink-600 transition-colors hover:text-ink-900"
             >
-              Parent Login
+              <span className="sm:hidden">Log in</span>
+              <span className="hidden sm:inline">Parent Login</span>
             </Link>
             <Link
               href="/read"
-              className="rounded-full bg-purple-100 px-3 py-2 text-sm font-semibold text-purple-700 transition-colors hover:bg-purple-200 sm:px-4"
+              className="hidden text-sm font-medium text-ink-600 transition-colors hover:text-ink-900 sm:inline-flex"
             >
               Kid Login
             </Link>
@@ -253,27 +254,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mobile Apps Coming Soon Banner */}
-      <section className="py-3 bg-gradient-to-r from-parchment-600 to-parchment-700">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="flex items-center justify-center gap-3 text-center">
-            {/* iOS Icon */}
-            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-              </svg>
-            </div>
-            {/* Android Icon */}
-            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.523 2.592a.5.5 0 0 0-.867-.5l-1.48 2.56a7.502 7.502 0 0 0-6.352 0l-1.48-2.56a.5.5 0 0 0-.867.5l1.432 2.482a7.528 7.528 0 0 0-3.91 6.576H20a7.528 7.528 0 0 0-3.91-6.576l1.433-2.482zM7 9.5a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm8 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM4 12.65V19.5a2 2 0 0 0 2 2h1V12H4.5a.5.5 0 0 0-.5.65zm15 0V19.5a2 2 0 0 1-2 2h-1V12h2.5a.5.5 0 0 1 .5.65zM8 12v10h8V12H8z"/>
-              </svg>
-            </div>
-            <span className="text-white font-semibold text-sm">iOS & Android Apps Coming Soon</span>
           </div>
         </div>
       </section>

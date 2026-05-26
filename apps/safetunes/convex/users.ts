@@ -449,15 +449,19 @@ export const provisionUserInternal = internalMutation({
       userId = existingUser._id;
       familyCode = existingUser.familyCode;
 
-      // Update subscription status
-      await ctx.db.patch(userId, {
+      const patch: Record<string, unknown> = {
         subscriptionStatus: args.entitledToThisApp
           ? args.subscriptionStatus
           : "inactive",
         stripeCustomerId: args.stripeCustomerId ?? existingUser.stripeCustomerId,
         subscriptionId: args.subscriptionId ?? existingUser.subscriptionId,
         name: args.name ?? existingUser.name,
-      });
+      };
+      if (args.familyCode && args.familyCode !== existingUser.familyCode) {
+        patch.familyCode = args.familyCode;
+        familyCode = args.familyCode;
+      }
+      await ctx.db.patch(userId, patch);
 
       console.log(`[provisionUser] Updated existing user: ${args.email}`);
     } else {
@@ -491,6 +495,27 @@ export const provisionUserInternal = internalMutation({
       authAccountCreated: false,
       authAccountUpdated: false,
     };
+  },
+});
+
+export const syncFamilyCodeByEmailInternal = internalMutation({
+  args: {
+    email: v.string(),
+    code: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .first();
+    if (!user) {
+      return { found: false, familyCode: null, updated: false };
+    }
+    if (args.code) {
+      await ctx.db.patch(user._id, { familyCode: args.code });
+      return { found: true, familyCode: args.code, updated: true };
+    }
+    return { found: true, familyCode: user.familyCode ?? null, updated: false };
   },
 });
 
