@@ -15,6 +15,7 @@ interface AdminNavProps {
 const navItems = [
   { href: "/admin", label: "Overview", icon: "📊" },
   { href: "/admin/dashboard", label: "Unified Dashboard", icon: "🎯" },
+  { href: "/admin/roadmap", label: "Roadmap", icon: "🗺️" },
   { href: "/admin/users", label: "Users", icon: "👥" },
 ];
 
