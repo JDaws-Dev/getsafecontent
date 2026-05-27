@@ -10,6 +10,13 @@ const isPublicRoute = createRouteMatcher([
   '/login',
   '/forgot-password',
   '/reset-password',
+  // Parent dashboard + setup are now dual-auth (Clerk OR Marketing JWT).
+  // The page itself checks for either session and renders a "please sign
+  // in" fallback if neither is present, so Clerk middleware shouldn't
+  // intercept and force-redirect to /sign-in (which would lock out
+  // federated users entirely).
+  '/parent',
+  '/parent/(.*)',
   '/start',         // family-code entry — no Clerk identity needed
   '/make(.*)',      // SafeSpark maker
   '/s/(.*)',        // public project shares

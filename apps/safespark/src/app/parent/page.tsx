@@ -5,19 +5,44 @@ import { useState } from 'react';
 import { useUser, UserButton } from '@clerk/nextjs';
 import { useMutation, useQuery } from 'convex/react';
 import { useEffect } from 'react';
-import { Copy, Plus, Users, Settings2, X } from 'lucide-react';
+import { Copy, Plus, Users, Settings2, X, LogOut } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
+import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 
 export default function ParentDashboard() {
-  const { isSignedIn, isLoaded, user } = useUser();
+  // Dual-auth: either Clerk (legacy) OR Marketing Central JWT (federated).
+  // The federated path is how Michelle, Jenny, Ben Purves, Jolene, et al.
+  // (the 23 backfilled lifetime users) reach this page.
+  const { isSignedIn: clerkSignedIn, isLoaded: clerkLoaded, user: clerkUser } = useUser();
+  const marketing = useMarketingAuth();
+
+  const isLoaded = clerkLoaded && !marketing.isLoading;
+  const isClerkAuth = clerkSignedIn === true;
+  const isFederatedAuth = marketing.isAuthenticated;
+  const isSignedIn = isClerkAuth || isFederatedAuth;
+
+  // Display data — prefer Clerk when present (legacy users), fall back to
+  // Marketing user data for federated users.
+  const displayEmail = isClerkAuth
+    ? clerkUser?.primaryEmailAddress?.emailAddress
+    : marketing.user?.email;
+  const displayName = isClerkAuth
+    ? (clerkUser?.firstName ?? clerkUser?.fullName ?? 'Parent')
+    : (marketing.user?.name ?? marketing.user?.email?.split('@')[0] ?? 'Parent');
+
   const me = useQuery(api.users.getCurrent, isSignedIn ? {} : 'skip');
   const upsertMe = useMutation(api.users.upsertFromClerk);
+
+  // upsertFromClerk only applies to Clerk-authed users; federated users
+  // already have their SafeSpark row (provisioned via /provisionUser during
+  // the May 27 backfill or live signup webhook).
   useEffect(() => {
-    if (isSignedIn && me === null) {
-      void upsertMe({ displayName: user?.firstName ?? user?.fullName ?? 'Parent' });
+    if (isClerkAuth && me === null) {
+      void upsertMe({ displayName });
     }
-  }, [isSignedIn, me, upsertMe, user]);
+  }, [isClerkAuth, me, upsertMe, displayName]);
+
   const family = useQuery(api.safespark.listFamilyForParent, isSignedIn ? {} : 'skip');
   const usage = useQuery(api.safespark.getFamilyUsageThisMonth, isSignedIn ? {} : 'skip');
   const ensureFamily = useMutation(api.families.ensureForParent);
@@ -31,7 +56,12 @@ export default function ParentDashboard() {
       <main className="flex min-h-screen items-center justify-center px-6 text-center">
         <div className="space-y-3">
           <h1 className="text-2xl font-black text-slate-800">Sign in to open your dashboard</h1>
-          <Link href="/" className="text-sm font-bold text-violet-600 hover:text-violet-800">Back to home</Link>
+          <Link href="/login" className="inline-block rounded-2xl bg-violet-600 px-5 py-2 text-sm font-black text-white hover:bg-violet-700">
+            Sign in with Safe Family
+          </Link>
+          <div>
+            <Link href="/" className="text-sm font-bold text-violet-600 hover:text-violet-800">Back to home</Link>
+          </div>
         </div>
       </main>
     );
@@ -48,13 +78,26 @@ export default function ParentDashboard() {
               SafeSpark
             </Link>
             <h1 className="text-2xl font-black text-slate-900">Parent dashboard</h1>
-            <p className="text-sm text-slate-600">Signed in as {user?.primaryEmailAddress?.emailAddress}</p>
+            <p className="text-sm text-slate-600">Signed in as {displayEmail}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/make" className="rounded-2xl bg-violet-600 px-4 py-2 text-sm font-black text-white hover:bg-violet-700">
               Open SafeSpark →
             </Link>
-            <UserButton />
+            {isClerkAuth ? (
+              <UserButton />
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  marketing.logout();
+                  window.location.href = '/login';
+                }}
+                className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+              >
+                <LogOut className="h-3.5 w-3.5" /> Sign out
+              </button>
+            )}
           </div>
         </header>
 
