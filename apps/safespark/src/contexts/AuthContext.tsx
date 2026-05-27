@@ -38,6 +38,9 @@ interface User {
 
 interface AuthContextValue {
   user: User | null;
+  /** Raw Marketing JWT — exposed so the combined Convex auth hook can
+   *  send it as the access token for federated users. */
+  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (
@@ -269,6 +272,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value: AuthContextValue = {
     user,
+    token,
     isAuthenticated: !!user,
     isLoading,
     login,
@@ -284,6 +288,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 const defaultAuthValue: AuthContextValue = {
   user: null,
+  token: null,
   isAuthenticated: false,
   isLoading: true,
   login: async () => ({ success: false, error: "Not initialized" }),

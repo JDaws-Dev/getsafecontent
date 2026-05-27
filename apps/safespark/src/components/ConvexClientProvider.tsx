@@ -1,37 +1,84 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { ConvexReactClient } from 'convex/react';
-import { ConvexProviderWithClerk } from 'convex/react-clerk';
-import { ClerkProvider, useAuth } from '@clerk/nextjs';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { ReactNode, useCallback, useMemo } from 'react';
+import { ConvexReactClient, ConvexProviderWithAuth } from 'convex/react';
+import { ClerkProvider, useAuth as useClerkAuth } from '@clerk/nextjs';
+import { AuthProvider, useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 
 /**
- * Auth provider stack for SafeSpark.
+ * Dual-provider auth stack for SafeSpark.
  *
- * Wraps the React tree with two parallel auth systems:
+ * Two parallel identity systems run side by side during the Clerk →
+ * Marketing Central migration:
  *
- * 1. Clerk (outer) — legacy `/sign-in` flow, the two existing accounts
- *    (jedaws + soonerjace) still authenticate this way. Convex queries
- *    that call `ctx.auth.getUserIdentity()` pick up the Clerk JWT here.
+ * - **Clerk** (legacy `/sign-in`): jedaws + soonerjace + any session
+ *   that authenticated before tonight. `useClerkAuth().isSignedIn` is
+ *   the source of truth.
+ * - **Marketing JWT** (federated `/login`): all 23 backfilled lifetime
+ *   users + any new unified-pricing customer. `useMarketingAuth().token`
+ *   holds the JWT.
  *
- * 2. AuthProvider (inner) — Marketing Central federated JWT flow,
- *    used by the new `/login` page. Stores the JWT in localStorage,
- *    exposes `useAuth()` from `@/contexts/AuthContext`. Convex queries
- *    that need this identity take `email` as an explicit arg from
- *    components reading the AuthContext.
+ * `useAuthCombined` returns whichever JWT is available to Convex on
+ * each request. When both happen to be present (unusual), Clerk wins
+ * — keeps existing sessions stable through the transition.
  *
- * The two contexts intentionally collide on the `useAuth` name —
- * we re-export Clerk's as-is and the new one comes from a different
- * module path. Components import from whichever they need:
- *   - `@clerk/nextjs` → legacy Clerk session
- *   - `@/contexts/AuthContext` → federated Marketing JWT
+ * Convex backend (`convex/auth.config.ts`) is configured with BOTH the
+ * Clerk and Marketing issuers as JWT providers, so it verifies whichever
+ * token arrives. `getActor()` in `convex/actors.ts` resolves the user
+ * row from the JWT's subject (Clerk) or email (Marketing).
  *
- * Once Clerk is fully retired, the outer ClerkProvider gets ripped out
- * and queries get refactored to drop `ctx.auth.getUserIdentity()`.
+ * When Clerk is fully retired: drop the ClerkProvider wrapper, drop the
+ * clerk branch from `useAuthCombined`, drop the Clerk provider from
+ * auth.config.ts. Nothing else changes — `useAuth` from
+ * `@/contexts/AuthContext` is already the canonical path.
  */
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
+function useAuthCombined() {
+  const clerk = useClerkAuth();
+  const marketing = useMarketingAuth();
+
+  const isLoading = !clerk.isLoaded || marketing.isLoading;
+  const isAuthenticated =
+    (clerk.isLoaded && clerk.isSignedIn === true) ||
+    marketing.isAuthenticated;
+
+  const fetchAccessToken = useCallback(
+    async ({ forceRefreshToken }: { forceRefreshToken: boolean }) => {
+      // Prefer Clerk if signed in there — keeps legacy sessions stable.
+      if (clerk.isLoaded && clerk.isSignedIn) {
+        try {
+          const token = await clerk.getToken({
+            template: 'convex',
+            skipCache: forceRefreshToken,
+          });
+          if (token) return token;
+        } catch {
+          // Clerk token fetch failed — fall through to Marketing.
+        }
+      }
+      if (marketing.isAuthenticated && marketing.token) {
+        return marketing.token;
+      }
+      return null;
+    },
+    [clerk, marketing.isAuthenticated, marketing.token],
+  );
+
+  return useMemo(
+    () => ({ isLoading, isAuthenticated, fetchAccessToken }),
+    [isLoading, isAuthenticated, fetchAccessToken],
+  );
+}
+
+function ConvexAuthBridge({ children }: { children: ReactNode }) {
+  return (
+    <ConvexProviderWithAuth client={convex} useAuth={useAuthCombined}>
+      {children}
+    </ConvexProviderWithAuth>
+  );
+}
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
   return (
@@ -44,9 +91,9 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
         },
       }}
     >
-      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-        <AuthProvider>{children}</AuthProvider>
-      </ConvexProviderWithClerk>
+      <AuthProvider>
+        <ConvexAuthBridge>{children}</ConvexAuthBridge>
+      </AuthProvider>
     </ClerkProvider>
   );
 }

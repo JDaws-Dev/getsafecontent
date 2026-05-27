@@ -43,10 +43,25 @@ export async function getActor(ctx: Ctx, sessionToken?: string): Promise<Actor |
 
   const identity = await ctx.auth.getUserIdentity();
   if (identity) {
-    const user = await ctx.db
+    // Path A — Clerk subject (legacy /sign-in). Subject looks like "user_xxx".
+    let user = await ctx.db
       .query('users')
       .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', identity.subject))
       .first();
+
+    // Path B — Marketing Central JWT (federated /login). Subject is the
+    // user's Convex user._id in marketing, which won't match any
+    // clerkUserId here. Fall back to email — Marketing JWTs include the
+    // `email` claim, and our users table has a by_email index.
+    if (!user && identity.email) {
+      user = await ctx.db
+        .query('users')
+        .withIndex('by_email', (q) =>
+          q.eq('email', (identity.email as string).toLowerCase()),
+        )
+        .first();
+    }
+
     if (!user) return null;
     return {
       userId: user._id,
