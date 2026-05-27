@@ -197,6 +197,30 @@ const P0: RoadmapItem[] = [
     notes: "Codex audit P0 #4. Quality gate work blocks E2E test work that depends on it.",
   },
   {
+    id: "admin-auth-google-redirect",
+    title: "Admin /admin-login Google OAuth — whitelist redirect URI in Google Cloud",
+    app: "marketing",
+    priority: "P0",
+    status: "blocked",
+    source: "self-audit",
+    description:
+      "NextAuth Google OAuth at /admin-login appears broken — Jeremiah hit it trying to reach /admin/roadmap after a federated login. NextAuth endpoints respond healthy (/providers, /csrf both return valid JSON). The redirect_uri NextAuth sends (https://getsafefamily.com/api/admin-auth/callback/google) is almost certainly not whitelisted in the Google Cloud OAuth client. Fix: add to Authorized redirect URIs in https://console.cloud.google.com/apis/credentials for OAuth client 60981898692-rf7qqn60061niahq5ksj4ckiecqe3be7.",
+    blockedBy: "Requires Jeremiah's access to Google Cloud Console (2 min fix).",
+    updatedAt: "2026-05-27",
+  },
+  {
+    id: "admin-auth-unify",
+    title: "Consolidate admin auth onto Marketing Central (drop separate Google OAuth)",
+    app: "marketing",
+    priority: "P2",
+    status: "open",
+    source: "self-audit",
+    description:
+      "Marketing has two parallel auth systems: /login (Convex Auth, customers) and /admin-login (NextAuth Google, admin only). They share no session. Jeremiah hit this tonight trying to reach /admin after a customer-side login. Long-term fix: expand admin layout to also accept jedaws@gmail.com via Marketing Central JWT — one auth surface, one session.",
+    refs: ["sites/marketing/src/app/admin/layout.tsx", "sites/marketing/src/lib/auth.ts"],
+    updatedAt: "2026-05-27",
+  },
+  {
     id: "auth-password-reset-emails",
     title: "Fix password reset emails not sending",
     app: "marketing",
