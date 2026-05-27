@@ -84,9 +84,15 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Theme Toggle + CTA Button + Hamburger (mobile) */}
+          {/* Theme Toggle + Sign In + CTA Button + Hamburger (mobile) */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <Link
+              href="/login"
+              className="hidden sm:inline-flex text-sm font-medium text-navy/70 hover:text-navy transition-colors px-2 py-2 whitespace-nowrap"
+            >
+              Sign in
+            </Link>
             <a
               href="#pricing"
               className="btn-peach inline-flex items-center justify-center px-4 sm:px-5 py-2 text-sm font-medium whitespace-nowrap"
@@ -131,6 +137,14 @@ export default function Header() {
                 className="flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium text-navy/80 hover:bg-navy/5 transition-colors"
               >
                 <span>Blog</span>
+              </Link>
+              <div className="my-2 border-t border-navy/10" />
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium text-navy hover:bg-navy/5 transition-colors"
+              >
+                <span>Sign in to your account</span>
               </Link>
             </div>
           </div>
