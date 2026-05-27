@@ -7,6 +7,7 @@ import { useUser } from '@clerk/nextjs';
 import { ChevronLeft, Database } from 'lucide-react';
 import { api } from '../../../../../convex/_generated/api';
 import type { Id } from '../../../../../convex/_generated/dataModel';
+import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 
 const COLOR_CLASSES: Record<string, string> = {
   violet: 'from-violet-500 to-pink-500',
@@ -18,7 +19,12 @@ const COLOR_CLASSES: Record<string, string> = {
 
 export default function ProfileDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { isLoaded, isSignedIn } = useUser();
+  // Dual-auth: Clerk (legacy) OR Marketing JWT (federated, the 23
+  // backfilled lifetime users). Mirrors the pattern in /parent/page.tsx.
+  const { isLoaded: clerkLoaded, isSignedIn: clerkSignedIn } = useUser();
+  const marketing = useMarketingAuth();
+  const isLoaded = clerkLoaded && !marketing.isLoading;
+  const isSignedIn = clerkSignedIn === true || marketing.isAuthenticated;
   const profileId = id as Id<'kidProfiles'>;
   const detail = useQuery(api.safespark.getProfileDetail, isSignedIn ? { profileId } : 'skip');
 
@@ -30,7 +36,12 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
       <main className="flex min-h-screen items-center justify-center px-6 text-center">
         <div className="space-y-3">
           <h1 className="text-2xl font-black text-slate-800">Sign in to view this profile</h1>
-          <Link href="/" className="text-sm font-bold text-violet-600 hover:text-violet-800">Back to home</Link>
+          <Link href="/login" className="inline-block rounded-2xl bg-violet-600 px-5 py-2 text-sm font-black text-white hover:bg-violet-700">
+            Sign in with Safe Family
+          </Link>
+          <div>
+            <Link href="/" className="text-sm font-bold text-violet-600 hover:text-violet-800">Back to home</Link>
+          </div>
         </div>
       </main>
     );

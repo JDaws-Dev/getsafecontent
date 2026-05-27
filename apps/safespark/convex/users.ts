@@ -100,10 +100,27 @@ export const getCurrent = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
-    return await ctx.db
+
+    // Path A — Clerk subject (legacy /sign-in). Subject looks like "user_xxx".
+    const byClerk = await ctx.db
       .query('users')
       .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', identity.subject))
       .first();
+    if (byClerk) return byClerk;
+
+    // Path B — Marketing Central JWT (federated /login). Subject is the
+    // user's Convex marketing user._id which won't match any clerkUserId
+    // here. Fall back to email — Marketing JWTs always carry the email
+    // claim. Mirrors getActor() in convex/actors.ts.
+    if (identity.email) {
+      return await ctx.db
+        .query('users')
+        .withIndex('by_email', (q) =>
+          q.eq('email', (identity.email as string).toLowerCase()),
+        )
+        .first();
+    }
+    return null;
   },
 });
 

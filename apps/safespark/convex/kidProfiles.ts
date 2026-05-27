@@ -132,10 +132,20 @@ export const getForCurrentKid = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
-    const user = await ctx.db
+    // Same Clerk-first then email-fallback resolution as getActor() —
+    // see actors.ts for rationale.
+    let user = await ctx.db
       .query('users')
       .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', identity.subject))
       .first();
+    if (!user && identity.email) {
+      user = await ctx.db
+        .query('users')
+        .withIndex('by_email', (q) =>
+          q.eq('email', (identity.email as string).toLowerCase()),
+        )
+        .first();
+    }
     if (!user || !user.linkedKidProfileId) return null;
     return await ctx.db.get(user.linkedKidProfileId);
   },

@@ -97,16 +97,17 @@ const P0: RoadmapItem[] = [
     title: "Wire /parent/setup and /parent/profile/[id] for dual-auth",
     app: "safespark",
     priority: "P0",
-    status: "open",
+    status: "done",
     source: "support-case",
     description:
-      "/parent works for federated users now (commit 3f30fa63). /parent/setup stalls on loading because it likely still does Clerk-only auth checks. Same pattern needs applying — add useAuth from @/contexts/AuthContext, combined isSignedIn check, conditional UserButton. /parent/profile/[id] probably has the same gap.",
+      "Fixed 2026-05-27. Root cause was in convex/users.ts getCurrent — only resolved by clerkUserId, no email fallback. Federated users got null forever, page stalled. Same fix applied to convex/kidProfiles.ts getForCurrentKid. /parent/profile/[id] frontend refactored to dual-auth pattern. Convex deployed to giddy-peacock-124, frontend deploy pending.",
     refs: [
       "apps/safespark/src/app/parent/setup/page.tsx",
       "apps/safespark/src/app/parent/profile/[id]/page.tsx",
+      "apps/safespark/convex/users.ts",
+      "apps/safespark/convex/kidProfiles.ts",
     ],
-    notes:
-      "Triggered by Michelle's login attempt 2026-05-27 — she hit the bounce loop, fixed for /parent, but setup still stalls.",
+    updatedAt: "2026-05-27",
   },
   {
     id: "app-registry",
