@@ -186,10 +186,11 @@ export default function UnifiedPricingSection() {
 
             {/* Grandfather note */}
             <p className="mt-6 text-center text-xs text-navy/50">
-              Already on a $9.99 bundle?{" "}
+              Existing subscriber? Your current price is locked in forever.{" "}
               <Link href="/account" className="underline hover:text-navy">
-                Your subscription stays exactly where it is.
+                Manage your subscription
               </Link>
+              .
             </p>
           </div>
         </div>
