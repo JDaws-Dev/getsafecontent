@@ -30,9 +30,10 @@ import {
   MessageCircle,
   FileText,
   Search,
+  Sparkles,
 } from "lucide-react";
 
-type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
+type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 
 const APP_INFO: Record<AppId, { name: string; domain: string; icon: React.ReactNode; gradient: string }> = {
   safetunes: {
@@ -58,6 +59,12 @@ const APP_INFO: Record<AppId, { name: string; domain: string; icon: React.ReactN
     domain: "getsafestudy.com",
     icon: <Search className="w-5 h-5 text-white" />,
     gradient: "from-blue-500 to-cyan-500",
+  },
+  safespark: {
+    name: "SafeSpark",
+    domain: "getsafespark.com",
+    icon: <Sparkles className="w-5 h-5 text-white" />,
+    gradient: "from-amber-500 to-violet-500",
   },
 };
 
@@ -293,6 +300,47 @@ function AccountPageContent() {
         <div className="max-w-2xl mx-auto space-y-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-navy">Account Settings</h1>
 
+          {/* Family code + Setup guide — post-purchase "what now?" card */}
+          {entitledApps.length > 0 && (
+            <section className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white shadow-md">
+              <div className="flex flex-col sm:flex-row gap-5 items-start">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                    Your family code
+                  </p>
+                  <p className="mt-2 font-mono font-bold text-3xl sm:text-4xl tracking-widest">
+                    {(currentUser as { familyCode?: string | null }).familyCode ?? "\u2014"}
+                  </p>
+                  <p className="mt-2 text-sm text-white/85 leading-relaxed">
+                    Same code works on all four apps. Share it with your kids so they can pick
+                    their profile.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 w-full sm:w-auto">
+                  <Link
+                    href="/setup"
+                    className="inline-flex items-center justify-center gap-1.5 bg-white text-indigo-700 hover:bg-white/90 font-semibold text-sm px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    First time? Setup guide
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const code = (currentUser as { familyCode?: string | null }).familyCode;
+                      if (code) {
+                        void navigator.clipboard?.writeText(code);
+                      }
+                    }}
+                    className="inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium text-sm px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    Copy code
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Upgrade Banner - shown when user comes from an app they don't have access to */}
           {isValidUpgradeApp && upgradeApp && !entitledApps.includes(upgradeApp) && (
             <section className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-6 shadow-sm">
@@ -452,7 +500,12 @@ function AccountPageContent() {
             ) : (
               <div className="space-y-3">
                 {entitledApps.map((app) => {
-                  const info = APP_INFO[app];
+                  const info = APP_INFO[app as AppId];
+                  // Defensive: skip if the entitled app id isn't one we know.
+                  // Without this, an unknown app in entitledApps crashes the
+                  // whole /account render (seen 2026-05-27 when safespark
+                  // entitlements appeared before this page had been updated).
+                  if (!info) return null;
                   return (
                     <div
                       key={app}
