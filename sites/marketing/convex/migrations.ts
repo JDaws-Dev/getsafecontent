@@ -31,6 +31,10 @@ interface AppUser {
 }
 
 type AppType = "safetunes" | "safetube" | "safereads" | "safestudy";
+// Wider type for the unified-pricing era — used by backfillSafeSparkToLifetimeUsers
+// below. Kept separate so the legacy migrateFromIndividualApps machinery (which
+// only knows about the original 4) stays type-safe.
+type AppTypeWithSpark = AppType | "safespark";
 type SubscriptionStatus = "trial" | "active" | "lifetime" | "canceled" | "past_due" | "incomplete" | "expired";
 
 // App pricing - individual apps were $4.99/mo
@@ -590,5 +594,69 @@ export const getMigrationReport = mutation({
     }
 
     return report;
+  },
+});
+
+/**
+ * One-shot: add "safespark" to every existing lifetime user's entitledApps.
+ *
+ * Rationale: the May 27 pricing pivot collapsed Safe Family into a single
+ * unified $14.99 plan that includes all 5 apps (Tunes/Tube/Reads/Study/Spark).
+ * Existing lifetime users were comped under the "Safe Family lineup" promise —
+ * when that lineup grows, the promise grows with it. So they get SafeSpark
+ * added to their entitlements as a one-time backfill.
+ *
+ * Policy boundary: FUTURE lifetime grants (DAWSFRIEND/DEWITT redemptions
+ * after this date) stay at 4 apps. ALL_APPS in accounts.ts intentionally
+ * keeps the original 4 — that protects future redemptions from accidentally
+ * granting SafeSpark's per-turn OpenAI cost forever.
+ *
+ * Idempotent — re-running is a no-op for users who already have safespark.
+ * Returns a list of emails that were updated so a follow-up script can call
+ * SafeSpark's /provisionUser to create the matching SafeSpark user rows.
+ */
+export const backfillSafeSparkToLifetimeUsers = mutation({
+  args: {
+    dryRun: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const dryRun = args.dryRun ?? false;
+    const users = await ctx.db.query("users").collect();
+
+    let lifetimeUsers = 0;
+    let alreadyHadSafeSpark = 0;
+    let updated = 0;
+    const updatedEmails: string[] = [];
+    const skippedEmails: string[] = [];
+
+    for (const user of users) {
+      if (user.subscriptionStatus !== "lifetime") continue;
+      lifetimeUsers++;
+
+      const current = (user.entitledApps ?? []) as AppTypeWithSpark[];
+      if (current.includes("safespark")) {
+        alreadyHadSafeSpark++;
+        skippedEmails.push(user.email ?? "(no email)");
+        continue;
+      }
+
+      if (!dryRun) {
+        const next: AppTypeWithSpark[] = [...current, "safespark"];
+        await ctx.db.patch(user._id, { entitledApps: next });
+      }
+      updated++;
+      updatedEmails.push(user.email ?? "(no email)");
+    }
+
+    const result = {
+      dryRun,
+      lifetimeUsers,
+      alreadyHadSafeSpark,
+      updated,
+      updatedEmails,
+      skippedEmails,
+    };
+    console.log("[backfillSafeSparkToLifetimeUsers]", JSON.stringify(result));
+    return result;
   },
 });
