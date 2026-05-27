@@ -271,19 +271,27 @@ export const provisionUserInternal = internalMutation({
     let wasCreated = false;
     let familyCode: string;
 
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    const resolvedStatus = args.entitledToThisApp ? args.subscriptionStatus : "inactive";
+
     if (existingUser) {
       userId = existingUser._id;
       familyCode = existingUser.familyCode;
 
-      // Update subscription status
-      await ctx.db.patch(userId, {
-        subscriptionStatus: args.entitledToThisApp
-          ? args.subscriptionStatus
-          : "inactive",
+      const patch: Record<string, unknown> = {
+        subscriptionStatus: resolvedStatus,
         stripeCustomerId: args.stripeCustomerId ?? existingUser.stripeCustomerId,
         subscriptionId: args.subscriptionId ?? existingUser.subscriptionId,
         name: args.name ?? existingUser.name,
-      });
+      };
+      if (args.familyCode && args.familyCode !== existingUser.familyCode) {
+        patch.familyCode = args.familyCode;
+        familyCode = args.familyCode;
+      }
+      if (resolvedStatus === "trial" && !existingUser.trialEndsAt) {
+        patch.trialEndsAt = Date.now() + sevenDaysMs;
+      }
+      await ctx.db.patch(userId, patch);
 
       console.log(`[provisionUser] Updated existing user ${userId}`);
     } else {
@@ -293,13 +301,12 @@ export const provisionUserInternal = internalMutation({
       userId = await ctx.db.insert("users", {
         email: args.email,
         name: args.name ?? undefined,
-        subscriptionStatus: args.entitledToThisApp
-          ? args.subscriptionStatus
-          : "inactive",
+        subscriptionStatus: resolvedStatus,
         familyCode,
         createdAt: Date.now(),
         stripeCustomerId: args.stripeCustomerId ?? undefined,
         subscriptionId: args.subscriptionId ?? undefined,
+        trialEndsAt: resolvedStatus === "trial" ? Date.now() + sevenDaysMs : undefined,
       });
       wasCreated = true;
 
@@ -467,5 +474,26 @@ export const updateSubscriptionByStripeId = mutation({
     }
 
     await ctx.db.patch(user._id, updates);
+  },
+});
+
+export const syncFamilyCodeByEmailInternal = internalMutation({
+  args: {
+    email: v.string(),
+    code: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .first();
+    if (!user) {
+      return { found: false, familyCode: null, updated: false };
+    }
+    if (args.code) {
+      await ctx.db.patch(user._id, { familyCode: args.code });
+      return { found: true, familyCode: args.code, updated: true };
+    }
+    return { found: true, familyCode: user.familyCode ?? null, updated: false };
   },
 });

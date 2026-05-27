@@ -18,9 +18,16 @@ export const runTrialExpirationCheck = internalAction({
 
     let expired = 0;
     let warned = 0;
+    let missingEndDate = 0;
 
     for (const user of trialUsers) {
-      if (!user.trialEndsAt) continue;
+      if (!user.trialEndsAt) {
+        missingEndDate++;
+        console.warn(
+          `[TrialExpiration] Trial user ${user._id} (${user.email}) has no trialEndsAt — provisioning bug; trial will never expire`,
+        );
+        continue;
+      }
 
       if (user.trialEndsAt < now) {
         // Trial has expired — mark as expired and send email
@@ -49,7 +56,9 @@ export const runTrialExpirationCheck = internalAction({
       }
     }
 
-    console.log(`[TrialExpiration] Expired: ${expired}, Warned: ${warned}`);
-    return { expired, warned };
+    console.log(
+      `[TrialExpiration] Expired: ${expired}, Warned: ${warned}, MissingEndDate: ${missingEndDate}`,
+    );
+    return { expired, warned, missingEndDate };
   },
 });

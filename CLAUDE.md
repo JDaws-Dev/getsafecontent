@@ -53,6 +53,9 @@ curl "https://formal-chihuahua-623.convex.site/deleteUser?email=EMAIL&key=KEY"
 
 # Admin dashboard
 curl "https://formal-chihuahua-623.convex.site/adminDashboard?key=KEY&format=json"
+
+# Wipe all orphaned records (cascades to children) — added 2026-05-21
+curl "https://formal-chihuahua-623.convex.site/cleanupOrphans?key=KEY"
 ```
 
 ### SafeTube (`rightful-rabbit-333.convex.site`)
@@ -140,19 +143,29 @@ curl "https://formal-chihuahua-623.convex.site/adminOrphans?key=ADMIN_KEY&format
 ```
 
 ### Cleanup Procedure
+Use the HTTP endpoint (works around `npx convex run` routing to dev when .env.local is set):
 ```bash
-# 1. View current orphans (dry run)
-cd ~/safecontent/apps/safetunes
-npx convex run orphanDetection:findOrphanedRecords
-
-# 2. Delete all orphans (cascades to child records)
-npx convex run orphanDetection:deleteOrphanedRecords
+KEY="<ADMIN_KEY_URL_ENCODED>"
+curl "https://formal-chihuahua-623.convex.site/cleanupOrphans?key=$KEY"
 ```
+Or via CLI (only reliable if you `unset CONVEX_DEPLOYMENT` first and `.env.local` is gone):
+```bash
+cd ~/safecontent/apps/safetunes
+npx convex run orphanDetection:findOrphanedRecords   # dry run
+npx convex run orphanDetection:deleteOrphanedRecords # cascade-deletes
+```
+
+### Alerter Behavior (rev 2026-05-21)
+The daily cron at 4 AM UTC fires `checkAndAlertOrphans`, which now:
+- Delegates discovery to `findOrphanedRecords` (single source of truth — no drift between admin view and alerter)
+- Emails only on **delta** (count changed since last check) OR **Sunday heartbeat** (weekly "still alive" signal)
+- Stable Mon–Sat checks are silent — stops the daily noise that masked a 1,066-record undercount for 11+ days
+- Logs every check to a new `orphanCheckHistory` table for trend tracking
 
 ### Prevention
 - Always use `archiveAndDeleteKidProfile` mutation instead of raw deletes
 - User deletion should cascade to kid profiles via `deleteUserHttpAction`
-- The detection system alerts proactively so issues don't accumulate
+- The detection system alerts on delta only — stable counts are silent so real changes stand out
 
 ---
 
@@ -598,9 +611,8 @@ Full kid-facing reading platform:
 - [x] Kid request button (already built — verified Apr 6)
 
 ### SafeTube
-- [x] AI Review enhancement built (on branch, NOT deployed — YouTube API review in progress)
+- [x] AI Review enhancement deployed to prod May 5, 2026 (`rightful-rabbit-333`) — adds `parentCommunityNotes`, `knownControversies`, `commonSenseMediaRating` to `channelReviewCache`. **Initial deploy populated empty arrays / null** because gpt-4o-mini was silently dropping the new fields from its JSON response. Fixed same day by adding OpenAI `response_format: { type: "json_schema", strict: true }` to enforce the full schema. Verified live: PewDiePie review returns CSM 3/5, 2 controversies (slurs incident, meme associations), 2 community notes. Existing cached reviews (pre-deploy) still lack these fields; they'll populate as new channels are reviewed.
 - [x] Kid request button (already built — verified Apr 6)
-- **DO NOT deploy SafeTube backend changes while YouTube API compliance review is active**
 
 ### Immediate
 - [ ] Register for FPEA Florida Homeschool Convention (May 21-23, 2026)
@@ -652,6 +664,13 @@ Full kid-facing reading platform:
   - **#10 Weekly parent digest** — Sunday 23:00 UTC cron (`convex/crons.ts`). `convex/weeklyDigest.ts` (action) + `weeklyDigestQueries.ts` (queries/mutations). Per-kid summary: total searches, blocked count, top intent categories, concerning-query count, heaviest day, budget-hit days. Skips parents with no activity, opted-out (`users.weeklyDigestOptOut`), or expired/cancelled subscription. Includes "Turn off weekly digests" link
   - **Schema:** added `intentCategory/Confidence/Rationale` to `searchHistory` + `blockedSearches`, new `kidConcernAlerts` table, `kidProfiles.dailyQueryBudget`, `users.weeklyDigestOptOut + lastDigestSentAt`. All optional/additive. Deployed cleanly to `strong-scorpion-227`
   - **NOT YET BUILT (next session):** parent dashboard surfaces for `kidConcernAlerts` (the listForUser / acknowledge mutations exist; need UI), weekly-digest opt-out toggle in admin Settings page
+
+- [x] **SafeTunes kid-login crash — Convex 32k read-limit fix** (May 4): Ben Purves emailed a screenshot of his son hitting "Something went wrong" right after tapping his profile. Reproduced live with playwright using family code `RSAMPT` → console showed `[CONVEX Q(kidRequests:getKidRequests)] Server Error`. Running the query directly returned `Too many documents read in a single function execution (limit: 32000)`.
+  - **Root cause:** `kidRequests:getKidRequests` (`apps/safetunes/convex/kidRequests.ts:6`) iterated each approved/partially-approved album request and ran `ctx.db.query("approvedSongs").withIndex("by_user", ...).filter(kidProfileId AND appleAlbumId).first()` per request. The `by_user` index narrows by parent only — the `.filter()` then walks the parent's full song list. Ben's family had 60 approved albums × 1163 songs across 3 kids → reads compounded past Convex's hard 32k-per-query limit → query threw → React's Sentry ErrorBoundary rendered the generic error screen
+  - **Fix:** Pre-fetch the kid's own approved songs *once* via the selective `by_kid_profile` index (small per-kid subset), build Sets of `appleAlbumId` / `albumName` / `appleSongId`, then check existence in memory. One indexed query instead of N broad ones. Same correctness, dramatically fewer reads
+  - **Verified:** All 3 kids (Andrew, Elizabeth, Jack) now load. Console clean. Andrew's dashboard shows "Good Evening, Andrew" + welcome modal as expected
+  - Convex-only deploy to `formal-chihuahua-623`; no Vercel push needed. Drafted reply to benpurves@hotmail.com from the apps account (Jeremiah pasted/sent manually)
+  - **Lesson:** `.withIndex(broad).filter(narrow)` is a scaling cliff. Fine for small accounts, fatal for power users. When checking existence across many child rows, fetch once via the most selective index (`by_kid_profile`) and check via in-memory Sets. Added as MEMORY.md lesson #9
 
 - [x] **SafeTube time-limit bug fix** (Apr 28): two compounding bugs in `VideoPlayer.jsx` were letting watchDurationSeconds inflate to 19+ hours/day on Bella Trotter's account despite a 90 min/day limit
   - **Bug 1 — wall-clock inflation:** `saveWatchDuration` was computing `Date.now() - watchStartTimeRef`, which counts real-world seconds from when the video element loaded. If a kid pauses, walks away, or leaves the tab open overnight, the timer kept running. **Fix:** track *active playback time* via `playStartedAtRef` + `accumulatedPlayMsRef`. PLAYING (state=1) → begin span; PAUSED/BUFFERING/ENDED → roll span into accumulator. `getActivePlayMs()` returns total active time only
@@ -715,6 +734,7 @@ Full kid-facing reading platform:
   - **All 4 apps' `provisionUserInternal`** now honor `args.familyCode` on existing-user updates (previously ignored), so future upgrades/repairs keep codes aligned
 
 ### TODO
+- [ ] **Calendar reminder: rotate Apple Music developer JWT by 2026-10-15** — Apple caps token lifetime at 180 days. Current token (rotated 2026-05-21) expires **2026-11-17**. Generator: `cd apps/safetunes && node generate-musickit-token.cjs` (uses `AuthKey_T2M5WA6Z67.p8`). Then `vercel env rm/add VITE_MUSICKIT_DEVELOPER_TOKEN production` + `vercel --prod` rebuild. Set a reminder ~4 weeks early — last rotation came 6 days late and broke kid-side music silently for all paying users.
 - [ ] LRCLib migration (replace MusixMatch — saves $59/mo, plan in docs/LRCLIB-MIGRATION.md)
 - [ ] Marketing: Publish Substack article
 - [ ] Marketing: Apply to Southeast Homeschool Expo (Atlanta, Jul 24-25)
@@ -723,6 +743,14 @@ Full kid-facing reading platform:
 - [ ] Register for FPEA Convention (May 21-23, 2026, $525-685)
 - [ ] Outscraper pipeline: build Phase 1 (schema + HTTP endpoint in Marketing Central)
 - [ ] Set up Instantly account + outreach.getsafefamily.com subdomain for cold email
+- [ ] Marketing strategy execution — full plan in `docs/MARKETING-STRATEGY-2026-05.md` (May 6, 2026):
+  - **First dollar:** affiliate seeding to 10 Christian/homeschool mom creators (30% recurring), NOT Meta cold traffic
+  - **Meta launch (week 2):** ABO @ $40/day, 3 ad sets, optimize Lead (not Subscribe — not enough paid events yet); CAC ceiling ~$24
+  - **Cold-traffic LPs:** each app already has its own LP at its own domain (getsafetube.com etc.) — don't duplicate on getsafefamily.com. Optimize the existing pages: Meta Pixel + Conversions API, social proof above fold, headline split test ("Take YouTube back from the algorithm" vs "Start your 7-day free trial — no credit card")
+  - **Bundle upsell:** add to each app's signup thank-you page ("Add the other 3 apps for $5 more") + day-3 / day-6 emails — captures bundle attach rate without confusing cold traffic with 4-app pricing upfront
+  - **Lead creative:** "Search History Reveal" using Bella Trotter's 212 searches / 57 aesthetic-browsing flagged by SafeStudy intent classifier (uniquely ours; competitors can't tell this story)
+  - **Christian targeting** is custom-audience + 1% lookalike (Meta killed religion targeting); save faith-coded copy for warm/affiliate
+  - **Compliance landmines:** no "your 9-year-old" copy, no other people's kid faces, add backup ad-account admin (family-safety ads get falsely flagged constantly)
 
 ---
 
@@ -732,4 +760,4 @@ Full kid-facing reading platform:
 
 ---
 
-*Last updated: April 28, 2026 (SafeStudy hardening 1–10 deployed to `strong-scorpion-227`; SafeTube `VideoPlayer.jsx` watchDuration fix shipped via Vercel — frontend-only, no SafeTube convex deploy under YouTube API review)*
+*Last updated: May 27, 2026 (**SafeStudy trial-expiration bug fix deployed to prod `strong-scorpion-227`.** Usage audit across all 5 SafeFamily apps revealed SafeStudy had 5 "trial" users stuck for 21–52 days with no `trialEndsAt` field — the daily `runTrialExpirationCheck` cron silently skipped them via `if (!user.trialEndsAt) continue;` so they would never expire. Root cause in `apps/safeseek/convex/users.ts` `provisionUserInternal`: the Marketing-site signup flow calls `/provisionUser` with `subscriptionStatus: "trial"` but the mutation never set `trialEndsAt` on insert/update. (The direct legacy `createUser` path at line 130–131 sets it correctly — only the Marketing-provisioned path was broken.) Fix: provisioning now sets `trialEndsAt = now + 7d` whenever the resolved status is `"trial"` (new users always, existing users only if not already set so in-flight trials aren't clobbered). Defensive follow-up in `convex/trialExpiration.ts`: the silent-skip path now `console.warn`s with the user id and email, and the cron's summary log + return value include a `missingEndDate` counter so the next instance of this drift surfaces immediately instead of rotting for 52 days. **Backfill of the 5 existing zombies is pending an explicit call from Jeremiah** — sandbox correctly blocked mass-modifying 5 production user statuses without authorization. Discovered while doing a portfolio-wide usage eval: **only 2 actively paying subs across the whole portfolio** per Marketing Central (`active: 2, lifetime: 23, expired: 16, cancelled: 1` of 42 accounts). Lifetime users on each app (~30) are the same comp pool (Jeremiah's family + DAWSFRIEND/DEWITT redemptions). SafeTunes is the only app showing real product use (25/45 parents have kids set up, 10K songs / 777 albums approved). SafeReads is a graveyard (2/37 parents set up kids, 5 total analyses). 0 new signups across every app in the last 7d. Diagnosis is consistent with the May 6 marketing-strategy doc: this is a distribution problem, not a product problem. Trial-model discussion in progress — Jeremiah is leaning toward card-required trial across all 4 apps, no grandfathering needed since no users are actually in an active trial window. Also: **SafeSpark (codename `bella`, repo at `~/Projects/bella`) is the 5th SafeFamily platform member** per `~/Projects/bella/AGENTS.md` — domain `getsafespark.com`, Convex prod `giddy-peacock-124`, admin key env `SAFESPARK_ADMIN_KEY`, same HTTP admin contract as the other 4 (`adminDashboard`, `grantLifetime`, `setSubscriptionStatus`, `syncFamilyCode`, `deleteUser`). Product framing per the bella README is intentionally **not** "SafeFamily content filter" — it's an AI training lab for kids (ask/guide/check/improve/own loop). Borrows SafeFamily platform infrastructure only. 2 users (Jeremiah + Bella), 19 chat turns / $1.42 OpenAI spend MTD, not publicly launched. Pricing decision pending per `~/Projects/bella/PRICING.md`: leaning Option 1 (new "Family + Spark" tier ~$16.99/mo + standalone Spark $7.99/mo) but standalone-vs-bundle ladder is mathematically broken as written and the price should be locked only after pulling real `safesparkUsage.totalCents` distribution from prod. **SafeReads mobile login fix shipped** (commits `aef6bdca`, `4a088b25` on `main`) — landing page nav now shows "Log in" link on mobile (was `hidden sm:inline-flex` so phones only saw "Try Free"); points to `/login` directly instead of `/dashboard`. Vercel auto-deployed. Earlier on May 21: **SafeTunes orphan-detection cleanup + alerter rewrite.** Daily "Data Integrity Alert" email had been undercounting badly — said "20 orphaned records" while the live admin endpoint showed **1,086** (20 kidProfiles + 32 approvedAlbums + 1,034 approvedSongs from ~5 deleted parent accounts in Nov 2025). Root cause: `checkAndAlertOrphans` only scanned 6 of the 8 tables that `findOrphanedRecords` scans — drift between the cron and the admin view. Two fixes in one Convex deploy: (a) added `/cleanupOrphans` HTTP endpoint, ran it, deleted all 1,086 + 85 cascade children (playlists, recentlyPlayed, requests); (b) rewrote `checkAndAlertOrphans` to delegate to `findOrphanedRecords` (single source of truth, no drift) and email only on delta-vs-last-check OR Sunday heartbeat. New `orphanCheckHistory` table persists every check for trend visibility. Stable counts on non-Sunday days are now silent — stops the daily-noise pattern that hid the bug for 11+ days. Earlier today: **SafeTunes prod outage — Apple MusicKit JWT expired May 15, 2026; rotated and redeployed.** Symptom: kid-side music playback broken silently for ~6 days. Surfaced by Jolene Bryan emailing the support inbox May 20 ("kids have been seeing this when trying to listen to music"). Diagnosis: decoded the JWT in `apps/safetunes/.env.production` and saw `exp: 1778908497` = 2026-05-15 — Apple caps developer-token lifetime at 180 days; the previous token was issued Nov 17, 2025 and not rotated. Fix: ran `node generate-musickit-token.cjs` (uses `AuthKey_T2M5WA6Z67.p8` already in repo), updated Vercel `VITE_MUSICKIT_DEVELOPER_TOKEN` for the `apple-music-whitelist` project, ran `vercel --prod` — deployment `dpl_8XK4WpCsX692YL6ZQdanR6PgPAz6` READY. Verified by fetching the live `musickit-*.js` chunk and confirming new `iat: 1779380111` is present, old `iat: 1763356497` is gone. Added a calendar reminder TODO for 2026-10-15 to rotate before next expiry on 2026-11-17. Marketing strategy doc landed May 6 at `docs/MARKETING-STRATEGY-2026-05.md` — full Meta playbook, channel comparison, creative concepts, and 30-day starter plan. Top recommendation: affiliate seeding to ~10 Christian/homeschool mom creators is the highest-ROI first dollar at 35-user scale, not Meta cold traffic. Each app already has its own LP at its own domain — strategy doc's "build /safetube LP" recommendation is moot; what's actually needed is Pixel + Conversions API on the existing app LPs and a bundle upsell on each app's thank-you page. Yesterday: SafeTube AI review enhancements deployed to prod `rightful-rabbit-333`. Code had been merged to main since Apr 3 (commit `a1af74f7`) but the Convex backend deploy was held pending YouTube API compliance review. Per Jeremiah's call today, deployed regardless. First deploy was silently broken — gpt-4o-mini was dropping the new fields (`parentCommunityNotes`, `knownControversies`, `commonSenseMediaRating`) from its JSON response despite the prompt asking for them. Same-day fix: switched OpenAI call to `response_format: { type: "json_schema", strict: true }` with a full schema including the new fields as required. Verified live by hitting `https://rightful-rabbit-333.convex.cloud/api/action` directly — PewDiePie review returned CSM 3/5, 2 controversies, 2 parent community notes. **Important debugging lesson:** `npx convex run` does NOT respect the shell `CONVEX_DEPLOYMENT=prod:...` env var when `.env.local` defines a different (dev) deployment. All "prod test" runs via the CLI were actually hitting dev. To test against prod, hit the deployment URL directly via `curl POST /api/action` with `{path, args, format:"json"}`. Earlier today: SafeTunes `kidRequests:getKidRequests` Convex query fix deployed May 4 to prod `formal-chihuahua-623` — Ben Purves's son hit "Something went wrong" on kid login because the query looped per approved album request and walked the parent's full `approvedSongs` via the non-selective `by_user` index, blowing past Convex's 32k document-read limit.)*
