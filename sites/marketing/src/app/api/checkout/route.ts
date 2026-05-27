@@ -8,7 +8,10 @@ import { fetchQuery } from "convex/nextjs";
 import { api } from "../../../../convex/_generated/api";
 
 // Price IDs for different plans
-// PRICING: 1 app=$4.99/mo, 2 apps=$7.99/mo, 3-4 apps=$9.99/mo (monthly) or $99/year
+// LEGACY PRICING: 1 app=$4.99/mo, 2 apps=$7.99/mo, 3-4 apps=$9.99/mo (monthly) or $99/year
+// UNIFIED PRICING (when ENABLE_UNIFIED_PRICING=true): one plan, all 5 apps,
+//   $14.99/mo or $149/yr. Price IDs live in env vars so they can be
+//   created in Stripe without a code change.
 const PRICE_IDS = {
   // Individual app prices ($4.99/mo each)
   SAFETUNES: "price_1SUXOjKgkIT46sg7RKwIgAVv",
@@ -19,6 +22,16 @@ const PRICE_IDS = {
   // Bundle: 3-4 apps ($9.99/mo or $99/year)
   BUNDLE_MONTHLY: "price_1SxaerKgkIT46sg7NHNy0wk8",
   BUNDLE_YEARLY: "price_1SzLJUKgkIT46sg7xsKo2A71",
+  // Unified plan: all 5 apps including SafeSpark ($14.99/mo or $149/yr).
+  // Hardcoded fallbacks point at the live Stripe Prices Jeremiah created
+  // on May 27, 2026 (prod_Uay2qoEvGAOfWL monthly, prod_Uay4yy3aKjbkxi yearly).
+  // Override via env var if the IDs ever need to change without redeploy.
+  UNIFIED_MONTHLY:
+    process.env.STRIPE_UNIFIED_MONTHLY_PRICE_ID ||
+    "price_1Tbm6RKgkIT46sg75fZzF2gj", // $14.99/mo
+  UNIFIED_YEARLY:
+    process.env.STRIPE_UNIFIED_YEARLY_PRICE_ID ||
+    "price_1Tbm8OKgkIT46sg7YgWgQPDC", // $149/yr
 };
 
 // Map app names to their individual price IDs
@@ -58,7 +71,7 @@ export async function POST(req: Request) {
       // Log but don't fail the request if rate limiting fails
       console.error("Rate limit check failed:", rateLimitError);
     }
-    const { email: bodyEmail, priceId, apps, selectedApps, isYearly } = await req.json();
+    const { email: bodyEmail, priceId, apps, selectedApps, isYearly, plan } = await req.json();
 
     // Get email from request body OR from authenticated session (for OAuth users)
     // IMPORTANT: Normalize email to lowercase to prevent duplicate Stripe customers
@@ -79,12 +92,19 @@ export async function POST(req: Request) {
       }
     }
 
-    // Support both 'apps' and 'selectedApps' field names
+    // Unified-pricing path: one plan, all 5 apps including SafeSpark.
+    // Triggered by `plan: "unified"` from the new signup flow.
+    const isUnifiedPlan = plan === "unified";
+
+    // Support both 'apps' and 'selectedApps' field names (legacy path)
     const appsInput = apps || selectedApps;
 
     // Validate apps array if provided
     let finalApps: AppName[] = VALID_APPS; // Default to all apps
-    if (appsInput && Array.isArray(appsInput)) {
+    if (isUnifiedPlan) {
+      // Unified plan grants all 5 apps regardless of any apps array sent
+      finalApps = [...VALID_APPS, "safespark" as AppName];
+    } else if (appsInput && Array.isArray(appsInput)) {
       finalApps = appsInput.filter((app: string) =>
         VALID_APPS.includes(app as AppName)
       ) as AppName[];
@@ -99,7 +119,21 @@ export async function POST(req: Request) {
     // Determine price ID based on selection
     let finalPriceId = priceId;
     if (!finalPriceId) {
-      if (finalApps.length === 1) {
+      if (isUnifiedPlan) {
+        finalPriceId = isYearly
+          ? PRICE_IDS.UNIFIED_YEARLY
+          : PRICE_IDS.UNIFIED_MONTHLY;
+        if (!finalPriceId) {
+          return NextResponse.json(
+            {
+              error: isYearly
+                ? "Unified yearly price not configured — set STRIPE_UNIFIED_YEARLY_PRICE_ID"
+                : "Unified monthly price not configured — set STRIPE_UNIFIED_MONTHLY_PRICE_ID",
+            },
+            { status: 500 },
+          );
+        }
+      } else if (finalApps.length === 1) {
         // Single app - use individual app price
         const appPriceId = APP_TO_PRICE[finalApps[0]];
         if (!appPriceId) {
@@ -184,6 +218,7 @@ export async function POST(req: Request) {
         apps: appsMetadata,
         app_count: finalApps.length.toString(),
         billing_interval: isYearly ? "yearly" : "monthly",
+        ...(isUnifiedPlan ? { plan: "unified" } : {}),
       },
       subscription_data: {
         // 7-day free trial for monthly plans, no trial for yearly (charges immediately)
@@ -193,6 +228,7 @@ export async function POST(req: Request) {
           apps: appsMetadata,
           app_count: finalApps.length.toString(),
           billing_interval: isYearly ? "yearly" : "monthly",
+          ...(isUnifiedPlan ? { plan: "unified" } : {}),
         },
       },
     };

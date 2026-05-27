@@ -121,6 +121,12 @@ function SignupContent() {
   const validApps: AppId[] = ["safetunes", "safetube", "safereads", "safestudy"];
   const preSelectedApp = initialApp && validApps.includes(initialApp) ? initialApp : null;
 
+  // Unified-pricing flow: ?plan=unified&interval=monthly|yearly
+  // When set, the AppSelector is skipped and checkout uses the unified
+  // Price IDs (all 5 apps including SafeSpark, $14.99/mo or $149/yr).
+  const isUnifiedPlan = searchParams.get("plan") === "unified";
+  const urlIntervalYearly = searchParams.get("interval") === "yearly";
+
   // State for selected apps - default to pre-selected app or all apps
   const [selectedApps, setSelectedApps] = useState<AppId[]>(
     preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safereads", "safestudy"]
@@ -135,8 +141,8 @@ function SignupContent() {
     isBundlePrice: true,
   });
 
-  // State for billing interval
-  const [isYearly, setIsYearly] = useState(false);
+  // State for billing interval — defaults to yearly when ?interval=yearly
+  const [isYearly, setIsYearly] = useState(urlIntervalYearly);
 
   // Loading and error state
   const [error, setError] = useState("");
@@ -353,7 +359,9 @@ function SignupContent() {
     try {
       console.log("[SignupPage] Proceeding to checkout...");
 
-      // Build the checkout request with selected apps
+      // Build the checkout request. When ?plan=unified, signal the
+      // unified-pricing path; the checkout API ignores selectedApps and
+      // routes to STRIPE_UNIFIED_MONTHLY_PRICE_ID / STRIPE_UNIFIED_YEARLY_PRICE_ID.
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -363,6 +371,7 @@ function SignupContent() {
           name: data.name,
           couponCode: data.couponCode,
           isYearly,
+          ...(isUnifiedPlan ? { plan: "unified" } : {}),
         }),
       });
 
@@ -446,23 +455,28 @@ function SignupContent() {
           {/* Page title */}
           <div className="text-center mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-navy mb-3">
-              Start protecting your family today
+              {isUnifiedPlan ? "Start your Safe Family trial" : "Start protecting your family today"}
             </h1>
             <p className="text-lg text-navy/60 max-w-xl mx-auto">
-              Choose the apps you need and create your account.
-              Your 7-day free trial starts immediately.
+              {isUnifiedPlan
+                ? `All 5 Safe Family apps for $${isYearly ? "149/year" : "14.99/month"}. 7-day free trial — no credit card to start.`
+                : "Choose the apps you need and create your account. Your 7-day free trial starts immediately."}
             </p>
           </div>
 
           {/* Two-column layout on desktop */}
           <div className="grid gap-8 lg:grid-cols-2">
-            {/* Left column: App selection */}
+            {/* Left column: App selection (legacy) OR unified summary */}
             <div className="card-soft p-6 sm:p-8">
-              <AppSelector
-                initialApps={preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safereads", "safestudy"]}
-                onChange={handleAppSelectionChange}
-                showYearlyToggle={true}
-              />
+              {isUnifiedPlan ? (
+                <UnifiedPlanSummary isYearly={isYearly} onIntervalChange={setIsYearly} />
+              ) : (
+                <AppSelector
+                  initialApps={preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safereads", "safestudy"]}
+                  onChange={handleAppSelectionChange}
+                  showYearlyToggle={true}
+                />
+              )}
             </div>
 
             {/* Right column: Account form */}
@@ -602,6 +616,94 @@ function SignupContent() {
           </p>
         </div>
       </footer>
+    </div>
+  );
+}
+
+// Unified-plan summary — replaces the AppSelector when ?plan=unified is set.
+// Shows all 5 apps as a fixed list plus the monthly/yearly toggle, with
+// pricing locked at $14.99/mo or $149/yr.
+function UnifiedPlanSummary({
+  isYearly,
+  onIntervalChange,
+}: {
+  isYearly: boolean;
+  onIntervalChange: (yearly: boolean) => void;
+}) {
+  const MONTHLY = 14.99;
+  const YEARLY = 149;
+  const apps = [
+    "SafeTunes — Apple Music, parent-curated",
+    "SafeTube — YouTube without the algorithm",
+    "SafeReads — every book analyzed before they read it",
+    "SafeStudy — safe search + AI tutor",
+    "SafeSpark — AI training lab for kids (NEW)",
+  ];
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-navy mb-2">Safe Family</h2>
+      <p className="text-sm text-navy/60 mb-5">
+        One subscription. All five apps. Built for homeschool families.
+      </p>
+
+      {/* Interval toggle */}
+      <div className="inline-flex items-center gap-1 rounded-full bg-cream p-1 border border-navy/10 mb-5">
+        <button
+          type="button"
+          onClick={() => onIntervalChange(false)}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+            !isYearly ? "bg-navy text-cream" : "text-navy/70"
+          }`}
+        >
+          Monthly
+        </button>
+        <button
+          type="button"
+          onClick={() => onIntervalChange(true)}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+            isYearly ? "bg-navy text-cream" : "text-navy/70"
+          }`}
+        >
+          Yearly · Save 17%
+        </button>
+      </div>
+
+      {/* Price */}
+      <div className="mb-5">
+        <div className="flex items-baseline gap-1">
+          <span className="text-4xl font-bold text-navy">
+            ${isYearly ? YEARLY : MONTHLY}
+          </span>
+          <span className="text-lg text-navy/60">{isYearly ? "/year" : "/month"}</span>
+        </div>
+        {isYearly && (
+          <p className="text-xs text-navy/50 mt-1">
+            That&rsquo;s ${(YEARLY / 12).toFixed(2)}/mo billed annually
+          </p>
+        )}
+      </div>
+
+      {/* Apps included */}
+      <ul className="space-y-2 mb-3">
+        {apps.map((app) => (
+          <li key={app} className="flex items-start gap-2 text-sm text-navy/80">
+            <svg
+              className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+            <span>{app}</span>
+          </li>
+        ))}
+      </ul>
+
+      <p className="text-xs text-navy/50">
+        7-day free trial. No credit card to start. Cancel anytime.
+      </p>
     </div>
   );
 }

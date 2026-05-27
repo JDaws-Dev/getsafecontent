@@ -3,6 +3,8 @@
 import { useState } from "react";
 import CheckoutButton from "@/components/checkout/CheckoutButton";
 import { Check } from "lucide-react";
+import { isUnifiedPricingEnabledClient } from "@/lib/feature-flags";
+import UnifiedPricingSection from "./UnifiedPricingSection";
 
 const bundleFeatures = [
   { text: "SafeTunes — every song, parent-approved", value: "$4.99 value" },
@@ -25,6 +27,16 @@ const MONTHLY_PRICE_ID = "price_1SxaerKgkIT46sg7NHNy0wk8"; // $9.99/mo
 const YEARLY_PRICE_ID = "price_1SzLJUKgkIT46sg7xsKo2A71"; // $99/year
 
 export default function PricingSection() {
+  // When the unified-pricing flag is on, render the single-plan card and
+  // skip the rest of the legacy 3-tier markup entirely.
+  if (isUnifiedPricingEnabledClient()) {
+    return <UnifiedPricingSection />;
+  }
+
+  return <LegacyPricingSection />;
+}
+
+function LegacyPricingSection() {
   const [isYearly, setIsYearly] = useState(false); // Default to monthly - matches $9.99/mo CTAs throughout page
 
   const monthlyPrice = 9.99;
@@ -103,57 +115,60 @@ export default function PricingSection() {
                   </div>
                 </div>
 
-                {/* Price with "You pay" label */}
-                <div className="mt-6">
-                  <p className="text-sm font-medium text-navy/60 mb-1">You pay</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-bold text-navy">
-                      ${isYearly ? yearlyPrice : monthlyPrice.toFixed(2)}
-                    </span>
-                    <span className="text-navy/60">
-                      /{isYearly ? "year" : "month"}
-                    </span>
-                  </div>
-                  {isYearly && (
-                    <p className="mt-1 text-sm text-navy/50">
-                      Just ${(yearlyPrice / 12).toFixed(2)}/month billed annually
-                    </p>
-                  )}
-                </div>
-
-                {/* Monthly/Yearly Toggle */}
-                <div className="mt-4 flex items-center gap-3">
-                  <span
-                    className={`text-sm font-medium ${!isYearly ? "text-navy" : "text-navy/50"}`}
-                  >
-                    Monthly
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsYearly(!isYearly)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-peach-start focus:ring-offset-2 ${
-                      isYearly ? "bg-navy" : "bg-navy/30"
-                    }`}
-                    role="switch"
-                    aria-checked={isYearly}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        isYearly ? "translate-x-5" : "translate-x-0"
+                {/* Billing choice — both options visible side-by-side so the
+                    yearly discount doesn't hide behind a toggle */}
+                <fieldset className="mt-6">
+                  <legend className="text-sm font-medium text-navy/60 mb-2">
+                    Choose your billing
+                  </legend>
+                  <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Billing cadence">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={!isYearly}
+                      onClick={() => setIsYearly(false)}
+                      className={`relative rounded-xl border-2 p-4 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-peach-start focus-visible:ring-offset-2 ${
+                        !isYearly
+                          ? "border-navy bg-navy/5"
+                          : "border-navy/10 hover:border-navy/30 bg-white"
                       }`}
-                    />
-                  </button>
-                  <span
-                    className={`text-sm font-medium ${isYearly ? "text-navy" : "text-navy/50"}`}
-                  >
-                    Yearly
-                  </span>
-                  {isYearly && (
-                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-                      Save {yearlySavingsPercent}%
-                    </span>
-                  )}
-                </div>
+                    >
+                      <span className="block text-xs font-semibold uppercase tracking-wider text-navy/50">
+                        Monthly
+                      </span>
+                      <span className="mt-1 flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-navy">${monthlyPrice.toFixed(2)}</span>
+                        <span className="text-sm text-navy/60">/mo</span>
+                      </span>
+                      <span className="mt-1 block text-xs text-navy/50">Cancel anytime</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={isYearly}
+                      onClick={() => setIsYearly(true)}
+                      className={`relative rounded-xl border-2 p-4 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-peach-start focus-visible:ring-offset-2 ${
+                        isYearly
+                          ? "border-navy bg-navy/5"
+                          : "border-navy/10 hover:border-navy/30 bg-white"
+                      }`}
+                    >
+                      <span className="absolute -top-2 right-3 inline-flex items-center rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                        Save {yearlySavingsPercent}%
+                      </span>
+                      <span className="block text-xs font-semibold uppercase tracking-wider text-navy/50">
+                        Yearly
+                      </span>
+                      <span className="mt-1 flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-navy">${yearlyPrice}</span>
+                        <span className="text-sm text-navy/60">/yr</span>
+                      </span>
+                      <span className="mt-1 block text-xs text-navy/50">
+                        ${(yearlyPrice / 12).toFixed(2)}/mo billed annually
+                      </span>
+                    </button>
+                  </div>
+                </fieldset>
 
                 {/* Features */}
                 <ul className="mt-8 space-y-3 flex-1">
@@ -173,7 +188,7 @@ export default function PricingSection() {
                   className="mt-8 block w-full btn-peach text-center text-lg py-4"
                   priceId={isYearly ? YEARLY_PRICE_ID : MONTHLY_PRICE_ID}
                 >
-                  Start Protecting Today — Free for 7 Days
+                  Start Free Trial
                 </CheckoutButton>
 
                 <p className="mt-4 text-center text-sm text-navy/60 font-medium">
