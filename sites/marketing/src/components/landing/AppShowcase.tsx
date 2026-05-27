@@ -297,6 +297,41 @@ const appSections = [
     price: "$4.99",
     pricePeriod: "/month",
   },
+  {
+    id: "safestudy",
+    name: "SafeStudy",
+    tagline: "AI search for kids who actually want to learn.",
+    description:
+      "Kid-safe AI search and tutoring. Curious questions, real answers, no rabbit holes — with full parent visibility into every query.",
+    features: [
+      "AI search built for curiosity, not algorithms",
+      "Parent dashboard shows every search",
+      "Blocks aesthetic-browsing, self-image, and unsafe topics",
+      "Daily query limits per kid",
+    ],
+    href: "https://getsafestudy.com",
+    gradient: "from-cyan-500 to-blue-500",
+    price: "$4.99",
+    pricePeriod: "/month",
+  },
+  {
+    id: "safespark",
+    name: "SafeSpark",
+    tagline: "Teach kids to use AI well — not just use it.",
+    description:
+      "An AI training lab for kids: ask better questions, check answers, improve outputs, own the creative work. The supervised AI literacy tool every parent will wish they'd started with.",
+    features: [
+      "Coaches the ask → check → improve loop",
+      "Real projects: apps, images, automations, tiny businesses",
+      "Parent visibility into every prompt and project",
+      "Built for kids 9-15 who'll grow up with AI everywhere",
+    ],
+    href: "https://getsafespark.com",
+    gradient: "from-amber-500 to-orange-500",
+    price: "Coming soon",
+    pricePeriod: "",
+    isNew: true,
+  },
 ];
 
 export default function AppShowcase() {
@@ -533,6 +568,63 @@ export default function AppShowcase() {
                 </TabletMockup>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Also in the family: SafeStudy + SafeSpark — compact cards */}
+      <div id="more-apps" className="py-20 sm:py-24 bg-white scroll-mt-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-3">
+              Also in the family
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Two more apps for the parts of childhood that don&rsquo;t have an Apple Music
+              or a Project Gutenberg: search, and learning to use AI well.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 max-w-5xl mx-auto">
+            {appSections.slice(3).map((app) => (
+              <a
+                key={app.id}
+                id={app.id}
+                href={app.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative rounded-3xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all scroll-mt-20"
+              >
+                {app.isNew && (
+                  <span className="absolute top-4 right-4 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-700">
+                    New
+                  </span>
+                )}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-11 h-11 bg-gradient-to-br ${app.gradient} rounded-2xl flex items-center justify-center shadow-md`}>
+                    <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                      {app.id === "safestudy" ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                      ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+                      )}
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-navy text-xl">{app.name}</h3>
+                    <p className="text-sm text-gray-500">{app.price}{app.pricePeriod}</p>
+                  </div>
+                </div>
+                <p className="text-gray-700 font-medium mb-3">{app.tagline}</p>
+                <p className="text-sm text-gray-600 leading-relaxed mb-4">{app.description}</p>
+                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy group-hover:gap-2.5 transition-all">
+                  Learn more
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </span>
+              </a>
+            ))}
           </div>
         </div>
       </div>

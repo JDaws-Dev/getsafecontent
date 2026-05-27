@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Shield, Music, PlaySquare, Book, Search } from "lucide-react";
+import { Shield, Music, PlaySquare, Book, Search, Sparkles, Menu, X } from "lucide-react";
 import { ThemeToggle } from "../ThemeToggle";
 
 const apps = [
-  { name: "SafeTunes", href: "https://getsafetunes.com", icon: Music, color: "text-purple-600" },
-  { name: "SafeTube", href: "https://getsafetube.com", icon: PlaySquare, color: "text-red-500" },
-  { name: "SafeReads", href: "https://getsafereads.com", icon: Book, color: "text-emerald-600" },
-  { name: "SafeStudy", href: "https://getsafestudy.com", icon: Search, color: "text-cyan-600" },
+  { name: "SafeTunes", href: "https://getsafetunes.com", icon: Music, color: "text-purple-600", isNew: false },
+  { name: "SafeTube", href: "https://getsafetube.com", icon: PlaySquare, color: "text-red-500", isNew: false },
+  { name: "SafeReads", href: "https://getsafereads.com", icon: Book, color: "text-emerald-600", isNew: false },
+  { name: "SafeStudy", href: "https://getsafestudy.com", icon: Search, color: "text-cyan-600", isNew: false },
+  { name: "SafeSpark", href: "https://getsafespark.com", icon: Sparkles, color: "text-amber-600", isNew: true },
 ];
 
 export default function Header() {
@@ -62,6 +63,11 @@ export default function Header() {
                   >
                     <app.icon className="h-4 w-4" />
                     <span>{app.name}</span>
+                    {app.isNew && (
+                      <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                        NEW
+                      </span>
+                    )}
                   </a>
                   {index < apps.length - 1 && (
                     <span className="text-navy/30 mx-2">|</span>
@@ -78,7 +84,7 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Theme Toggle + CTA Button */}
+          {/* Theme Toggle + CTA Button + Hamburger (mobile) */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <a
@@ -87,8 +93,48 @@ export default function Header() {
             >
               Start Free Trial
             </a>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-navy hover:bg-navy/5 transition-colors"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile menu panel */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-navy/10 bg-cream/95 backdrop-blur-md">
+            <div className="py-3 space-y-1">
+              {apps.map((app) => (
+                <a
+                  key={app.name}
+                  href={app.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium ${app.color} hover:bg-navy/5 transition-colors`}
+                >
+                  <app.icon className="h-5 w-5" />
+                  <span>{app.name}</span>
+                  {app.isNew && (
+                    <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+                      NEW
+                    </span>
+                  )}
+                </a>
+              ))}
+              <Link
+                href="/blog"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium text-navy/80 hover:bg-navy/5 transition-colors"
+              >
+                <span>Blog</span>
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
     </header>
   );

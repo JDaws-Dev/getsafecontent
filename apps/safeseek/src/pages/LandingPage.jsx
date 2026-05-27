@@ -273,7 +273,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-2 sm:gap-4">
               <a
                 href="https://getsafefamily.com"
-                className="hidden sm:block text-gray-400 hover:text-gray-600 font-medium text-sm"
+                className="hidden sm:block text-gray-600 hover:text-blue-600 font-medium text-sm transition-colors"
               >
                 Safe Family
               </a>
@@ -281,8 +281,8 @@ export default function LandingPage() {
               <Link to="/login" className="text-gray-600 hover:text-gray-900 font-medium text-xs sm:text-sm">
                 Parent Login
               </Link>
-              <Link to="/search" className="text-gray-600 hover:text-gray-900 font-medium text-xs sm:text-sm hidden sm:block">
-                Kid Search
+              <Link to="/play" className="text-gray-600 hover:text-gray-900 font-medium text-xs sm:text-sm hidden sm:block">
+                Kid Login
               </Link>
               <Link
                 to="/signup"
@@ -342,7 +342,7 @@ export default function LandingPage() {
                   to="/signup"
                   className="w-full sm:w-auto bg-gradient-to-r from-[#F5A962] to-[#E88B6A] hover:from-[#f0a050] hover:to-[#e07d5a] text-white font-bold px-8 py-4 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all inline-flex items-center justify-center gap-2"
                 >
-                  Start Free for 7 Days — $4.99/mo after
+                  Start Free Trial
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <a
@@ -984,6 +984,22 @@ export default function LandingPage() {
               >
                 View Bundle
               </a>
+
+              {/* SafeSpark NEW callout — separate from bundle */}
+              <div className="mt-5 pt-5 border-t border-gray-200 text-center">
+                <a
+                  href="https://getsafespark.com"
+                  className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-[#1a1a2e] transition-colors"
+                >
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                    New
+                  </span>
+                  <span>
+                    Meet <strong>SafeSpark</strong> — the AI training lab for kids
+                  </span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -1092,7 +1108,7 @@ export default function LandingPage() {
               <a href="https://getsafefamily.com/privacy" className="hover:text-white transition">Privacy</a>
               <a href="https://getsafefamily.com/terms" className="hover:text-white transition">Terms</a>
               <Link to="/login" className="hover:text-white transition">Parent Login</Link>
-              <Link to="/search" className="hover:text-white transition">Kid Search</Link>
+              <Link to="/play" className="hover:text-white transition">Kid Login</Link>
               <a href="https://getsafefamily.com" className="hover:text-white transition">Safe Family</a>
             </div>
 

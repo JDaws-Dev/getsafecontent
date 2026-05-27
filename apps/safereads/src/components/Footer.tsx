@@ -1,10 +1,11 @@
 import Link from "next/link";
 
 const apps = [
-  { name: "SafeTunes", href: "https://getsafetunes.com" },
-  { name: "SafeTube", href: "https://getsafetube.com" },
-  { name: "SafeReads", href: "https://getsafereads.com" },
-  { name: "SafeStudy", href: "https://getsafestudy.com" },
+  { name: "SafeTunes", href: "https://getsafetunes.com", isNew: false },
+  { name: "SafeTube", href: "https://getsafetube.com", isNew: false },
+  { name: "SafeReads", href: "https://getsafereads.com", isNew: false },
+  { name: "SafeStudy", href: "https://getsafestudy.com", isNew: false },
+  { name: "SafeSpark", href: "https://getsafespark.com", isNew: true },
 ];
 
 const legalLinks = [
@@ -25,9 +26,14 @@ export function Footer() {
               href={app.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
               {app.name}
+              {app.isNew && (
+                <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a2e]">
+                  New
+                </span>
+              )}
             </a>
           ))}
         </div>

@@ -615,9 +615,7 @@ Full kid-facing reading platform:
 - [x] Kid request button (already built — verified Apr 6)
 
 ### Immediate
-- [ ] Register for FPEA Florida Homeschool Convention (May 21-23, 2026)
-  - See `docs/FPEA-2026-EXHIBITOR-GUIDE.md`
-  - Cost: $525-685 (Zone 3-1)
+- [x] ~~Register for FPEA Florida Homeschool Convention (May 21-23, 2026)~~ — **MISSED.** Event passed without registration. Largest single Florida homeschool-mom audience for the year. Plan a 2027 registration well in advance (FPEA exhibitor slots typically open in fall), or look for the next equivalent convention (Southeast Homeschool Expo Atlanta Jul 24-25 is already on the TODO list).
 
 ### Completed
 - [x] **Unified Auth** - JWT migration fully complete (Mar 27)

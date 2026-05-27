@@ -758,6 +758,24 @@ export default function Home() {
             <span className="line-through">$19.96/mo</span> → $9.99/mo · Save
             50%
           </p>
+
+          {/* SafeSpark NEW callout — separate from bundle, different economics */}
+          <div className="mt-6 pt-6 border-t border-white/20">
+            <a
+              href="https://getsafespark.com"
+              className="inline-flex items-center gap-2 text-sm text-white/90 hover:text-white transition-colors"
+            >
+              <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a2e]">
+                New
+              </span>
+              <span>
+                Meet <strong>SafeSpark</strong> — the AI training lab for kids
+              </span>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </a>
+          </div>
         </div>
       </section>
 

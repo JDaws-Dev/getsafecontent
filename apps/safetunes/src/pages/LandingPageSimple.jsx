@@ -81,17 +81,21 @@ function LandingPageSimple() {
             </Link>
 
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <Link to="/login" className="text-gray-600 hover:text-gray-900 font-medium text-xs sm:text-base whitespace-nowrap">
+              <Link to="/login" className="text-gray-700 hover:text-purple-700 font-medium text-xs sm:text-base whitespace-nowrap transition-colors">
                 Parent Login
               </Link>
-              <Link to="/kids" className="text-gray-600 hover:text-gray-900 font-medium text-xs sm:text-base whitespace-nowrap">
-                Kid Login
+              <Link
+                to="/kids"
+                className="hidden sm:inline-flex items-center gap-0.5 text-gray-500 hover:text-purple-600 font-medium text-xs whitespace-nowrap transition-colors"
+                title="Kid login"
+              >
+                Kids &rarr;
               </Link>
               <Link
                 to="/signup"
                 className="bg-purple-600 hover:bg-purple-700 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg font-semibold transition text-xs sm:text-base whitespace-nowrap"
               >
-                Try Free
+                Start Free Trial
               </Link>
             </div>
           </div>
@@ -114,8 +118,9 @@ function LandingPageSimple() {
                 </div>
 
                 {/* Headline */}
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                  The Apple Music Parental Dashboard <br className="hidden sm:block" />
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-6xl font-bold text-white mb-6 leading-tight">
+                  The Apple Music <br className="hidden sm:block" />
+                  Parental Dashboard <br className="hidden sm:block" />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">That Actually Works</span>
                 </h1>
 
@@ -138,7 +143,7 @@ function LandingPageSimple() {
                     to="/signup"
                     className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition shadow-lg shadow-purple-500/25"
                   >
-                    Get 7 Days Free — No Credit Card
+                    Start Free Trial
                   </Link>
                 </div>
 
@@ -904,7 +909,7 @@ function LandingPageSimple() {
                   to="/signup"
                   className="block w-full bg-white text-purple-600 hover:bg-gray-100 text-center py-4 rounded-xl font-bold text-lg transition"
                 >
-                  Get 7 Days Free
+                  Start Free Trial
                 </Link>
               </div>
             </div>
@@ -972,6 +977,10 @@ function LandingPageSimple() {
             <a href="https://getsafetube.com" className="hover:text-white transition">SafeTube</a>
             <a href="https://getsafereads.com" className="hover:text-white transition">SafeReads</a>
             <a href="https://getsafestudy.com" className="hover:text-white transition">SafeStudy</a>
+            <a href="https://getsafespark.com" className="inline-flex items-center gap-1.5 hover:text-white transition">
+              SafeSpark
+              <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#1a1a2e]">New</span>
+            </a>
             <a href="https://getsafefamily.com" className="hover:text-white transition">Safe Family</a>
           </div>
         </div>

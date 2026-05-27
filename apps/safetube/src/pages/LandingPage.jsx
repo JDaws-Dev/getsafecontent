@@ -79,7 +79,7 @@ export default function LandingPage() {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <a
                 href="https://getsafefamily.com"
-                className="hidden sm:block text-gray-400 hover:text-gray-600 font-medium text-xs sm:text-sm"
+                className="hidden sm:block text-gray-600 hover:text-red-500 font-medium text-xs sm:text-sm transition-colors"
               >
                 Safe Family
               </a>
@@ -154,9 +154,9 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-4">
                 <Link
                   to="/signup"
-                  className="w-full sm:w-auto bg-white hover:bg-gray-100 text-red-600 px-8 py-4 rounded-xl font-bold text-lg transition shadow-lg"
+                  className="w-full sm:w-auto bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white px-8 py-4 rounded-xl font-bold text-lg transition shadow-xl"
                 >
-                  Get 7 Days Free — No Credit Card
+                  Start Free Trial
                 </Link>
               </div>
 
@@ -1081,6 +1081,24 @@ export default function LandingPage() {
             <p className="text-xs text-white/70 mt-3">
               <span className="line-through">$19.96/mo</span> → $9.99/mo · Save 50%
             </p>
+
+            {/* SafeSpark NEW callout — separate from bundle */}
+            <div className="mt-6 pt-6 border-t border-white/20">
+              <a
+                href="https://getsafespark.com"
+                className="inline-flex items-center gap-2 text-sm text-white/90 hover:text-white transition-colors"
+              >
+                <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a2e]">
+                  New
+                </span>
+                <span>
+                  Meet <strong>SafeSpark</strong> — the AI training lab for kids
+                </span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -1101,6 +1119,10 @@ export default function LandingPage() {
             </a>
             <a href="https://getsafestudy.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeStudy
+            </a>
+            <a href="https://getsafespark.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-white/70 hover:text-white transition-colors">
+              SafeSpark
+              <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a2e]">New</span>
             </a>
           </div>
 
