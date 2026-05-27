@@ -20,9 +20,24 @@ const MAX_RETRIES = 3;
 const INITIAL_DELAY_MS = 1000;
 const PROVISION_TIMEOUT_MS = 5000;
 
-// Valid app names
-export type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
+// Valid app names — includes safespark as of the SafeSpark merge.
+export type AppName =
+  | "safetunes"
+  | "safetube"
+  | "safereads"
+  | "safestudy"
+  | "safespark";
+
+// Base apps included in the $9.99 family bundle. SafeSpark intentionally
+// excluded — different economics (variable per-turn cost) and sold only
+// in the separate "Family + Spark" tier. Spreading this into provisioning
+// defaults won't accidentally grant SafeSpark.
 export const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
+
+// Full app universe including SafeSpark. Use when iterating over every
+// app for entitlement reconciliation (downgrade revoke loops, admin
+// dashboards), NOT for default-grant operations.
+export const ALL_APPS_WITH_SPARK: AppName[] = [...ALL_APPS, "safespark"];
 
 // App admin endpoint URLs
 const APP_ENDPOINTS: Record<AppName, string> = {
@@ -30,7 +45,19 @@ const APP_ENDPOINTS: Record<AppName, string> = {
   safetube: "https://rightful-rabbit-333.convex.site",
   safereads: "https://exuberant-puffin-838.convex.site",
   safestudy: "https://strong-scorpion-227.convex.site",
+  safespark: "https://giddy-peacock-124.convex.site",
 };
+
+// SafeSpark uses a different admin key from the shared family ADMIN_API_KEY
+// (the AGENTS.md doc says they should match — they don't currently). Until
+// the keys are rotated to align, Marketing falls back to a SafeSpark-specific
+// env var. When SAFESPARK_ADMIN_KEY is unset, falls back to ADMIN_API_KEY
+// (so the rotate-to-align future just works without code changes).
+const SAFESPARK_KEY = process.env.SAFESPARK_ADMIN_KEY;
+function adminKeyFor(app: AppName): string | undefined {
+  if (app === "safespark" && SAFESPARK_KEY) return SAFESPARK_KEY;
+  return ADMIN_KEY;
+}
 
 // Central auth endpoint (Marketing site)
 const CENTRAL_AUTH_ENDPOINT = "https://adamant-crow-705.convex.site";
@@ -165,11 +192,16 @@ async function provisionUserToApp(
     entitledToThisApp?: boolean;
   } = {}
 ): Promise<void> {
-  if (!ADMIN_KEY) {
-    throw new Error("ADMIN_API_KEY not configured");
+  const key = adminKeyFor(app);
+  if (!key) {
+    throw new Error(
+      app === "safespark"
+        ? "Neither SAFESPARK_ADMIN_KEY nor ADMIN_API_KEY configured"
+        : "ADMIN_API_KEY not configured",
+    );
   }
 
-  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const encodedKey = encodeURIComponent(key);
   const endpoint = APP_ENDPOINTS[app];
   const url = `${endpoint}/provisionUser?key=${encodedKey}`;
 
@@ -215,12 +247,17 @@ async function grantSingleAppAccessLegacy(
   app: AppName,
   status: "active" | "lifetime" | "inactive" = "active"
 ): Promise<void> {
-  if (!ADMIN_KEY) {
-    throw new Error("ADMIN_API_KEY not configured");
+  const key = adminKeyFor(app);
+  if (!key) {
+    throw new Error(
+      app === "safespark"
+        ? "Neither SAFESPARK_ADMIN_KEY nor ADMIN_API_KEY configured"
+        : "ADMIN_API_KEY not configured",
+    );
   }
 
   const encodedEmail = encodeURIComponent(email);
-  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const encodedKey = encodeURIComponent(key);
   const endpoint = APP_ENDPOINTS[app];
 
   // Map "inactive" to "expired" for the legacy endpoint

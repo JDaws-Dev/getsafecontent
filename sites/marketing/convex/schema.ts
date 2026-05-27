@@ -58,7 +58,8 @@ export default defineSchema({
           v.literal("safetunes"),
           v.literal("safetube"),
           v.literal("safereads"),
-          v.literal("safestudy")
+          v.literal("safestudy"),
+          v.literal("safespark")
         )
       )
     ),
@@ -70,6 +71,7 @@ export default defineSchema({
         safetube: v.optional(v.boolean()),
         safereads: v.optional(v.boolean()),
         safestudy: v.optional(v.boolean()),
+        safespark: v.optional(v.boolean()),
       })
     ),
 
@@ -91,7 +93,8 @@ export default defineSchema({
         v.literal("safetunes"),
         v.literal("safetube"),
         v.literal("safereads"),
-        v.literal("safestudy")
+        v.literal("safestudy"),
+        v.literal("safespark")
       )
     ), // Which app they originally subscribed to
     migratedAt: v.optional(v.number()), // When they were migrated to central accounts
@@ -103,14 +106,39 @@ export default defineSchema({
         safetube: v.optional(v.number()),
         safereads: v.optional(v.number()),
         safestudy: v.optional(v.number()),
+        safespark: v.optional(v.number()),
       })
     ),
+
+    // Unified family code shared across all 4 apps. Source of truth for
+    // kid-login codes. Apps sync to this value during provisioning.
+    familyCode: v.optional(v.string()),
   })
     .index("email", ["email"]) // Required by Convex Auth
     .index("phone", ["phone"]) // Required by Convex Auth
     .index("by_stripe_customer_id", ["stripeCustomerId"])
     .index("by_stripe_subscription_id", ["stripeSubscriptionId"])
     .index("by_subscription_status", ["subscriptionStatus"]),
+
+  // Unified kid profiles — foundation for syncing kid metadata across all 4 apps.
+  // Apps currently each store their own kid records; this table becomes the source
+  // of truth. Each app's provisioning flow will eventually read from here and mirror
+  // locally (matching the auth + familyCode pattern).
+  kids: defineTable({
+    parentUserId: v.id("users"),
+    name: v.string(),
+    age: v.optional(v.number()),
+    color: v.optional(v.string()), // Avatar color (red/blue/green/purple/orange/pink/teal/yellow/etc.)
+    avatarIcon: v.optional(v.string()), // Emoji or icon key to render
+    // Optional 4-digit PIN (hashed) for profile pick flow
+    pinHash: v.optional(v.string()),
+    // Soft-deleted flag so deletions propagate across apps without data loss
+    archived: v.optional(v.boolean()),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_parent", ["parentUserId"])
+    .index("by_parent_and_archived", ["parentUserId", "archived"]),
 
   // Coupon codes for lifetime access or extended trials
   couponCodes: defineTable({
@@ -122,7 +150,8 @@ export default defineSchema({
           v.literal("safetunes"),
           v.literal("safetube"),
           v.literal("safereads"),
-          v.literal("safestudy")
+          v.literal("safestudy"),
+          v.literal("safespark")
         )
       )
     ), // Which apps this code grants access to (null = all apps)
@@ -196,7 +225,8 @@ export default defineSchema({
       v.literal("safetunes"),
       v.literal("safetube"),
       v.literal("safereads"),
-      v.literal("safestudy")
+      v.literal("safestudy"),
+      v.literal("safespark")
     ),
     lastSyncedAt: v.number(), // When we last synced to this app
     syncStatus: v.union(
@@ -218,7 +248,8 @@ export default defineSchema({
       v.literal("safetunes"),
       v.literal("safetube"),
       v.literal("safereads"),
-      v.literal("safestudy")
+      v.literal("safestudy"),
+      v.literal("safespark")
     ),
     expiredCount: v.number(),
     expiredEmails: v.array(v.string()),

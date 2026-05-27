@@ -9,6 +9,13 @@ import { logWebhookEvent, type WebhookEventType, type WebhookStatus } from "@/li
 // Admin key for authenticating with app admin endpoints
 // Must be set in Vercel env vars - same key used across all Convex deployments
 const ADMIN_KEY = process.env.ADMIN_API_KEY;
+// SafeSpark's admin key is currently distinct from the shared family key.
+// Falls back to ADMIN_API_KEY when unset so a future key rotation just works.
+const SAFESPARK_ADMIN_KEY = process.env.SAFESPARK_ADMIN_KEY;
+function adminKeyFor(app: AppName): string | undefined {
+  if (app === "safespark" && SAFESPARK_ADMIN_KEY) return SAFESPARK_ADMIN_KEY;
+  return ADMIN_KEY;
+}
 
 if (!ADMIN_KEY) {
   console.warn("ADMIN_API_KEY not set - bundle provisioning will fail");
@@ -56,9 +63,21 @@ async function withRetry<T>(
   };
 }
 
-// Valid app names
-type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
+// Valid app names — includes safespark as of the SafeSpark merge.
+type AppName =
+  | "safetunes"
+  | "safetube"
+  | "safereads"
+  | "safestudy"
+  | "safespark";
+// Base apps in the $9.99 family bundle. SafeSpark excluded — different
+// economics (variable per-turn OpenAI cost), sold only in the separate
+// "Family + Spark" tier. Used as the legacy-bundle default below.
 const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
+// Full app universe for input validation (parseAppsFromMetadata). A Stripe
+// session that explicitly lists `apps: "safespark"` in metadata IS allowed
+// to provision SafeSpark — but no implicit/default code path provisions it.
+const ALL_APPS_WITH_SPARK: AppName[] = [...ALL_APPS, "safespark"];
 
 // App admin endpoint URLs
 const APP_ENDPOINTS: Record<AppName, string> = {
@@ -66,24 +85,26 @@ const APP_ENDPOINTS: Record<AppName, string> = {
   safetube: "https://rightful-rabbit-333.convex.site",
   safereads: "https://exuberant-puffin-838.convex.site",
   safestudy: "https://strong-scorpion-227.convex.site",
+  safespark: "https://giddy-peacock-124.convex.site",
 };
 
 // Marketing central auth endpoint URL
 const MARKETING_ENDPOINT = "https://adamant-crow-705.convex.site";
 
-// Parse apps from metadata (comma-separated string or undefined for legacy bundles)
+// Parse apps from metadata (comma-separated string or undefined for legacy bundles).
+// Validation accepts all 5 apps including safespark; legacy fallback returns the
+// original 4-app bundle only (never silently grants SafeSpark).
 function parseAppsFromMetadata(metadata: Stripe.Metadata | null): AppName[] {
   if (!metadata?.apps) {
-    // Legacy bundles without apps metadata get all apps
     return ALL_APPS;
   }
   const apps = metadata.apps.split(",").filter((app) =>
-    ALL_APPS.includes(app as AppName)
+    ALL_APPS_WITH_SPARK.includes(app as AppName)
   ) as AppName[];
   return apps.length > 0 ? apps : ALL_APPS;
 }
 
-// Central user data structure from SafeReads
+// Central user data structure from Marketing Central
 // Now includes authProvider to distinguish password vs OAuth users
 interface CentralUserData {
   exists: boolean;
@@ -94,12 +115,13 @@ interface CentralUserData {
   subscriptionStatus?: string;
   stripeCustomerId?: string;
   subscriptionId?: string;
-  authProvider?: "password" | "google" | "unknown"; // NEW: indicates how user signed up
+  authProvider?: "password" | "google" | "unknown"; // indicates how user signed up
+  familyCode?: string | null; // unified family code, shared across all 4 apps
 }
 
 /**
- * Fetch central user data from SafeReads' centralUsers table.
- * This is used to get the password hash for provisioning to apps.
+ * Fetch central user data from Marketing Central's users table.
+ * This is used to get the password hash and familyCode for provisioning to apps.
  */
 async function getCentralUser(email: string): Promise<CentralUserData | null> {
   if (!ADMIN_KEY) {
@@ -109,7 +131,7 @@ async function getCentralUser(email: string): Promise<CentralUserData | null> {
 
   const encodedEmail = encodeURIComponent(email);
   const encodedKey = encodeURIComponent(ADMIN_KEY);
-  const url = `${APP_ENDPOINTS.safereads}/getCentralUser?email=${encodedEmail}&key=${encodedKey}`;
+  const url = `${MARKETING_ENDPOINT}/getCentralUser?email=${encodedEmail}&key=${encodedKey}`;
 
   try {
     const response = await fetchWithTimeout(url, {}, PROVISION_TIMEOUT_MS);
@@ -131,6 +153,7 @@ type AppProvisionResult = {
   success: boolean;
   error?: string;
   attempts?: number;
+  familyCode?: string | null;
 };
 
 /**
@@ -313,14 +336,20 @@ async function provisionUserToApp(
     subscriptionStatus?: "trial" | "active" | "lifetime";
     stripeCustomerId?: string | null;
     subscriptionId?: string | null;
-    isOAuthUser?: boolean; // NEW: if true, skip authAccounts creation
+    isOAuthUser?: boolean; // if true, skip authAccounts creation
+    familyCode?: string | null; // unified family code; when set, apps sync to this value
   } = {}
-): Promise<void> {
-  if (!ADMIN_KEY) {
-    throw new Error("ADMIN_API_KEY not configured");
+): Promise<{ familyCode?: string | null }> {
+  const key = adminKeyFor(app);
+  if (!key) {
+    throw new Error(
+      app === "safespark"
+        ? "Neither SAFESPARK_ADMIN_KEY nor ADMIN_API_KEY configured"
+        : "ADMIN_API_KEY not configured",
+    );
   }
 
-  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const encodedKey = encodeURIComponent(key);
   const endpoint = APP_ENDPOINTS[app];
   const url = `${endpoint}/provisionUser?key=${encodedKey}`;
 
@@ -332,7 +361,8 @@ async function provisionUserToApp(
     entitledToThisApp: true,
     stripeCustomerId: options.stripeCustomerId || null,
     subscriptionId: options.subscriptionId || null,
-    isOAuthUser: options.isOAuthUser || false, // Pass flag to app
+    isOAuthUser: options.isOAuthUser || false,
+    ...(options.familyCode ? { familyCode: options.familyCode } : {}),
   };
 
   try {
@@ -350,6 +380,14 @@ async function provisionUserToApp(
       const responseBody = await response.text().catch(() => "");
       throw new Error(`HTTP ${response.status} - ${responseBody}`);
     }
+
+    // Capture familyCode from response so caller can sync it back to Marketing Central
+    try {
+      const data = await response.json() as { familyCode?: string | null };
+      return { familyCode: data.familyCode ?? null };
+    } catch {
+      return {};
+    }
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
       throw new Error(`Timeout after ${PROVISION_TIMEOUT_MS}ms`);
@@ -366,12 +404,17 @@ async function grantSingleAppAccessLegacy(
   app: AppName,
   status: "active" | "lifetime" = "active"
 ): Promise<void> {
-  if (!ADMIN_KEY) {
-    throw new Error("ADMIN_API_KEY not configured");
+  const key = adminKeyFor(app);
+  if (!key) {
+    throw new Error(
+      app === "safespark"
+        ? "Neither SAFESPARK_ADMIN_KEY nor ADMIN_API_KEY configured"
+        : "ADMIN_API_KEY not configured",
+    );
   }
 
   const encodedEmail = encodeURIComponent(email);
-  const encodedKey = encodeURIComponent(ADMIN_KEY);
+  const encodedKey = encodeURIComponent(key);
   const endpoint = APP_ENDPOINTS[app];
 
   // All apps use setSubscriptionStatus endpoint
@@ -493,6 +536,8 @@ async function grantAppAccess(
 
     // Use the new provisioning flow
     // For OAuth users, passwordHash will be null - apps should create user without authAccounts
+    const sharedFamilyCode = centralUser!.familyCode ?? null;
+
     const grantPromises = apps.map(async (app): Promise<AppProvisionResult> => {
       const result = await withRetry(
         () => provisionUserToApp(email, app, centralUser!.passwordHash || "", {
@@ -500,14 +545,14 @@ async function grantAppAccess(
           subscriptionStatus: status,
           stripeCustomerId: options?.stripeCustomerId,
           subscriptionId: options?.subscriptionId,
-          // Pass flag to indicate this is an OAuth user (no password auth needed)
           isOAuthUser: isOAuthUser,
+          familyCode: sharedFamilyCode,
         }),
         `provision ${app} for ${email}`
       );
 
       if (result.success) {
-        return { app, success: true };
+        return { app, success: true, familyCode: result.result.familyCode ?? null };
       } else {
         return {
           app,
@@ -524,6 +569,23 @@ async function grantAppAccess(
       if (!result.success) {
         errors.push(`${result.app}: ${result.error} (after ${result.attempts} attempts)`);
         failedApps.push(result);
+      }
+    }
+
+    // If Marketing Central didn't yet have a familyCode, capture one from the first
+    // successful app provisioning and persist it centrally so future provisions are idempotent.
+    if (!sharedFamilyCode) {
+      const learnedCode = results.find((r) => r.success && r.familyCode)?.familyCode ?? null;
+      if (learnedCode) {
+        try {
+          const syncUrl =
+            `${MARKETING_ENDPOINT}/syncFamilyCode?key=${encodeURIComponent(ADMIN_KEY!)}` +
+            `&email=${encodeURIComponent(email)}&code=${encodeURIComponent(learnedCode)}`;
+          await fetchWithTimeout(syncUrl, {}, PROVISION_TIMEOUT_MS);
+          console.log(`[grantAppAccess] Cached familyCode ${learnedCode} on Marketing Central for ${email}`);
+        } catch (err) {
+          console.warn(`[grantAppAccess] Failed to cache familyCode for ${email}:`, err);
+        }
       }
     }
 

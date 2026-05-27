@@ -12,9 +12,16 @@ import { getAuthUserId } from "./auth";
 
 // Constants
 const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+// Base apps — the original 4 that share the $9.99 bundle economics.
+// SafeSpark intentionally excluded: it has variable per-turn cost and is
+// sold in the separate "Family + Spark" tier. Any spread of ALL_APPS into
+// entitledApps would accidentally grant free SafeSpark access portfolio-wide.
 const ALL_APPS = ["safetunes", "safetube", "safereads", "safestudy"] as const;
+// Full app universe — includes SafeSpark. Use for validators that need to
+// accept safespark as a valid value, NOT for spread defaults.
+const ALL_APPS_WITH_SPARK = [...ALL_APPS, "safespark"] as const;
 
-type AppType = (typeof ALL_APPS)[number];
+type AppType = (typeof ALL_APPS_WITH_SPARK)[number];
 type SubscriptionStatus =
   | "trial"
   | "active"
@@ -24,12 +31,13 @@ type SubscriptionStatus =
   | "incomplete"
   | "expired";
 
-// App validator for reuse
+// App validator for reuse — accepts all 5 apps as input.
 const appValidator = v.union(
   v.literal("safetunes"),
   v.literal("safetube"),
   v.literal("safereads"),
-  v.literal("safestudy")
+  v.literal("safestudy"),
+  v.literal("safespark")
 );
 
 /**
@@ -250,6 +258,7 @@ export const getCurrentUser = query({
       billingInterval: user.billingInterval,
       createdAt: user.createdAt,
       lastLoginAt: user.lastLoginAt,
+      familyCode: user.familyCode ?? null,
     };
   },
 });
