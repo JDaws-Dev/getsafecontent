@@ -1,4 +1,4 @@
-import { Music, PlaySquare, BookOpen, Search, ExternalLink } from "lucide-react";
+import { Music, PlaySquare, BookOpen, Search, Sparkles, ExternalLink } from "lucide-react";
 
 const apps = [
   {
@@ -74,6 +74,25 @@ const apps = [
         question: "Why is the sky blue?",
         answer: "Sunlight has all the colors of the rainbow mixed together. When it hits the air, blue light bounces around the most because it travels in shorter waves. That's why when you look up, you see blue!",
         level: "Ages 8-10",
+      }
+    }
+  },
+  {
+    id: "safespark",
+    name: "SafeSpark",
+    tagline: "An AI maker for kids",
+    description: "Kids build real things by talking to Spark — games, flashcards, posters, photo edits, image generators, tools. Single-file projects they can share with grandma in one click. Ages 10-13.",
+    icon: Sparkles,
+    gradient: "from-violet-500 to-pink-500",
+    href: "https://getsafespark.com",
+    highlight: "AI-powered",
+    preview: {
+      type: "maker",
+      project: {
+        title: "Pokémon Battle Game",
+        author: "Built by Knox, age 10",
+        prompt: "make a pokemon battle game where pikachu fights bulbasaur",
+        result: "Playable game ✨",
       }
     }
   },
@@ -180,6 +199,25 @@ function SearchPreview({ query }: { query: { question: string; answer: string; l
   );
 }
 
+function MakerPreview({ project }: { project: { title: string; author: string; prompt: string; result: string } }) {
+  return (
+    <div className="bg-gradient-to-br from-violet-500 to-pink-500 rounded-xl p-4 text-white">
+      <p className="text-xs opacity-70 mb-3">A kid-built project</p>
+      <div className="bg-white/15 rounded-lg px-3 py-2 mb-2">
+        <p className="text-[10px] opacity-70 mb-0.5">Kid says</p>
+        <p className="text-xs font-medium">&ldquo;{project.prompt}&rdquo;</p>
+      </div>
+      <div className="bg-white rounded-lg px-3 py-2.5 shadow-sm">
+        <p className="text-xs font-semibold text-gray-900 truncate">{project.title}</p>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-[10px] text-gray-500">{project.author}</p>
+          <span className="text-[10px] font-semibold text-violet-600">{project.result}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AppCards() {
   return (
     <section id="apps" className="py-12 sm:py-16 bg-white">
@@ -187,7 +225,7 @@ export default function AppCards() {
         {/* Section header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold tracking-tight text-navy sm:text-4xl mb-4">
-            Four apps. One subscription.
+            Five apps. One subscription.
           </h2>
           <p className="text-lg text-navy/60 max-w-2xl mx-auto">
             Each one works with platforms your kids already use. You just control what they can access.
@@ -238,6 +276,9 @@ export default function AppCards() {
                 {app.preview.type === "search" && app.preview.query && (
                   <SearchPreview query={app.preview.query as { question: string; answer: string; level: string }} />
                 )}
+                {app.preview.type === "maker" && 'project' in app.preview && app.preview.project && (
+                  <MakerPreview project={app.preview.project as { title: string; author: string; prompt: string; result: string }} />
+                )}
               </div>
 
               {/* Link */}
@@ -260,7 +301,7 @@ export default function AppCards() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            All four included in Safe Family for $9.99/month
+            All five apps included in Safe Family for $14.99/month
           </div>
         </div>
       </div>

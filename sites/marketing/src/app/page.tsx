@@ -4,6 +4,7 @@ import StickyMobileCTA from "@/components/layout/StickyMobileCTA";
 import Hero from "@/components/landing/Hero";
 import ProblemSolutionSection from "@/components/landing/ProblemSolutionSection";
 import AppCards from "@/components/landing/AppCards";
+import SafeSparkSpotlight from "@/components/landing/SafeSparkSpotlight";
 import DemoSection from "@/components/demo/DemoSection";
 import Testimonials from "@/components/landing/Testimonials";
 import FAQSection from "@/components/landing/FAQSection";
@@ -21,8 +22,11 @@ export default function Home() {
         {/* 2. Problem - Why parents need this */}
         <ProblemSolutionSection />
 
-        {/* 3. Solution - The 4 apps (brief cards, not deep dives) */}
+        {/* 3. Solution - The 5 apps (brief cards, not deep dives) */}
         <AppCards />
+
+        {/* 3b. SafeSpark spotlight - the AI training lab is new and needs more room */}
+        <SafeSparkSpotlight />
 
         {/* 4. Try It - Live demos */}
         <DemoSection />

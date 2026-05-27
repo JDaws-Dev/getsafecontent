@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Music, PlaySquare, Book, Search, Shield } from "lucide-react";
+import { Music, PlaySquare, Book, Search, Shield, Sparkles } from "lucide-react";
 
-const rotatingWords = ["watching", "listening to", "reading", "searching"];
+const rotatingWords = ["watching", "listening to", "reading", "searching", "asking AI"];
 
 export default function Hero() {
   const [wordIndex, setWordIndex] = useState(0);
@@ -32,6 +32,7 @@ export default function Hero() {
               <span className="inline-block relative">
                 {/* Invisible text to reserve space for longest word */}
                 <span className="invisible" aria-hidden="true">listening to.</span>
+                {/* asking AI is shorter than listening to. — listening to reserves width */}
                 {/* Visible rotating text positioned on top */}
                 <span
                   className={`absolute left-0 top-0 text-transparent bg-clip-text bg-gradient-to-r from-peach-start to-peach-end transition-all duration-200 ${
@@ -65,11 +66,19 @@ export default function Hero() {
                 <Search className="w-5 h-5 text-cyan-600" />
                 Any Search
               </span>
+              <span className="inline-flex items-center gap-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-4 py-2 rounded-full font-medium text-gray-700 dark:text-gray-200 shadow-sm">
+                <Sparkles className="w-5 h-5 text-amber-600" />
+                AI for Kids
+                <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                  New
+                </span>
+              </span>
             </div>
 
             {/* Subheadline */}
             <p className="text-xl text-navy/70 mb-8 max-w-lg mx-auto lg:mx-0">
-              Your kids use real YouTube, real Apple Music, real books—but only the content you&apos;ve approved. Nothing slips through.
+              Your kids use real YouTube, real Apple Music, real books, real search,
+              and real AI&mdash;but only the content you&apos;ve approved. Nothing slips through.
             </p>
 
             {/* Price + CTA */}
@@ -78,11 +87,11 @@ export default function Hero() {
                 href="#pricing"
                 className="btn-peach inline-flex items-center justify-center text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all"
               >
-                Get All 4 Apps — $9.99/mo
+                Get All 5 Apps — $14.99/mo
               </a>
               <div className="text-sm text-navy/60">
-                <span className="line-through text-navy/40">$19.96</span>
-                <span className="ml-2 text-emerald-600 font-medium">Save 50%</span>
+                <span className="line-through text-navy/40">$19.99</span>
+                <span className="ml-2 text-emerald-600 font-medium">Less than Apple One Family</span>
               </div>
             </div>
 

@@ -34,17 +34,17 @@ export default function StickyMobileCTA() {
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-navy truncate">
-              Safe Family — $9.99/mo
+              Safe Family — $14.99/mo
             </p>
             <p className="text-xs text-navy/60">
-              All 4 apps • Save 50%
+              All 5 apps • 7-day free trial
             </p>
           </div>
           <a
             href="#pricing"
             className="btn-peach whitespace-nowrap text-sm px-5 py-2.5 flex-shrink-0"
           >
-            Get Started
+            Start Free Trial
           </a>
         </div>
       </div>
