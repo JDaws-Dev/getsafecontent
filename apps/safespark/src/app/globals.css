@@ -1,0 +1,37 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* SafeFamily palette tokens — kept identical to safetunes/safetube/
+   safereads/safestudy so cross-app visits feel like one product line.
+   Per-app accent is each app's signature (SafeTunes indigo, SafeTube
+   red, SafeReads emerald — SafeSpark is violet). */
+:root {
+  --safefamily-cream: #FDF8F3;
+  --safefamily-cream-dark: #F5EDE4;
+  --safefamily-navy: #1a1a2e;
+  --safefamily-navy-soft: #2d2d44;
+  --safespark-primary: #7c3aed;     /* violet-600 — SafeSpark accent */
+  --safespark-primary-dark: #6d28d9;
+  --safespark-primary-soft: #ede9fe; /* violet-100 surface tint */
+
+  --background: var(--safefamily-cream);
+  --foreground: var(--safefamily-navy);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-quicksand);
+  --animate-slide-in: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateY(100%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
