@@ -4,6 +4,12 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
+  // Federated-auth routes (Marketing Central JWT path) — public because
+  // auth happens client-side via AuthContext. Parallel to Clerk's
+  // /sign-in during the migration window.
+  '/login',
+  '/forgot-password',
+  '/reset-password',
   '/start',         // family-code entry — no Clerk identity needed
   '/make(.*)',      // SafeSpark maker
   '/s/(.*)',        // public project shares
