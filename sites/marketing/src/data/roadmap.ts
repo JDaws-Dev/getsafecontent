@@ -1023,17 +1023,16 @@ const P1: RoadmapItem[] = [
     title: "SafeSpark: kids 'lose all projects' when session token clears",
     app: "safespark",
     priority: "P0",
-    status: "open",
+    status: "done",
     source: "support-case",
     description:
-      "Jace's kids reported losing all their projects on 2026-05-28. Investigation: the projects are SAFE in prod (Knox has 15 active projects, 75 versions, none deleted). Root cause: Knox has 0 active kidSessions — when his localStorage token clears (browser cleanup, incognito mode, different device, etc.), /make's listMyProjects query has no sessionToken arg, falls back to ctx.auth.getUserIdentity() which returns nothing for a logged-out kid, returns []. Kid sees empty state and assumes their work is gone. Fix: (1) /make should detect missing session and immediately route to /start with a friendly 'pick your profile to see your projects again' message rather than showing empty state. (2) /start, after kid picks profile, should land them at /make WITH their existing projects visible. (3) Optionally surface session age in the parent dashboard so parents can see 'Knox's session was last active 8 hours ago — he'll need to re-enter your family code on his next visit'.",
+      "Jace's kids reported losing all their projects on 2026-05-28. Investigation: projects safe (Knox: 15 active, 75 versions, none deleted). Root cause: localStorage session clears (different device, browser cleanup, incognito) → /make falls into guest mode → listMyProjects returns [] → kid sees empty state. SHIPPED commit 4601acd8: unified kid route — /make renders inline <KidLoginGate /> when !hasIdentity (matches SafeTunes/SafeReads pattern). /start kept as thin wrapper redirecting through the gate for old bookmarks. Verified live on getsafespark.com.",
     refs: [
-      "apps/safespark/convex/safespark.ts (listMyProjects)",
-      "apps/safespark/src/app/make/page.tsx",
+      "apps/safespark/src/components/kid/KidLoginGate.tsx",
+      "apps/safespark/src/app/demo/DemoWorkbench.tsx",
       "apps/safespark/src/app/start/page.tsx",
     ],
-    notes:
-      "Same projects get rebuilt repeatedly — Knox's project list shows 'Poké Dash Runner' twice (04:02 UTC + 13:10 UTC), 'Summer Book Reading List' twice, etc. Pattern: kid loses session, rebuilds same project from same prompt, loses session again. Real frustration.",
+    updatedAt: "2026-05-28",
   },
   {
     id: "ops-env-local-prod-override",
