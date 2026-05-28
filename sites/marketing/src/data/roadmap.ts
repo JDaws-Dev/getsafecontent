@@ -478,6 +478,166 @@ const P1: RoadmapItem[] = [
     description:
       "Variable-cost product needs visibility into per-kid and per-family AI spend, blocked-topic frequency, image transform count, and failed-generation count. Parent dashboard should expose at least usage cap status.",
   },
+
+  // ===========================================================================
+  // SafeSpark parental oversight — added 2026-05-28 after Jeremiah asked:
+  // "if a kid builds a chat room or asks for a VPN, how does a parent stay aware?"
+  //
+  // SafeSpark's threat model is fundamentally different from the other 4 apps.
+  // Those are consumption — kid plays approved music. SafeSpark is PRODUCTION —
+  // kid creates artifacts that run code, persist data via spark.db (chat rooms,
+  // leaderboards, message walls), can be publicly shared via /s/[id] URLs to
+  // anyone with the link, and use AI image generation. The kid is effectively
+  // a "publisher with an audience" once any project is shared.
+  //
+  // Three threats the current parent dashboard doesn't cover well:
+  //   A. Kid builds chat room → friend pastes /s/xxx into a group chat →
+  //      strangers join. Spark.db message wall fills with content parent
+  //      never sees.
+  //   B. Kid asks SafeSpark to help bypass parental controls. "Make a VPN"
+  //      is obvious; non-obvious versions ("spoof my IP", "fake-homework-
+  //      page-that-lets-me-chat") might slip past a naive filter.
+  //   C. Hidden activity. Parent sees "X projects" count but not: actual
+  //      rendered output, who accessed each share URL, spark.db contents,
+  //      blocked-attempt history.
+  //
+  // SafeStudy already has the right pattern for most of this — intent
+  // classifier, kidConcernAlerts table, always-escalate categories, weekly
+  // parent digest. Many of these items are "port the SafeStudy machinery
+  // to SafeSpark's maker context."
+  // ===========================================================================
+
+  {
+    id: "safespark-oversight-bypass-block",
+    title: "SafeSpark: pre-filter block on parental-control-bypass prompts",
+    app: "safespark",
+    priority: "P0",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Before any prompt reaches the AI, regex/keyword filter for parental-control-bypass patterns: VPN, proxy, IP spoof, IP changer, hide activity, fake school page, fake homework, screen mirror to fool, bypass safe family. These don't proceed to AI at all — return a friendly redirect ('we can't help with that — talk to a parent if you want to know more'). Distinct from the intent classifier below, which handles nuanced/escalation cases. This is the hard block.",
+    notes:
+      "Mirrors SafeStudy's intent-classifier regex pre-filter for 'aesthetic-browsing' and 'self-image' patterns (apps/safestudy/convex/ai/intentClassifier.ts). Reuse that scaffolding.",
+  },
+
+  {
+    id: "safespark-oversight-intent-classifier",
+    title: "SafeSpark: intent classifier on every prompt (always-escalate categories)",
+    app: "safespark",
+    priority: "P0",
+    status: "open",
+    source: "session-todo",
+    description:
+      "GPT-classifier on every prompt that goes to the AI. Always-escalate categories: parental-control-bypass (subtle phrasings the regex misses), contact-with-strangers (chat apps, dating sims, public boards), personal-info-disclosure (forms collecting names/addresses), weapons, drugs, sexual content, self-harm. Stores intent + confidence + rationale on the prompt log. Strict mode blocks; moderate mode logs + parent-notifies; light mode logs only.",
+    notes:
+      "Port apps/safestudy/convex/ai/intentClassifier.ts. Tune categories for the maker context (different from a search-tutor context).",
+  },
+
+  {
+    id: "safespark-oversight-concern-alerts",
+    title: "SafeSpark: kidConcernAlerts table + parent email on escalation",
+    app: "safespark",
+    priority: "P0",
+    status: "open",
+    source: "session-todo",
+    description:
+      "When the intent classifier hits an always-escalate category, write to a kidConcernAlerts table (one row per incident, dedupe 24h on kidProfileId+prompt+category) AND email the parent immediately with the prompt, category, classifier rationale, and a link to the kid's profile in /parent. 988/help-line resources for self-harm/ED categories.",
+    refs: [
+      "apps/safestudy/convex/concernAlerts.ts (the pattern to port)",
+      "apps/safestudy/convex/concernAlertQueries.ts",
+    ],
+  },
+
+  {
+    id: "safespark-oversight-share-approval-gate",
+    title: "SafeSpark: pre-share parent approval gate (default-on for chat-shaped apps)",
+    app: "safespark",
+    priority: "P0",
+    status: "open",
+    source: "session-todo",
+    description:
+      "When a kid clicks Share on a project, the share URL doesn't go live until a parent approves. Default-on for apps detected as 'chat-shaped' (uses spark.db.append with text fields, shows form inputs to visitors, has 'message' or 'chat' or 'send' in markup). Parent toggle: 'I'll review every share' vs 'auto-approve, alert me'. The kid sees a friendly 'waiting for parent — usually under an hour' state.",
+    notes:
+      "Without this, the only thing standing between a kid building a public chat room and strangers using it is the kid's own judgment about who to share the URL with.",
+  },
+
+  {
+    id: "safespark-oversight-chat-shape-detector",
+    title: "SafeSpark: detect when a kid is building a chat/messaging app",
+    app: "safespark",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Static analysis on the generated HTML/JS + spark.db schema: flag projects that use spark.db.append on text fields, render visitor input back to other visitors, show input forms to non-creator users, or include 'chat', 'message', 'comment', 'forum' in markup. Feeds the share-approval-gate decision above and surfaces in the parent dashboard as a 'this is a messaging app — kids you don't know can talk here' label.",
+  },
+
+  {
+    id: "safespark-oversight-share-access-log",
+    title: "SafeSpark: log every fetch of /s/[id] (timestamp, IP, country)",
+    app: "safespark",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Currently /s/[id] serves the project HTML to anyone with the URL, no audit trail. Add a `shareAccessLog` table: row per fetch with timestamp, IP (hashed for storage), geo country (Vercel Edge geo header), referrer, user-agent fingerprint. Parent dashboard surfaces 'this share was opened 47 times today, mostly from 3 unique networks' + alerts on rapid distribution patterns (e.g., 'this share went from 0 to 200 opens in 10 minutes — looks like it was posted somewhere').",
+  },
+
+  {
+    id: "safespark-oversight-project-content-viewer",
+    title: "SafeSpark: parent dashboard shows actual project HTML + spark.db contents",
+    app: "safespark",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Today /parent/profile/[id] shows project metadata (name, timestamps, prompt). Add: a 'View what your kid built' button that renders the project's HTML in an iframe AND shows the spark.db rows (messages, leaderboard entries, anything kids have added). Parent sees the actual current state, not just 'a project exists'.",
+  },
+
+  {
+    id: "safespark-oversight-spark-db-moderation",
+    title: "SafeSpark: moderate spark.db writes (personal info, profanity, contact info)",
+    app: "safespark",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Every spark.db write goes through a moderation pass before persistence: regex for phone numbers, US addresses, full emails, social handles (@username, snap-username), profanity, URLs to unknown domains. Soft block in 'strict' mode (reject + show kid 'looks like that contained a phone number, try without'); tag in 'moderate' mode (save but surface to parent dashboard). Per-family strictness setting.",
+  },
+
+  {
+    id: "safespark-oversight-weekly-digest",
+    title: "SafeSpark: weekly parent digest (port SafeStudy's pattern)",
+    app: "safespark",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Sunday evening email summarizing the week per kid: projects created, total spark.db writes, top prompt intent categories, concerning-prompt count, share activity (URLs opened, peak access), blocked-prompt count, AI spend. Parents skim once a week instead of needing to check the dashboard daily. Opt-out toggle.",
+    refs: ["apps/safestudy/convex/weeklyDigest.ts (the pattern to port)"],
+  },
+
+  {
+    id: "safespark-oversight-generated-code-scanner",
+    title: "SafeSpark: scan AI-generated code for risky patterns before save",
+    app: "safespark",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Static analysis on every AI-generated project before it's saved: detect <iframe>, eval(), Function() constructor, document.cookie reads, fetch() to non-allowlisted domains, localStorage cross-origin patterns, navigator.geolocation. Block the obvious bypasses (eval, untrusted iframe sources); flag the suspect ones (geolocation, untrusted fetch domains) to parent. Maker still ships, just with a flag.",
+  },
+
+  {
+    id: "safespark-oversight-kill-switch",
+    title: "SafeSpark: per-project parent kill switch + share revocation",
+    app: "safespark",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Parent dashboard: each project has a 'Pause' button (project no longer loads in /make for the kid) and a 'Revoke share' button (/s/[id] returns 404 instead of the project). Both reversible. Necessary so a parent who sees something concerning in the weekly digest or live activity can stop it within 30 seconds without filing a support ticket.",
+  },
   {
     id: "failed-provision-safespark",
     title: "Add SafeSpark to failed-provision admin tools",
