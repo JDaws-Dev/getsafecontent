@@ -247,14 +247,20 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
   const [shareStatus, setShareStatus] = useState<string | null>(null);
 
   const { isSignedIn } = useUser();
-  // Lazy init avoids react-hooks/set-state-in-effect on mount.
-  // Reactive (setKidSessionToken) so the inline KidLoginGate can hand
-  // us a fresh token without a page reload — see the no-identity
-  // render path below.
-  const [kidSessionToken, setKidSessionToken] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('lumiKidSession');
-  });
+  // Defer all localStorage reads to a post-mount effect to avoid the
+  // hydration mismatch / flicker we hit 2026-05-28. Reading localStorage
+  // during render returns null on the server and the token on the client,
+  // which makes the very first paint switch between "gate" and "workbench"
+  // — exactly what Jace's kids reported as flickering. Now: render a
+  // small placeholder until mounted, then decide.
+  const [mounted, setMounted] = useState(false);
+  const [kidSessionToken, setKidSessionToken] = useState<string | null>(null);
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== 'undefined') {
+      setKidSessionToken(localStorage.getItem('lumiKidSession'));
+    }
+  }, []);
   const hasIdentity = Boolean(isSignedIn || kidSessionToken);
   const cloudProjects = useQuery(
     api.safespark.listMyProjects,
@@ -910,7 +916,20 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
     );
   }
 
-  // Kid-without-session lands here too. Render the inline family-code →
+  // SSR + first-paint placeholder. Avoids hydration mismatch: server
+  // can't know about Clerk session or localStorage token, so render a
+  // neutral placeholder and let the client decide on mount.
+  if (!mounted) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50">
+        <div className="text-sm font-bold uppercase tracking-widest text-violet-400">
+          SafeSpark
+        </div>
+      </main>
+    );
+  }
+
+  // Kid-without-session lands here. Render the inline family-code →
   // profile picker → PIN gate instead of an empty workbench. After the
   // kid completes the gate, onSession refreshes the local state and the
   // workbench renders below with their projects intact. Same UX pattern

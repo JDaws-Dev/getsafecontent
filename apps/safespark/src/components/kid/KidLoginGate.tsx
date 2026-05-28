@@ -96,12 +96,14 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
       <main className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="max-w-md w-full text-center space-y-8">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-widest text-violet-500">Welcome to</p>
-            <h1 className="text-6xl font-black tracking-tighter bg-gradient-to-br from-violet-600 via-pink-500 to-amber-500 bg-clip-text text-transparent">
-              SafeSpark
+            <p className="text-sm font-semibold uppercase tracking-widest text-violet-500">SafeSpark</p>
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mt-2">
+              Welcome back!
             </h1>
+            <p className="text-base text-slate-600 mt-3">
+              Type your family code to see your projects.
+            </p>
           </div>
-          <p className="text-slate-600">Type your family code to get in.</p>
           <form onSubmit={onSubmitCode} className="space-y-3">
             <CodeInput value={code} onChange={setCode} />
             {family === null && submitted && (
@@ -111,12 +113,14 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
             <button
               type="submit"
               disabled={code.length < 6}
-              className="w-full px-6 py-3 rounded-2xl bg-violet-500 text-white font-bold text-lg shadow-lg hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="w-full px-6 py-3 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 text-white font-bold text-lg shadow-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
-              Go →
+              Continue →
             </button>
           </form>
-          <p className="text-xs text-slate-400">No code? Ask the person who set up your family — they got one when they made their account.</p>
+          <p className="text-xs text-slate-400">
+            Ask your parent for the family code if you don&apos;t remember it.
+          </p>
         </div>
       </main>
     );
