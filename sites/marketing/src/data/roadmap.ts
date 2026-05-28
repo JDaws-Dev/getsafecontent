@@ -225,13 +225,15 @@ const P0: RoadmapItem[] = [
     id: "auth-password-reset-emails",
     title: "Fix password reset emails not sending",
     app: "marketing",
-    priority: "P0",
-    status: "in-progress",
+    priority: "P1",
+    status: "blocked",
     source: "beads",
     bead: "safecontent-ntm.2",
     description:
-      "Endpoint returns success but no email arrives. Triggered tonight when sending Michelle a reset code — Marketing returned 200 but unconfirmed delivery. Validate Resend integration in Marketing Central's /requestPasswordReset flow.",
+      "VERIFIED WORKING for the Marketing Central /requestPasswordReset flow. Resend delivery log confirms two emails to metrotter@gmail.com on 2026-05-27 (codes 722181 and 193284), both 'delivered' status. The bead may refer to a DIFFERENT email flow (e.g., per-app trial-expired notifications, or an older Convex Auth password reset). Need to identify which specific flow the bead is about before claiming fixed.",
+    blockedBy: "Unclear which email flow the bead refers to — needs Jeremiah/Codex clarification.",
     refs: ["sites/marketing/convex/passwordReset.ts", "sites/marketing/convex/emails.ts"],
+    updatedAt: "2026-05-27",
   },
 ];
 
