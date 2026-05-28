@@ -253,15 +253,30 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
   // which makes the very first paint switch between "gate" and "workbench"
   // — exactly what Jace's kids reported as flickering. Now: render a
   // small placeholder until mounted, then decide.
+  //
+  // Two persistent states stashed in localStorage:
+  //   lumiKidSession    — kid identity token (existing)
+  //   parentAsSelfFlag  — set when a Clerk-signed-in parent explicitly
+  //                       chose "use it as me" instead of picking a kid
+  //                       profile. Skips the gate on future visits until
+  //                       they sign out.
   const [mounted, setMounted] = useState(false);
   const [kidSessionToken, setKidSessionToken] = useState<string | null>(null);
+  const [parentAsSelf, setParentAsSelf] = useState(false);
   useEffect(() => {
     setMounted(true);
     if (typeof window !== 'undefined') {
       setKidSessionToken(localStorage.getItem('lumiKidSession'));
+      setParentAsSelf(localStorage.getItem('safespark_parent_as_self') === '1');
     }
   }, []);
+  // Workbench shows when ANY identity AND (kid session set, OR parent
+  // explicitly chose "use as me"). A Clerk-signed-in parent with no kid
+  // session and no parentAsSelf flag falls into the gate path instead —
+  // which is what Jeremiah wanted: don't drop a parent straight into an
+  // empty workbench without showing them the family-code option.
   const hasIdentity = Boolean(isSignedIn || kidSessionToken);
+  const shouldShowGate = !kidSessionToken && !parentAsSelf;
   const cloudProjects = useQuery(
     api.safespark.listMyProjects,
     hasIdentity ? { sessionToken: kidSessionToken ?? undefined } : 'skip',
@@ -929,15 +944,29 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
     );
   }
 
-  // Kid-without-session lands here. Render the inline family-code →
-  // profile picker → PIN gate instead of an empty workbench. After the
-  // kid completes the gate, onSession refreshes the local state and the
-  // workbench renders below with their projects intact. Same UX pattern
-  // as SafeTunes /play, SafeReads /read — one route handles both states.
-  if (!hasIdentity) {
+  // Show the gate when there's no kid session AND the parent hasn't
+  // explicitly chosen "use as me." This catches both:
+  //   - Anonymous kids landing on /make (no auth at all)
+  //   - Clerk-signed-in parents who want to switch into a kid profile
+  //     (or just need a way to enter the family code)
+  //
+  // When isSignedIn, the gate offers an "I'll just use it as me" link
+  // that sets safespark_parent_as_self in localStorage and falls through
+  // to the workbench. The flag persists across visits until the parent
+  // signs out.
+  if (shouldShowGate) {
     return (
       <main className="flex min-h-screen flex-col bg-slate-50">
-        <KidLoginGate onSession={(token) => setKidSessionToken(token)} />
+        <KidLoginGate
+          onSession={(token) => setKidSessionToken(token)}
+          showParentSkip={isSignedIn}
+          onSkipAsParent={() => {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('safespark_parent_as_self', '1');
+            }
+            setParentAsSelf(true);
+          }}
+        />
       </main>
     );
   }
@@ -1015,6 +1044,27 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
               <Share2 className="h-4 w-4" />
               <span className="hidden sm:inline">Share</span>
             </button>
+            {/*
+             * Parent-in-"use as me" mode gets a quick switch back to a
+             * kid profile via the gate. Clears the parent flag, leaves
+             * Clerk session intact, lets DemoWorkbench fall back into
+             * the shouldShowGate branch on next render.
+             */}
+            {isSignedIn && parentAsSelf && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    localStorage.removeItem('safespark_parent_as_self');
+                  }
+                  setParentAsSelf(false);
+                }}
+                className={ACTION_BUTTON_CLASS}
+                title="Switch to a kid profile"
+              >
+                Use kid profile
+              </button>
+            )}
             {isSignedIn ? (
               <UserButton />
             ) : kidSessionToken ? (
