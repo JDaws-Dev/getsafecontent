@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useUser, UserButton } from '@clerk/nextjs';
 import { useMutation, useQuery } from 'convex/react';
-import { useEffect } from 'react';
 import { Copy, Plus, Users, Settings2, X, LogOut } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
@@ -32,16 +31,18 @@ export default function ParentDashboard() {
     : (marketing.user?.name ?? marketing.user?.email?.split('@')[0] ?? 'Parent');
 
   const me = useQuery(api.users.getCurrent, isSignedIn ? {} : 'skip');
-  const upsertMe = useMutation(api.users.upsertFromClerk);
 
-  // upsertFromClerk only applies to Clerk-authed users; federated users
-  // already have their SafeSpark row (provisioned via /provisionUser during
-  // the May 27 backfill or live signup webhook).
-  useEffect(() => {
-    if (isClerkAuth && me === null) {
-      void upsertMe({ displayName });
-    }
-  }, [isClerkAuth, me, upsertMe, displayName]);
+  // NO auto-upsert useEffect here. The earlier version (commit 3f30fa63)
+  // called upsertFromClerk when me === null, but `displayName` was in the
+  // deps array and gets recomputed every render (Clerk's useUser returns
+  // new object refs on re-render, marketing context updates, etc.), so
+  // the mutation fired → re-render → fired again → infinite loop. Caught
+  // 2026-05-28 when Jeremiah reported /parent flickering and "going
+  // crazy." Every user who reaches this page has already been provisioned
+  // (3 Clerk originals, 23 backfilled lifetimes, and any new signup via
+  // /provisionUser), so the auto-upsert was dead code anyway. If a user
+  // ever does need creation, that should happen in the signin/provisioning
+  // flow, not as a side effect of viewing the dashboard.
 
   const family = useQuery(api.safespark.listFamilyForParent, isSignedIn ? {} : 'skip');
   const usage = useQuery(api.safespark.getFamilyUsageThisMonth, isSignedIn ? {} : 'skip');
