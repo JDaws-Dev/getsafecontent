@@ -1019,6 +1019,38 @@ const P1: RoadmapItem[] = [
       "Parents who haven't viewed the dashboard in 14+ days get a 'here's what your kid has been doing' digest with: top approved content, top blocked attempts, time spent, any concern alerts that may have been missed. Re-anchors the value of the subscription + surfaces signals that didn't trigger an alert at the time but are worth knowing in aggregate.",
   },
   {
+    id: "safespark-kid-session-restore",
+    title: "SafeSpark: kids 'lose all projects' when session token clears",
+    app: "safespark",
+    priority: "P0",
+    status: "open",
+    source: "support-case",
+    description:
+      "Jace's kids reported losing all their projects on 2026-05-28. Investigation: the projects are SAFE in prod (Knox has 15 active projects, 75 versions, none deleted). Root cause: Knox has 0 active kidSessions — when his localStorage token clears (browser cleanup, incognito mode, different device, etc.), /make's listMyProjects query has no sessionToken arg, falls back to ctx.auth.getUserIdentity() which returns nothing for a logged-out kid, returns []. Kid sees empty state and assumes their work is gone. Fix: (1) /make should detect missing session and immediately route to /start with a friendly 'pick your profile to see your projects again' message rather than showing empty state. (2) /start, after kid picks profile, should land them at /make WITH their existing projects visible. (3) Optionally surface session age in the parent dashboard so parents can see 'Knox's session was last active 8 hours ago — he'll need to re-enter your family code on his next visit'.",
+    refs: [
+      "apps/safespark/convex/safespark.ts (listMyProjects)",
+      "apps/safespark/src/app/make/page.tsx",
+      "apps/safespark/src/app/start/page.tsx",
+    ],
+    notes:
+      "Same projects get rebuilt repeatedly — Knox's project list shows 'Poké Dash Runner' twice (04:02 UTC + 13:10 UTC), 'Summer Book Reading List' twice, etc. Pattern: kid loses session, rebuilds same project from same prompt, loses session again. Real frustration.",
+  },
+  {
+    id: "ops-env-local-prod-override",
+    title: "Fix .env.local silently routing CLI to dev (marketing + safespark)",
+    app: "monorepo",
+    priority: "P1",
+    status: "open",
+    source: "self-audit",
+    description:
+      "Both sites/marketing/.env.local and apps/safespark/.env.local set CONVEX_DEPLOYMENT=dev:... which silently overrides shell-set CONVEX_DEPLOYMENT=prod:... causing every `npx convex run` to hit dev when the developer thinks they're on prod. Wasted ~30 min combined this session chasing phantom 'duplicate accounts' and 'wrong project counts' issues that were just dev-vs-prod skew. Fix options: (1) rename .env.local to .env.development so CLI doesn't auto-load it; (2) add a wrapper script that requires explicit --prod or --dev flag; (3) standardize that prod ops always go through curl-to-HTTP-endpoints, never CLI. Same gotcha affects safetube + safereads + safetunes too — check those .env.locals.",
+    refs: [
+      "sites/marketing/.env.local",
+      "apps/safespark/.env.local",
+      "CLAUDE.md (the gotcha is documented but keeps biting anyway)",
+    ],
+  },
+  {
     id: "concern-co-parent-invite",
     title: "Co-parent / spouse read-only invite",
     app: "platform",
