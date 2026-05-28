@@ -37,6 +37,7 @@ import {
 import { VoiceButton } from '../../components/chat/VoiceButton';
 import { SpeakButton } from '../../components/chat/SpeakButton';
 import { injectSparkDb } from '../../lib/inject-spark-db';
+import { KidLoginGate } from '../../components/kid/KidLoginGate';
 
 type DemoMessage = {
   role: 'user' | 'assistant';
@@ -247,7 +248,10 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
 
   const { isSignedIn } = useUser();
   // Lazy init avoids react-hooks/set-state-in-effect on mount.
-  const [kidSessionToken] = useState<string | null>(() => {
+  // Reactive (setKidSessionToken) so the inline KidLoginGate can hand
+  // us a fresh token without a page reload — see the no-identity
+  // render path below.
+  const [kidSessionToken, setKidSessionToken] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('lumiKidSession');
   });
@@ -906,6 +910,19 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
     );
   }
 
+  // Kid-without-session lands here too. Render the inline family-code →
+  // profile picker → PIN gate instead of an empty workbench. After the
+  // kid completes the gate, onSession refreshes the local state and the
+  // workbench renders below with their projects intact. Same UX pattern
+  // as SafeTunes /play, SafeReads /read — one route handles both states.
+  if (!hasIdentity) {
+    return (
+      <main className="flex min-h-screen flex-col bg-slate-50">
+        <KidLoginGate onSession={(token) => setKidSessionToken(token)} />
+      </main>
+    );
+  }
+
   return (
     <main className="flex h-screen flex-col overflow-hidden bg-slate-100 text-slate-950">
       <header className="flex-none border-b border-slate-200 bg-white px-4 py-3">
@@ -1009,50 +1026,6 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
       {isSignedIn && (migrating || migrateResult) && (
         <div className="flex-none border-b border-emerald-200 bg-emerald-50 px-4 py-2 text-center text-xs font-bold text-emerald-900">
           {migrating ? `Auto-saving ${localGuestProjects.length} guest project${localGuestProjects.length === 1 ? '' : 's'} to your account…` : `✓ ${migrateResult}`}
-        </div>
-      )}
-
-      {/*
-       * "Where are my projects?" recovery banner.
-       *
-       * When a kid has no identity (no Clerk session AND no lumiKidSession
-       * in localStorage), /make silently falls into guest mode and hides
-       * any cloud projects they may have made before. Reported 2026-05-28
-       * by Jace — his kids built 15 projects, their session token cleared
-       * (different device, browser cleanup, etc.), they came back to /make
-       * and thought everything was gone. They rebuilt the same projects
-       * from scratch, then lost the session AGAIN.
-       *
-       * Their projects are SAFE — just hidden because listMyProjects can't
-       * tie the request to their kid profile. The recovery is one tap:
-       * back to /start, re-enter family code, pick profile → projects
-       * reappear under the same kid:<id> ownership.
-       *
-       * Show this banner only when:
-       * - User is not Clerk-signed-in (parent path)
-       * - AND has no kid session token (kid path)
-       * That's exactly the case where listMyProjects returns nothing
-       * AND the kid would otherwise see "Nothing here yet" with no clue.
-       */}
-      {!hasIdentity && (
-        <div className="flex-none border-b border-amber-300 bg-gradient-to-r from-amber-50 via-amber-50 to-pink-50 px-4 py-3">
-          <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 sm:flex-row">
-            <div className="text-center sm:text-left">
-              <p className="text-sm font-black text-amber-900">
-                Looking for your projects?
-              </p>
-              <p className="text-xs font-semibold text-amber-800">
-                Pick your profile to see everything you&apos;ve built before.
-                Your projects are saved — they just need to know it&apos;s you.
-              </p>
-            </div>
-            <a
-              href="/start"
-              className="inline-flex flex-none items-center gap-2 rounded-full bg-violet-600 px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-violet-700"
-            >
-              Pick my profile →
-            </a>
-          </div>
         </div>
       )}
 
