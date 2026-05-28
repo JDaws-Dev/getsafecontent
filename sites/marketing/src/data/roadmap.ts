@@ -638,6 +638,396 @@ const P1: RoadmapItem[] = [
     description:
       "Parent dashboard: each project has a 'Pause' button (project no longer loads in /make for the kid) and a 'Revoke share' button (/s/[id] returns 404 instead of the project). Both reversible. Necessary so a parent who sees something concerning in the weekly digest or live activity can stop it within 30 seconds without filing a support ticket.",
   },
+
+  // ===========================================================================
+  // Email / customer lifecycle — added 2026-05-28
+  //
+  // Triggered by tonight's chase of "password reset emails not sending" bead.
+  // The bead itself was a false alarm (Resend confirms delivery), but the
+  // dig surfaced that we don't have a clean picture of which lifecycle emails
+  // are wired across all 5 apps. The trial-expiration cron fix this morning
+  // for SafeStudy implies the others probably have gaps too.
+  // ===========================================================================
+
+  {
+    id: "email-welcome-per-app",
+    title: "Welcome email after signup (audit + standardize across 5 apps)",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Audit which apps actually send a welcome email post-signup. Standardize: branded per-app subject, links to setup guide for that app, 'next step' CTA. Consolidate to one Marketing-Central-sent email referencing the user's entitled apps rather than 5 separate ones (matches the trial-summary consolidation that landed Apr 13).",
+  },
+  {
+    id: "email-trial-expiring-warning",
+    title: "Trial-expiring 2-day warning across all 5 apps",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Each app has a trial-expiration cron now (SafeStudy fixed today, others likely have the same drift). Verify 2-day warning emails fire BEFORE expiration so users don't lose access without warning. Build on the trial-expiration audit bead (safecontent-veh).",
+    bead: "safecontent-veh",
+  },
+  {
+    id: "email-trial-expired-final",
+    title: "Trial-expired email + clear upgrade path",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "When trial expires, customer needs a single email with: 'your trial ended, here's the unified $14.99 plan, here's a one-click upgrade link.' Currently each app might send its own (or none). Should be one Marketing-Central email per user.",
+  },
+  {
+    id: "email-payment-failed",
+    title: "Payment failed → customer notification + update-card link",
+    app: "marketing",
+    priority: "P0",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Stripe webhook handles `invoice.payment_failed` server-side (marks subscription past_due) but customer notification + Stripe customer portal link to update card isn't verified. A silent payment failure → access revoked is the worst possible customer experience.",
+    refs: ["sites/marketing/src/app/api/stripe/webhook/route.ts"],
+  },
+  {
+    id: "email-cancellation-flow",
+    title: "Cancellation flow: capture reason + confirm + admin notify",
+    app: "marketing",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "On cancellation: free-text + checkbox (too expensive, didn't use enough, found alternative, technical issues, other). Customer confirmation email. Admin notification with reason summary. Currently the cancellation flow exists but reason capture + admin signal is partial.",
+    refs: ["apps/safetube/convex/emails.ts (sendCancellationReasonEmail exists — port pattern)"],
+  },
+
+  // ===========================================================================
+  // Operational safety — added 2026-05-28
+  //
+  // Triggered by the pattern of silent prod issues this session:
+  //   - SafeReads 50-day deploy outage (TS error masked)
+  //   - SafeTunes MusicKit JWT expired May 15, discovered May 20
+  //   - Marketing function-deploy staleness (internalMutation invisible)
+  //   - SafeStudy trial cron silently skipping 5 zombies for 52 days
+  //
+  // Pattern: things break, no one notices for days/weeks. Need infrastructure
+  // for "the system tells you when it breaks" instead of "you find out when
+  // a customer emails Jeremiah's support inbox."
+  // ===========================================================================
+
+  {
+    id: "ops-musickit-jwt-cron",
+    title: "Apple MusicKit JWT auto-rotation cron (or warn before expiry)",
+    app: "safetunes",
+    priority: "P0",
+    status: "open",
+    source: "self-audit",
+    description:
+      "Current rotation is manual every 180 days. Silently broke May 15, discovered May 20 = 5-day SafeTunes outage. Add cron: weekly check of token exp, email admin when < 30 days out. Stretch: auto-rotate using .p8 key (already in repo per CLAUDE.md). Manual rotation TODO is on 2026-10-15; this cron should be in place before then.",
+    notes: "Current expiry: 2026-11-17. CLAUDE.md already has a calendar reminder TODO for 2026-10-15.",
+  },
+  {
+    id: "ops-deploy-smoke-tests",
+    title: "Post-deploy smoke test chain (Convex + Vercel)",
+    app: "platform",
+    priority: "P0",
+    status: "open",
+    source: "self-audit",
+    description:
+      "Every Convex deploy runs a smoke test: hit 3-5 known HTTP endpoints, run a sample query, verify a sample mutation, FAIL the deploy if any return errors. Same for Vercel: hit / and /login and /account on each app, expect 200. Multiple silent deploy failures this session (SafeReads 50-day outage from TS error, marketing function-deploy staleness) would have been caught immediately.",
+  },
+  {
+    id: "ops-orphan-detection-all-apps",
+    title: "Port SafeTunes orphan detection to all other apps",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "self-audit",
+    description:
+      "Only SafeTunes has orphan detection + cleanup machinery (improved May 21 — caught a 1,086-row orphan pile). SafeTube/Reads/Study/Spark have the same data shape (parent-deletes-leaving-child-records) but no detection. Port findOrphanedRecords + checkAndAlertOrphans + cleanupOrphans HTTP endpoint to each.",
+    refs: [
+      "apps/safetunes/convex/orphanDetection.ts (the pattern to port)",
+      "apps/safetunes/convex/cleanupOrphans.ts",
+    ],
+  },
+  {
+    id: "ops-backup-restore-test",
+    title: "Quarterly Convex backup restore drill",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "self-audit",
+    description:
+      "Daily R2 backups run (per docs/CONVEX-BACKUP-SETUP.md), 30-day retention, alert on failure. Never tested restoration. Untested backup = no backup. Quarterly: pick most recent backup, restore to a sandbox Convex deployment, verify row counts match snapshot's `counts` block. Document the restore process for emergency use.",
+    refs: ["docs/CONVEX-BACKUP-SETUP.md"],
+  },
+  {
+    id: "ops-youtube-api-quota",
+    title: "Apply for YouTube Data API quota increase before scale",
+    app: "safetube",
+    priority: "P1",
+    status: "open",
+    source: "self-audit",
+    description:
+      "Current 10K units/day = 50-100 active daily users per CLAUDE.md (1 search = 100 units). At any meaningful Meta-traffic spend SafeTube will exhaust quota same-day. Apply via Google Cloud Console BEFORE flipping the affiliate seeding or Meta ads switch. Typical approval window: weeks.",
+    refs: ["apps/safetube/CLAUDE.md"],
+  },
+
+  // ===========================================================================
+  // Customer support / data tools — added 2026-05-28
+  //
+  // Triggered by the duplicate-account false alarm tonight + the documented
+  // Chad Watson / Jolene Bryan support cases (bead safecontent-dlf). Currently
+  // all customer-support edge cases are handled by Jeremiah manually via
+  // Convex CLI or Stripe dashboard. Doesn't scale, and CLI mistakes (like
+  // tonight's "I thought there were 2 records but it was dev vs prod") burn
+  // real time.
+  // ===========================================================================
+
+  {
+    id: "support-account-merge-tool",
+    title: "Admin tool: merge duplicate user accounts",
+    app: "marketing",
+    priority: "P1",
+    status: "open",
+    source: "support-case",
+    description:
+      "Chad Watson / Jolene Bryan duplicate-customer cases burned support time. Build admin UI: 'merge user X into user Y' — transfers entitledApps (union), Stripe subscriptions (latest wins), kid profiles, audit-logs the merge, marks X as deleted. Currently this is manual Convex CLI + Stripe dashboard work prone to mistakes.",
+    notes: "Related to bead safecontent-dlf (Signup & Billing Bug Fixes epic).",
+  },
+  {
+    id: "support-stripe-duplicate-automation",
+    title: "Automate Stripe duplicate-customer detection + cleanup",
+    app: "marketing",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "scripts/stripe-cleanup.ts exists but is manual. Run on a daily schedule (cron via GitHub Actions, same as the backup cron), surface dupes on admin dashboard, auto-archive obvious cases (same email + same name + one has no active subscription).",
+    refs: ["scripts/stripe-cleanup.ts", "docs/STRIPE-DUPLICATE-CLEANUP.md"],
+  },
+  {
+    id: "support-refund-tooling",
+    title: "Admin tool: refund + Stripe proration",
+    app: "marketing",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "When a customer cancels mid-cycle, asks for partial refund, or pauses billing, today it's manual Stripe-dashboard work. Build a refund / pause / proration admin UI that audit-logs and surfaces in the customer's profile.",
+  },
+  {
+    id: "support-gdpr-delete",
+    title: "GDPR / CCPA: end-to-end delete-my-account across all 5 apps + Marketing + Stripe",
+    app: "platform",
+    priority: "P2",
+    status: "open",
+    source: "self-audit",
+    description:
+      "A 'delete my account' flow exists for some apps (SafeTunes TWA work mentioned in CLAUDE.md) but end-to-end deletion across Marketing Central, all 5 app databases, AND Stripe customer record is not verified. Required for EU traffic + good-citizen reasons. Should produce a downloadable data export before deletion.",
+  },
+
+  // ===========================================================================
+  // Growth infrastructure — added 2026-05-28
+  // ===========================================================================
+
+  {
+    id: "growth-meta-pixel",
+    title: "Meta Pixel + Conversions API on each app's landing page",
+    app: "platform",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Per docs/MARKETING-STRATEGY-2026-05.md: each app has its own landing page on its own domain (getsafetunes.com etc.). For Meta ads to optimize toward conversions, every app LP needs Pixel + Conversions API installed, tracking the same event taxonomy (PageView, Lead, Subscribe). Currently 0/5 have it.",
+    refs: ["docs/MARKETING-STRATEGY-2026-05.md"],
+  },
+  {
+    id: "growth-affiliate-program",
+    title: "Affiliate program infrastructure (tracking, payouts, partner dashboard)",
+    app: "marketing",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "May 6 marketing strategy: seed ~10 Christian/homeschool mom creators at 30% recurring. Need: per-partner UTM tracking, attribution to Stripe customer, payout automation (Stripe Connect or Rewardful/FirstPromoter), dashboard for partners to see their referrals + commissions. Without this the affiliate strategy can't ship.",
+  },
+  {
+    id: "growth-onboarding-drip",
+    title: "Onboarding email drip per app (Day 0/1/3/6)",
+    app: "platform",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Day 0 welcome, Day 1 'set up your first kid?', Day 3 'approve some content together', Day 6 'trial ends tomorrow.' Per app's setup flow specifics. Combined with the unified trial-expiring email above, gives a real onboarding sequence rather than 'sign up → silence → trial expires'.",
+  },
+
+  // ===========================================================================
+  // Parental concerns — added 2026-05-28
+  //
+  // Jeremiah asked: "what other gaps do we have that could be parental
+  // concerns?" Mapped systematically across: identity/privacy, cross-app
+  // signals, time/attention, devices/auth, bypass detection, content drift,
+  // parent engagement.
+  //
+  // Distinct from the safespark-oversight-* group (which is specific to the
+  // maker product). These apply across the suite and are concerns parents
+  // would name if asked: "what could go wrong that I wouldn't know about?"
+  // ===========================================================================
+
+  {
+    id: "concern-family-code-leak-detection",
+    title: "Family code leak detection + force regen",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Same family code used from many distinct IPs/devices in a short window = leak (kid shared with friend, posted on social, school device farm). Detect: > 5 unique IPs / 24h or > 3 new device fingerprints / 7d. Parent alert + dashboard prompt to rotate the family code with one click. Without this, a leaked code lets anyone pose as a kid in the family on any of the 5 apps.",
+  },
+  {
+    id: "concern-kid-photo-upload-block",
+    title: "Block kid uploading their own face into AI image generation",
+    app: "safespark",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "SafeSpark's image generation (gpt-image-1.5) can accept input images for transforms. Kid uploading their own face → AI generates variants → those variants get shared via /s/[id] or saved as project artifacts. Add face-detection on image uploads (Apple/MS Vision API or open-source); refuse uploads containing identifiable faces under a configurable strictness, alert parent. Adjacent: detect age in uploaded faces if possible to refuse minor-face inputs entirely.",
+  },
+  {
+    id: "concern-ai-fake-document-detection",
+    title: "Detect AI-generated fake documents (parental notes, school excuses, fake teacher emails)",
+    app: "safespark",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Kid uses AI maker to generate: 'note from mom excusing me from school,' 'fake email from teacher about a project,' 'fake school newsletter.' These don't trip the obvious bypass filter but are real misuse. Add to the intent classifier: 'forging-authority-figure-communication' category, always-escalate.",
+  },
+  {
+    id: "concern-romantic-content-guardrails",
+    title: "Romantic/relationship content guardrails for AI",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "AI helping kids write love letters, simulate dating, generate romantic dialogue/poetry, role-play relationships with chatbots. Particularly for the 10-13 cohort (SafeSpark target). Add 'romantic-or-relationship-content' intent category to SafeSpark + SafeStudy classifiers. Per-family strictness toggle (some parents may be OK with mild teen content, others not).",
+  },
+  {
+    id: "concern-cross-app-signal-correlation",
+    title: "Cross-app concern correlation (single alert from multi-app signals)",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Kid with flagged SafeStudy searches + concerning SafeSpark prompts + late-night SafeTube usage = stronger signal than any one alone. Today each app fires its own concern alert in isolation; parent gets 3 emails over a week and might dismiss each as minor. Marketing Central aggregates per-kid signals across apps + sends ONE 'here's a pattern worth knowing about' alert when multi-app indicators cross a threshold.",
+  },
+  {
+    id: "concern-cross-app-screen-time",
+    title: "Cross-app screen time + daily total cap per kid",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Each app tracks its own time (SafeTube watchDurationSeconds, SafeTunes dailyTimeLimitMinutes, SafeStudy dailyQueryBudget). No aggregate. Parent should see 'your kid spent 4 hours total across all 5 apps today' + be able to set a single daily total cap that applies cross-app (kid hits cap on SafeTube, can't switch to SafeTunes to keep going).",
+  },
+  {
+    id: "concern-late-night-activity-alerts",
+    title: "Late-night activity detection across all apps (extend SafeTunes pattern)",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "SafeTunes parent dashboard has 'late night' indicator (🌙 for 10pm-6am activity) per CLAUDE.md. Extend to all 5 apps + parent alert if late-night usage > N minutes in a week. Helpful signal for sleep quality + secret-after-bedtime device use.",
+  },
+  {
+    id: "concern-quiet-hours-enforcement",
+    title: "Per-kid quiet hours (apps go read-only or block)",
+    app: "platform",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Parent sets quiet hours per kid (e.g., 9pm-7am). During quiet hours: SafeSpark refuses new prompts, SafeTube blocks new videos, SafeTunes pauses, etc. Already-loaded content can finish but no new requests. Differentiated from daily cap — daily cap is total time; quiet hours is when-of-day.",
+  },
+  {
+    id: "concern-parent-mfa",
+    title: "Parent account MFA (TOTP)",
+    app: "marketing",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Parent login is currently password-only on Marketing Central. A kid figures out parent's password (sees them type, guesses, finds it written down) → kid logs in → grants themselves access to everything. TOTP via Authy/Google Authenticator/etc. Stretch: WebAuthn. Required given parent account holds the entitlement + billing.",
+  },
+  {
+    id: "concern-family-code-rotation-ui",
+    title: "Family code rotation UI in parent dashboard",
+    app: "platform",
+    priority: "P1",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Parent can rotate the family code from the dashboard if they suspect leak (or just on a schedule). Generates a new code, invalidates old kid sessions, surfaces the new code with a 'show your kids the new code' instruction. Pairs with concern-family-code-leak-detection above.",
+  },
+  {
+    id: "concern-device-awareness",
+    title: "Per-kid device list (last-seen, IP, geo)",
+    app: "platform",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Parent dashboard shows 'kid profile X was used from these devices: home iPad (yesterday), Mom's phone (Tuesday), unknown Chromebook (Friday — never seen before, San Diego IP).' Lets parent notice when something unexpected is happening — shared device at school, sleepover, leaked code being used elsewhere.",
+  },
+  {
+    id: "concern-clock-tampering",
+    title: "Time-zone / clock tampering detection",
+    app: "platform",
+    priority: "P3",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Kid changes device clock to extend daily time-limit budget (rolls clock forward → app thinks new day started → budget resets). Detect: server-side timestamp on every request, compare to client-reported time, flag sudden jumps. Server is the source of truth for the budget; client-clock is the bypass attempt.",
+  },
+  {
+    id: "concern-approved-content-drift",
+    title: "Periodic re-review of approved content (channel/book/song drift)",
+    app: "platform",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "An approved YouTube channel can pivot content style; an approved book series can add a mature volume; an Apple Music playlist can auto-update with new tracks. Re-run AI analysis on every approved item every 30 days. Flag changes — 'this channel approved 3 months ago now contains content rated differently'. Parent gets a 'review changes' email rather than a silent drift.",
+  },
+  {
+    id: "concern-dormant-parent-reengagement",
+    title: "Dormant parent re-engagement digest (14+ days no dashboard view)",
+    app: "marketing",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Parents who haven't viewed the dashboard in 14+ days get a 'here's what your kid has been doing' digest with: top approved content, top blocked attempts, time spent, any concern alerts that may have been missed. Re-anchors the value of the subscription + surfaces signals that didn't trigger an alert at the time but are worth knowing in aggregate.",
+  },
+  {
+    id: "concern-co-parent-invite",
+    title: "Co-parent / spouse read-only invite",
+    app: "platform",
+    priority: "P2",
+    status: "open",
+    source: "session-todo",
+    description:
+      "Today: parent account is one email/password. Both parents share credentials or only one knows what's going on. Add 'invite spouse' (read-only — sees dashboard, alerts, but can't approve content or change settings) OR 'invite co-parent' (full access). Critical for divorced/co-parenting situations and just for general spouse visibility.",
+  },
   {
     id: "failed-provision-safespark",
     title: "Add SafeSpark to failed-provision admin tools",
