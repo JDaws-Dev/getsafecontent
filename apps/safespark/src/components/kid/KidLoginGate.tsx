@@ -33,18 +33,7 @@ const COLOR_CLASSES: Record<string, string> = {
   rose: 'bg-rose-500',
 };
 
-export function KidLoginGate({
-  onSession,
-  showParentSkip,
-  onSkipAsParent,
-}: {
-  onSession?: (token: string) => void;
-  /** When true (Clerk-signed-in parent landed on /make), show a small
-   *  "Just use it as me" link below the family code form so the parent
-   *  can bypass the gate and use the workbench as themselves. */
-  showParentSkip?: boolean;
-  onSkipAsParent?: () => void;
-}) {
+export function KidLoginGate({ onSession }: { onSession?: (token: string) => void }) {
   const router = useRouter();
   const [code, setCode] = useState('');
   const [submitted, setSubmitted] = useState('');
@@ -132,17 +121,6 @@ export function KidLoginGate({
           <p className="text-xs text-slate-400">
             Ask your parent for the family code if you don&apos;t remember it.
           </p>
-          {showParentSkip && onSkipAsParent && (
-            <div className="pt-4 border-t border-slate-200">
-              <button
-                type="button"
-                onClick={onSkipAsParent}
-                className="text-sm text-slate-500 hover:text-slate-700 underline underline-offset-4"
-              >
-                I&apos;m a parent — just use it as me
-              </button>
-            </div>
-          )}
         </div>
       </main>
     );

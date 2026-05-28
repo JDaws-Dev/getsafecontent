@@ -81,9 +81,16 @@ export default function ParentDashboard() {
             <p className="text-sm text-slate-600">Signed in as {displayEmail}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Link href="/make" className="rounded-2xl bg-violet-600 px-4 py-2 text-sm font-black text-white hover:bg-violet-700">
-              Open SafeSpark →
-            </Link>
+            {/*
+             * NO "Open SafeSpark" button here. /parent is the admin
+             * surface — parents come here to manage kids + share the
+             * family code, NOT to use the maker. The maker (/make) is
+             * the KID surface. Matches the SafeTunes / SafeTube /
+             * SafeReads pattern where parent admin and kid app are
+             * cleanly separated. Parents who DO want to test the
+             * maker themselves get the small "Try the maker" link
+             * below in the kid-instructions block.
+             */}
             {isClerkAuth ? (
               <UserButton />
             ) : (
@@ -151,7 +158,7 @@ export default function ParentDashboard() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-violet-500">Family code</p>
-                <h2 className="text-lg font-black text-slate-900">Everyone in your family uses this to sign in on any device</h2>
+                <h2 className="text-lg font-black text-slate-900">Share this with your kids to let them in</h2>
               </div>
               {!code ? (
                 <button
@@ -190,14 +197,20 @@ export default function ParentDashboard() {
               )}
             </div>
             {code && (
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                On any device, open{' '}
-                <Link href="/start" className="font-bold text-violet-600 underline">
-                  getsafespark.com/start
-                </Link>{' '}
-                and enter <span className="font-mono font-black text-slate-900">{code}</span>. Pick a profile —
-                yours or a kid&apos;s — and every project saves under your family.
-              </p>
+              <>
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                  On your kid&apos;s device, open{' '}
+                  <span className="font-bold text-slate-900">getsafespark.com</span>{' '}
+                  and enter <span className="font-mono font-black text-slate-900">{code}</span>.
+                  They pick their profile and start building.
+                </p>
+                <p className="mt-2 text-xs text-slate-400">
+                  Want to try it yourself?{' '}
+                  <Link href="/make" className="font-bold text-violet-500 underline underline-offset-2 hover:text-violet-700">
+                    Open the maker as a parent →
+                  </Link>
+                </p>
+              </>
             )}
           </div>
         </section>
