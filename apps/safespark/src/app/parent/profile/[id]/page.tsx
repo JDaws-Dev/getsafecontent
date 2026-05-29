@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { use, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
-import { useUser } from '@clerk/nextjs';
 import { ChevronLeft, Database } from 'lucide-react';
 import { api } from '../../../../../convex/_generated/api';
 import type { Id } from '../../../../../convex/_generated/dataModel';
@@ -19,14 +18,15 @@ const COLOR_CLASSES: Record<string, string> = {
 
 export default function ProfileDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  // Dual-auth: Clerk (legacy) OR Marketing JWT (federated, the 23
-  // backfilled lifetime users). Mirrors the pattern in /parent/page.tsx.
-  const { isLoaded: clerkLoaded, isSignedIn: clerkSignedIn } = useUser();
+  // Marketing Central JWT only — Clerk retired 2026-05-28.
   const marketing = useMarketingAuth();
-  const isLoaded = clerkLoaded && !marketing.isLoading;
-  const isSignedIn = clerkSignedIn === true || marketing.isAuthenticated;
+  const isLoaded = !marketing.isLoading;
+  const isSignedIn = marketing.isAuthenticated;
   const profileId = id as Id<'kidProfiles'>;
-  const detail = useQuery(api.safespark.getProfileDetail, isSignedIn ? { profileId } : 'skip');
+  const detail = useQuery(
+    api.safespark.getProfileDetail,
+    isSignedIn ? { profileId, userToken: marketing.token ?? undefined } : 'skip',
+  );
 
   if (!isLoaded) {
     return <main className="flex min-h-screen items-center justify-center text-slate-500">Loading…</main>;

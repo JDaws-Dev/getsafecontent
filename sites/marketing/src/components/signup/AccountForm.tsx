@@ -191,14 +191,14 @@ export default function AccountForm({
             ? "Your code unlocks free access forever!"
             : isYearly
               ? "Save 17% with yearly billing"
-              : "7 days free — all 4 apps. No credit card required."}
+              : "7 days free — all 5 apps. No credit card required."}
         </p>
       </div>
 
       {/* Selected apps summary */}
       {selectedAppNames.length > 0 && (
         <div className="bg-cream rounded-xl p-4 mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-2">
               {selectedAppNames.map((name) => (
                 <span
@@ -209,7 +209,7 @@ export default function AccountForm({
                 </span>
               ))}
             </div>
-            <div className="text-right">
+            <div className="sm:text-right">
               <div className="text-lg font-bold text-navy">
                 {isYearly && yearlyPrice
                   ? `$${yearlyPrice}/year`

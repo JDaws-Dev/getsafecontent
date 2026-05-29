@@ -79,18 +79,21 @@ const P0: RoadmapItem[] = [
     id: "auth-clerk-retirement",
     title: "Retire Clerk from SafeSpark (dual-auth → federated only)",
     app: "safespark",
-    priority: "P1", // dropped from P0 — dual-auth migration shipped, retirement is cleanup
-    status: "open",
+    priority: "P1",
+    status: "done",
     source: "session-todo",
     description:
-      "Dual-auth (Clerk + Marketing JWT) is live as of 2026-05-27. Both existing Clerk users (jedaws, soonerjace) and the 23 backfilled lifetime users can authenticate. Retirement: drop ClerkProvider, delete /sign-in routes, refactor 7 src files that still import @clerk/nextjs, remove env vars. Defer until existing Clerk users have either migrated naturally or been emailed to do so.",
+      "DONE 2026-05-28. ClerkProvider dropped, /sign-in + /sign-up routes deleted (middleware redirects to /login), Clerk JWT provider removed from convex/auth.config.ts, @clerk/nextjs uninstalled. 11 src files refactored to Marketing Central JWT only. Jace's data verified safe via email-fallback path in getActor() before deploy. Vercel deployment bella-flm3ii5wm, Convex deployed to giddy-peacock-124. Clerk env vars still set on Vercel but unused (delete at leisure).",
     refs: [
       "apps/safespark/src/components/ConvexClientProvider.tsx",
       "apps/safespark/convex/auth.config.ts",
-      "apps/safespark/src/app/sign-in/",
-      "apps/safespark/src/app/sign-up/",
+      "apps/safespark/src/proxy.ts",
+      "apps/safespark/src/app/parent/page.tsx",
+      "apps/safespark/src/app/demo/DemoWorkbench.tsx",
+      "apps/safespark/src/app/api/demo/route.ts",
     ],
-    notes: "Task #14 in current session. Coordinated with safecontent-ntm.",
+    notes: "Pending follow-ups: drop unused Clerk env vars from Vercel; drop legacyClerkUserId column from users schema in a future cleanup.",
+    updatedAt: "2026-05-28",
   },
   {
     id: "parent-setup-dual-auth",
@@ -132,18 +135,21 @@ const P0: RoadmapItem[] = [
     title: "AppSelector + AccountForm + signup pages: 5-app model",
     app: "marketing",
     priority: "P0",
-    status: "open",
+    status: "done",
     source: "codex-audit",
     description:
-      "AppSelector still models only 4 apps and says 'All 4 apps'. AccountForm says '7 days free - all 4 apps'. Several signup/success/setup/account/admin pages default to 4 apps. Single-plan unified-pricing flow works ($14.99 grants all 5), but a customer entering via legacy single-app links still sees 4-app copy.",
+      "DONE 2026-05-28. Signup page now routes ALL entries through UnifiedPlanSummary when NEXT_PUBLIC_ENABLE_UNIFIED_PRICING=true (which it is on prod), regardless of ?app= query param — legacy AppSelector is now unreachable for new signups. Customer-visible 4-app copy fixed in success, setup, account, terms, and SignupCTA. Terms page Pricing block updated to $14.99/$149 + all 5 apps named, with legacy $4.99 grandfather note. Existing $4.99 single-app subscribers unaffected (Stripe never auto-migrates Price IDs).",
     refs: [
-      "sites/marketing/src/components/signup/AppSelector.tsx",
-      "sites/marketing/src/components/signup/AccountForm.tsx",
       "sites/marketing/src/app/signup/page.tsx",
       "sites/marketing/src/app/success/page.tsx",
       "sites/marketing/src/app/setup/page.tsx",
       "sites/marketing/src/app/account/page.tsx",
+      "sites/marketing/src/app/terms/page.tsx",
+      "sites/marketing/src/components/blog/SignupCTA.tsx",
     ],
+    notes:
+      "Pending cleanup: AppSelector.tsx + AccountForm.tsx are now dead code in the unified-pricing world. Can be deleted in a future schema cleanup pass.",
+    updatedAt: "2026-05-28",
   },
   {
     id: "security-gitignore",
@@ -247,11 +253,12 @@ const P1: RoadmapItem[] = [
     title: "Kid login pages: easy cross-app nav to the other 4 kid pages",
     app: "platform",
     priority: "P1",
-    status: "open",
+    status: "done",
     source: "session-todo",
     description:
-      "Unified `users.familyCode` means the same 6-char code works on all 5 apps. Surface a small 'Other Safe Family apps' row on each kid login (pre-auth) and/or a switcher (post-auth) so kids can hop without re-typing.",
-    notes: "Task #13. Touches each app's kid login route.",
+      "DONE 2026-05-28. Each app's pre-auth kid login renders an 'Other Safe Family apps' footer row (4-cell emoji grid: Music/Video/Books/Search/Build). Links pass current family code via `?fc=XXXXXX` URL param; receiving app auto-populates code and auto-advances to profile picker when fc has 6 chars. Touched all 5 apps: SafeSpark KidLoginGate, SafeTunes ChildLoginPage, SafeTube KidPlayer, SafeReads /read page, SafeStudy FamilyCodeEntry + KidSearch URL-param reader. Same OTHER_APPS data shape inlined per-app (no shared package wired yet).",
+    notes: "Pending follow-up: post-auth in-app switcher so kids mid-session can hop without going back to family-code entry. Lower urgency since the pre-auth path covers the common case.",
+    updatedAt: "2026-05-28",
   },
   {
     id: "safespark-starter-pad",
@@ -263,6 +270,25 @@ const P1: RoadmapItem[] = [
     bead: "safecontent-cnm",
     description:
       "First-build streaming requests fail silently for some kids on the Starter Pad. Need detection + structured retry, plus surfacing to the parent dashboard for visibility.",
+  },
+  {
+    id: "safespark-context-checkpoints",
+    title: "SafeSpark: per-project context checkpoints every ~10 turns (anti-drift)",
+    app: "safespark",
+    priority: "P1",
+    status: "done",
+    source: "support-case",
+    description:
+      "DONE 2026-05-28. New safesparkCheckpoints table + convex/checkpoints.ts (maybeCreateCheckpoint action, getLatestForProject query). Trigger: every 10 turns OR > 48h since last checkpoint. gpt-4o-mini summarizes premise / design decisions / recent work / code anchors into ~500-word markdown recap. /api/demo/route.ts prepends latest checkpoint to system prompt on every turn. DemoWorkbench fires void maybeCreateCheckpoint() after each saveCloud. Cost ~$0.0001 per checkpoint. Failures swallowed — checkpoints never block user. Schema deployed to giddy-peacock-124; frontend deployed to bella-gjzihlw93.",
+    refs: [
+      "apps/safespark/convex/checkpoints.ts",
+      "apps/safespark/convex/schema.ts",
+      "apps/safespark/src/app/api/demo/route.ts",
+      "apps/safespark/src/app/demo/DemoWorkbench.tsx",
+    ],
+    notes:
+      "Phase 2 (not yet built): surface checkpoints in version-history UI as a project journal so kids can read their own design timeline.",
+    updatedAt: "2026-05-28",
   },
   {
     id: "safespark-undo-affordance",
@@ -1249,6 +1275,49 @@ const P3: RoadmapItem[] = [
 // =============================================================================
 
 const RECENTLY_DONE: RoadmapItem[] = [
+  {
+    id: "safespark-parent-render-loop",
+    title: "SafeSpark /parent render loop fix — Clerk auth object in deps",
+    app: "safespark",
+    priority: "P0",
+    status: "done",
+    source: "support-case",
+    description:
+      "Page bounced between '0 profiles / Create my family code' and 'YYKN44 / 2 profiles' with Chrome GPU at 92%. Root cause: useAuthCombined put the whole `clerk` object (new ref every render from useClerkAuth()) in useCallback deps → fetchAccessToken identity churned every render → ConvexProviderWithAuth re-subscribed auth → every useQuery flipped undefined → re-resolved → flicker. Fixed by destructuring to {isLoaded, isSignedIn, getToken} primitives. (Made moot by full Clerk retirement same day.)",
+    refs: ["apps/safespark/src/components/ConvexClientProvider.tsx"],
+    updatedAt: "2026-05-28",
+  },
+  {
+    id: "safespark-code-bleed",
+    title: "SafeSpark code-bleed fix — sprite uploads + safety cap",
+    app: "safespark",
+    priority: "P0",
+    status: "done",
+    source: "support-case",
+    description:
+      "Knox's / Jeremiah's Philippians 2 side-scroller game rendered raw JavaScript as visible page text below the canvas. HTML was 3.9 MB (99.6% base64 PNG from two SAFESPARK_SPRITE placeholders). Browser srcDoc truncates around 2-4 MB → script tag never closes → JS bleeds as body text. Two-layer fix: (a) 400KB inline base64 safety cap in route.ts strips data URIs to 1x1 transparent fallback when total inline bytes exceed threshold; (b) made generateImageUploadUrl + finalizeImageUpload mutations accept kid sessionToken via resolveSafeSparkIdentity (previously requireIdentity = Clerk-only) so kid-session sprite uploads succeed instead of falling back to inline base64. Game complexity is NOT capped — only inline base64 bloat is. URL-referenced sprites stay tiny (~100 chars).",
+    refs: [
+      "apps/safespark/src/app/api/demo/route.ts",
+      "apps/safespark/convex/safespark.ts",
+    ],
+    updatedAt: "2026-05-28",
+  },
+  {
+    id: "admin-dual-auth-marketing",
+    title: "Admin /admin: Marketing Central password sign-in (bypass Google OAuth)",
+    app: "marketing",
+    priority: "P1",
+    status: "done",
+    source: "session-todo",
+    description:
+      "Google OAuth admin sign-in was broken (redirect URI not whitelisted in Cloud Console). Shipped Marketing Central password path at /admin-login: new POST /api/admin-auth/marketing-login validates against adamant-crow-705/login, allow-list-checks email = jedaws@gmail.com BEFORE the network call, sets HttpOnly Secure cookie safefamily_admin_jwt (7d). Admin layout checks NextAuth session first, falls back to verifying the cookie server-side via /verifyToken. Sign-out clears both surfaces. Google OAuth still works as fallback.",
+    refs: [
+      "sites/marketing/src/app/admin/layout.tsx",
+      "sites/marketing/src/app/admin-login/page.tsx",
+      "sites/marketing/src/app/api/admin-auth/marketing-login/route.ts",
+    ],
+    updatedAt: "2026-05-28",
+  },
   {
     id: "safespark-dual-auth",
     title: "SafeSpark dual-auth: Clerk + Marketing Central JWT live",

@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
-import { auth } from '@clerk/nextjs/server';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../../../../convex/_generated/api';
+import type { Id } from '../../../../convex/_generated/dataModel';
 
 export const runtime = 'nodejs';
 // Vercel Pro caps Node functions at 300s. A streaming gpt-5.5 response with
@@ -24,6 +24,17 @@ type DemoRequest = {
   imageUrl?: string | null;
   pdfContext?: { text: string; filename?: string; pageCount?: number } | null;
   sessionToken?: string | null;
+  /**
+   * Active project id when this turn is iterating on an existing project.
+   * Used to fetch the latest context checkpoint and prepend it to the
+   * system prompt — keeps Spark coherent on long-running builds where
+   * the rolling 8-turn message window would otherwise lose the original
+   * premise / art direction / blocklist nuance. Also used to trigger a
+   * fresh checkpoint after every ~10 turns. Omitted for the first turn
+   * (when the project hasn't been saved yet) — that's fine; checkpoints
+   * only fire once the project has enough history to be worth recapping.
+   */
+  projectId?: string | null;
 };
 
 type DemoResponse = {
@@ -205,12 +216,13 @@ If no preview change is needed, set "changed": false and omit "html", "versionLa
     Boolean(attachedImage) &&
     !buildPattern.test(message) &&
     (stylePattern.test(message) || editPattern.test(message));
-  // Grab a Clerk-issued Convex JWT so we can upload to Convex storage on
-  // the kid's behalf. Falls back to inline data URL if the kid isn't
-  // signed in (guest mode — the project won't save to cloud anyway).
-  const convexToken = await getConvexToken();
+  // Clerk retired 2026-05-28 — convexToken is always null on this path now.
+  // Sprite + image-transform upload paths authenticate via the kid sessionToken
+  // (passed in body.sessionToken). True guest mode (no kid session) falls
+  // back to the 400KB inline base64 cap.
+  const convexToken: string | null = null;
   const transformedImagePromise: Promise<string | null> = wantsTransform && attachedImage
-    ? transformImageSafely(openai, attachedImage, message, convexToken)
+    ? transformImageSafely(openai, attachedImage, message, convexToken, body.sessionToken ?? null)
     : Promise.resolve(null);
 
   // PURE-EDIT FAST PATH. If the kid attached a photo and asked for an edit
@@ -347,11 +359,37 @@ ${message}`;
     userContent.push({ type: 'image_url', image_url: { url: attachedImage } });
   }
 
+  // Prepend the latest project checkpoint to the system prompt so Spark
+  // remembers the original premise / design decisions / art direction
+  // after the rolling 8-turn message window slides past them. The
+  // checkpoint is regenerated every ~10 turns by the client (post-save).
+  // Best-effort: any failure here = no checkpoint = same behavior as
+  // pre-checkpoint days, never blocks the user.
+  let systemWithCheckpoint = system;
+  if (body.projectId) {
+    try {
+      const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+      if (convexUrl) {
+        const checkpointClient = new ConvexHttpClient(convexUrl);
+        const checkpoint = (await checkpointClient.query(
+          api.checkpoints.getLatestForProject,
+          { projectId: body.projectId as Id<'safesparkProjects'> },
+        )) as { content: string; fromTurnCount: number } | null;
+        if (checkpoint?.content) {
+          systemWithCheckpoint =
+            `PROJECT RECAP (auto-generated after turn ${checkpoint.fromTurnCount} so you don't lose context across long builds — the kid hasn't seen this, it's for YOU):\n\n${checkpoint.content}\n\n---\n\n${system}`;
+        }
+      }
+    } catch (err) {
+      console.error('[checkpoint] failed to fetch latest:', err);
+    }
+  }
+
   try {
     const stream = await openai.chat.completions.create({
       model: DEFAULT_MODEL,
       messages: [
-        { role: 'system', content: system },
+        { role: 'system', content: systemWithCheckpoint },
         { role: 'user', content: userContent as never },
       ],
       response_format: { type: 'json_object' },
@@ -395,7 +433,7 @@ ${message}`;
             const matches = Array.from(parsed.html.matchAll(spriteRegex)).slice(0, 4);
             if (matches.length > 0) {
               const results = await Promise.all(
-                matches.map((m) => generateSpriteSafely(openai, m[1].trim(), convexToken)),
+                matches.map((m) => generateSpriteSafely(openai, m[1].trim(), convexToken, body.sessionToken ?? null)),
               );
               for (let i = 0; i < matches.length; i++) {
                 const url = results[i];
@@ -406,6 +444,25 @@ ${message}`;
               // Replace any remaining placeholders with a 1x1 transparent
               // fallback so the page doesn't show broken img tags.
               parsed.html = parsed.html.replace(spriteRegex, 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==');
+            }
+
+            // SAFETY: kid sessions don't carry a convexToken, so sprite
+            // uploads to Convex storage fail and `generateSpriteSafely`
+            // falls back to inlining the full base64 PNG (~2MB per sprite).
+            // Two sprites push the HTML past 4MB → browser srcDoc truncates
+            // mid-script → JS bleeds onto the page as visible text (Knox
+            // hit this 2026-05-28 building the Philippians 2 game). Cap
+            // total inline base64 at ~400KB; beyond that, strip back to
+            // the 1x1 transparent fallback so the build still works.
+            const TRANSPARENT_FALLBACK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+            const inlineBytes = (parsed.html.match(/data:image\/[a-z+]+;base64,[A-Za-z0-9+/=]+/g) ?? [])
+              .reduce((sum, uri) => sum + uri.length, 0);
+            if (inlineBytes > 400_000) {
+              parsed.html = parsed.html.replace(
+                /data:image\/[a-z+]+;base64,[A-Za-z0-9+/=]+/g,
+                TRANSPARENT_FALLBACK,
+              );
+              console.warn(`[safespark] HTML had ${inlineBytes} bytes inline base64; stripped to fallback to avoid srcDoc truncation`);
             }
           }
 
@@ -600,26 +657,23 @@ async function recordUsageAsync(
   }
 }
 
-async function getConvexToken(): Promise<string | null> {
-  try {
-    const { getToken } = await auth();
-    return await getToken({ template: 'convex' });
-  } catch {
-    return null;
-  }
-}
-
 async function uploadToConvexStorage(
   bytes: Buffer,
   contentType: string,
-  token: string,
+  token: string | null,
+  sessionToken: string | null,
 ): Promise<string | null> {
   const url = process.env.NEXT_PUBLIC_CONVEX_URL;
   if (!url) return null;
+  // Need EITHER a Clerk-issued JWT OR a kid sessionToken — the Convex
+  // upload mutations accept either. Without one, the mutation throws
+  // and we fall back to inlining base64 (which crashes the iframe srcDoc).
+  if (!token && !sessionToken) return null;
   try {
     const client = new ConvexHttpClient(url);
-    client.setAuth(token);
-    const uploadUrl = await client.mutation(api.safespark.generateImageUploadUrl, {});
+    if (token) client.setAuth(token);
+    const args = sessionToken ? { sessionToken } : {};
+    const uploadUrl = await client.mutation(api.safespark.generateImageUploadUrl, args);
     const uploadRes = await fetch(uploadUrl, {
       method: 'POST',
       headers: { 'Content-Type': contentType },
@@ -627,9 +681,8 @@ async function uploadToConvexStorage(
     });
     if (!uploadRes.ok) return null;
     const { storageId } = (await uploadRes.json()) as { storageId: string };
-    const { url: publicUrl } = await client.mutation(api.safespark.finalizeImageUpload, {
-      storageId,
-    });
+    const finalizeArgs = sessionToken ? { storageId, sessionToken } : { storageId };
+    const { url: publicUrl } = await client.mutation(api.safespark.finalizeImageUpload, finalizeArgs);
     return publicUrl;
   } catch (err) {
     console.error('[safespark] convex storage upload failed:', err);
@@ -641,6 +694,7 @@ async function generateSpriteSafely(
   openai: OpenAI,
   rawPrompt: string,
   convexToken: string | null,
+  sessionToken: string | null,
 ): Promise<string | null> {
   const safe = sanitizeStylePrompt(rawPrompt);
   if (!safe) return null;
@@ -654,9 +708,17 @@ async function generateSpriteSafely(
     } as never);
     const b64 = result.data?.[0]?.b64_json;
     if (!b64) return null;
-    if (convexToken) {
-      const url = await uploadToConvexStorage(Buffer.from(b64, 'base64'), 'image/png', convexToken);
+    if (convexToken || sessionToken) {
+      const url = await uploadToConvexStorage(
+        Buffer.from(b64, 'base64'),
+        'image/png',
+        convexToken,
+        sessionToken,
+      );
       if (url) return url;
+      console.warn('[safespark] sprite upload failed despite having auth — falling back to inline base64');
+    } else {
+      console.warn('[safespark] no auth (no convexToken, no sessionToken) — falling back to inline base64 sprite');
     }
     return `data:image/png;base64,${b64}`;
   } catch (err) {
@@ -670,6 +732,7 @@ async function transformImageSafely(
   sourceUrl: string,
   rawPrompt: string,
   convexToken: string | null,
+  sessionToken: string | null,
 ): Promise<string | null> {
   const safePrompt = sanitizeStylePrompt(rawPrompt);
   if (!safePrompt) return null;
@@ -707,13 +770,13 @@ async function transformImageSafely(
     } as never);
     const b64 = result.data?.[0]?.b64_json;
     if (!b64) return null;
-    // Upload to Convex storage if the kid is signed in — keeps HTML small.
-    if (convexToken) {
+    // Upload to Convex storage when we have any auth — keeps HTML small.
+    if (convexToken || sessionToken) {
       const outBuf = Buffer.from(b64, 'base64');
-      const url = await uploadToConvexStorage(outBuf, 'image/png', convexToken);
+      const url = await uploadToConvexStorage(outBuf, 'image/png', convexToken, sessionToken);
       if (url) return url;
     }
-    // Fallback for guest mode: inline data URL.
+    // Fallback for true guest mode (no Clerk, no kid session): inline data URL.
     return `data:image/png;base64,${b64}`;
   } catch (err) {
     console.error('[safespark] image transform failed:', err);

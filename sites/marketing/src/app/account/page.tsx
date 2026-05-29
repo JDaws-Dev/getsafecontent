@@ -312,7 +312,7 @@ function AccountPageContent() {
                     {(currentUser as { familyCode?: string | null }).familyCode ?? "\u2014"}
                   </p>
                   <p className="mt-2 text-sm text-white/85 leading-relaxed">
-                    Same code works on all four apps. Share it with your kids so they can pick
+                    Same code works on all five apps. Share it with your kids so they can pick
                     their profile.
                   </p>
                 </div>

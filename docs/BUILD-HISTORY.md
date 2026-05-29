@@ -237,6 +237,32 @@ All images: `aspect-[4/5]`, `borderRadius: '0 3rem 3rem 3rem'`, `object-cover`
 
 ## Completed Tasks Log
 
+### May 28, 2026 — Clerk retirement + post-retirement repair night
+
+**Big-rock items:**
+- [x] **Clerk fully retired from SafeSpark** — ClerkProvider dropped, `/sign-in`/`/sign-up` routes deleted (middleware redirects to `/login`), Clerk JWT provider removed from `convex/auth.config.ts`, `@clerk/nextjs` uninstalled. 11 src files refactored to Marketing Central JWT only. Cleanup leftovers: unused Clerk env vars on Vercel, `legacyClerkUserId` column on `users` schema, two remaining `withIndex('by_clerk_id', identity.subject)` lookups (lines 144/558 in `safespark.ts`, currently unreachable), `debugWhoAmI` query (drop when stable).
+- [x] **Marketing JWT verification via shared HMAC secret** — the actual fix for post-Clerk empty `/parent`. Marketing signs with HS256 + ADMIN_KEY, but SafeSpark's `auth.config.ts` only supported JWKS verification (RSA-only); HMAC tokens were silently rejected. Mirrored Marketing's secret to SafeSpark Convex env as `MARKETING_JWT_SECRET`, added `verifyMarketingToken()` helper in `convex/actors.ts` using `jose.jwtVerify`. Refactored 10 parent-facing queries/mutations to accept `userToken` arg (`users.getCurrent`, `safespark.listFamilyForParent`, `getFamilyUsageThisMonth`, `getProfileDetail`, `getKidSettings`, `setKidSettings`, `setBlockedTopics`, `debugWhoAmI`, `families.ensureForParent`, `families.getForParent`). Frontend passes `marketing.token` on every parent-side query. **Long-term debt:** Marketing should migrate to RSA + JWKS so cross-app verification doesn't need shared secrets.
+- [x] **SafeSpark per-project context checkpoints** — Knox-frustration fix. New `safesparkCheckpoints` table + `convex/checkpoints.ts` module. Every ~10 turns OR >48h stale, gpt-4o-mini writes a ~500-word markdown recap (premise / what's built / design decisions / recent work / code anchors). `/api/demo/route.ts` prepends latest checkpoint to system prompt on every turn. DemoWorkbench fires `void maybeCreateCheckpoint()` after each saveCloud. Cost ~$0.0001/checkpoint. Phase 2 (UI project journal in version history): not yet built.
+- [x] **Cross-app kid login nav (5 apps)** — each app's pre-auth kid login renders a 4-cell emoji grid (Music/Video/Books/Search/Build) linking to the other apps' kid routes with `?fc=XXXXXX` param. Receiving app auto-populates the family code and auto-advances to profile picker when fc has 6 chars. Inlined per-app (no shared package).
+- [x] **Admin `/admin/*` dual-auth** — Marketing Central password sign-in added at `/admin-login` to bypass the broken Google OAuth (redirect URI never whitelisted in Cloud Console). New POST `/api/admin-auth/marketing-login` allow-list-checks email = jedaws@gmail.com, sets HttpOnly Secure cookie `safefamily_admin_jwt` (7d), admin layout dual-paths NextAuth + cookie. Google OAuth still works as fallback.
+- [x] **AppSelector 5-app rollout** — signup page now routes every entry (including legacy `?app=safetunes` per-app LPs) through `<UnifiedPlanSummary>` when `NEXT_PUBLIC_ENABLE_UNIFIED_PRICING=true`. Customer-visible "4 apps"/"four apps" copy → "5 apps"/"five apps" in success, setup, account, terms, SignupCTA. Terms page Pricing block → $14.99/$149 + all 5 apps named with legacy $4.99 grandfather note. Existing single-app subs unaffected.
+
+**Specific fires put out:**
+- [x] **SafeSpark `/parent` render loop** — `useAuthCombined` had the whole Clerk auth object in `useCallback` deps; Clerk hooks return new object refs every render → `fetchAccessToken` identity churned → ConvexProviderWithAuth re-subscribed every render → all queries flipped between data and undefined → page bounced between "0 profiles" and "YYKN44/2 profiles" + GPU at 92%. Fixed by destructuring to `{isLoaded, isSignedIn, getToken}` primitives.
+- [x] **SafeSpark code-bleed** — Knox's Philippians 2 game rendered raw JS as visible page text. HTML was 3.9 MB (99.6% base64 PNG from two SAFESPARK_SPRITE placeholders), browser srcDoc truncated mid-script. Two layers: (a) `generateImageUploadUrl`/`finalizeImageUpload` mutations now accept kid `sessionToken` so kid-session sprite uploads succeed instead of falling back to inline base64; (b) 400KB inline base64 safety cap in route.ts as belt-and-suspenders.
+- [x] **"Switch kid" → "Switch profile"** rename on `/make` header (matches SafeTube's idiom).
+- [x] **Jace's account migration** — password reset triggered for `soonerjace@gmail.com`, logged in via `/login`, verified end-to-end (family code `4QZ5WP`, kids, projects all reachable via email-fallback in `getActor()`).
+
+**Discovered + tracked but not done:**
+- [ ] `.gitignore` expansion + 508 tracked sensitive artifacts cleanup (new `.gitignore` written but `git rm --cached` not yet authorized). The `apps/safetunes/android-twa/android.keystore` (Play Store release signing key) has been in git history for months — current-HEAD removal won't expunge history; mitigation is either accept or do Google Play Signing key rotation.
+- [ ] Marketing → RSA + JWKS migration (eliminates shared-secret dependency between apps; multi-day cross-app work).
+- [ ] Phase 2 checkpoint UI (project journal in version history).
+
+**Lessons saved to memory (`~/.claude/.../memory/`):**
+- `feedback_clerk_auth_deps.md` — destructure Clerk auth hooks to primitives before useCallback deps
+- `feedback_post_clerk_data_resolution.md` — after auth-provider swap, sweep every direct subject lookup
+- `feedback_convex_jwks_vs_hmac.md` — Convex auth.config.ts can't verify HMAC JWTs; pass as arg + verify server-side
+
 ### February 10, 2026
 - [x] Hero images added to all 4 landing pages
 - [x] Mobile responsiveness testing automated with Playwright

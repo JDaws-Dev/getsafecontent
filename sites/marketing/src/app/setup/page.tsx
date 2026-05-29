@@ -48,7 +48,7 @@ const steps = [
     icon: KeyRound,
     title: "Share your family code with your kids",
     minutes: "~1 min",
-    body: "Your family code is the 6-character code kids type in on their device to access their profile. One code works for all 4 apps. You'll find it in the parent dashboard of each app — it's the same code everywhere.",
+    body: "Your family code is the 6-character code kids type in on their device to access their profile. One code works for all 5 apps. You'll find it in the parent dashboard of each app — it's the same code everywhere.",
     tip: "Tip: write it on a sticky note on the fridge. Our most-successful families literally do this.",
   },
   {
@@ -207,10 +207,10 @@ export default function SetupPage() {
               <div>
                 <dt className="font-semibold text-navy flex items-center gap-2">
                   <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                  Do I need to set up all four apps?
+                  Do I need to set up all five apps?
                 </dt>
                 <dd className="mt-1 ml-7 text-navy/70 text-sm">
-                  No &mdash; your Safe Family bundle gives you access to all four, but you can
+                  No &mdash; your Safe Family bundle gives you access to all five, but you can
                   start with one (whichever matches your biggest worry today) and add the rest
                   whenever you&rsquo;re ready.
                 </dd>

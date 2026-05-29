@@ -56,6 +56,21 @@ export default function KidPlayer() {
     selectedProfile?._id ? { kidProfileId: selectedProfile._id } : 'skip'
   );
 
+  // Auto-fill family code if arriving from another Safe Family app's
+  // cross-app switcher (URL ?fc=ABCDEF). Same unified code works across
+  // all 5 apps. Runs once on mount.
+  useEffect(() => {
+    const fcParam = new URL(window.location.href).searchParams.get('fc');
+    if (!fcParam) return;
+    const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    if (normalized.length === 6 && !familyCode) {
+      setFamilyCode(normalized);
+      setCodeInput(normalized);
+    } else if (normalized.length > 0) {
+      setCodeInput(normalized);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Validate family code when entered
   useEffect(() => {
     if (familyCode && user === null) {
@@ -74,9 +89,13 @@ export default function KidPlayer() {
 
   const handleCodeSubmit = (e) => {
     e.preventDefault();
-    if (codeInput.trim()) {
-      setFamilyCode(codeInput.trim().toUpperCase());
+    const trimmed = codeInput.trim();
+    if (trimmed.length < 6) {
+      setError("Your family code is 6 letters and numbers. Ask your parent!");
+      return;
     }
+    setError('');
+    setFamilyCode(trimmed.toUpperCase());
   };
 
   const handleProfileSelect = (profile) => {
@@ -137,27 +156,28 @@ export default function KidPlayer() {
           <input
             type="text"
             value={codeInput}
-            onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
-            placeholder="FAMILY CODE"
+            onChange={(e) => {
+              setCodeInput(e.target.value.toUpperCase());
+              if (error) setError('');
+            }}
+            placeholder="ABC123"
             maxLength={6}
-            className="w-full text-center text-2xl font-mono tracking-widest bg-white border-2 border-gray-200 rounded-xl px-4 py-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 uppercase shadow-sm"
+            className="w-full text-center text-2xl font-mono tracking-widest bg-white border-2 border-gray-200 rounded-xl px-4 py-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 uppercase shadow-sm"
             autoFocus
           />
+          <p className="text-gray-500 text-xs text-center mt-2">
+            6 letters and numbers from your parent
+          </p>
           {error && (
             <p className="text-red-500 text-sm text-center mt-2">{error}</p>
           )}
           <button
             type="submit"
-            disabled={codeInput.length < 6}
-            className="w-full mt-4 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold transition shadow-md"
+            className="w-full mt-4 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white py-3 rounded-xl font-semibold transition shadow-md active:scale-[0.98]"
           >
-            Enter
+            Let's Go! →
           </button>
         </form>
-
-        <p className="text-gray-500 text-sm mt-8">
-          Ask your parent for the family code
-        </p>
 
         {/* Parent Login Link */}
         <div className="mt-8 pt-8 border-t border-gray-200 w-full max-w-xs">
@@ -168,6 +188,8 @@ export default function KidPlayer() {
             </Link>
           </p>
         </div>
+
+        <OtherSafeFamilyApps current="safetube" familyCode={codeInput} />
       </div>
     );
   }
@@ -290,5 +312,38 @@ export default function KidPlayer() {
         </div>
       )}
     </>
+  );
+}
+
+const OTHER_APPS = [
+  { id: 'safetunes', label: 'Music', emoji: '🎵', host: 'https://getsafetunes.com', url: '/play', accent: 'text-pink-500' },
+  { id: 'safetube', label: 'Video', emoji: '📺', host: 'https://getsafetube.com', url: '/play', accent: 'text-red-500' },
+  { id: 'safereads', label: 'Books', emoji: '📚', host: 'https://getsafereads.com', url: '/read', accent: 'text-orange-500' },
+  { id: 'safestudy', label: 'Search', emoji: '🔎', host: 'https://getsafestudy.com', url: '/play', accent: 'text-blue-500' },
+  { id: 'safespark', label: 'Build', emoji: '✨', host: 'https://getsafespark.com', url: '/make', accent: 'text-violet-500' },
+];
+
+function OtherSafeFamilyApps({ current, familyCode }) {
+  const others = OTHER_APPS.filter((a) => a.id !== current);
+  const fc = (familyCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  const suffix = fc.length === 6 ? `?fc=${fc}` : '';
+  return (
+    <div className="mt-8 pt-6 border-t border-gray-200 w-full max-w-xs">
+      <p className="text-[11px] uppercase tracking-widest font-bold text-gray-400 mb-3 text-center">
+        Other Safe Family apps
+      </p>
+      <div className="grid grid-cols-4 gap-2">
+        {others.map((a) => (
+          <a
+            key={a.id}
+            href={`${a.host}${a.url}${suffix}`}
+            className="flex flex-col items-center gap-1 px-2 py-2 rounded-xl hover:bg-gray-100 transition"
+          >
+            <span className="text-2xl leading-none">{a.emoji}</span>
+            <span className={`text-[11px] font-bold ${a.accent}`}>{a.label}</span>
+          </a>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 import { mutation, query, internalMutation, internalQuery } from './_generated/server';
 import { v } from 'convex/values';
-import type { Id } from './_generated/dataModel';
+import type { Doc, Id } from './_generated/dataModel';
 
 const MESSAGE_VALIDATOR = v.object({
   role: v.union(v.literal('user'), v.literal('assistant')),
@@ -62,6 +62,127 @@ async function resolveSafeSparkIdentity(
   }
   throw new Error('Sign in or enter a family code to save projects.');
 }
+
+// Resolve the SafeSpark `users` row from the current Convex auth identity,
+// trying clerkUserId match first (legacy Clerk subjects) then email match
+// (Marketing Central JWTs whose subject is a marketing user._id that won't
+// match any clerkUserId). Returns null if neither matches — call sites
+// should treat that as "no data to show."
+//
+// Mirrors the dual-path logic in `getActor()` / `resolveSafeSparkIdentity`
+// but returns the full row (not just clerkUserId) and never throws. Added
+// 2026-05-28 after Clerk retirement: Jace logged in via Marketing JWT and
+// /parent showed "0 profiles" because listFamilyForParent (and several
+// sibling queries) only did the clerkUserId lookup. His data was intact;
+// these queries just couldn't reach his user row from a Marketing JWT.
+// Verify a Marketing Central HMAC-SHA256 JWT (issuer "getsafefamily.com")
+// using the shared signing secret. Marketing's /login signs tokens with
+// HS256 + JWT_SECRET (falling back to ADMIN_KEY); we mirror that secret
+// to SafeSpark Convex as MARKETING_JWT_SECRET. Returns the decoded
+// {sub, email} claims or null on any failure (bad signature, expired,
+// wrong issuer, missing secret, malformed token).
+//
+// Why this exists: SafeSpark's convex/auth.config.ts only supports JWKS-
+// backed providers, so Marketing's HMAC-signed JWTs are silently rejected
+// by ctx.auth.getUserIdentity(). Passing the JWT as a query arg and
+// verifying it here is the workaround until Marketing migrates to RSA+JWKS.
+async function verifyMarketingToken(
+  token: string,
+): Promise<{ userId: string; email: string } | null> {
+  const secret = process.env.MARKETING_JWT_SECRET;
+  if (!secret) return null;
+  try {
+    const { jwtVerify } = await import('jose');
+    const { payload } = await jwtVerify(
+      token,
+      new TextEncoder().encode(secret),
+      { issuer: 'getsafefamily.com' },
+    );
+    const userId = typeof payload.sub === 'string' ? payload.sub : null;
+    const email = typeof payload.email === 'string' ? payload.email : null;
+    if (!userId || !email) return null;
+    return { userId, email: email.toLowerCase() };
+  } catch {
+    return null;
+  }
+}
+
+async function findUserRowByIdentity(
+  ctx: SafeSparkCtx,
+  userToken?: string,
+): Promise<{ row: Doc<'users'>; clerkUserId: string } | null> {
+  // Path A — explicit Marketing JWT passed by the client (post-Clerk-
+  // retirement parent path). Verified server-side with the shared HMAC
+  // secret; we trust the email claim because the signature proves the
+  // marketing backend issued it.
+  if (userToken) {
+    const verified = await verifyMarketingToken(userToken);
+    if (verified) {
+      const row = (await ctx.db
+        .query('users')
+        .withIndex('by_email', (q) => q.eq('email', verified.email))
+        .first()) as Doc<'users'> | null;
+      if (row) return { row, clerkUserId: row.clerkUserId };
+    }
+  }
+  // Path B — Convex auth.getUserIdentity (works for any provider listed
+  // in auth.config.ts; in practice this is only the unused JWKS path now,
+  // but keeping it so any future RSA/JWKS migration "just works").
+  const identity = (await ctx.auth.getUserIdentity()) as
+    | { subject: string; email?: string }
+    | null;
+  if (!identity?.subject) return null;
+  let row = (await ctx.db
+    .query('users')
+    .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', identity.subject))
+    .first()) as Doc<'users'> | null;
+  if (row) return { row, clerkUserId: identity.subject };
+  if (identity.email) {
+    const normalizedEmail = identity.email.toLowerCase();
+    row = (await ctx.db
+      .query('users')
+      .withIndex('by_email', (q) => q.eq('email', normalizedEmail))
+      .first()) as Doc<'users'> | null;
+    if (row) return { row, clerkUserId: row.clerkUserId };
+  }
+  return null;
+}
+
+// Temporary diagnostic — returns what the Convex auth layer sees for the
+// caller plus what findUserRowByIdentity resolves them to. No PII guard:
+// anyone calling this from their own logged-in session only sees their own
+// identity (the identity is whatever JWT they passed). Added 2026-05-28
+// for the post-Clerk-retirement /parent empty-state debug; remove once
+// the resolution path is verified working in prod.
+export const debugWhoAmI = query({
+  args: { userToken: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const identity = (await ctx.auth.getUserIdentity()) as
+      | { subject?: string; email?: string; [k: string]: unknown }
+      | null;
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    let familyByParent: { id: Id<'families'>; code: string } | null = null;
+    if (resolved) {
+      const family = await ctx.db
+        .query('families')
+        .withIndex('by_parent', (q) => q.eq('parentUserId', resolved.row._id))
+        .first();
+      if (family) {
+        familyByParent = { id: family._id, code: family.familyCode };
+      }
+    }
+    return {
+      identityPresent: Boolean(identity),
+      subject: identity?.subject ?? null,
+      email: identity?.email ?? null,
+      identityKeys: identity ? Object.keys(identity) : [],
+      resolvedRowId: resolved?.row._id ?? null,
+      resolvedRowEmail: resolved?.row.email ?? null,
+      resolvedClerkUserId: resolved?.clerkUserId ?? null,
+      familyByParent,
+    };
+  },
+});
 
 export const listMyProjects = query({
   args: { sessionToken: v.optional(v.string()) },
@@ -381,17 +502,24 @@ export const incrementShareView = mutation({
 });
 
 export const generateImageUploadUrl = mutation({
-  args: {},
-  handler: async (ctx) => {
-    await requireIdentity(ctx);
+  args: { sessionToken: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    // Accept either a Clerk parent identity OR a kid session token. The
+    // /api/demo sprite-generator path runs server-side and calls this
+    // mutation to upload AI-generated PNGs; for kid-session callers
+    // there's no Clerk JWT to forward, so the kid sessionToken is what
+    // proves the request is legit. Without this fallback, the upload
+    // fails, and `generateSpriteSafely` inlines a ~2MB base64 PNG
+    // straight into the HTML, which crashes the iframe srcDoc.
+    await resolveSafeSparkIdentity(ctx as SafeSparkCtx, args.sessionToken);
     return await ctx.storage.generateUploadUrl();
   },
 });
 
 export const finalizeImageUpload = mutation({
-  args: { storageId: v.string() },
+  args: { storageId: v.string(), sessionToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    await requireIdentity(ctx);
+    await resolveSafeSparkIdentity(ctx as SafeSparkCtx, args.sessionToken);
     const url = await ctx.storage.getUrl(args.storageId as Id<'_storage'>);
     if (!url) throw new Error('Could not resolve uploaded image.');
     return { url };
@@ -1609,28 +1737,23 @@ const FAMILY_MONTHLY_CAPS = {
 } as const;
 
 export const getFamilyUsageThisMonth = query({
-  args: {},
-  handler: async (ctx) => {
-    const identity = (await ctx.auth.getUserIdentity()) as { subject: string } | null;
-    if (!identity?.subject) return null;
+  args: { userToken: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    if (!resolved) return null;
+    const { row: userRow, clerkUserId } = resolved;
     const yearMonth = yearMonthUTC(Date.now());
-    const ids: string[] = [identity.subject];
-    const userRow = await ctx.db
-      .query('users')
-      .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', identity.subject))
+    const ids: string[] = [clerkUserId];
+    const family = await ctx.db
+      .query('families')
+      .withIndex('by_parent', (q) => q.eq('parentUserId', userRow._id))
       .first();
-    if (userRow) {
-      const family = await ctx.db
-        .query('families')
-        .withIndex('by_parent', (q) => q.eq('parentUserId', userRow._id))
-        .first();
-      if (family) {
-        const kids = await ctx.db
-          .query('kidProfiles')
-          .withIndex('by_family', (q) => q.eq('familyId', family._id))
-          .collect();
-        for (const k of kids) ids.push(`kid:${k._id}`);
-      }
+    if (family) {
+      const kids = await ctx.db
+        .query('kidProfiles')
+        .withIndex('by_family', (q) => q.eq('familyId', family._id))
+        .collect();
+      for (const k of kids) ids.push(`kid:${k._id}`);
     }
     let totalCents = 0;
     let chatTurns = 0;
@@ -1673,17 +1796,11 @@ export const getFamilyUsageThisMonth = query({
 // Parent dashboard: every project across every kid in this Clerk user's family,
 // plus the family code so the parent can hand it to a kid for /start login.
 export const listFamilyForParent = query({
-  args: {},
-  handler: async (ctx) => {
-    const identity = (await ctx.auth.getUserIdentity()) as
-      | { subject: string; email?: string }
-      | null;
-    if (!identity?.subject) return null;
-    const userRow = await ctx.db
-      .query('users')
-      .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', identity.subject))
-      .first();
-    if (!userRow) return null;
+  args: { userToken: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    if (!resolved) return null;
+    const { row: userRow, clerkUserId } = resolved;
     const family = await ctx.db
       .query('families')
       .withIndex('by_parent', (q) => q.eq('parentUserId', userRow._id))
@@ -1724,7 +1841,7 @@ export const listFamilyForParent = query({
     }
     const parentProjects = await ctx.db
       .query('safesparkProjects')
-      .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', identity.subject))
+      .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', clerkUserId))
       .order('desc')
       .take(30);
     return {
@@ -1749,15 +1866,11 @@ export const listFamilyForParent = query({
 // owned by it (full list, not capped at 8), recent requests, and the
 // usage row for the current month.
 export const getProfileDetail = query({
-  args: { profileId: v.id('kidProfiles') },
+  args: { profileId: v.id('kidProfiles'), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const identity = (await ctx.auth.getUserIdentity()) as { subject: string } | null;
-    if (!identity?.subject) return null;
-    const parent = await ctx.db
-      .query('users')
-      .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', identity.subject))
-      .first();
-    if (!parent) return null;
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    if (!resolved) return null;
+    const parent = resolved.row;
     const profile = await ctx.db.get(args.profileId);
     if (!profile) return null;
     if (profile.parentUserId !== parent._id) {
@@ -1842,14 +1955,11 @@ export const deleteProject = mutation({
 async function requireParentOfKid(
   ctx: { auth: { getUserIdentity: () => Promise<unknown> }; db: any },
   kidProfileId: Id<'kidProfiles'>,
+  userToken?: string,
 ): Promise<{ profile: any; parentUserId: Id<'users'> }> {
-  const identity = (await ctx.auth.getUserIdentity()) as { subject: string } | null;
-  if (!identity?.subject) throw new Error('Sign in to manage kid settings.');
-  const parent = await ctx.db
-    .query('users')
-    .withIndex('by_clerk_id', (q: any) => q.eq('clerkUserId', identity.subject))
-    .first();
-  if (!parent) throw new Error('Parent account not found.');
+  const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, userToken);
+  if (!resolved) throw new Error('Sign in to manage kid settings.');
+  const parent = resolved.row;
   const profile = await ctx.db.get(kidProfileId);
   if (!profile) throw new Error('Kid profile not found.');
   if (profile.parentUserId !== parent._id) {
@@ -1859,15 +1969,11 @@ async function requireParentOfKid(
 }
 
 export const getKidSettings = query({
-  args: { kidProfileId: v.id('kidProfiles') },
+  args: { kidProfileId: v.id('kidProfiles'), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const identity = (await ctx.auth.getUserIdentity()) as { subject: string } | null;
-    if (!identity?.subject) return null;
-    const parent = await ctx.db
-      .query('users')
-      .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', identity.subject))
-      .first();
-    if (!parent) return null;
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    if (!resolved) return null;
+    const parent = resolved.row;
     const profile = await ctx.db.get(args.kidProfileId);
     if (!profile) return null;
     if (profile.parentUserId !== parent._id) return null;
@@ -1888,9 +1994,10 @@ export const setKidSettings = mutation({
     allowVoice: v.optional(v.boolean()),
     allowWebData: v.optional(v.boolean()),
     allowSharing: v.optional(v.boolean()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireParentOfKid(ctx as never, args.kidProfileId);
+    await requireParentOfKid(ctx as never, args.kidProfileId, args.userToken);
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
     if (args.allowImageRestyle !== undefined) patch.allowImageRestyle = args.allowImageRestyle;
     if (args.allowVoice !== undefined) patch.allowVoice = args.allowVoice;
@@ -1905,9 +2012,10 @@ export const setBlockedTopics = mutation({
   args: {
     kidProfileId: v.id('kidProfiles'),
     topics: v.array(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireParentOfKid(ctx as never, args.kidProfileId);
+    await requireParentOfKid(ctx as never, args.kidProfileId, args.userToken);
     const cleaned = Array.from(
       new Set(
         args.topics

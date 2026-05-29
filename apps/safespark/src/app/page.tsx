@@ -1,6 +1,6 @@
 'use client';
 
-import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs';
+import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -114,7 +114,10 @@ const FAQS = [
 ];
 
 export default function HomePage() {
-  const { isSignedIn, isLoaded, user } = useUser();
+  const marketing = useMarketingAuth();
+  const isLoaded = !marketing.isLoading;
+  const isSignedIn = marketing.isAuthenticated;
+  const user = marketing.user;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -147,31 +150,29 @@ export default function HomePage() {
           {isLoaded && isSignedIn ? (
             <>
               <Link
-                href="/make"
+                href="/parent"
                 className="px-5 py-2 rounded-2xl bg-violet-600 text-white font-bold shadow-md hover:bg-violet-700 transition text-sm"
               >
-                Open SafeSpark →
+                Parent dashboard →
               </Link>
               <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-600">
-                <span>Hi, {user?.firstName ?? 'parent'}</span>
-                <UserButton />
-              </div>
-              <div className="sm:hidden">
-                <UserButton />
+                <span>Hi, {user?.name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'parent'}</span>
               </div>
             </>
           ) : (
             <>
-              <SignInButton mode="modal">
-                <button className="px-4 py-2 text-sm font-bold text-violet-700 hover:text-violet-900">
-                  Sign in
-                </button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="px-5 py-2 rounded-2xl bg-violet-600 text-white font-bold shadow-md hover:bg-violet-700 transition text-sm">
-                  Get started — free
-                </button>
-              </SignUpButton>
+              <Link
+                href="/login"
+                className="px-4 py-2 text-sm font-bold text-violet-700 hover:text-violet-900"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="https://getsafefamily.com/signup?plan=unified"
+                className="px-5 py-2 rounded-2xl bg-violet-600 text-white font-bold shadow-md hover:bg-violet-700 transition text-sm"
+              >
+                Get started — free
+              </Link>
             </>
           )}
           <button
@@ -232,11 +233,12 @@ export default function HomePage() {
                     Open SafeSpark →
                   </Link>
                 ) : (
-                  <SignUpButton mode="modal">
-                    <button className="px-8 py-4 rounded-2xl bg-violet-600 text-white font-bold shadow-xl shadow-violet-200 hover:bg-violet-700 transition text-lg">
-                      Start free → it takes 30 seconds
-                    </button>
-                  </SignUpButton>
+                  <Link
+                    href="https://getsafefamily.com/signup?plan=unified"
+                    className="px-8 py-4 rounded-2xl bg-violet-600 text-white font-bold shadow-xl shadow-violet-200 hover:bg-violet-700 transition text-lg"
+                  >
+                    Start free → it takes 30 seconds
+                  </Link>
                 )}
               </div>
               <p className="text-xs font-bold text-slate-600">
@@ -850,11 +852,12 @@ export default function HomePage() {
               Open SafeSpark →
             </Link>
           ) : (
-            <SignUpButton mode="modal">
-              <button className="px-8 py-4 rounded-2xl bg-violet-600 text-white font-bold shadow-xl shadow-violet-200 hover:bg-violet-700 transition text-lg">
-                Sign up free
-              </button>
-            </SignUpButton>
+            <Link
+              href="https://getsafefamily.com/signup?plan=unified"
+              className="px-8 py-4 rounded-2xl bg-violet-600 text-white font-bold shadow-xl shadow-violet-200 hover:bg-violet-700 transition text-lg"
+            >
+              Sign up free
+            </Link>
           )}
           <p className="text-xs font-bold text-slate-500">
             Free during early access · No credit card · Cancel any time
@@ -1141,14 +1144,12 @@ function StickyMobileCTA({ isSignedIn }: { isSignedIn: boolean }) {
             Open SafeSpark →
           </Link>
         ) : (
-          <SignUpButton mode="modal">
-            <button
-              type="button"
-              className="block w-full text-center px-5 py-3 rounded-2xl bg-violet-600 text-white font-bold shadow-lg shadow-violet-200 hover:bg-violet-700 transition text-base"
-            >
-              Start free → it takes 30 seconds
-            </button>
-          </SignUpButton>
+          <Link
+            href="https://getsafefamily.com/signup?plan=unified"
+            className="block w-full text-center px-5 py-3 rounded-2xl bg-violet-600 text-white font-bold shadow-lg shadow-violet-200 hover:bg-violet-700 transition text-base"
+          >
+            Start free → it takes 30 seconds
+          </Link>
         )}
       </div>
     </div>

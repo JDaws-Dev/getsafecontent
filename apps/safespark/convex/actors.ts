@@ -3,6 +3,38 @@ import type { MutationCtx, QueryCtx } from './_generated/server';
 
 type Ctx = QueryCtx | MutationCtx;
 
+/**
+ * Verify a Marketing Central HMAC-SHA256 JWT and return the {userId, email}
+ * claims. Marketing's /login signs tokens with HS256 + a shared secret;
+ * SafeSpark holds the same secret in MARKETING_JWT_SECRET. Returns null on
+ * any failure (bad signature, expired, wrong issuer, missing secret, etc.).
+ *
+ * Used by the parent-facing queries that can't rely on auth.config.ts JWKS
+ * verification (Marketing's HMAC format isn't compatible). Kid sessions
+ * still authenticate via sessionToken + the kidSessions table — they don't
+ * need this path.
+ */
+export async function verifyMarketingToken(
+  token: string,
+): Promise<{ userId: string; email: string } | null> {
+  const secret = process.env.MARKETING_JWT_SECRET;
+  if (!secret) return null;
+  try {
+    const { jwtVerify } = await import('jose');
+    const { payload } = await jwtVerify(
+      token,
+      new TextEncoder().encode(secret),
+      { issuer: 'getsafefamily.com' },
+    );
+    const userId = typeof payload.sub === 'string' ? payload.sub : null;
+    const email = typeof payload.email === 'string' ? payload.email : null;
+    if (!userId || !email) return null;
+    return { userId, email: email.toLowerCase() };
+  } catch {
+    return null;
+  }
+}
+
 export type Actor = {
   userId: Id<'users'>;
   role: 'learner' | 'parent';
@@ -15,7 +47,32 @@ function kidClerkKey(kidProfileId: Id<'kidProfiles'>): string {
   return `kidProfile:${kidProfileId}`;
 }
 
-export async function getActor(ctx: Ctx, sessionToken?: string): Promise<Actor | null> {
+export async function getActor(
+  ctx: Ctx,
+  sessionToken?: string,
+  userToken?: string,
+): Promise<Actor | null> {
+  // Path 0 — explicit Marketing JWT verified server-side. Added 2026-05-28
+  // after Clerk retirement: Marketing's HS256 tokens can't be verified via
+  // auth.config.ts JWKS, so we accept the token as an arg and verify with
+  // the shared secret. Resolves the user row by email match.
+  if (userToken) {
+    const verified = await verifyMarketingToken(userToken);
+    if (verified) {
+      const user = await ctx.db
+        .query('users')
+        .withIndex('by_email', (q) => q.eq('email', verified.email))
+        .first();
+      if (user) {
+        return {
+          userId: user._id,
+          role: user.role,
+          familyId: user.familyId,
+          kidProfileId: user.linkedKidProfileId,
+        };
+      }
+    }
+  }
   if (sessionToken) {
     const session = await ctx.db
       .query('kidSessions')
@@ -75,8 +132,12 @@ export async function getActor(ctx: Ctx, sessionToken?: string): Promise<Actor |
   return null;
 }
 
-export async function requireActor(ctx: Ctx, sessionToken?: string): Promise<Actor> {
-  const actor = await getActor(ctx, sessionToken);
+export async function requireActor(
+  ctx: Ctx,
+  sessionToken?: string,
+  userToken?: string,
+): Promise<Actor> {
+  const actor = await getActor(ctx, sessionToken, userToken);
   if (!actor) throw new Error('Not authorized');
   return actor;
 }

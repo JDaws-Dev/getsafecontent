@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from 'convex/react';
-import { useUser } from '@clerk/nextjs';
 import { api } from '../../../../convex/_generated/api';
+import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 
 export default function AdminSparkPage() {
-  const { isSignedIn, isLoaded } = useUser();
+  const marketing = useMarketingAuth();
+  const isLoaded = !marketing.isLoading;
+  const isSignedIn = marketing.isAuthenticated;
   const [limit, setLimit] = useState(200);
   const rows = useQuery(api.safespark.listAllRequests, isSignedIn ? { limit } : 'skip');
   const [filter, setFilter] = useState('');
@@ -21,7 +23,10 @@ export default function AdminSparkPage() {
         <div className="space-y-3">
           <h1 className="text-2xl font-black text-slate-800">Sign in required</h1>
           <p className="text-sm text-slate-600">Admin viewing requires a signed-in operator account.</p>
-          <Link href="/" className="text-sm font-bold text-violet-600 hover:text-violet-800">
+          <Link href="/login" className="inline-block rounded-2xl bg-violet-600 px-5 py-2 text-sm font-black text-white hover:bg-violet-700">
+            Sign in
+          </Link>
+          <Link href="/" className="block text-sm font-bold text-violet-600 hover:text-violet-800">
             Back to home
           </Link>
         </div>

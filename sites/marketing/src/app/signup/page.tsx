@@ -8,6 +8,7 @@ import { useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import AppSelector, { type AppId, type PricingInfo } from "@/components/signup/AppSelector";
 import AccountForm, { type AccountFormData, type AppSelection } from "@/components/signup/AccountForm";
+import { isUnifiedPricingEnabledClient } from "@/lib/feature-flags";
 
 /**
  * Unified Signup Page
@@ -124,7 +125,18 @@ function SignupContent() {
   // Unified-pricing flow: ?plan=unified&interval=monthly|yearly
   // When set, the AppSelector is skipped and checkout uses the unified
   // Price IDs (all 5 apps including SafeSpark, $14.99/mo or $149/yr).
-  const isUnifiedPlan = searchParams.get("plan") === "unified";
+  //
+  // ALSO: when the global ENABLE_UNIFIED_PRICING flag is on, route every
+  // legacy ?app=safetunes-style entry through the unified flow too.
+  // Otherwise new customers from per-app landing pages would still see
+  // the legacy 4-app picker (which can't sell SafeSpark) — the bug
+  // captured as roadmap item `appselector-5app`. Existing $4.99 single-
+  // app subs are grandfathered automatically by Stripe (never auto-
+  // migrated between Price IDs), so flipping new signups to unified
+  // doesn't touch them.
+  const isUnifiedPlanQuery = searchParams.get("plan") === "unified";
+  const isUnifiedPlan =
+    isUnifiedPlanQuery || isUnifiedPricingEnabledClient();
   const urlIntervalYearly = searchParams.get("interval") === "yearly";
 
   // State for selected apps - default to pre-selected app or all apps

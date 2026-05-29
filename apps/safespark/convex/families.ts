@@ -29,9 +29,12 @@ function generateFamilyCode(): string {
  * code if the parent doesn't already have one.
  */
 export const ensureForParent = mutation({
-  args: { parentUserId: v.id('users') },
-  handler: async (ctx, { parentUserId }) => {
-    const actor = await requireActor(ctx);
+  args: {
+    parentUserId: v.id('users'),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, { parentUserId, userToken }) => {
+    const actor = await requireActor(ctx, undefined, userToken);
     if (actor.role !== 'parent' || actor.userId !== parentUserId) {
       throw new Error('Not authorized to manage this family');
     }
@@ -82,9 +85,12 @@ export const ensureForParent = mutation({
 });
 
 export const getForParent = query({
-  args: { parentUserId: v.id('users') },
-  handler: async (ctx, { parentUserId }) => {
-    const actor = await requireActor(ctx);
+  args: {
+    parentUserId: v.id('users'),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, { parentUserId, userToken }) => {
+    const actor = await requireActor(ctx, undefined, userToken);
     if (actor.role !== 'parent' || actor.userId !== parentUserId) {
       throw new Error('Not authorized to view this family');
     }

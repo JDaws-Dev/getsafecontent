@@ -1,2 +1,86 @@
+# Vercel
 .vercel
+
+# Playwright MCP scratch
 .playwright-mcp/
+
+# Env files — ONLY .env.example is ever safe to commit. All other variants
+# can carry live secrets and must stay out of git.
+.env
+.env.*
+!.env.example
+!**/.env.example
+!.env*.example
+!**/.env*.example
+
+# Next.js
+.next/
+**/.next/
+
+# Build outputs
+dist/
+**/dist/
+build/
+**/build/
+out/
+**/out/
+
+# Coverage / test reports
+coverage/
+**/coverage/
+playwright-report/
+**/playwright-report/
+test-results/
+**/test-results/
+
+# Node
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Convex generated bindings stay in repo per Convex convention,
+# but its local cache does not
+.convex/
+
+# Sentry source maps auth
+.sentryclirc
+
+# Editor / OS junk
+.DS_Store
+**/.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# Android signing + build outputs — keystores can sign updates as us if leaked.
+# Never put these in git regardless of how harmless they look. App-release
+# bundles also embed signed artifacts.
+*.keystore
+*.jks
+*.p8
+*.p12
+*.pfx
+*.apk
+*.aab
+*.idsig
+**/android-twa/app/build/
+**/android/app/build/
+**/android/build/
+
+# iOS signing artifacts (we don't currently ship iOS native, but defensive)
+*.mobileprovision
+*.provisionprofile
+*.cer
+
+# Misc local-only files
+*.log
+.turbo/

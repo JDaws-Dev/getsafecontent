@@ -1,26 +1,19 @@
-// Dual-provider auth for the Clerk → Marketing Central migration window.
+// Marketing Central is SafeSpark's sole identity provider as of 2026-05-28.
+// Convex verifies incoming JWTs against the .well-known/jwks.json endpoint
+// on adamant-crow-705; `ctx.auth.getUserIdentity()` returns the marketing
+// user._id as `subject` and the email as `email`. `getActor()` in
+// convex/actors.ts resolves the SafeSpark user row by matching that email
+// against `users.email`.
 //
-// Provider 1 (legacy): Clerk. Existing parents (jedaws + soonerjace) and
-// any active sessions continue to authenticate via Clerk-issued JWTs.
-// Their JWT template must be named "convex" on the Clerk side.
+// Kid sessions don't go through this provider — they pass `sessionToken`
+// as a query arg and `resolveSafeSparkIdentity` looks them up directly
+// from the `kidSessions` table (no JWT involved).
 //
-// Provider 2 (federated): Marketing Central. Convex Auth on
-// adamant-crow-705 issues JWTs that Convex here verifies via the
-// .well-known/jwks.json discovery endpoint on the same domain. Users
-// authenticated through the new `/login` route send these JWTs and
-// `ctx.auth.getUserIdentity()` returns identity with their Marketing
-// user._id as `subject` and their email as `email`.
-//
-// `getActor()` in convex/actors.ts handles both subject formats:
-// Clerk subjects (user_xxx) are matched against `users.clerkUserId`;
-// Marketing subjects don't match anything in `users.clerkUserId` so
-// the fallback path matches by `identity.email`.
+// The Clerk provider entry that used to be here was removed when Clerk
+// was retired; existing Clerk users were migrated to Marketing Central
+// via password-reset email + /login flow.
 const authConfig = {
   providers: [
-    {
-      domain: process.env.CLERK_FRONTEND_API_URL ?? '',
-      applicationID: 'convex',
-    },
     {
       domain: 'https://adamant-crow-705.convex.site',
       applicationID: 'convex',

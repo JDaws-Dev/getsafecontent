@@ -1,4 +1,3 @@
-import { auth } from '@clerk/nextjs/server';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../../../../convex/_generated/api';
 
@@ -9,28 +8,23 @@ const MAX_PDF_BYTES = 10 * 1024 * 1024;
 const MAX_EXTRACTED_CHARS = 30_000;
 
 export async function POST(request: Request) {
-  const { userId, getToken } = await auth();
   const body = (await request.json().catch(() => null)) as
     | { storageId?: string; sessionToken?: string }
     | null;
 
-  if (!body?.storageId && !body?.sessionToken) {
-    return Response.json({ error: 'storageId or sessionToken required' }, { status: 400 });
+  if (!body?.storageId) {
+    return Response.json({ error: 'storageId required' }, { status: 400 });
   }
 
-  // For Clerk-authed parents: use Convex via Clerk JWT to resolve storage URL.
-  // For kid sessions: use the existing finalizeImageUpload mutation which
-  // already works for any storage object (image OR pdf) — the helper just
-  // returns the storage URL.
+  // Clerk retired 2026-05-28 — auth is now strictly via the kid sessionToken
+  // (most common, when the request comes from /make). The finalizeImageUpload
+  // mutation accepts that path via resolveSafeSparkIdentity.
   let pdfUrl: string;
   try {
     const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-    if (userId) {
-      const token = await getToken({ template: 'convex' });
-      if (token) convex.setAuth(token);
-    }
     const result = (await convex.mutation(api.safespark.finalizeImageUpload, {
-      storageId: body.storageId!,
+      storageId: body.storageId,
+      sessionToken: body.sessionToken,
     })) as { url: string };
     pdfUrl = result.url;
   } catch (err) {

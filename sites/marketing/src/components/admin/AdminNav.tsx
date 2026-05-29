@@ -230,7 +230,17 @@ export function AdminNav({ user }: AdminNavProps) {
               </div>
             </div>
             <button
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={async () => {
+                // Clear BOTH auth surfaces: NextAuth session (if present) and
+                // the Marketing Central admin cookie. Whichever path the
+                // admin used to sign in, the other is a no-op.
+                try {
+                  await fetch("/api/admin-auth/marketing-login", { method: "DELETE" });
+                } catch {
+                  /* best effort */
+                }
+                await signOut({ callbackUrl: "/" });
+              }}
               className="mt-3 w-full px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-left transition-colors"
             >
               Sign out

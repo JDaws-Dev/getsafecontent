@@ -1,12 +1,42 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 function LoginContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const [email, setEmail] = useState("jedaws@gmail.com");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  async function handlePasswordSignIn(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setFormError(null);
+    try {
+      const res = await fetch("/api/admin-auth/marketing-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { success?: boolean; error?: string }
+        | null;
+      if (!res.ok || !data?.success) {
+        setFormError(data?.error ?? "Sign-in failed.");
+        return;
+      }
+      router.replace("/admin");
+    } catch {
+      setFormError("Network error. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -55,6 +85,56 @@ function LoginContent() {
           </svg>
           Sign in with Google
         </button>
+
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+            or
+          </span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
+
+        <form onSubmit={handlePasswordSignIn} className="space-y-3 text-left">
+          <p className="text-xs text-gray-500 text-center mb-1">
+            Sign in with your Safe Family password
+            <br />
+            <span className="text-[11px] text-gray-400">
+              (Bypasses Google OAuth — use if the Google flow fails.)
+            </span>
+          </p>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+              autoComplete="email"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+          {formError && (
+            <p className="text-xs text-red-600 text-center">{formError}</p>
+          )}
+          <button
+            type="submit"
+            disabled={busy || !password}
+            className="w-full bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-bold transition-colors"
+          >
+            {busy ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
 
         <p className="mt-6 text-xs text-gray-500">
           Only authorized administrators can access this area.

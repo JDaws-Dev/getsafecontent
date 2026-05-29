@@ -107,6 +107,22 @@ export default function KidSearch() {
   // PIN verification (mutation-based for rate limiting)
   const verifyPin = useMutation(api.kidProfiles.verifyKidPin);
 
+  // Auto-fill family code if arriving from another Safe Family app's
+  // cross-app switcher (URL ?fc=ABCDEF). Same unified code works across
+  // all 5 apps. Skip if already set via the /play/:familyCode route param.
+  useEffect(() => {
+    if (familyCode) return;
+    const fcParam = new URLSearchParams(window.location.search).get('fc');
+    if (!fcParam) return;
+    const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    if (normalized.length === 6) {
+      setFamilyCode(normalized);
+      setCodeInput(normalized);
+    } else if (normalized.length > 0) {
+      setCodeInput(normalized);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!pinProfile || !pinInput.every(d => d !== '')) return;
     const pin = pinInput.join('');

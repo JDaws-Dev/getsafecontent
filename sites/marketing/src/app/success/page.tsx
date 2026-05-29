@@ -177,7 +177,7 @@ function SuccessContent() {
             {isPromoSignup
               ? "Your lifetime access is now active! Let's set up your apps so your kids can start using them safely."
               : isTrialSignup
-                ? "Your 7-day free trial is now active — all 4 apps, no credit card needed! Explore everything and see which apps your family loves."
+                ? "Your 7-day free trial is now active — all 5 apps, no credit card needed! Explore everything and see which apps your family loves."
                 : "Your subscription is now active. Let's set up your apps so your kids can start using them safely."}
           </p>
 

@@ -96,22 +96,35 @@ export const getByClerkId = query({
 });
 
 export const getCurrent = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { userToken: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    // Path A — explicit Marketing JWT passed by the client and verified
+    // server-side with the shared HMAC secret. This is the working parent
+    // path post-Clerk-retirement (the auth.config.ts JWKS provider can't
+    // verify Marketing's HS256-signed tokens, so ctx.auth.getUserIdentity()
+    // returns null for them).
+    if (args.userToken) {
+      const { verifyMarketingToken } = await import('./actors');
+      const verified = await verifyMarketingToken(args.userToken);
+      if (verified) {
+        const row = await ctx.db
+          .query('users')
+          .withIndex('by_email', (q) => q.eq('email', verified.email))
+          .first();
+        if (row) return row;
+      }
+    }
+
+    // Path B — Convex auth (kept for any provider in auth.config.ts that
+    // CAN be verified via JWKS; in practice this no longer fires after
+    // Clerk retirement, but a future RSA migration would re-enable it).
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
-
-    // Path A — Clerk subject (legacy /sign-in). Subject looks like "user_xxx".
     const byClerk = await ctx.db
       .query('users')
       .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', identity.subject))
       .first();
     if (byClerk) return byClerk;
-
-    // Path B — Marketing Central JWT (federated /login). Subject is the
-    // user's Convex marketing user._id which won't match any clerkUserId
-    // here. Fall back to email — Marketing JWTs always carry the email
-    // claim. Mirrors getActor() in convex/actors.ts.
     if (identity.email) {
       return await ctx.db
         .query('users')

@@ -2,13 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import {
-  SignInButton,
-  SignUpButton,
-  UserButton,
-  useUser,
-} from '@clerk/nextjs';
-import { useMutation, useQuery } from 'convex/react';
+import { useAction, useMutation, useQuery } from 'convex/react';
+import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import {
@@ -246,7 +241,13 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
   const [mobileTab, setMobileTab] = useState<'chat' | 'preview' | 'projects'>('chat');
   const [shareStatus, setShareStatus] = useState<string | null>(null);
 
-  const { isSignedIn } = useUser();
+  // Marketing Central is the sole parent identity post-Clerk-retirement
+  // (2026-05-28). `isSignedIn` here represents a parent who has signed
+  // in via /login; it's used to decide whether to show the "Admin" link
+  // back to /parent and to auto-import any local guest projects into the
+  // parent's account.
+  const marketing = useMarketingAuth();
+  const isSignedIn = marketing.isAuthenticated;
   // Defer localStorage reads to a post-mount effect to avoid the
   // hydration mismatch / flicker we hit 2026-05-28. Reading localStorage
   // during render returns null on the server and the token on the client,
@@ -254,9 +255,8 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
   //
   // /make is the KID app — parents come here to use it as a kid, not as
   // themselves. The admin surface is /parent. So we ALWAYS show the
-  // family-code + profile-picker gate when no kid session exists,
-  // regardless of Clerk parent state. Matches SafeTunes /play,
-  // SafeTube /play, SafeReads /read.
+  // family-code + profile-picker gate when no kid session exists.
+  // Matches SafeTunes /play, SafeTube /play, SafeReads /read.
   const [mounted, setMounted] = useState(false);
   const [kidSessionToken, setKidSessionToken] = useState<string | null>(null);
   useEffect(() => {
@@ -297,6 +297,12 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
     [logRequestRaw, kidSessionToken],
   );
   const restoreVersionMut = useMutation(api.safespark.restoreVersion);
+  // Per-project context checkpoint trigger — fired after each successful
+  // save so Spark doesn't lose the original premise / art direction once
+  // the rolling 8-turn message window slides past it. The action no-ops
+  // unless cadence is met (~10 turns or > 48h since last checkpoint), so
+  // calling it on every save is cheap. Knox-frustration fix 2026-05-28.
+  const maybeCreateCheckpoint = useAction(api.checkpoints.maybeCreateCheckpoint);
   const generateUploadUrl = useMutation(api.safespark.generateImageUploadUrl);
   const finalizeImageUpload = useMutation(api.safespark.finalizeImageUpload);
   const createShareLink = useMutation(api.safespark.createShareLink);
@@ -331,7 +337,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
     setImageUploading(true);
     setError(null);
     try {
-      const uploadUrl = await generateUploadUrl();
+      const uploadUrl = await generateUploadUrl({ sessionToken: kidSessionToken ?? undefined });
       const res = await fetch(uploadUrl, {
         method: 'POST',
         headers: { 'Content-Type': file.type },
@@ -339,7 +345,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
       });
       if (!res.ok) throw new Error('Upload failed.');
       const { storageId } = (await res.json()) as { storageId: string };
-      const { url } = await finalizeImageUpload({ storageId });
+      const { url } = await finalizeImageUpload({ storageId, sessionToken: kidSessionToken ?? undefined });
       setPendingImageUrl(url);
     } catch (err) {
       const text = err instanceof Error ? err.message : String(err);
@@ -366,7 +372,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
     setPdfUploading(true);
     setError(null);
     try {
-      const uploadUrl = await generateUploadUrl();
+      const uploadUrl = await generateUploadUrl({ sessionToken: kidSessionToken ?? undefined });
       const res = await fetch(uploadUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/pdf' },
@@ -573,6 +579,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             ? { text: pendingPdf.text, filename: pendingPdf.filename, pageCount: pendingPdf.pageCount }
             : null,
           sessionToken: kidSessionToken,
+          projectId: activeProjectId,
         }),
       });
       if (!response.ok || !response.body) {
@@ -677,6 +684,13 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
               versionSummary: data.versionSummary,
             });
             setActiveProjectId(savedId as unknown as string);
+            // Fire-and-forget checkpoint regeneration. Action no-ops
+            // unless cadence is met (every ~10 turns or > 48h stale).
+            void maybeCreateCheckpoint({
+              projectId: savedId as unknown as Id<'safesparkProjects'>,
+            }).catch((err) => {
+              console.warn('[checkpoint] background trigger failed', err);
+            });
           } catch (saveErr) {
             const text = saveErr instanceof Error ? saveErr.message : String(saveErr);
             setError(`Couldn't save to your account: ${text}`);
@@ -886,22 +900,18 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             Your projects save under your account and you can come back any time, on any device.
           </p>
           <div className="mt-5 flex flex-col gap-2">
-            <SignUpButton mode="modal">
-              <button
-                type="button"
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white hover:bg-violet-700"
-              >
-                Create an account
-              </button>
-            </SignUpButton>
-            <SignInButton mode="modal">
-              <button
-                type="button"
-                className="inline-flex w-full items-center justify-center rounded-2xl border border-violet-200 bg-white px-5 py-3 text-sm font-bold text-violet-700 hover:bg-violet-50"
-              >
-                I already have an account
-              </button>
-            </SignInButton>
+            <Link
+              href="https://getsafefamily.com/signup?plan=unified"
+              className="inline-flex w-full items-center justify-center rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white hover:bg-violet-700"
+            >
+              Create an account
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex w-full items-center justify-center rounded-2xl border border-violet-200 bg-white px-5 py-3 text-sm font-bold text-violet-700 hover:bg-violet-50"
+            >
+              I already have an account
+            </Link>
           </div>
           <p className="mt-4 text-xs font-bold text-slate-500">
             Free during early access · No credit card
@@ -1044,7 +1054,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 className={ACTION_BUTTON_CLASS}
                 title="Switch to a different kid profile"
               >
-                Switch kid
+                Switch profile
               </button>
             )}
             {isSignedIn ? (
@@ -1056,14 +1066,11 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 >
                   Admin
                 </Link>
-                <UserButton />
               </>
             ) : (
-              <SignInButton mode="modal">
-                <button type="button" className={ACTION_BUTTON_CLASS}>
-                  Sign in
-                </button>
-              </SignInButton>
+              <Link href="/login" className={ACTION_BUTTON_CLASS}>
+                Sign in
+              </Link>
             )}
           </div>
         </div>

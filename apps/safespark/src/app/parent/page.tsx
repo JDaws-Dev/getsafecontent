@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useUser, UserButton } from '@clerk/nextjs';
 import { useMutation, useQuery } from 'convex/react';
 import { Copy, Plus, Users, Settings2, X, LogOut } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
@@ -10,27 +9,27 @@ import type { Id } from '../../../convex/_generated/dataModel';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 
 export default function ParentDashboard() {
-  // Dual-auth: either Clerk (legacy) OR Marketing Central JWT (federated).
-  // The federated path is how Michelle, Jenny, Ben Purves, Jolene, et al.
-  // (the 23 backfilled lifetime users) reach this page.
-  const { isSignedIn: clerkSignedIn, isLoaded: clerkLoaded, user: clerkUser } = useUser();
+  // Marketing Central JWT is the sole identity surface post-Clerk-retirement
+  // (2026-05-28). Legacy Clerk users (jedaws, soonerjace) migrated by
+  // logging in at /login after triggering a password reset.
   const marketing = useMarketingAuth();
 
-  const isLoaded = clerkLoaded && !marketing.isLoading;
-  const isClerkAuth = clerkSignedIn === true;
-  const isFederatedAuth = marketing.isAuthenticated;
-  const isSignedIn = isClerkAuth || isFederatedAuth;
+  const isLoaded = !marketing.isLoading;
+  const isSignedIn = marketing.isAuthenticated;
 
-  // Display data — prefer Clerk when present (legacy users), fall back to
-  // Marketing user data for federated users.
-  const displayEmail = isClerkAuth
-    ? clerkUser?.primaryEmailAddress?.emailAddress
-    : marketing.user?.email;
-  const displayName = isClerkAuth
-    ? (clerkUser?.firstName ?? clerkUser?.fullName ?? 'Parent')
-    : (marketing.user?.name ?? marketing.user?.email?.split('@')[0] ?? 'Parent');
+  const displayEmail = marketing.user?.email;
+  const displayName =
+    marketing.user?.name ?? marketing.user?.email?.split('@')[0] ?? 'Parent';
 
-  const me = useQuery(api.users.getCurrent, isSignedIn ? {} : 'skip');
+  // Pass the Marketing JWT as `userToken` so Convex can verify it
+  // server-side with the shared HMAC secret. SafeSpark's auth.config.ts
+  // JWKS provider can't validate Marketing's HS256-signed tokens, so
+  // ctx.auth.getUserIdentity() returns null for them; the userToken arg
+  // is the explicit channel for parent identity post-Clerk-retirement.
+  const meArgs = isSignedIn
+    ? { userToken: marketing.token ?? undefined }
+    : 'skip';
+  const me = useQuery(api.users.getCurrent, meArgs);
 
   // NO auto-upsert useEffect here. The earlier version (commit 3f30fa63)
   // called upsertFromClerk when me === null, but `displayName` was in the
@@ -44,8 +43,14 @@ export default function ParentDashboard() {
   // ever does need creation, that should happen in the signin/provisioning
   // flow, not as a side effect of viewing the dashboard.
 
-  const family = useQuery(api.safespark.listFamilyForParent, isSignedIn ? {} : 'skip');
-  const usage = useQuery(api.safespark.getFamilyUsageThisMonth, isSignedIn ? {} : 'skip');
+  const family = useQuery(
+    api.safespark.listFamilyForParent,
+    isSignedIn ? { userToken: marketing.token ?? undefined } : 'skip',
+  );
+  const usage = useQuery(
+    api.safespark.getFamilyUsageThisMonth,
+    isSignedIn ? { userToken: marketing.token ?? undefined } : 'skip',
+  );
   const ensureFamily = useMutation(api.families.ensureForParent);
   const [codeCopied, setCodeCopied] = useState(false);
 
@@ -92,20 +97,16 @@ export default function ParentDashboard() {
              * maker themselves get the small "Try the maker" link
              * below in the kid-instructions block.
              */}
-            {isClerkAuth ? (
-              <UserButton />
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  marketing.logout();
-                  window.location.href = '/login';
-                }}
-                className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
-              >
-                <LogOut className="h-3.5 w-3.5" /> Sign out
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                marketing.logout();
+                window.location.href = '/login';
+              }}
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+            >
+              <LogOut className="h-3.5 w-3.5" /> Sign out
+            </button>
           </div>
         </header>
 
@@ -165,7 +166,7 @@ export default function ParentDashboard() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (me?._id) void ensureFamily({ parentUserId: me._id });
+                    if (me?._id) void ensureFamily({ parentUserId: me._id, userToken: marketing.token ?? undefined });
                   }}
                   disabled={!me?._id}
                   className="rounded-2xl bg-violet-600 px-5 py-2.5 text-sm font-black text-white hover:bg-violet-700 disabled:opacity-50"
@@ -310,7 +311,11 @@ function KidRow({ kid }: { kid: Kid }) {
 }
 
 function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> }) {
-  const settings = useQuery(api.safespark.getKidSettings, { kidProfileId });
+  const marketing = useMarketingAuth();
+  const settings = useQuery(api.safespark.getKidSettings, {
+    kidProfileId,
+    userToken: marketing.token ?? undefined,
+  });
   const setKidSettings = useMutation(api.safespark.setKidSettings);
   const setBlockedTopics = useMutation(api.safespark.setBlockedTopics);
   const [topicInput, setTopicInput] = useState('');
@@ -328,7 +333,7 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
     next: boolean,
   ) => {
     try {
-      await setKidSettings({ kidProfileId, [key]: next } as Parameters<typeof setKidSettings>[0]);
+      await setKidSettings({ kidProfileId, [key]: next, userToken: marketing.token ?? undefined } as Parameters<typeof setKidSettings>[0]);
     } catch (err) {
       console.error('setKidSettings failed', err);
     }
@@ -340,7 +345,7 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
     const next = Array.from(new Set([...settings.blockedTopics, t.toLowerCase()]));
     setTopicInput('');
     try {
-      await setBlockedTopics({ kidProfileId, topics: next });
+      await setBlockedTopics({ kidProfileId, topics: next, userToken: marketing.token ?? undefined });
     } catch (err) {
       console.error('setBlockedTopics failed', err);
     }
@@ -349,7 +354,7 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
   const removeTopic = async (topic: string) => {
     const next = settings.blockedTopics.filter((t) => t !== topic);
     try {
-      await setBlockedTopics({ kidProfileId, topics: next });
+      await setBlockedTopics({ kidProfileId, topics: next, userToken: marketing.token ?? undefined });
     } catch (err) {
       console.error('setBlockedTopics failed', err);
     }

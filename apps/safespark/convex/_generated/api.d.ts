@@ -9,11 +9,13 @@
  */
 
 import type * as actors from "../actors.js";
+import type * as checkpoints from "../checkpoints.js";
 import type * as crons from "../crons.js";
 import type * as families from "../families.js";
 import type * as http from "../http.js";
 import type * as kidProfiles from "../kidProfiles.js";
 import type * as kidSessions from "../kidSessions.js";
+import type * as migrations from "../migrations.js";
 import type * as provisionUser from "../provisionUser.js";
 import type * as provisionUserInternal from "../provisionUserInternal.js";
 import type * as safespark from "../safespark.js";
@@ -28,11 +30,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   actors: typeof actors;
+  checkpoints: typeof checkpoints;
   crons: typeof crons;
   families: typeof families;
   http: typeof http;
   kidProfiles: typeof kidProfiles;
   kidSessions: typeof kidSessions;
+  migrations: typeof migrations;
   provisionUser: typeof provisionUser;
   provisionUserInternal: typeof provisionUserInternal;
   safespark: typeof safespark;

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import Link from 'next/link';
 import { api } from '../../../../convex/_generated/api';
+import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 
 const INTEREST_SUGGESTIONS = [
   'dance', 'theatre', 'music', 'reading', 'art', 'coding', 'animals',
@@ -20,7 +21,8 @@ const AVOID_SUGGESTIONS = [
 ];
 
 export default function ParentSetupPage() {
-  const me = useQuery(api.users.getCurrent);
+  const marketing = useMarketingAuth();
+  const me = useQuery(api.users.getCurrent, { userToken: marketing.token ?? undefined });
   const createProfile = useMutation(api.kidProfiles.create);
 
   const [displayName, setDisplayName] = useState('');
