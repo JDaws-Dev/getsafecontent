@@ -9,10 +9,14 @@
  */
 
 import type * as actors from "../actors.js";
+import type * as ai_intentClassifier from "../ai/intentClassifier.js";
+import type * as ai_tts from "../ai/tts.js";
 import type * as checkpoints from "../checkpoints.js";
+import type * as concernAlerts from "../concernAlerts.js";
 import type * as crons from "../crons.js";
 import type * as families from "../families.js";
 import type * as http from "../http.js";
+import type * as jobs from "../jobs.js";
 import type * as kidProfiles from "../kidProfiles.js";
 import type * as kidSessions from "../kidSessions.js";
 import type * as migrations from "../migrations.js";
@@ -30,10 +34,14 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   actors: typeof actors;
+  "ai/intentClassifier": typeof ai_intentClassifier;
+  "ai/tts": typeof ai_tts;
   checkpoints: typeof checkpoints;
+  concernAlerts: typeof concernAlerts;
   crons: typeof crons;
   families: typeof families;
   http: typeof http;
+  jobs: typeof jobs;
   kidProfiles: typeof kidProfiles;
   kidSessions: typeof kidSessions;
   migrations: typeof migrations;

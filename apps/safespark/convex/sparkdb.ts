@@ -141,10 +141,44 @@ export const dbAppend = mutation({
 // project or wants to reset the leaderboard. Not exposed via HTTP — only via
 // the dashboard / maker.
 export const dbWipe = mutation({
-  args: { projectId: v.id('safesparkProjects') },
+  args: {
+    projectId: v.id('safesparkProjects'),
+    // Owner proof — kid session (most common) OR Marketing JWT for
+    // the parent. Without one, dbWipe rejects. Caught 2026-05-29 safety
+    // audit: this was a public mutation with no auth check, meaning any
+    // party with the Convex URL could wipe any project's shared data.
+    sessionToken: v.optional(v.string()),
+    userToken: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     const project = await ctx.db.get(args.projectId);
     if (!project) return { deleted: 0 };
+
+    // Resolve caller identity to the project owner key (`kid:<id>` for
+    // kid-owned projects, the parent's clerkUserId for parent-owned).
+    let callerOwnerKey: string | null = null;
+    if (args.sessionToken) {
+      const session = await ctx.db
+        .query('kidSessions')
+        .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken!))
+        .first();
+      if (session) callerOwnerKey = `kid:${session.kidProfileId}`;
+    }
+    if (!callerOwnerKey && args.userToken) {
+      const { verifyMarketingToken } = await import('./actors');
+      const verified = await verifyMarketingToken(args.userToken);
+      if (verified) {
+        const userRow = await ctx.db
+          .query('users')
+          .withIndex('by_email', (q) => q.eq('email', verified.email))
+          .first();
+        if (userRow) callerOwnerKey = userRow.clerkUserId;
+      }
+    }
+    if (!callerOwnerKey || callerOwnerKey !== project.clerkUserId) {
+      throw new Error('Not authorized to wipe this project.');
+    }
+
     const rows = await ctx.db
       .query('sparkProjectData')
       .withIndex('by_project_key', (q) => q.eq('projectId', args.projectId))

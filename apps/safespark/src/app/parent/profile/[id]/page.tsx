@@ -61,7 +61,43 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  const { profile, projects, recentRequests, usageThisMonth } = detail;
+  const { profile, projects, recentRequests, blockedEvents, concernAlerts, usageThisMonth } = detail;
+
+  // Build the chronological activity log — interleaves prompts, blocks,
+  // and concern alerts so a parent can scroll one timeline instead of
+  // hunting through three sections. Cap at 100 rows to keep the page
+  // snappy; data fetch already pulled more so we can paginate later.
+  type LogEntry =
+    | { kind: 'prompt'; id: string; createdAt: number; prompt: string; projectTitle?: string }
+    | { kind: 'blocked'; id: string; createdAt: number; prompt: string; message: string }
+    | { kind: 'concern'; id: string; createdAt: number; query: string; category: 'self_harm_adjacent' | 'eating_disorder_adjacent'; rationale: string; acknowledged: boolean };
+  const activityLog: LogEntry[] = [
+    ...recentRequests.map((r): LogEntry => ({
+      kind: 'prompt',
+      id: String(r.id),
+      createdAt: r.createdAt,
+      prompt: r.prompt,
+      projectTitle: r.projectTitle,
+    })),
+    ...blockedEvents.map((e): LogEntry => ({
+      kind: 'blocked',
+      id: String(e.id),
+      createdAt: e.createdAt,
+      prompt: e.prompt,
+      message: e.message,
+    })),
+    ...concernAlerts.map((c): LogEntry => ({
+      kind: 'concern',
+      id: String(c.id),
+      createdAt: c.createdAt,
+      query: c.query,
+      category: c.category,
+      rationale: c.rationale,
+      acknowledged: c.acknowledged,
+    })),
+  ]
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 100);
   const colorClass = COLOR_CLASSES[profile.avatarColor ?? 'violet'] ?? COLOR_CLASSES.violet;
 
   return (
@@ -107,21 +143,86 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
           )}
         </section>
 
-        {recentRequests.length > 0 && (
-          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-3 text-lg font-black text-slate-900">Recent prompts</h2>
-            <ul className="space-y-2">
-              {recentRequests.map((r) => (
-                <li key={r.id} className="rounded-xl bg-slate-50 px-3 py-2 text-xs">
-                  <p className="font-semibold text-slate-700">{r.prompt}</p>
-                  <p className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                    {r.projectTitle ? `${r.projectTitle} · ` : ''}{formatDate(r.createdAt)}
-                  </p>
+        {/* Full activity log — interleaves prompts, blocked-topic
+            attempts, and concern-alert events chronologically. The
+            "everything {kid} typed to Spark" view Jeremiah asked for
+            on 2026-05-29. Each entry color-coded by kind. */}
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-black text-slate-900">Activity log</h2>
+              <p className="text-xs font-bold text-slate-500">
+                Everything {profile.displayName} asked Spark to build — including refusals
+              </p>
+            </div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              {activityLog.length} {activityLog.length === 1 ? 'entry' : 'entries'}
+            </p>
+          </div>
+          {activityLog.length === 0 ? (
+            <p className="rounded-2xl bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500">
+              Nothing yet. When {profile.displayName} starts building, every prompt shows here.
+            </p>
+          ) : (
+            <ol className="divide-y divide-slate-100">
+              {activityLog.map((entry) => (
+                <li key={`${entry.kind}-${entry.id}`} className="py-3 first:pt-0 last:pb-0">
+                  {entry.kind === 'prompt' && (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-violet-700">
+                          Asked Spark
+                        </span>
+                        {entry.projectTitle && (
+                          <span className="truncate text-[11px] font-bold text-slate-400">
+                            · {entry.projectTitle}
+                          </span>
+                        )}
+                        <span className="ml-auto text-[11px] font-bold text-slate-400">
+                          {formatDate(entry.createdAt)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm font-semibold text-slate-700">{entry.prompt}</p>
+                    </>
+                  )}
+                  {entry.kind === 'blocked' && (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-rose-700">
+                          Blocked topic
+                        </span>
+                        <span className="truncate text-[11px] font-bold text-rose-500">
+                          · {entry.message.replace(/^Blocked phrase:\s*/i, '')}
+                        </span>
+                        <span className="ml-auto text-[11px] font-bold text-slate-400">
+                          {formatDate(entry.createdAt)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm font-semibold text-rose-700">{entry.prompt}</p>
+                    </>
+                  )}
+                  {entry.kind === 'concern' && (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white">
+                          {entry.category === 'self_harm_adjacent' ? 'Self-harm signal' : 'ED signal'}
+                        </span>
+                        {entry.acknowledged && (
+                          <span className="text-[10px] font-bold text-emerald-700">✓ Acknowledged</span>
+                        )}
+                        <span className="ml-auto text-[11px] font-bold text-slate-400">
+                          {formatDate(entry.createdAt)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm font-black text-rose-900">{entry.query}</p>
+                      <p className="mt-1 text-xs italic text-rose-700">{entry.rationale}</p>
+                    </>
+                  )}
                 </li>
               ))}
-            </ul>
-          </section>
-        )}
+            </ol>
+          )}
+        </section>
       </div>
     </main>
   );
@@ -136,8 +237,13 @@ function ProjectCardWithWipe({
     html: string;
     updatedAt: number;
     lastPrompt?: string;
+    isCommunication?: boolean;
   };
 }) {
+  // Parent calls dbWipe through the Marketing JWT — dbWipe was made
+  // auth-gated 2026-05-29 after the safety audit (previously public).
+  // Without userToken the parent's wipe button would throw 401.
+  const marketing = useMarketingAuth();
   const wipe = useMutation(api.sparkdb.dbWipe);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -147,7 +253,10 @@ function ProjectCardWithWipe({
     }
     setBusy(true);
     try {
-      const r = await wipe({ projectId: project.id });
+      const r = await wipe({
+        projectId: project.id,
+        userToken: marketing.token ?? undefined,
+      });
       setResult(`Wiped ${r.deleted} row${r.deleted === 1 ? '' : 's'}.`);
       setTimeout(() => setResult(null), 4000);
     } catch (err) {
@@ -167,13 +276,24 @@ function ProjectCardWithWipe({
         />
       </div>
       <div className="p-3">
-        <h3 className="truncate font-black text-slate-900" title={project.title}>{project.title}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="flex-1 truncate font-black text-slate-900" title={project.title}>{project.title}</h3>
+          {project.isCommunication && (
+            <span
+              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-800"
+              title="Project contains chat / message wall / guestbook — inspect the shared data below"
+            >
+              Chat
+            </span>
+          )}
+        </div>
         {project.lastPrompt && (
           <p className="mt-1 line-clamp-2 text-xs text-slate-500" title={project.lastPrompt}>{project.lastPrompt}</p>
         )}
         <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
           {formatDate(project.updatedAt)}
         </p>
+        <ProjectDataInspector projectId={project.id} />
         <button
           type="button"
           onClick={onWipe}
@@ -187,6 +307,101 @@ function ProjectCardWithWipe({
         {result && <p className="mt-1 text-[10px] font-bold text-emerald-700">{result}</p>}
       </div>
     </article>
+  );
+}
+
+// Phase 4 — parent visibility into what each project stores in spark.db.
+// Collapsed by default to keep the project card tight; expanded shows
+// every key + a preview of its value (chat messages, leaderboard rows,
+// counters, etc). Lets a parent answer "what is my kid actually
+// chatting about / collecting in this game?" without having to play
+// the game themselves. Calls the existing dbList query — that one is
+// public (reads aren't the security hole; writes are, which dbWipe now
+// gates per 2026-05-29 audit fix).
+function ProjectDataInspector({ projectId }: { projectId: Id<'safesparkProjects'> }) {
+  const [open, setOpen] = useState(false);
+  const rows = useQuery(
+    api.sparkdb.dbList,
+    open ? { projectId } : 'skip',
+  );
+
+  const summary = rows && rows.length > 0 ? `${rows.length} key${rows.length === 1 ? '' : 's'}` : 'none yet';
+
+  return (
+    <div className="mt-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-50"
+        aria-expanded={open}
+        title="See what data this project stores (leaderboards, chat messages, etc.)"
+      >
+        <Database className="h-3 w-3" />
+        {open ? 'Hide shared data' : `View shared data (${rows === undefined && open ? '…' : summary})`}
+      </button>
+      {open && (
+        <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2">
+          {rows === undefined ? (
+            <p className="text-[11px] font-semibold text-slate-400">Loading…</p>
+          ) : rows.length === 0 ? (
+            <p className="text-[11px] font-semibold text-slate-500">
+              Nothing stored yet. If this project is a chat / leaderboard / message wall,
+              it&apos;ll show up here as soon as someone uses it.
+            </p>
+          ) : (
+            <ul className="space-y-1.5">
+              {rows.map((row) => (
+                <DataRow key={row.key} row={row} />
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DataRow({ row }: { row: { key: string; value: string; updatedAt: number } }) {
+  // Try to parse as JSON for readable rendering — kid games usually
+  // store arrays (leaderboard, messages) or objects (counters, state).
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(row.value);
+  } catch {
+    parsed = row.value;
+  }
+
+  return (
+    <li className="rounded bg-white px-2 py-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <code className="truncate text-[10px] font-bold text-violet-700" title={row.key}>{row.key}</code>
+        <span className="shrink-0 text-[9px] font-bold text-slate-400">{formatDate(row.updatedAt)}</span>
+      </div>
+      {Array.isArray(parsed) ? (
+        <ul className="mt-1 list-inside list-disc space-y-0.5 pl-1 text-[11px] text-slate-700">
+          {parsed.slice(0, 10).map((item, idx) => (
+            <li key={idx} className="line-clamp-1" title={typeof item === 'string' ? item : JSON.stringify(item)}>
+              {typeof item === 'string'
+                ? item
+                : typeof item === 'object' && item !== null
+                  ? Object.entries(item as Record<string, unknown>).slice(0, 3).map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`).join(' · ')
+                  : String(item)}
+            </li>
+          ))}
+          {parsed.length > 10 && (
+            <li className="text-[10px] italic text-slate-400">+ {parsed.length - 10} more</li>
+          )}
+        </ul>
+      ) : typeof parsed === 'object' && parsed !== null ? (
+        <pre className="mt-1 overflow-x-auto rounded bg-slate-100 px-2 py-1 text-[10px] text-slate-700">
+          {JSON.stringify(parsed, null, 2).slice(0, 500)}
+        </pre>
+      ) : (
+        <p className="mt-1 line-clamp-2 text-[11px] text-slate-700" title={String(parsed)}>
+          {String(parsed)}
+        </p>
+      )}
+    </li>
   );
 }
 

@@ -7,7 +7,7 @@ const MESSAGE_VALIDATOR = v.object({
   content: v.string(),
 });
 
-type SafeSparkCtx = {
+export type SafeSparkCtx = {
   auth: { getUserIdentity: () => Promise<unknown> };
   db: {
     query: (table: string) => {
@@ -107,7 +107,7 @@ async function verifyMarketingToken(
   }
 }
 
-async function findUserRowByIdentity(
+export async function findUserRowByIdentity(
   ctx: SafeSparkCtx,
   userToken?: string,
 ): Promise<{ row: Doc<'users'>; clerkUserId: string } | null> {
@@ -285,6 +285,12 @@ export const saveProject = mutation({
     versionLabel: v.optional(v.string()),
     versionSummary: v.optional(v.string()),
     sessionToken: v.optional(v.string()),
+    // Phase 4 — set when Spark's response flagged this build as
+    // cross-user communication (chat, message wall, guestbook).
+    // Persisted on the project row so the parent dashboard can badge
+    // it. Sticky once true: a subsequent edit doesn't un-flag the
+    // project unless it explicitly sets the flag to false.
+    isCommunication: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const { clerkUserId, email } = await resolveSafeSparkIdentity(ctx as SafeSparkCtx, args.sessionToken);
@@ -295,6 +301,16 @@ export const saveProject = mutation({
       const existing = await ctx.db.get(projectId);
       if (!existing) throw new Error('Project not found.');
       if (existing.clerkUserId !== clerkUserId) throw new Error('You do not own that project.');
+      // Sticky: once a project is flagged communication, stay flagged
+      // even if the next turn's response omits the flag. Avoids the
+      // case where the kid says "remove the chat" → flag clears →
+      // parent never reviews the historical data.
+      const nextIsComm =
+        args.isCommunication === true
+          ? true
+          : existing.isCommunication === true
+            ? true
+            : args.isCommunication;
       await ctx.db.patch(projectId, {
         title: trimmedTitle,
         html: args.html,
@@ -302,6 +318,7 @@ export const saveProject = mutation({
         nextSteps: args.nextSteps,
         lastPrompt: args.lastPrompt,
         lastReply: args.lastReply,
+        isCommunication: nextIsComm,
         updatedAt: now,
       });
     } else {
@@ -314,6 +331,7 @@ export const saveProject = mutation({
         nextSteps: args.nextSteps,
         lastPrompt: args.lastPrompt,
         lastReply: args.lastReply,
+        isCommunication: args.isCommunication,
         createdAt: now,
         updatedAt: now,
       });
@@ -326,10 +344,139 @@ export const saveProject = mutation({
       label: (args.versionLabel ?? '').trim().slice(0, 80) || trimmedTitle,
       summary: args.versionSummary?.slice(0, 240),
       prompt: args.lastPrompt?.slice(0, 1000),
+      // Snapshot the full message thread so revert can roll back both
+      // html and chat. Older rows didn't capture this; the restore
+      // path falls back to html-only for those.
+      messagesSnapshot: args.messages,
       createdAt: now,
     });
 
     return projectId;
+  },
+});
+
+// Session-aware version listing. The original `listVersions` uses
+// `ctx.auth.getUserIdentity()` which doesn't work for kid sessions
+// (kids have no Convex identity, only `sessionToken`) and doesn't see
+// Marketing Central HS256 JWTs either. This variant resolves via
+// (sessionToken | userToken) the same way the rest of the project
+// endpoints do, so both kids and parents can actually see versions.
+// Added 2026-05-29 alongside the revert pill UX.
+export const listVersionsForOwner = query({
+  args: {
+    projectId: v.id('safesparkProjects'),
+    sessionToken: v.optional(v.string()),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return [];
+
+    // Owner resolution mirrors saveProject's identity logic:
+    //  - kid session: project.clerkUserId === `kid:<kidProfileId>`
+    //  - parent JWT: project.clerkUserId === parent's clerkUserId
+    let allowed = false;
+    if (args.sessionToken) {
+      const session = await ctx.db
+        .query('kidSessions')
+        .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken!))
+        .first();
+      if (session && project.clerkUserId === `kid:${session.kidProfileId}`) {
+        allowed = true;
+      }
+    }
+    if (!allowed && args.userToken) {
+      const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+      if (resolved && project.clerkUserId === resolved.clerkUserId) {
+        allowed = true;
+      }
+    }
+    if (!allowed) return [];
+
+    const rows = await ctx.db
+      .query('safesparkVersions')
+      .withIndex('by_project_time', (q) => q.eq('projectId', args.projectId))
+      .order('desc')
+      .take(50);
+    return rows.map((row) => ({
+      id: row._id,
+      label: row.label,
+      summary: row.summary,
+      prompt: row.prompt,
+      hasMessagesSnapshot: Array.isArray(row.messagesSnapshot),
+      createdAt: row.createdAt,
+    }));
+  },
+});
+
+// Session-aware restore. Returns the html + messages snapshot so the
+// client can apply both in one shot (no separate fetch + patch dance).
+// Also writes a "Restored" version row so the chronology is preserved.
+export const restoreVersionForOwner = mutation({
+  args: {
+    versionId: v.id('safesparkVersions'),
+    sessionToken: v.optional(v.string()),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const version = await ctx.db.get(args.versionId);
+    if (!version) throw new Error('Version not found.');
+    const project = await ctx.db.get(version.projectId);
+    if (!project) throw new Error('Project not found.');
+
+    let allowed = false;
+    if (args.sessionToken) {
+      const session = await ctx.db
+        .query('kidSessions')
+        .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken!))
+        .first();
+      if (session && project.clerkUserId === `kid:${session.kidProfileId}`) {
+        allowed = true;
+      }
+    }
+    if (!allowed && args.userToken) {
+      const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+      if (resolved && project.clerkUserId === resolved.clerkUserId) {
+        allowed = true;
+      }
+    }
+    if (!allowed) throw new Error('You do not own that project.');
+
+    const now = Date.now();
+    // If we have a snapshot, roll back BOTH html and messages so the
+    // chat reflects "this is where you were". Otherwise old version
+    // row → html only, append a system-style assistant note so the
+    // chat doesn't look like a teleport.
+    const restoredMessages = version.messagesSnapshot ?? [
+      ...project.messages,
+      {
+        role: 'assistant' as const,
+        content: `↻ Restored an earlier version (${version.label}). Keep building from here.`,
+      },
+    ];
+    await ctx.db.patch(version.projectId, {
+      html: version.html,
+      messages: restoredMessages,
+      lastPrompt: `Restored: ${version.label}`,
+      lastReply: 'Restored an earlier version. Keep building from here.',
+      updatedAt: now,
+    });
+    // Drop a bookmark version so the chronology stays linear.
+    await ctx.db.insert('safesparkVersions', {
+      projectId: version.projectId,
+      clerkUserId: project.clerkUserId,
+      html: version.html,
+      label: `↻ Restored: ${version.label}`,
+      summary: `Reverted to "${version.label}" from ${new Date(version.createdAt).toLocaleString()}`,
+      prompt: undefined,
+      messagesSnapshot: restoredMessages,
+      createdAt: now,
+    });
+    return {
+      html: version.html,
+      messages: restoredMessages,
+      label: version.label,
+    };
   },
 });
 
@@ -422,22 +569,79 @@ export const createShareLink = mutation({
     projectId: v.optional(v.id('safesparkProjects')),
     sessionToken: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<
+    | { shortId: string }
+    | { needsParentApproval: true; approvalId: Id<'safesparkShareApprovals'>; status: 'pending' | 'denied' }
+  > => {
     if (args.html.length > 600_000) throw new Error('Project too big to share.');
     const identity = (await ctx.auth.getUserIdentity()) as
       | { subject: string; email?: string }
       | null;
     // Kill-switch gate: if a kid session is creating this share link, check
     // the parent hasn't disabled sharing on this kid's profile.
+    let kidSession: Doc<'kidSessions'> | null = null;
     if (args.sessionToken) {
-      const session = await ctx.db
+      kidSession = (await ctx.db
         .query('kidSessions')
         .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken!))
-        .first();
-      if (session) {
-        const profile = await ctx.db.get(session.kidProfileId);
+        .first()) as Doc<'kidSessions'> | null;
+      if (kidSession) {
+        const profile = await ctx.db.get(kidSession.kidProfileId);
         if (profile && profile.allowSharing === false) {
           throw new Error('Sharing is turned off for this profile.');
+        }
+      }
+    }
+
+    // P0 parent-approval gate for chat-shaped projects. When the project
+    // is flagged `isCommunication` (chat room, message wall, guestbook —
+    // anything that uses spark.db for cross-user state), sharing the
+    // link makes that shared store public to anyone who opens the URL.
+    // Parent has to opt in before that happens. Other project shapes
+    // (single-player games, posters, flashcards) ship as before.
+    if (kidSession && args.projectId) {
+      const project = await ctx.db.get(args.projectId);
+      if (project?.isCommunication === true) {
+        // Look for an existing approval row for this (kid, project).
+        const existing = await ctx.db
+          .query('safesparkShareApprovals')
+          .withIndex('by_kid_project', (q) =>
+            q.eq('kidProfileId', kidSession!.kidProfileId).eq('projectId', args.projectId!),
+          )
+          .order('desc')
+          .first();
+        if (existing?.status === 'approved') {
+          // Parent already said yes — fall through to normal share-link
+          // creation below.
+        } else if (existing?.status === 'pending') {
+          // Already waiting — don't spam the parent.
+          return {
+            needsParentApproval: true,
+            approvalId: existing._id,
+            status: 'pending',
+          };
+        } else if (existing?.status === 'denied') {
+          // Parent said no — let the kid know (resolution sticks unless
+          // parent re-approves manually from the dashboard).
+          return {
+            needsParentApproval: true,
+            approvalId: existing._id,
+            status: 'denied',
+          };
+        } else {
+          // First share-attempt: open a pending request.
+          const profile = await ctx.db.get(kidSession.kidProfileId);
+          if (!profile) throw new Error('Profile not found.');
+          const approvalId = await ctx.db.insert('safesparkShareApprovals', {
+            parentUserId: profile.parentUserId,
+            kidProfileId: kidSession.kidProfileId,
+            kidName: profile.displayName,
+            projectId: args.projectId,
+            projectTitle: project.title.slice(0, 120) || 'Untitled project',
+            status: 'pending',
+            createdAt: Date.now(),
+          });
+          return { needsParentApproval: true, approvalId, status: 'pending' };
         }
       }
     }
@@ -463,6 +667,59 @@ export const createShareLink = mutation({
       createdAt: now,
     });
     return { shortId };
+  },
+});
+
+// Admin-only: create a share link for an existing project given just
+// the projectId + the shared admin key. Used by operator tooling to
+// feature kid projects on the landing page (we want playable "tap to
+// play" cards, not "tap to build your own copy"). Skips the kid-
+// session auth + parent-approval gate that createShareLink runs —
+// you're the operator and you've explicitly chosen which project to
+// surface. Returns the existing shortId if a share already exists for
+// this projectId, otherwise creates a new one. Idempotent.
+export const opsCreateShareForProject = mutation({
+  args: {
+    projectId: v.id('safesparkProjects'),
+    adminKey: v.string(),
+  },
+  handler: async (ctx, args): Promise<{ shortId: string; reused: boolean }> => {
+    const expectedKey = process.env.SAFESPARK_ADMIN_KEY;
+    if (!expectedKey || args.adminKey !== expectedKey) {
+      throw new Error('Unauthorized.');
+    }
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error('Project not found.');
+    // If a share already exists for this project, reuse it. Keeps the
+    // mutation idempotent so calling twice doesn't pollute the table.
+    const existing = await ctx.db
+      .query('safesparkShares')
+      .withIndex('by_project', (q) => q.eq('projectId', args.projectId))
+      .first();
+    if (existing) {
+      return { shortId: existing.shortId, reused: true };
+    }
+    const slug = titleSlug(project.title || 'project');
+    let shortId = `${slug}-${randomShortId()}`;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const dup = await ctx.db
+        .query('safesparkShares')
+        .withIndex('by_short_id', (q) => q.eq('shortId', shortId))
+        .first();
+      if (!dup) break;
+      shortId = `${slug}-${randomShortId()}`;
+    }
+    await ctx.db.insert('safesparkShares', {
+      shortId,
+      title: (project.title || 'SafeSpark project').slice(0, 120),
+      html: project.html,
+      projectId: args.projectId,
+      ownerClerkUserId: project.clerkUserId,
+      ownerEmail: project.email,
+      views: 0,
+      createdAt: Date.now(),
+    });
+    return { shortId, reused: false };
   },
 });
 
@@ -638,6 +895,39 @@ export const logRequest = mutation({
   },
 });
 
+// Patch a safesparkRequests row with the actual reply text from this
+// turn. Lets the ops review feed show the per-turn response, not the
+// project-level lastReply (which masked canned-reply loops behind a
+// display artifact — every prompt in a project showed the same reply).
+// Both kid sessions and parent JWTs allowed; ownership verified.
+export const setRequestReply = mutation({
+  args: {
+    requestId: v.id('safesparkRequests'),
+    reply: v.string(),
+    sessionToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.requestId);
+    if (!row) return;
+    // Verify the caller owns this row. Kid sessions resolve to
+    // clerkUserId='kid:<id>'; parents resolve via the standard identity.
+    let callerId: string | null = null;
+    if (args.sessionToken) {
+      const session = await ctx.db
+        .query('kidSessions')
+        .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken!))
+        .first();
+      if (session) callerId = `kid:${session.kidProfileId}`;
+    }
+    if (!callerId) {
+      const identity = (await ctx.auth.getUserIdentity()) as { subject?: string } | null;
+      if (identity?.subject) callerId = identity.subject;
+    }
+    if (!callerId || callerId !== row.clerkUserId) return;
+    await ctx.db.patch(args.requestId, { reply: args.reply.slice(0, 4000) });
+  },
+});
+
 export const listMyRequests = query({
   args: {},
   handler: async (ctx) => {
@@ -659,33 +949,374 @@ export const listMyRequests = query({
   },
 });
 
-// Admin-only: every signed-in kid's prompts across all families. Gated on the
-// PARENT_EMAIL env var so only the operator sees it.
+// Operator gate. Resolves the caller via the same userToken path
+// everything else uses (Marketing Central HS256 JWT verified with the
+// shared secret) — Convex's built-in `ctx.auth.getUserIdentity()` can't
+// see HMAC tokens, which is why the old `listAllRequests` was silently
+// rejecting jedaws@gmail.com. Returns null when the caller is not the
+// operator email.
+async function requireOperator(
+  ctx: SafeSparkCtx,
+  userToken?: string,
+): Promise<{ email: string } | null> {
+  const operatorEmail = (process.env.PARENT_EMAIL ?? '').toLowerCase();
+  if (!operatorEmail) return null;
+  const resolved = await findUserRowByIdentity(ctx, userToken);
+  if (!resolved) return null;
+  if (resolved.row.email.toLowerCase() !== operatorEmail) return null;
+  return { email: resolved.row.email.toLowerCase() };
+}
+
+// Back-compat: keep listAllRequests but route it through the new
+// operator gate so the existing /admin/spark page works once it passes
+// userToken. Returns a richer payload — every prompt now comes with
+// the reply that came back AND the project title/kind, so the operator
+// can review quality without an extra round trip per row.
 export const listAllRequests = query({
-  args: { limit: v.optional(v.number()) },
+  args: { limit: v.optional(v.number()), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const identity = (await ctx.auth.getUserIdentity()) as
-      | { subject: string; email?: string }
-      | null;
-    const operatorEmail = (process.env.PARENT_EMAIL ?? '').toLowerCase();
-    if (!identity?.email || !operatorEmail || identity.email.toLowerCase() !== operatorEmail) {
-      return null;
-    }
+    const op = await requireOperator(ctx as SafeSparkCtx, args.userToken);
+    if (!op) return null;
     const limit = Math.min(args.limit ?? 200, 500);
     const rows = await ctx.db
       .query('safesparkRequests')
       .withIndex('by_time')
       .order('desc')
       .take(limit);
-    return rows.map((row) => ({
-      id: row._id,
-      clerkUserId: row.clerkUserId,
-      email: row.email,
-      prompt: row.prompt,
-      projectId: row.projectId,
-      projectTitle: row.projectTitle,
-      createdAt: row.createdAt,
+    // Join in the project's lastReply so the operator can see what Spark
+    // said, not just what the kid asked. One project lookup per row at
+    // limit≤500 is fine.
+    const out = [];
+    for (const row of rows) {
+      let lastReply: string | undefined;
+      let projectTitle = row.projectTitle ?? undefined;
+      if (row.projectId) {
+        const project = await ctx.db.get(row.projectId);
+        if (project) {
+          lastReply = project.lastReply;
+          projectTitle = project.title || projectTitle;
+        }
+      }
+      out.push({
+        id: row._id,
+        clerkUserId: row.clerkUserId,
+        email: row.email,
+        prompt: row.prompt,
+        projectId: row.projectId,
+        projectTitle,
+        lastReply,
+        createdAt: row.createdAt,
+      });
+    }
+    return out;
+  },
+});
+
+// Operator review feed — combines the three streams of activity the
+// operator needs to see when auditing Spark quality + safety:
+//   - prompts (with reply, project title)
+//   - blocked-topic events
+//   - concern alerts (self-harm / ED escalations)
+// All cross-family. Most recent first. The page renders them
+// interleaved on a timeline; this query just hands back the raw three
+// arrays so the UI can filter / tab / search client-side.
+export const opsReviewFeed = query({
+  args: {
+    userToken: v.optional(v.string()),
+    promptLimit: v.optional(v.number()),
+    blockedLimit: v.optional(v.number()),
+    concernLimit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const op = await requireOperator(ctx as SafeSparkCtx, args.userToken);
+    if (!op) return null;
+
+    const promptRows = await ctx.db
+      .query('safesparkRequests')
+      .withIndex('by_time')
+      .order('desc')
+      .take(Math.min(args.promptLimit ?? 200, 500));
+
+    const prompts = [];
+    for (const row of promptRows) {
+      // Prefer the per-row reply (filled in by setRequestReply after each
+      // turn). Fall back to project.lastReply only for legacy rows that
+      // predate the per-request reply field — otherwise every prompt in
+      // a project shows the same reply (display artifact that masked
+      // real canned-reply loops).
+      let lastReply: string | undefined = row.reply ?? undefined;
+      let projectTitle = row.projectTitle ?? undefined;
+      let isCommunication = false;
+      if (row.projectId) {
+        const project = await ctx.db.get(row.projectId);
+        if (project) {
+          if (!lastReply) lastReply = project.lastReply;
+          projectTitle = project.title || projectTitle;
+          isCommunication = project.isCommunication === true;
+        }
+      }
+      prompts.push({
+        id: row._id,
+        clerkUserId: row.clerkUserId,
+        email: row.email,
+        prompt: row.prompt,
+        projectId: row.projectId,
+        projectTitle,
+        lastReply,
+        isCommunication,
+        createdAt: row.createdAt,
+      });
+    }
+
+    const blockedRows = await ctx.db
+      .query('safesparkErrors')
+      .order('desc')
+      .take(Math.min(args.blockedLimit ?? 100, 300));
+    const blocked = blockedRows
+      .filter((e) => e.kind === 'blocked_topic')
+      .map((e) => ({
+        id: e._id,
+        clerkUserId: e.clerkUserId,
+        prompt: e.prompt,
+        message: e.message,
+        createdAt: e.createdAt,
+      }));
+
+    const concernRows = await ctx.db
+      .query('safesparkConcernAlerts')
+      .order('desc')
+      .take(Math.min(args.concernLimit ?? 50, 200));
+    const concerns = concernRows.map((c) => ({
+      id: c._id,
+      kidName: c.kidName,
+      kidProfileId: c.kidProfileId,
+      parentUserId: c.parentUserId,
+      query: c.query,
+      category: c.category,
+      rationale: c.rationale,
+      acknowledged: c.acknowledged,
+      createdAt: c.createdAt,
     }));
+
+    return { prompts, blocked, concerns };
+  },
+});
+
+// Internal variant of opsReviewFeed for HTTP admin endpoints. Same
+// data shape; the admin-key check happens in http.ts so the gate is
+// uniform with the rest of the SafeFamily ops endpoints.
+export const _opsReviewFeedInternal = internalQuery({
+  args: {
+    promptLimit: v.optional(v.number()),
+    blockedLimit: v.optional(v.number()),
+    concernLimit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const promptRows = await ctx.db
+      .query('safesparkRequests')
+      .withIndex('by_time')
+      .order('desc')
+      .take(Math.min(args.promptLimit ?? 200, 500));
+    const prompts = [];
+    for (const row of promptRows) {
+      // Prefer the per-row reply (filled in by setRequestReply after each
+      // turn). Fall back to project.lastReply only for legacy rows that
+      // predate the per-request reply field — otherwise every prompt in
+      // a project shows the same reply (display artifact that masked
+      // real canned-reply loops).
+      let lastReply: string | undefined = row.reply ?? undefined;
+      let projectTitle = row.projectTitle ?? undefined;
+      let isCommunication = false;
+      if (row.projectId) {
+        const project = await ctx.db.get(row.projectId);
+        if (project) {
+          if (!lastReply) lastReply = project.lastReply;
+          projectTitle = project.title || projectTitle;
+          isCommunication = project.isCommunication === true;
+        }
+      }
+      prompts.push({
+        id: row._id,
+        clerkUserId: row.clerkUserId,
+        email: row.email,
+        prompt: row.prompt,
+        projectId: row.projectId,
+        projectTitle,
+        lastReply,
+        isCommunication,
+        createdAt: row.createdAt,
+      });
+    }
+    const blockedRows = await ctx.db
+      .query('safesparkErrors')
+      .order('desc')
+      .take(Math.min(args.blockedLimit ?? 100, 300));
+    const blocked = blockedRows
+      .filter((e) => e.kind === 'blocked_topic')
+      .map((e) => ({
+        id: e._id,
+        clerkUserId: e.clerkUserId,
+        prompt: e.prompt,
+        message: e.message,
+        createdAt: e.createdAt,
+      }));
+    const concernRows = await ctx.db
+      .query('safesparkConcernAlerts')
+      .order('desc')
+      .take(Math.min(args.concernLimit ?? 50, 200));
+    const concerns = concernRows.map((c) => ({
+      id: c._id,
+      kidName: c.kidName,
+      query: c.query,
+      category: c.category,
+      rationale: c.rationale,
+      acknowledged: c.acknowledged,
+      createdAt: c.createdAt,
+    }));
+    return { prompts, blocked, concerns };
+  },
+});
+
+// Search projects by title substring (case-insensitive). Used by the
+// operator's HTTP search endpoint ("find the dungeon game"). Returns
+// project metadata only — call _opsGetProjectInternal for the full
+// thread + HTML.
+export const _opsSearchProjectsInternal = internalQuery({
+  args: { query: v.string(), limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const q = args.query.trim().toLowerCase();
+    const limit = Math.min(args.limit ?? 25, 100);
+    if (!q) return [];
+    // Project count across all customers is small enough to scan; the
+    // shape we need (substring match on title or lastPrompt) doesn't
+    // map to an index, so brute force is fine for now.
+    const all = await ctx.db
+      .query('safesparkProjects')
+      .order('desc')
+      .take(2000);
+    const hits = [];
+    for (const p of all) {
+      if (p.deletedAt) continue;
+      const inTitle = p.title.toLowerCase().includes(q);
+      const inPrompt = p.lastPrompt ? p.lastPrompt.toLowerCase().includes(q) : false;
+      if (!inTitle && !inPrompt) continue;
+      // Resolve owner label.
+      let ownerLabel = p.email;
+      if (p.clerkUserId.startsWith('kid:')) {
+        const kidProfileId = p.clerkUserId.slice(4) as Id<'kidProfiles'>;
+        const profile = await ctx.db.get(kidProfileId);
+        if (profile) {
+          const parent = await ctx.db.get(profile.parentUserId);
+          ownerLabel = parent
+            ? `${profile.displayName} (kid of ${parent.email})`
+            : `${profile.displayName} (orphan)`;
+        }
+      }
+      hits.push({
+        id: p._id,
+        title: p.title,
+        lastPrompt: p.lastPrompt,
+        isCommunication: p.isCommunication === true,
+        owner: ownerLabel,
+        clerkUserId: p.clerkUserId,
+        updatedAt: p.updatedAt,
+        createdAt: p.createdAt,
+        messagesCount: p.messages.length,
+      });
+      if (hits.length >= limit) break;
+    }
+    return hits;
+  },
+});
+
+// Full project + thread by id. Used by the operator's HTTP project
+// inspector endpoint.
+export const _opsGetProjectInternal = internalQuery({
+  args: { projectId: v.id('safesparkProjects') },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
+    let ownerLabel = project.email;
+    let kidName: string | undefined;
+    let parentEmail: string | undefined;
+    if (project.clerkUserId.startsWith('kid:')) {
+      const kidProfileId = project.clerkUserId.slice(4) as Id<'kidProfiles'>;
+      const profile = await ctx.db.get(kidProfileId);
+      if (profile) {
+        kidName = profile.displayName;
+        const parent = await ctx.db.get(profile.parentUserId);
+        if (parent) {
+          parentEmail = parent.email;
+          ownerLabel = `${profile.displayName} (kid of ${parent.email})`;
+        }
+      }
+    }
+    return {
+      id: project._id,
+      title: project.title,
+      html: project.html,
+      messages: project.messages,
+      lastPrompt: project.lastPrompt,
+      lastReply: project.lastReply,
+      isCommunication: project.isCommunication === true,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      ownerLabel,
+      kidName,
+      parentEmail,
+      rawClerkUserId: project.clerkUserId,
+    };
+  },
+});
+
+// Full conversation thread for a single project — drill-in view from
+// the ops review feed. Returns the full messages[] (every kid prompt
+// and every Spark reply), the current rendered HTML, owner identity,
+// and last-prompt metadata. Operator-gated.
+export const opsGetProjectThread = query({
+  args: {
+    projectId: v.id('safesparkProjects'),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const op = await requireOperator(ctx as SafeSparkCtx, args.userToken);
+    if (!op) return null;
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
+    // Owner lookup. clerkUserId is either a Marketing user clerkUserId
+    // or a synthetic "kid:<kidProfileId>" string for kid-built projects.
+    let ownerLabel = project.email;
+    let kidName: string | undefined;
+    let parentEmail: string | undefined;
+    if (project.clerkUserId.startsWith('kid:')) {
+      const kidProfileId = project.clerkUserId.slice(4) as Id<'kidProfiles'>;
+      const profile = await ctx.db.get(kidProfileId);
+      if (profile) {
+        kidName = profile.displayName;
+        const parent = await ctx.db.get(profile.parentUserId);
+        if (parent) {
+          parentEmail = parent.email;
+          ownerLabel = `${profile.displayName} (kid of ${parent.email})`;
+        } else {
+          ownerLabel = `${profile.displayName} (orphaned kid profile)`;
+        }
+      }
+    }
+    return {
+      id: project._id,
+      title: project.title,
+      html: project.html,
+      messages: project.messages,
+      lastPrompt: project.lastPrompt,
+      lastReply: project.lastReply,
+      isCommunication: project.isCommunication === true,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      ownerLabel,
+      kidName,
+      parentEmail,
+      rawClerkUserId: project.clerkUserId,
+    };
   },
 });
 
@@ -1860,6 +2491,180 @@ export const listFamilyForParent = query({
   },
 });
 
+// Parent dashboard activity feed — mixed chronological list of recent
+// kid events across the whole family. Combines safesparkRequests (every
+// kid prompt) + safesparkErrors with kind='blocked_topic' (refused
+// prompts that matched the parent's blocklist). One UI row per event,
+// tagged with kid name + event type so the dashboard can color/icon
+// appropriately. Capped to the last `limit` events (default 30).
+//
+// Used by /parent home page. Auth via userToken (Marketing JWT) → email
+// fallback → SafeSpark user row → family kids.
+export const getActivityForFamily = query({
+  args: {
+    userToken: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    if (!resolved) return { events: [], kids: [] };
+    const family = await ctx.db
+      .query('families')
+      .withIndex('by_parent', (q) => q.eq('parentUserId', resolved.row._id))
+      .first();
+    if (!family) return { events: [], kids: [] };
+    const kidProfiles = (await ctx.db
+      .query('kidProfiles')
+      .withIndex('by_family', (q) => q.eq('familyId', family._id))
+      .collect()) as Array<{ _id: Id<'kidProfiles'>; displayName: string; avatarColor?: string }>;
+
+    const limit = Math.min(Math.max(args.limit ?? 30, 5), 100);
+    type Event = {
+      kind: 'prompt' | 'blocked';
+      kidProfileId: Id<'kidProfiles'>;
+      kidName: string;
+      avatarColor: string;
+      content: string;
+      projectTitle?: string;
+      createdAt: number;
+    };
+    const events: Event[] = [];
+
+    for (const profile of kidProfiles) {
+      const ownerKey = `kid:${profile._id}`;
+      // Recent prompts
+      const prompts = await ctx.db
+        .query('safesparkRequests')
+        .withIndex('by_clerk_id_time', (q) => q.eq('clerkUserId', ownerKey))
+        .order('desc')
+        .take(limit);
+      for (const p of prompts) {
+        events.push({
+          kind: 'prompt',
+          kidProfileId: profile._id,
+          kidName: profile.displayName,
+          avatarColor: profile.avatarColor ?? 'violet',
+          content: p.prompt,
+          projectTitle: p.projectTitle ?? undefined,
+          createdAt: p.createdAt,
+        });
+      }
+      // Recent blocks (subset of safesparkErrors). No index on
+      // (clerkUserId, kind) so we collect by clerkUserId then filter —
+      // the per-kid error volume is tiny so this is cheap.
+      const errors = await ctx.db
+        .query('safesparkErrors')
+        .withIndex('by_clerk_id_time', (q) => q.eq('clerkUserId', ownerKey))
+        .order('desc')
+        .take(limit);
+      for (const e of errors) {
+        if (e.kind !== 'blocked_topic') continue;
+        events.push({
+          kind: 'blocked',
+          kidProfileId: profile._id,
+          kidName: profile.displayName,
+          avatarColor: profile.avatarColor ?? 'violet',
+          content: e.prompt,
+          createdAt: e.createdAt,
+        });
+      }
+    }
+
+    events.sort((a, b) => b.createdAt - a.createdAt);
+    return {
+      events: events.slice(0, limit),
+      kids: kidProfiles.map((p) => ({
+        id: p._id,
+        displayName: p.displayName,
+        avatarColor: p.avatarColor ?? 'violet',
+      })),
+    };
+  },
+});
+
+// Per-kid daily stats for the parent dashboard cards. Returns a row per
+// kid with: prompts today, blocked-topic hits today, last-active
+// timestamp (most recent prompt OR block, whichever is later), and the
+// kid's daily query budget for context. Computed off today's UTC day
+// boundary — close enough to "today" for the dashboard without dragging
+// timezone math through every query.
+export const getKidStatsToday = query({
+  args: { userToken: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    if (!resolved) return [];
+    const family = await ctx.db
+      .query('families')
+      .withIndex('by_parent', (q) => q.eq('parentUserId', resolved.row._id))
+      .first();
+    if (!family) return [];
+    const kidProfiles = (await ctx.db
+      .query('kidProfiles')
+      .withIndex('by_family', (q) => q.eq('familyId', family._id))
+      .collect()) as Array<{
+        _id: Id<'kidProfiles'>;
+        displayName: string;
+        avatarColor?: string;
+        dailyQueryBudget?: number;
+        accessPaused?: boolean;
+      }>;
+
+    const now = Date.now();
+    const startOfTodayUtc = Date.UTC(
+      new Date(now).getUTCFullYear(),
+      new Date(now).getUTCMonth(),
+      new Date(now).getUTCDate(),
+    );
+
+    const out: Array<{
+      id: Id<'kidProfiles'>;
+      displayName: string;
+      avatarColor: string;
+      promptsToday: number;
+      blockedToday: number;
+      lastActiveAt: number | null;
+      dailyQueryBudget?: number;
+      accessPaused: boolean;
+    }> = [];
+    for (const profile of kidProfiles) {
+      const ownerKey = `kid:${profile._id}`;
+      // Pull recent prompts (cap at 200 — anything beyond is "old", we
+      // only need today's count + last timestamp).
+      const recentPrompts = await ctx.db
+        .query('safesparkRequests')
+        .withIndex('by_clerk_id_time', (q) => q.eq('clerkUserId', ownerKey))
+        .order('desc')
+        .take(200);
+      const promptsToday = recentPrompts.filter((p) => p.createdAt >= startOfTodayUtc).length;
+      const lastPromptAt = recentPrompts[0]?.createdAt ?? null;
+
+      const recentErrors = await ctx.db
+        .query('safesparkErrors')
+        .withIndex('by_clerk_id_time', (q) => q.eq('clerkUserId', ownerKey))
+        .order('desc')
+        .take(50);
+      const blockedToday = recentErrors.filter(
+        (e) => e.kind === 'blocked_topic' && e.createdAt >= startOfTodayUtc,
+      ).length;
+      const lastBlockedAt = recentErrors.find((e) => e.kind === 'blocked_topic')?.createdAt ?? null;
+
+      const lastActiveAt = Math.max(lastPromptAt ?? 0, lastBlockedAt ?? 0) || null;
+
+      out.push({
+        id: profile._id,
+        displayName: profile.displayName,
+        avatarColor: profile.avatarColor ?? 'violet',
+        promptsToday,
+        blockedToday,
+        lastActiveAt,
+        dailyQueryBudget: profile.dailyQueryBudget,
+        accessPaused: profile.accessPaused === true,
+      });
+    }
+    return out;
+  },
+});
+
 // One-profile drill-down for /parent/profile/[id]. Auth: the signed-in
 // parent must own this kidProfile (either as the legacy parentUserId or
 // as the family's parent). Returns the profile, every non-deleted project
@@ -1891,10 +2696,27 @@ export const getProfileDetail = query({
         html: p.html,
         updatedAt: p.updatedAt,
         lastPrompt: p.lastPrompt,
+        isCommunication: p.isCommunication === true,
       }));
+    // Full activity log — bumped from 20 to 200 prompts. Combined
+    // with blocked-topic errors and concern alerts for the chronological
+    // log section.
     const requests = await ctx.db
       .query('safesparkRequests')
       .withIndex('by_clerk_id_time', (q) => q.eq('clerkUserId', ownerId))
+      .order('desc')
+      .take(200);
+    const blockedRaw = await ctx.db
+      .query('safesparkErrors')
+      .withIndex('by_clerk_id_time', (q) => q.eq('clerkUserId', ownerId))
+      .order('desc')
+      .take(100);
+    const blocked = blockedRaw
+      .filter((e) => e.kind === 'blocked_topic')
+      .slice(0, 50);
+    const concerns = await ctx.db
+      .query('safesparkConcernAlerts')
+      .withIndex('by_kid_time', (q) => q.eq('kidProfileId', profile._id))
       .order('desc')
       .take(20);
     const yearMonth = yearMonthUTC(Date.now());
@@ -1920,6 +2742,21 @@ export const getProfileDetail = query({
         createdAt: r.createdAt,
         prompt: r.prompt,
         projectTitle: r.projectTitle,
+      })),
+      blockedEvents: blocked.map((e) => ({
+        id: e._id,
+        createdAt: e.createdAt,
+        prompt: e.prompt,
+        // `message` is set by logBlockedTopicAsync as "Blocked phrase: <X>"
+        message: e.message,
+      })),
+      concernAlerts: concerns.map((c) => ({
+        id: c._id,
+        createdAt: c.createdAt,
+        query: c.query,
+        category: c.category,
+        rationale: c.rationale,
+        acknowledged: c.acknowledged,
       })),
       usageThisMonth: usageRow
         ? {
@@ -1983,6 +2820,8 @@ export const getKidSettings = query({
       allowWebData: profile.allowWebData !== false,
       allowSharing: profile.allowSharing !== false,
       blockedTopics: profile.blockedTopics ?? [],
+      accessPaused: profile.accessPaused === true,
+      dailyQueryBudget: profile.dailyQueryBudget,
     };
   },
 });
@@ -2031,6 +2870,51 @@ export const setBlockedTopics = mutation({
   },
 });
 
+// Phase 2 dashboard control — pause / unpause a kid's Spark access.
+// When paused, /api/demo refuses new builds for that kid before the
+// LLM call so no token is burned. Toggled from the per-kid metric strip
+// on /parent.
+export const setKidAccessPaused = mutation({
+  args: {
+    kidProfileId: v.id('kidProfiles'),
+    paused: v.boolean(),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireParentOfKid(ctx as never, args.kidProfileId, args.userToken);
+    await ctx.db.patch(args.kidProfileId, {
+      accessPaused: args.paused,
+      updatedAt: Date.now(),
+    });
+    return { ok: true };
+  },
+});
+
+// Phase 2 dashboard control — set a per-kid daily prompt cap. 0 or
+// undefined removes the cap. Range clamped to [1, 500] so a parent
+// can't lock the kid out of single prompts or accidentally enter
+// thousands. Enforced server-side in /api/demo against today's UTC
+// prompt count from safesparkRequests.
+export const setKidDailyBudget = mutation({
+  args: {
+    kidProfileId: v.id('kidProfiles'),
+    budget: v.optional(v.number()),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireParentOfKid(ctx as never, args.kidProfileId, args.userToken);
+    let clamped: number | undefined;
+    if (args.budget != null && args.budget > 0) {
+      clamped = Math.max(1, Math.min(500, Math.round(args.budget)));
+    }
+    await ctx.db.patch(args.kidProfileId, {
+      dailyQueryBudget: clamped,
+      updatedAt: Date.now(),
+    });
+    return { ok: true, dailyQueryBudget: clamped };
+  },
+});
+
 // Client-readable lookup for the kid side: given a kidSession token, return
 // the four kill-switch flags so the front end can hide UI (e.g. mic) the
 // parent has turned off. Returns null for unknown tokens.
@@ -2053,9 +2937,321 @@ export const getKidSettingsBySession = query({
   },
 });
 
+// Single-shot data fetch for the kid /dashboard page. Returns profile
+// basics + a precomputed slice of projects + lightweight stats so the
+// landing render is one round trip, not five. Added 2026-05-29 when we
+// stood up the kid dashboard surface.
+export const getKidDashboardData = query({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    const session = await ctx.db
+      .query('kidSessions')
+      .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken))
+      .first();
+    if (!session) return null;
+    const profile = await ctx.db.get(session.kidProfileId);
+    if (!profile) return null;
+
+    const clerkUserId = `kid:${session.kidProfileId}`;
+    const family = profile.familyId ? await ctx.db.get(profile.familyId) : null;
+    const projects = await ctx.db
+      .query('safesparkProjects')
+      .withIndex('by_clerk_id', (q) => q.eq('clerkUserId', clerkUserId))
+      .order('desc')
+      .take(100);
+    const active = projects.filter((p) => !p.deletedAt);
+
+    // Stats are bucketed by UTC day boundary. Family timezone isn't
+    // tracked on the families table today (could be added later if
+    // stats granularity becomes a complaint).
+    const now = new Date();
+    const startOfDayMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+    const buildsToday = active.filter((p) => p.updatedAt >= startOfDayMs).length;
+    const buildsThisWeek = active.filter((p) => p.updatedAt >= weekAgoMs).length;
+    const mostRecent = active[0] ?? null;
+
+    return {
+      profile: {
+        id: profile._id,
+        displayName: profile.displayName,
+        age: profile.age,
+        avatarColor: profile.avatarColor,
+        interests: profile.interests,
+      },
+      // Family code drives cross-app deeplinks (?fc=XXXXXX auto-fills
+      // the family code box on SafeTunes / SafeTube / SafeReads /
+      // SafeStudy). Null when the kid's profile somehow lost its
+      // family link — cross-app launcher will fall back to no-suffix.
+      familyCode: family?.familyCode ?? null,
+      stats: {
+        totalProjects: active.length,
+        buildsToday,
+        buildsThisWeek,
+      },
+      mostRecent: mostRecent
+        ? {
+            id: mostRecent._id,
+            title: mostRecent.title,
+            updatedAt: mostRecent.updatedAt,
+            lastPrompt: mostRecent.lastPrompt,
+          }
+        : null,
+      recentProjects: active.slice(0, 8).map((p) => ({
+        id: p._id,
+        title: p.title,
+        html: p.html,
+        updatedAt: p.updatedAt,
+        lastPrompt: p.lastPrompt,
+        isCommunication: p.isCommunication === true,
+      })),
+    };
+  },
+});
+
 // Server-only lookup used by /api/demo to fetch the full kill-switch +
 // blocklist state for a kid session. Public because /api/demo runs without
 // the kid's Clerk JWT; the sessionToken itself is the bearer secret.
+// Phase 3 — kid-side: ask permission for a blocked topic. Called from
+// the workbench right after the kid sees the blocked-topic refusal.
+// Resolves the kid's parent + kid name from the session so the parent
+// dashboard can render the pending request row with no extra joins.
+// Dedupes against any pending row for the same (kid, phrase) so a kid
+// can't spam Approve by clicking 50 times.
+export const requestTopicBySession = mutation({
+  args: {
+    sessionToken: v.string(),
+    matchedPhrase: v.string(),
+    originalPrompt: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db
+      .query('kidSessions')
+      .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken))
+      .first();
+    if (!session) return { ok: false, reason: 'no_session' };
+    const profile = await ctx.db.get(session.kidProfileId);
+    if (!profile) return { ok: false, reason: 'no_profile' };
+    const family = profile.familyId ? await ctx.db.get(profile.familyId) : null;
+    const parentUserId = family?.parentUserId ?? profile.parentUserId;
+    if (!parentUserId) return { ok: false, reason: 'no_parent' };
+
+    const phrase = args.matchedPhrase.trim().toLowerCase().slice(0, 80);
+    if (!phrase) return { ok: false, reason: 'empty_phrase' };
+
+    // Dedupe: if a pending request already exists for this (kid, phrase)
+    // pair, bump nothing — return ok so the kid sees confirmation UI.
+    const existing = await ctx.db
+      .query('safesparkTopicRequests')
+      .withIndex('by_kid_time', (q) => q.eq('kidProfileId', profile._id))
+      .order('desc')
+      .take(50);
+    const dupe = existing.find(
+      (r) => r.status === 'pending' && r.matchedPhrase === phrase,
+    );
+    if (dupe) return { ok: true, deduped: true };
+
+    await ctx.db.insert('safesparkTopicRequests', {
+      parentUserId,
+      kidProfileId: profile._id,
+      kidName: profile.displayName,
+      matchedPhrase: phrase,
+      originalPrompt: args.originalPrompt.slice(0, 1000),
+      status: 'pending',
+      createdAt: Date.now(),
+    });
+    return { ok: true };
+  },
+});
+
+// Phase 3 — parent-side: list pending topic requests for the dashboard.
+// Returns newest first. Empty array if no requests or no family.
+export const listPendingTopicRequests = query({
+  args: { userToken: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    if (!resolved) return [];
+    const rows = await ctx.db
+      .query('safesparkTopicRequests')
+      .withIndex('by_parent_status', (q) =>
+        q.eq('parentUserId', resolved.row._id).eq('status', 'pending'),
+      )
+      .order('desc')
+      .take(50);
+    return rows.map((r) => ({
+      id: r._id,
+      kidProfileId: r.kidProfileId,
+      kidName: r.kidName,
+      matchedPhrase: r.matchedPhrase,
+      originalPrompt: r.originalPrompt,
+      createdAt: r.createdAt,
+    }));
+  },
+});
+
+// Phase 3 — parent-side: approve or deny a topic request. On approve,
+// the matched phrase is removed from the kid's blockedTopics so the
+// next attempt at the same prompt goes through. On deny, the row is
+// just marked resolved (the kid sees a quiet "your parent said not
+// this time" message next time they try). Either way the row stays
+// for audit/history.
+export const resolveTopicRequest = mutation({
+  args: {
+    id: v.id('safesparkTopicRequests'),
+    action: v.union(v.literal('approve'), v.literal('deny')),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    if (!resolved) throw new Error('Sign in to resolve topic requests.');
+    const request = await ctx.db.get(args.id);
+    if (!request) throw new Error('Request not found.');
+    if (request.parentUserId !== resolved.row._id) {
+      throw new Error('Not your request to resolve.');
+    }
+    if (request.status !== 'pending') {
+      return { ok: true, alreadyResolved: true };
+    }
+
+    if (args.action === 'approve') {
+      const profile = await ctx.db.get(request.kidProfileId);
+      if (profile) {
+        const next = (profile.blockedTopics ?? []).filter(
+          (t) => t.toLowerCase() !== request.matchedPhrase.toLowerCase(),
+        );
+        await ctx.db.patch(profile._id, {
+          blockedTopics: next,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    await ctx.db.patch(args.id, {
+      status: args.action === 'approve' ? 'approved' : 'denied',
+      resolvedAt: Date.now(),
+      resolvedBy: resolved.row.email ?? undefined,
+    });
+    return { ok: true };
+  },
+});
+
+// P0 share-approval gate: parent-side queries + mutation.
+//
+// Parent dashboard renders any rows here in `pending` status as
+// actionable cards (Approve / Deny). On Approve, the kid can hit
+// Share again and the link generates. On Deny, the kid sees "your
+// parent said not this time" — they can re-ask the parent in person.
+// Status is sticky; row stays for audit/history.
+
+export const listPendingShareApprovals = query({
+  args: { userToken: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    if (!resolved) return [];
+    const rows = await ctx.db
+      .query('safesparkShareApprovals')
+      .withIndex('by_parent_status', (q) =>
+        q.eq('parentUserId', resolved.row._id).eq('status', 'pending'),
+      )
+      .order('desc')
+      .take(50);
+    return rows.map((r) => ({
+      id: r._id,
+      kidProfileId: r.kidProfileId,
+      kidName: r.kidName,
+      projectId: r.projectId,
+      projectTitle: r.projectTitle,
+      createdAt: r.createdAt,
+    }));
+  },
+});
+
+export const resolveShareApproval = mutation({
+  args: {
+    id: v.id('safesparkShareApprovals'),
+    action: v.union(v.literal('approve'), v.literal('deny')),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const resolved = await findUserRowByIdentity(ctx as SafeSparkCtx, args.userToken);
+    if (!resolved) throw new Error('Sign in to resolve share requests.');
+    const request = await ctx.db.get(args.id);
+    if (!request) throw new Error('Request not found.');
+    if (request.parentUserId !== resolved.row._id) {
+      throw new Error('Not your request to resolve.');
+    }
+    if (request.status !== 'pending') {
+      return { ok: true, alreadyResolved: true };
+    }
+    await ctx.db.patch(args.id, {
+      status: args.action === 'approve' ? 'approved' : 'denied',
+      resolvedAt: Date.now(),
+      resolvedBy: resolved.row.email ?? undefined,
+    });
+    return { ok: true };
+  },
+});
+
+// Kid-side: check status of an existing share-approval request.
+// Workbench polls this when in the "waiting on parent" state so the
+// share button can flip to "approved! tap again to share" the moment
+// the parent resolves.
+export const getShareApprovalStatus = query({
+  args: {
+    id: v.id('safesparkShareApprovals'),
+    sessionToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.id);
+    if (!row) return null;
+    // Scope check — only the originating kid session can read it
+    // (avoid leaking another family's pending requests via a guessed id).
+    if (args.sessionToken) {
+      const session = await ctx.db
+        .query('kidSessions')
+        .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken!))
+        .first();
+      if (!session || session.kidProfileId !== row.kidProfileId) return null;
+    }
+    return {
+      id: row._id,
+      status: row.status,
+      resolvedAt: row.resolvedAt,
+    };
+  },
+});
+
+// Phase 2 — per-kid daily prompt count for budget enforcement. Called
+// from /api/demo before the LLM fires when dailyQueryBudget is set.
+// Returns the number of safesparkRequests rows for this kid since the
+// start of today UTC. Returns null if the session isn't valid.
+export const countPromptsTodayBySession = query({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args) => {
+    const session = await ctx.db
+      .query('kidSessions')
+      .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken))
+      .first();
+    if (!session) return null;
+    const ownerKey = `kid:${session.kidProfileId}`;
+    const now = Date.now();
+    const startOfTodayUtc = Date.UTC(
+      new Date(now).getUTCFullYear(),
+      new Date(now).getUTCMonth(),
+      new Date(now).getUTCDate(),
+    );
+    // Cap the scan at the most recent 500 prompts — anything beyond that
+    // is comfortably "yesterday" by the time today's budget matters.
+    const recent = await ctx.db
+      .query('safesparkRequests')
+      .withIndex('by_clerk_id_time', (q) => q.eq('clerkUserId', ownerKey))
+      .order('desc')
+      .take(500);
+    return recent.filter((r) => r.createdAt >= startOfTodayUtc).length;
+  },
+});
+
 export const getKidEnforcementBySession = query({
   args: { sessionToken: v.string() },
   handler: async (ctx, args) => {
@@ -2073,6 +3269,8 @@ export const getKidEnforcementBySession = query({
       allowWebData: profile.allowWebData !== false,
       allowSharing: profile.allowSharing !== false,
       blockedTopics: profile.blockedTopics ?? [],
+      accessPaused: profile.accessPaused === true,
+      dailyQueryBudget: profile.dailyQueryBudget,
     };
   },
 });

@@ -88,6 +88,13 @@ export default defineSchema({
     // Topics Spark must refuse to build for this kid. Lowercased, deduped,
     // capped to 50 entries by setBlockedTopics.
     blockedTopics: v.optional(v.array(v.string())),
+    // Parent dashboard Phase 2 (2026-05-29):
+    //   accessPaused: true → Spark refuses any new build for this kid.
+    //   dailyQueryBudget: per-day prompt cap. undefined = no cap.
+    // Both surfaced on /parent and enforced server-side in /api/demo
+    // before the LLM call, so a paused kid never burns a token.
+    accessPaused: v.optional(v.boolean()),
+    dailyQueryBudget: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -225,10 +232,62 @@ export default defineSchema({
     lastPrompt: v.optional(v.string()),
     lastReply: v.optional(v.string()),
     deletedAt: v.optional(v.number()),       // soft-delete timestamp; cleaned out after 30 days
+    // Phase 4 — flagged when Spark builds cross-user communication
+    // (chat room, message wall, guestbook, shared whiteboard). Set by
+    // the LLM via `communicationProject` in its JSON response; surfaced
+    // on /parent so the parent sees an amber "Has shared chat/message"
+    // badge and knows to inspect the spark.db contents.
+    isCommunication: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index('by_clerk_id', ['clerkUserId', 'updatedAt']),
+
+  // Phase 4 — concerning-query escalation. When the kid's prompt to
+  // Spark trips an always-escalate intent category (self-harm-adjacent,
+  // ED-adjacent), the build is refused with 988/NEDA helpline text AND
+  // a row is inserted here so the parent dashboard can surface it at
+  // the top with one-click acknowledge. Mirrors SafeStudy's
+  // `kidConcernAlerts`. Dedupe: 24h window on (kidProfileId, query,
+  // category) prevents retries from spamming the parent.
+  safesparkConcernAlerts: defineTable({
+    parentUserId: v.id('users'),
+    kidProfileId: v.id('kidProfiles'),
+    kidName: v.string(),                       // denormalized for fast list rendering
+    query: v.string(),                         // the prompt that fired the alert (capped 1000 chars)
+    category: v.union(
+      v.literal('self_harm_adjacent'),
+      v.literal('eating_disorder_adjacent'),
+    ),
+    rationale: v.string(),                     // short sentence from the classifier
+    acknowledged: v.boolean(),
+    acknowledgedAt: v.optional(v.number()),
+    acknowledgedBy: v.optional(v.string()),    // parent email for audit
+    notifiedAt: v.optional(v.number()),        // email-sent timestamp
+    createdAt: v.number(),
+  })
+    .index('by_parent_unack', ['parentUserId', 'acknowledged', 'createdAt'])
+    .index('by_kid_time', ['kidProfileId', 'createdAt']),
+
+  // Phase 3 parent dashboard — topic request approval workflow.
+  // When a kid hits a topic on their parent's blocklist, the friendly
+  // refusal includes an "ask my parent" button. Tapping it inserts a
+  // row here. The parent sees pending requests on /parent and approves
+  // or denies. Approve = remove the matched phrase from the kid's
+  // blockedTopics. Deny = mark resolved (the kid is told quietly).
+  safesparkTopicRequests: defineTable({
+    parentUserId: v.id('users'),
+    kidProfileId: v.id('kidProfiles'),
+    kidName: v.string(),                       // denormalized for fast list rendering
+    matchedPhrase: v.string(),                 // the blocklist phrase that fired
+    originalPrompt: v.string(),                // what the kid typed (capped at 1000 chars)
+    status: v.union(v.literal('pending'), v.literal('approved'), v.literal('denied')),
+    createdAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+    resolvedBy: v.optional(v.string()),        // parent email for audit
+  })
+    .index('by_parent_status', ['parentUserId', 'status', 'createdAt'])
+    .index('by_kid_time', ['kidProfileId', 'createdAt']),
 
   // Per-project context checkpoint — a periodically-regenerated markdown
   // recap of "what this project is, what we've built, design decisions,
@@ -261,6 +320,20 @@ export default defineSchema({
     label: v.string(),                       // e.g. 'Bigger sprites + sound'
     summary: v.optional(v.string()),         // 1-line "what changed"
     prompt: v.optional(v.string()),          // the kid's ask for this version
+    // Optional message-thread snapshot. Stored on rows created after
+    // 2026-05-29 so the revert UX can roll back BOTH the html AND the
+    // chat history to that point (otherwise rewinding html leaves a
+    // confusing chat where the kid sees their later prompts but the
+    // game state is older). Older version rows don't have this — for
+    // those, restore patches html only.
+    messagesSnapshot: v.optional(
+      v.array(
+        v.object({
+          role: v.union(v.literal('user'), v.literal('assistant')),
+          content: v.string(),
+        }),
+      ),
+    ),
     createdAt: v.number(),
   })
     .index('by_project_time', ['projectId', 'createdAt'])
@@ -273,12 +346,18 @@ export default defineSchema({
     clerkUserId: v.optional(v.string()),
     email: v.optional(v.string()),
     prompt: v.string(),
-    kind: v.string(),                   // 'json_parse' | 'openai_error' | 'timeout' | 'image_transform' | 'other'
+    kind: v.string(),                   // 'json_parse' | 'openai_error' | 'timeout' | 'image_transform' | 'blocked_topic' | 'other'
     message: v.string(),
     contextSize: v.optional(v.number()),
     createdAt: v.number(),
   })
-    .index('by_time', ['createdAt']),
+    .index('by_time', ['createdAt'])
+    // Added 2026-05-29 for the parent dashboard's per-kid blocked-topic
+    // lookup. The kid's clerkUserId is `kid:<profileId>`; we scan their
+    // recent errors and filter to kind=='blocked_topic' in JS rather
+    // than adding a compound (kid, kind, time) index — error volume per
+    // kid is small enough that the post-filter is cheap.
+    .index('by_clerk_id_time', ['clerkUserId', 'createdAt']),
 
   // Public share snapshots — each row is a self-contained published copy of
   // a project. Short IDs (8 chars) keep URLs short ("/s/aB7xQ2pK") so a
@@ -296,7 +375,40 @@ export default defineSchema({
     views: v.number(),
     createdAt: v.number(),
   })
-    .index('by_short_id', ['shortId']),
+    .index('by_short_id', ['shortId'])
+    // Added so `opsCreateShareForProject` can dedupe by projectId
+    // (idempotent: calling twice for the same project reuses the share).
+    .index('by_project', ['projectId']),
+
+  // P0 safety gate: pre-share parent approval for chat-shaped projects.
+  // When a kid hits Share on a project where isCommunication === true
+  // (chat room, message wall, guestbook, shared whiteboard — anything
+  // that uses spark.db for cross-user state), the share link is NOT
+  // generated immediately. A row is inserted here in `pending` state;
+  // the parent sees it on /parent and one-tap approves or denies.
+  // - Approved: kid can hit Share again to generate the link.
+  // - Denied: kid sees a message; parent can re-deny without re-checking.
+  // Dedupe: at most one PENDING row per (kidProfileId, projectId) — if
+  // the kid taps Share twice, the second tap finds the existing pending
+  // row and doesn't spam the parent.
+  safesparkShareApprovals: defineTable({
+    parentUserId: v.id('users'),
+    kidProfileId: v.id('kidProfiles'),
+    kidName: v.string(),                       // denormalized for fast list rendering
+    projectId: v.id('safesparkProjects'),
+    projectTitle: v.string(),                  // denormalized; project title can change
+    status: v.union(
+      v.literal('pending'),
+      v.literal('approved'),
+      v.literal('denied'),
+    ),
+    resolvedAt: v.optional(v.number()),
+    resolvedBy: v.optional(v.string()),        // parent email for audit
+    createdAt: v.number(),
+  })
+    .index('by_parent_status', ['parentUserId', 'status', 'createdAt'])
+    .index('by_project_status', ['projectId', 'status'])
+    .index('by_kid_project', ['kidProfileId', 'projectId']),
 
   // Monthly cost rollup per SafeSpark identity (parent OR kid). One row per
   // (clerkUserId, yearMonth). Used by the parent dashboard to show "you've
@@ -323,6 +435,12 @@ export default defineSchema({
     prompt: v.string(),
     projectId: v.optional(v.id('safesparkProjects')),
     projectTitle: v.optional(v.string()),
+    // Per-turn reply text. Was previously denormalized off the project's
+    // lastReply field for the ops review feed, which made every prompt
+    // in a project show the SAME reply (the latest one) — masking real
+    // canned-reply loops behind a display artifact. Now stored per row.
+    // Optional for back-compat with old rows.
+    reply: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index('by_clerk_id_time', ['clerkUserId', 'createdAt'])
@@ -338,6 +456,72 @@ export default defineSchema({
     updatedAt: v.number(),
     createdAt: v.number(),
   }).index('by_project_key', ['projectId', 'key']),
+
+  // Async build jobs — survives tab close, navigation, mobile background.
+  // Pattern: client creates a job before fetching /api/demo, persists the
+  // jobId to localStorage keyed by (clerkUserId or sessionToken). Server
+  // dual-writes the final result to the job row independent of whether
+  // the client is still streaming. On page load the client looks for a
+  // pending job for the current identity, queries it, and applies the
+  // result if status='complete'. Daily cron purges rows older than 24h.
+  // Added 2026-05-29 after Jeremiah navigated away mid-build and lost work.
+  safesparkJobs: defineTable({
+    // Identity — one of these two will be set, used for rehydration lookup.
+    clerkUserId: v.optional(v.string()),       // signed-in parent identity
+    sessionToken: v.optional(v.string()),      // kid session token
+    // What the kid asked + the project context. The route reconstructs
+    // its request from these fields when retrying, so the client only
+    // needs to remember the jobId.
+    prompt: v.string(),
+    projectId: v.optional(v.id('safesparkProjects')),
+    // Lifecycle. 'pending' = created; 'running' = route started; 'complete'
+    // = result is set; 'failed' = errorMessage is set; 'claimed' = client
+    // has rehydrated this result already (so we don't replay it twice if
+    // the kid reopens the same tab).
+    status: v.union(
+      v.literal('pending'),
+      v.literal('running'),
+      v.literal('complete'),
+      v.literal('failed'),
+      v.literal('claimed'),
+    ),
+    // Final result — populated when status='complete'. Mirrors the shape
+    // /api/demo streams back on the `r:` line (DemoReply).
+    resultJson: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_session_pending', ['sessionToken', 'status', 'createdAt'])
+    .index('by_clerk_pending', ['clerkUserId', 'status', 'createdAt'])
+    .index('by_created', ['createdAt']),
+
+  // OpenAI TTS cache. Most kids re-listen to the same reply, so a hash-
+  // keyed cache turns the second tap (and every tap by every other kid
+  // who hears the same canned line) into a free read. Audio stored as
+  // base64 inline — typical 200-char reply ≈ 30 KB mp3, well under the
+  // 1 MB Convex row limit. Older entries pruned by a daily cron.
+  safesparkTtsCache: defineTable({
+    hash: v.string(), // sha256(text + voice + model)
+    voice: v.string(),
+    audioBase64: v.string(),
+    sizeBytes: v.number(),
+    createdAt: v.number(),
+    lastUsedAt: v.number(),
+    hitCount: v.number(),
+  }).index('by_hash', ['hash'])
+    .index('by_last_used', ['lastUsedAt']),
+
+  // Per-kid daily TTS call counter — protects against spam-tapping the
+  // Listen button. Resets per UTC day. Mirrors the existing
+  // dailyQueryBudget pattern on kidProfiles.
+  safesparkTtsUsage: defineTable({
+    kidProfileId: v.id('kidProfiles'),
+    yearMonthDay: v.string(), // "2026-05-29"
+    calls: v.number(),
+    cachedHits: v.number(),
+    updatedAt: v.number(),
+  }).index('by_kid_day', ['kidProfileId', 'yearMonthDay']),
 
   // Cached Wikipedia / search results — keeps cost down on common factual
   // questions. Lifted shape from safecontent/apps/safeseek/convex/searchCache.ts.

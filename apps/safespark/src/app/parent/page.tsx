@@ -3,7 +3,20 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
-import { Copy, Plus, Users, Settings2, X, LogOut } from 'lucide-react';
+import {
+  Copy,
+  Plus,
+  Users,
+  Settings2,
+  X,
+  LogOut,
+  Activity as ActivityIcon,
+  Shield,
+  ShieldAlert,
+  Clock,
+  MessageSquare,
+  Share2,
+} from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
@@ -51,8 +64,51 @@ export default function ParentDashboard() {
     api.safespark.getFamilyUsageThisMonth,
     isSignedIn ? { userToken: marketing.token ?? undefined } : 'skip',
   );
+  // Recent activity across the whole family (last ~30 events combining
+  // kid prompts + blocked-topic refusals). Powers the activity feed +
+  // the alert banner. Skip when not signed in to avoid pointless calls.
+  const activity = useQuery(
+    api.safespark.getActivityForFamily,
+    isSignedIn ? { userToken: marketing.token ?? undefined, limit: 30 } : 'skip',
+  );
+  // Phase 3 — pending topic requests from kids ("Ask my parent to allow").
+  // Renders at the top of /parent as actionable cards. Empty = section hidden.
+  const pendingRequests = useQuery(
+    api.safespark.listPendingTopicRequests,
+    isSignedIn ? { userToken: marketing.token ?? undefined } : 'skip',
+  );
+  const resolveTopicRequest = useMutation(api.safespark.resolveTopicRequest);
+  // P0 share-approval gate — pending share requests for chat-shaped
+  // (isCommunication=true) projects. Same pattern as topic requests:
+  // kid hits Share, request lands here, parent one-taps Approve/Deny.
+  const pendingShareApprovals = useQuery(
+    api.safespark.listPendingShareApprovals,
+    isSignedIn ? { userToken: marketing.token ?? undefined } : 'skip',
+  );
+  const resolveShareApproval = useMutation(api.safespark.resolveShareApproval);
+  // Phase 4 — concerning-prompt alerts (self-harm / ED escalation).
+  // Renders ABOVE everything else when unack'd, with helpline info
+  // already inlined so the parent doesn't have to dig.
+  const concernAlerts = useQuery(
+    api.concernAlerts.listForUser,
+    isSignedIn ? { userToken: marketing.token ?? undefined } : 'skip',
+  );
+  const acknowledgeConcern = useMutation(api.concernAlerts.acknowledge);
+  // Per-kid today: prompts count, blocked count, last active. Powers
+  // the 3-metric strip on each kid card.
+  const kidStats = useQuery(
+    api.safespark.getKidStatsToday,
+    isSignedIn ? { userToken: marketing.token ?? undefined } : 'skip',
+  );
   const ensureFamily = useMutation(api.families.ensureForParent);
   const [codeCopied, setCodeCopied] = useState(false);
+
+  // Build a quick lookup so KidRow can pull its stats without iterating.
+  const statsByKid = new Map<string, NonNullable<typeof kidStats>[number]>();
+  if (kidStats) {
+    for (const s of kidStats) statsByKid.set(String(s.id), s);
+  }
+  const totalBlockedToday = (kidStats ?? []).reduce((sum, s) => sum + s.blockedToday, 0);
 
   if (!isLoaded) {
     return <main className="flex min-h-screen items-center justify-center text-slate-500">Loading…</main>;
@@ -217,6 +273,295 @@ export default function ParentDashboard() {
           </div>
         </section>
 
+        {/* Phase 4 — concerning-prompt alerts. Highest-priority section,
+            renders above every other dashboard surface when unack'd.
+            Inlines helpline numbers so the parent has them in hand. */}
+        {concernAlerts && concernAlerts.length > 0 && (
+          <section className="rounded-3xl border-2 border-rose-300 bg-rose-50 p-5 shadow-lg">
+            <div className="mb-3 flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-700">
+                <ShieldAlert className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-widest text-rose-700">
+                  Important — needs your attention
+                </p>
+                <h2 className="text-lg font-black text-rose-900">
+                  {concernAlerts.length} {concernAlerts.length === 1 ? 'concerning prompt' : 'concerning prompts'} from your kids
+                </h2>
+              </div>
+            </div>
+            <ul className="space-y-3">
+              {concernAlerts.map((alert) => {
+                const isSH = alert.category === 'self_harm_adjacent';
+                const isED = alert.category === 'eating_disorder_adjacent';
+                return (
+                  <li
+                    key={alert.id}
+                    className="rounded-2xl border border-rose-200 bg-white p-4 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-black text-rose-900">
+                          {alert.kidName} asked Spark to build:
+                        </p>
+                        <blockquote className="mt-1 rounded-xl border-l-4 border-rose-400 bg-rose-50 px-3 py-2 text-sm font-semibold text-slate-800">
+                          &ldquo;{alert.query}&rdquo;
+                        </blockquote>
+                        <p className="mt-2 text-xs italic text-rose-700">{alert.rationale}</p>
+                        {isSH && (
+                          <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900">
+                            <strong>988</strong> — Suicide &amp; Crisis Lifeline (call or text, 24/7).
+                          </p>
+                        )}
+                        {isED && (
+                          <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900">
+                            <strong>1-800-931-2237</strong> — National Eating Disorders helpline (Mon-Thu 9am-9pm ET, Fri 9am-5pm ET).
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await acknowledgeConcern({
+                              id: alert.id,
+                              userToken: marketing.token ?? undefined,
+                            });
+                          } catch (err) {
+                            console.error('acknowledge failed', err);
+                          }
+                        }}
+                        className="shrink-0 rounded-xl bg-rose-600 px-3 py-1.5 text-xs font-black text-white shadow hover:bg-rose-700"
+                      >
+                        Got it
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+
+        {/* Concerning-activity banner — only renders when at least one
+            blocked-topic hit happened today. Quick-scan signal at the top
+            so a parent skimming the dashboard sees it without scrolling. */}
+        {totalBlockedToday > 0 && (
+          <section className="flex items-start gap-3 rounded-3xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+              <ShieldAlert className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black text-rose-900">
+                {totalBlockedToday} blocked {totalBlockedToday === 1 ? 'attempt' : 'attempts'} today
+              </p>
+              <p className="text-xs font-semibold text-rose-700">
+                Spark refused to build on a topic in your blocklist. Tap a kid below to see what was attempted.
+              </p>
+            </div>
+          </section>
+        )}
+
+        {/* P0 share-approval gate — pending share requests for chat-
+            shaped projects. Rendered ABOVE topic requests because
+            sharing is a safety event (creates a public URL), not a
+            content-rails event. Approve = kid can hit Share again
+            and the link generates. Deny = kid sees a quiet "not yet"
+            message; parent can re-approve from history later. */}
+        {pendingShareApprovals && pendingShareApprovals.length > 0 && (
+          <section className="rounded-3xl border border-rose-200 bg-rose-50 p-5 shadow-sm">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-rose-100 text-rose-700">
+                <Share2 className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-widest text-rose-700">Share approval needed</p>
+                <h2 className="text-lg font-black text-rose-900">
+                  {pendingShareApprovals.length} {pendingShareApprovals.length === 1 ? 'share' : 'shares'} waiting for you
+                </h2>
+                <p className="mt-0.5 text-xs font-semibold text-rose-700">
+                  These projects have shared chat/messages. Anyone with the link can see them. Review before approving.
+                </p>
+              </div>
+            </div>
+            <ul className="space-y-2">
+              {pendingShareApprovals.map((req) => (
+                <li
+                  key={req.id}
+                  className="flex flex-wrap items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-black text-slate-900">
+                      <span className="text-rose-700">{req.kidName}</span> wants to share{' '}
+                      <span className="rounded-md bg-rose-100 px-1.5 py-0.5 font-black text-rose-900">
+                        {req.projectTitle}
+                      </span>
+                    </p>
+                    <p className="mt-1 text-xs font-semibold text-slate-600">
+                      Open the project on{' '}
+                      <Link
+                        href={`/parent/profile/${req.kidProfileId}`}
+                        className="text-rose-600 underline hover:text-rose-700"
+                      >
+                        {req.kidName}&apos;s profile
+                      </Link>{' '}
+                      to inspect the shared data before deciding.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await resolveShareApproval({
+                            id: req.id,
+                            action: 'approve',
+                            userToken: marketing.token ?? undefined,
+                          });
+                        } catch (err) {
+                          console.error('approve share failed', err);
+                        }
+                      }}
+                      className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-black text-white shadow hover:bg-emerald-700"
+                    >
+                      Approve share
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await resolveShareApproval({
+                            id: req.id,
+                            action: 'deny',
+                            userToken: marketing.token ?? undefined,
+                          });
+                        } catch (err) {
+                          console.error('deny share failed', err);
+                        }
+                      }}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-50"
+                    >
+                      Not yet
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Phase 3 — pending topic requests. Kids tap "Ask my parent" in
+            the workbench when they hit a blocklist phrase; the request
+            shows up here for one-click approve (removes the phrase
+            from their blockedTopics) or deny. */}
+        {pendingRequests && pendingRequests.length > 0 && (
+          <section className="rounded-3xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                <MessageSquare className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-widest text-amber-700">Pending permission requests</p>
+                <h2 className="text-lg font-black text-amber-900">
+                  {pendingRequests.length} {pendingRequests.length === 1 ? 'request' : 'requests'} waiting for you
+                </h2>
+              </div>
+            </div>
+            <ul className="space-y-2">
+              {pendingRequests.map((req) => (
+                <li
+                  key={req.id}
+                  className="flex flex-wrap items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-black text-slate-900">
+                      <span className="text-amber-700">{req.kidName}</span> wants to build something about{' '}
+                      <span className="rounded-md bg-amber-100 px-1.5 py-0.5 font-black text-amber-900">
+                        {req.matchedPhrase}
+                      </span>
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-xs font-semibold text-slate-600">
+                      They asked: &ldquo;{req.originalPrompt}&rdquo;
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await resolveTopicRequest({
+                            id: req.id,
+                            action: 'approve',
+                            userToken: marketing.token ?? undefined,
+                          });
+                        } catch (err) {
+                          console.error('approve failed', err);
+                        }
+                      }}
+                      className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-black text-white shadow hover:bg-emerald-700"
+                    >
+                      Allow
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await resolveTopicRequest({
+                            id: req.id,
+                            action: 'deny',
+                            userToken: marketing.token ?? undefined,
+                          });
+                        } catch (err) {
+                          console.error('deny failed', err);
+                        }
+                      }}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-50"
+                    >
+                      Not yet
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Activity feed — last ~30 events across all kids in the family.
+            Each row shows the kid (colored dot), event type (prompt vs
+            blocked), and what they asked. Empty state explains what'll
+            show up here once kids start building. */}
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
+              <ActivityIcon className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-widest text-violet-500">Recent activity</p>
+              <h2 className="text-lg font-black text-slate-900">
+                {activity?.events.length
+                  ? `${activity.events.length} recent ${activity.events.length === 1 ? 'event' : 'events'}`
+                  : 'Activity feed'}
+              </h2>
+            </div>
+          </div>
+          {!activity ? (
+            <p className="rounded-2xl bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-400">
+              Loading activity…
+            </p>
+          ) : activity.events.length === 0 ? (
+            <p className="rounded-2xl bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500">
+              Nothing yet. When your kids build something with Spark, it&apos;ll show up here.
+            </p>
+          ) : (
+            <ol className="divide-y divide-slate-100">
+              {activity.events.slice(0, 12).map((event, idx) => (
+                <ActivityRow key={`${event.kidProfileId}-${event.createdAt}-${idx}`} event={event} />
+              ))}
+            </ol>
+          )}
+        </section>
+
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
@@ -241,7 +586,7 @@ export default function ParentDashboard() {
           ) : (
             <div className="space-y-4">
               {family.kids.map((kid) => (
-                <KidRow key={kid.id} kid={kid} />
+                <KidRow key={kid.id} kid={kid} stats={statsByKid.get(String(kid.id))} />
               ))}
             </div>
           )}
@@ -260,8 +605,41 @@ type Kid = {
   projects: { id: Id<'safesparkProjects'>; title: string; html: string; updatedAt: number; lastPrompt?: string }[];
 };
 
-function KidRow({ kid }: { kid: Kid }) {
+type KidStats = {
+  id: Id<'kidProfiles'>;
+  displayName: string;
+  avatarColor: string;
+  promptsToday: number;
+  blockedToday: number;
+  lastActiveAt: number | null;
+  dailyQueryBudget?: number;
+  accessPaused: boolean;
+};
+
+function KidRow({ kid, stats }: { kid: Kid; stats?: KidStats }) {
+  const marketing = useMarketingAuth();
+  const setKidAccessPaused = useMutation(api.safespark.setKidAccessPaused);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Optimistic local pause state — flips immediately on click, server
+  // call lands in the background. Reverts on server error.
+  const [pausedOverride, setPausedOverride] = useState<boolean | null>(null);
+  const effectivePaused = pausedOverride ?? stats?.accessPaused ?? false;
+
+  const togglePause = async () => {
+    const next = !effectivePaused;
+    setPausedOverride(next);
+    try {
+      await setKidAccessPaused({
+        kidProfileId: kid.id,
+        paused: next,
+        userToken: marketing.token ?? undefined,
+      });
+    } catch (err) {
+      console.error('setKidAccessPaused failed', err);
+      setPausedOverride(!next);
+    }
+  };
+
   const colorClass =
     {
       violet: 'from-violet-500 to-pink-500',
@@ -272,7 +650,13 @@ function KidRow({ kid }: { kid: Kid }) {
     }[kid.avatarColor ?? 'violet'] ?? 'from-violet-500 to-pink-500';
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+    <div
+      className={
+        effectivePaused
+          ? 'rounded-2xl border-2 border-amber-300 bg-amber-50 p-4'
+          : 'rounded-2xl border border-slate-200 bg-slate-50 p-4'
+      }
+    >
       <div className="flex items-center gap-3">
         <Link
           href={`/parent/profile/${kid.id}`}
@@ -288,6 +672,29 @@ function KidRow({ kid }: { kid: Kid }) {
             </p>
           </div>
         </Link>
+        {/* Pause toggle — iOS-style switch. Paused state shows amber
+            border on the whole kid card so a quick scan flags any
+            paused kid. Server enforces the gate so a paused kid
+            never burns a token. */}
+        <button
+          type="button"
+          onClick={togglePause}
+          aria-pressed={effectivePaused}
+          title={effectivePaused ? 'Spark paused for this kid — tap to resume' : 'Tap to pause Spark for this kid'}
+          className={
+            effectivePaused
+              ? 'inline-flex h-7 w-12 shrink-0 items-center rounded-full bg-amber-500 transition-colors'
+              : 'inline-flex h-7 w-12 shrink-0 items-center rounded-full bg-slate-300 transition-colors hover:bg-slate-400'
+          }
+        >
+          <span
+            className={
+              effectivePaused
+                ? 'inline-block h-5 w-5 translate-x-6 transform rounded-full bg-white shadow transition-transform'
+                : 'inline-block h-5 w-5 translate-x-1 transform rounded-full bg-white shadow transition-transform'
+            }
+          />
+        </button>
         <button
           type="button"
           onClick={() => setSettingsOpen((open) => !open)}
@@ -297,6 +704,52 @@ function KidRow({ kid }: { kid: Kid }) {
           <Settings2 className="h-3.5 w-3.5" />
           Settings
         </button>
+      </div>
+      {effectivePaused && (
+        <p className="mt-2 rounded-xl bg-amber-100 px-3 py-1.5 text-xs font-bold text-amber-800">
+          ⏸ Paused — Spark is refusing new builds for {kid.displayName} until you toggle this back on.
+        </p>
+      )}
+      {/* 3-metric strip — today's prompt count, safety status, last
+          active. Copied straight from the SafeTunes parent dashboard
+          pattern (which kids' families are already used to). Renders
+          even when stats is undefined so layout doesn't shift on load. */}
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <KidMetric
+          icon={<MessageSquare className="h-3.5 w-3.5" />}
+          label="Prompts today"
+          value={stats ? String(stats.promptsToday) : '—'}
+          tone="slate"
+          context={
+            stats?.dailyQueryBudget != null
+              ? `of ${stats.dailyQueryBudget}`
+              : undefined
+          }
+        />
+        <KidMetric
+          icon={
+            stats && stats.blockedToday > 0 ? (
+              <ShieldAlert className="h-3.5 w-3.5" />
+            ) : (
+              <Shield className="h-3.5 w-3.5" />
+            )
+          }
+          label="Safety"
+          value={
+            stats
+              ? stats.blockedToday > 0
+                ? `${stats.blockedToday} blocked`
+                : 'Safe'
+              : '—'
+          }
+          tone={stats && stats.blockedToday > 0 ? 'rose' : 'emerald'}
+        />
+        <KidMetric
+          icon={<Clock className="h-3.5 w-3.5" />}
+          label="Last active"
+          value={stats?.lastActiveAt ? formatRelativeTime(stats.lastActiveAt) : 'No activity'}
+          tone="slate"
+        />
       </div>
       {settingsOpen && <KidSettingsPanel kidProfileId={kid.id} />}
       {kid.projects.length > 0 && (
@@ -310,6 +763,105 @@ function KidRow({ kid }: { kid: Kid }) {
   );
 }
 
+// Single metric tile inside a kid row's 3-metric strip.
+function KidMetric({
+  icon,
+  label,
+  value,
+  context,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  context?: string;
+  tone: 'slate' | 'rose' | 'emerald';
+}) {
+  const palette = {
+    slate: 'bg-white border-slate-200 text-slate-700',
+    rose: 'bg-rose-50 border-rose-200 text-rose-700',
+    emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+  }[tone];
+  return (
+    <div className={`rounded-xl border px-2.5 py-2 ${palette}`}>
+      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider opacity-70">
+        {icon}
+        <span className="truncate">{label}</span>
+      </div>
+      <p className="mt-0.5 text-sm font-black leading-tight">{value}</p>
+      {context && <p className="text-[10px] font-semibold opacity-60">{context}</p>}
+    </div>
+  );
+}
+
+// Single row in the dashboard activity feed.
+function ActivityRow({
+  event,
+}: {
+  event: {
+    kind: 'prompt' | 'blocked';
+    kidName: string;
+    avatarColor: string;
+    content: string;
+    projectTitle?: string;
+    createdAt: number;
+  };
+}) {
+  const colorClass =
+    {
+      violet: 'from-violet-500 to-pink-500',
+      pink: 'from-pink-500 to-rose-400',
+      emerald: 'from-emerald-500 to-teal-400',
+      amber: 'from-amber-500 to-orange-400',
+      sky: 'from-sky-500 to-cyan-400',
+    }[event.avatarColor] ?? 'from-violet-500 to-pink-500';
+  const isBlocked = event.kind === 'blocked';
+  return (
+    <li className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${colorClass} text-xs font-black text-white shadow`}>
+        {event.kidName.slice(0, 1).toUpperCase()}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-black text-slate-900">{event.kidName}</span>
+          {isBlocked ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-rose-700">
+              <ShieldAlert className="h-3 w-3" />
+              Blocked
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-violet-700">
+              <MessageSquare className="h-3 w-3" />
+              Asked Spark
+            </span>
+          )}
+          {event.projectTitle && (
+            <span className="truncate text-[11px] font-bold text-slate-400">
+              · {event.projectTitle}
+            </span>
+          )}
+        </div>
+        <p className={`mt-0.5 line-clamp-2 text-sm ${isBlocked ? 'text-rose-700' : 'text-slate-600'}`}>
+          {event.content}
+        </p>
+      </div>
+      <span className="shrink-0 text-[11px] font-bold text-slate-400">
+        {formatRelativeTime(event.createdAt)}
+      </span>
+    </li>
+  );
+}
+
+function formatRelativeTime(ts: number): string {
+  const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (diffSec < 60) return 'just now';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+  const days = Math.floor(diffSec / 86400);
+  if (days < 7) return `${days}d ago`;
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(ts);
+}
+
 function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> }) {
   const marketing = useMarketingAuth();
   const settings = useQuery(api.safespark.getKidSettings, {
@@ -318,6 +870,7 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
   });
   const setKidSettings = useMutation(api.safespark.setKidSettings);
   const setBlockedTopics = useMutation(api.safespark.setBlockedTopics);
+  const setKidDailyBudget = useMutation(api.safespark.setKidDailyBudget);
   const [topicInput, setTopicInput] = useState('');
 
   if (!settings) {
@@ -360,6 +913,18 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
     }
   };
 
+  const setBudget = async (next: number | undefined) => {
+    try {
+      await setKidDailyBudget({
+        kidProfileId,
+        budget: next,
+        userToken: marketing.token ?? undefined,
+      });
+    } catch (err) {
+      console.error('setKidDailyBudget failed', err);
+    }
+  };
+
   return (
     <div className="mt-3 space-y-4 rounded-2xl border border-violet-100 bg-white p-4">
       <div>
@@ -385,6 +950,46 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
             on={settings.allowSharing}
             onChange={(v) => toggle('allowSharing', v)}
           />
+        </div>
+      </div>
+      {/* Phase 2 — daily prompt budget. Quick-pick presets cover the
+          common "after-school light use" → "weekend deep dive" range.
+          Custom values still work via setKidDailyBudget (clamped to
+          [1, 500] server-side). "No cap" sets it to undefined. */}
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-widest text-violet-500">
+          Daily prompt budget
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          Cap how many builds {`{kid}`.replace('{kid}', 'this profile')} can ask for per day. Server enforces it &mdash; once they hit the cap, Spark refuses politely until midnight UTC.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {[
+            { label: 'No cap', value: undefined },
+            { label: '10', value: 10 },
+            { label: '25', value: 25 },
+            { label: '50', value: 50 },
+            { label: '100', value: 100 },
+          ].map((opt) => {
+            const isActive =
+              opt.value == null
+                ? settings.dailyQueryBudget == null || settings.dailyQueryBudget === 0
+                : settings.dailyQueryBudget === opt.value;
+            return (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={() => setBudget(opt.value)}
+                className={
+                  isActive
+                    ? 'rounded-xl bg-violet-600 px-3 py-1.5 text-xs font-black text-white shadow'
+                    : 'rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50'
+                }
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
       </div>
       <div>

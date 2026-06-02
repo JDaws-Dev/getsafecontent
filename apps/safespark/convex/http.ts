@@ -298,4 +298,64 @@ http.route({
   }),
 });
 
+// Operator inspection endpoints. Admin-key gated like /adminDashboard,
+// but return data about kid-Spark interactions specifically so the
+// SafeFamily operator (or any tooling holding the admin key) can read
+// project threads and search the system. Added 2026-05-29 so Jeremiah
+// can hand "look at my dungeon game" to a script/agent and have it
+// actually look.
+
+// GET /opsReviewFeed?key=... [&promptLimit=...&blockedLimit=...&concernLimit=...]
+http.route({
+  path: '/opsReviewFeed',
+  method: 'GET',
+  handler: httpAction(async (ctx, req) => {
+    const url = new URL(req.url);
+    if (!checkAdminKey(url)) return unauthorized();
+    const promptLimit = Number(url.searchParams.get('promptLimit') ?? 200);
+    const blockedLimit = Number(url.searchParams.get('blockedLimit') ?? 100);
+    const concernLimit = Number(url.searchParams.get('concernLimit') ?? 50);
+    const data = await ctx.runQuery(internal.safespark._opsReviewFeedInternal, {
+      promptLimit: Number.isFinite(promptLimit) ? promptLimit : 200,
+      blockedLimit: Number.isFinite(blockedLimit) ? blockedLimit : 100,
+      concernLimit: Number.isFinite(concernLimit) ? concernLimit : 50,
+    });
+    return ok(data);
+  }),
+});
+
+// GET /opsSearchProjects?key=...&q=dungeon[&limit=25]
+http.route({
+  path: '/opsSearchProjects',
+  method: 'GET',
+  handler: httpAction(async (ctx, req) => {
+    const url = new URL(req.url);
+    if (!checkAdminKey(url)) return unauthorized();
+    const q = url.searchParams.get('q') ?? '';
+    const limit = Number(url.searchParams.get('limit') ?? 25);
+    const data = await ctx.runQuery(internal.safespark._opsSearchProjectsInternal, {
+      query: q,
+      limit: Number.isFinite(limit) ? limit : 25,
+    });
+    return ok({ query: q, count: data.length, results: data });
+  }),
+});
+
+// GET /opsGetProject?key=...&id=<projectId>
+http.route({
+  path: '/opsGetProject',
+  method: 'GET',
+  handler: httpAction(async (ctx, req) => {
+    const url = new URL(req.url);
+    if (!checkAdminKey(url)) return unauthorized();
+    const idParam = url.searchParams.get('id');
+    if (!idParam) return ok({ ok: false, error: 'id required' });
+    const data = await ctx.runQuery(internal.safespark._opsGetProjectInternal, {
+      projectId: idParam as Id<'safesparkProjects'>,
+    });
+    if (!data) return ok({ ok: false, error: 'project not found' });
+    return ok({ ok: true, project: data });
+  }),
+});
+
 export default http;
