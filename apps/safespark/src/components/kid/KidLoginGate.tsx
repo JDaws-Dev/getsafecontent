@@ -97,9 +97,12 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
         // re-render based on the new identity rather than navigating.
         onSession(result.token);
       } else {
-        // Standalone (/start route) — push to /make so the kid lands
-        // in the workbench. Preserves the original /start UX.
-        router.push('/make');
+        // Standalone (/start route) — push to /dashboard so the kid
+        // lands on their overview (recent projects, stats, quick-build
+        // CTA) rather than dropping straight into a blank chat. The
+        // dashboard's "Start a new build" button is one tap from /make
+        // for kids who want to go straight to making.
+        router.push('/dashboard');
       }
     } else {
       setError(result.error ?? 'Something went wrong.');

@@ -1,7 +1,23 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Quicksand } from 'next/font/google';
 import './globals.css';
 import { ConvexClientProvider } from '@/components/ConvexClientProvider';
+
+// Viewport meta — was MISSING before 2026-05-29, which is THE actual
+// cause of "still scrolls sideways on iPhone." Without this, iOS Safari
+// renders the page at a 980px virtual viewport and scales down to fit
+// the screen — so every "fix" for horizontal scroll (overflow-x:hidden
+// on main, then on html/body, then iOS-specific overscroll tricks) was
+// chasing a symptom while the root cause was that mobile Safari didn't
+// know it was a mobile page at all. With width=device-width the viewport
+// matches the screen and the existing overflow rules actually take effect.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#a855f7',
+};
 
 const quicksand = Quicksand({
   variable: '--font-quicksand',

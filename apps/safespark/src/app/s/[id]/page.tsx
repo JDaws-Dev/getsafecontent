@@ -1,9 +1,25 @@
 import { ConvexHttpClient } from 'convex/browser';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { api } from '../../../../convex/_generated/api';
 import { injectSparkDb } from '../../../lib/inject-spark-db';
+import ShareViewer from './ShareViewer';
+
+// Route-specific viewport: disable pinch-zoom AND swipe-back on /s/.
+// Mobile games inside the iframe were fighting the browser's default
+// pinch/scroll/pull-to-refresh — two fingers on iPhone shrunk the
+// canvas, swipe-from-left navigated back. We accept the trade-off
+// (visitors can't zoom into text here) because the share viewer is a
+// game/app surface, not a text-content page. The rest of the site
+// keeps accessibility-friendly default viewport.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL ?? '';
 
@@ -47,14 +63,7 @@ export default async function SharePage({ params }: Props) {
           </Link>
         </div>
       </header>
-      <div className="flex-1 bg-slate-200 p-3">
-        <iframe
-          title={share.title}
-          srcDoc={injectSparkDb(share.html, share.projectId)}
-          sandbox="allow-scripts allow-same-origin"
-          className="h-full w-full rounded-2xl bg-white shadow-inner"
-        />
-      </div>
+      <ShareViewer title={share.title} srcDoc={injectSparkDb(share.html, share.projectId)} />
     </main>
   );
 }

@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Added 2026-05-29 — agent worktrees contain duplicate copies of
+    // convex/ + src/ that were producing ~35+ false errors.
+    ".claude/worktrees/**",
+    ".vercel/**",
   ]),
 ]);
 

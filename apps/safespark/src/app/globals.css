@@ -35,3 +35,16 @@
     opacity: 1;
   }
 }
+
+/* Hard-stop horizontal scroll at the document root.
+   The ACTUAL root cause was a missing viewport meta tag in layout.tsx
+   (without it iOS Safari renders at 980px and scales down). With the
+   viewport meta now correct, this cap is defense-in-depth in case any
+   child has intrinsic content wider than the screen.
+   Kept minimal — earlier iOS belt-and-suspenders (width: 100vw on body,
+   position:relative, touch-action) hid the fixed-positioned mobile
+   bottom nav and were never needed once viewport meta was set. */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}

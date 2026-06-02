@@ -13,8 +13,11 @@ const nextConfig: NextConfig = {
     // following a stale bookmark lands on the homepage instead of a 404.
     { source: '/chat', destination: '/', permanent: false },
     { source: '/chat/:path*', destination: '/', permanent: false },
-    { source: '/learn', destination: '/', permanent: false },
-    { source: '/learn/:path*', destination: '/', permanent: false },
+    // (formerly /learn and /learn/:path* — those redirected to / when
+    // the old BELLA trainer was stripped. We now have a REAL /learn
+    // training surface, so the redirects were swallowing it. Removed
+    // 2026-05-29 — verified locally by `curl -L http://localhost:3010/learn/talking-to-spark`
+    // hitting the lesson viewer instead of bouncing to /.)
     { source: '/literacy', destination: '/', permanent: false },
     { source: '/literacy/:path*', destination: '/', permanent: false },
     { source: '/journey', destination: '/', permanent: false },

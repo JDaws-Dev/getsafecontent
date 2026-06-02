@@ -1,5 +1,8 @@
 import { DemoWorkbench } from './DemoWorkbench';
 
+// DemoWorkbench uses useSearchParams() — require dynamic rendering.
+export const dynamic = 'force-dynamic';
+
 type DemoPageProps = {
   searchParams: Promise<{ code?: string | string[] }>;
 };

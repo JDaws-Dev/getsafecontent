@@ -6,9 +6,11 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import {
   BookOpen,
+  Boxes,
   Brain,
   Briefcase,
   Camera,
+  CheckCircle2,
   Eye,
   Gamepad2,
   Globe,
@@ -16,9 +18,12 @@ import {
   History,
   Image as ImageIcon,
   KeyRound,
+  MessageSquareWarning,
   Mic,
+  Palette,
   ShieldCheck,
   Share2,
+  Sparkles,
   TrendingUp,
   Users,
   Wand2,
@@ -109,7 +114,15 @@ const FAQS = [
   },
   {
     q: 'Can my kid share what they made?',
-    a: 'Yes, with a short link only — no public gallery, no comments, no follower counts. They send the link to a friend or grandparent; that\'s it.',
+    a: 'Yes, with a short link only — no public gallery, no comments, no follower counts. They send the link to a friend or grandparent; that\'s it. For shared chat-style builds we ask the parent to approve the share link first.',
+  },
+  {
+    q: 'Can it really make 3D games?',
+    a: 'Yes — real Three.js scenes, not flat canvas pretending. Driving games with chase cameras, first-person worlds with mouse-look, Minecraft-style block-building sandboxes. Ask in plain English ("make a 3D driving game with monster trucks") and Spark wires up the camera, lighting, and controls.',
+  },
+  {
+    q: 'Does it use real images for things like Pokémon and country flags?',
+    a: 'Yes — real high-res Pokémon trading-card art from the official Pokémon TCG API, real dog photos from Dog CEO, country flags from REST Countries, recipe photos from MealDB, book covers from Open Library. For characters where no real-image API exists (a Jedi, a knight, a dragon), Spark generates matching painted art so the build still looks right.',
   },
 ];
 
@@ -254,9 +267,10 @@ export default function HomePage() {
 
             <div className="flex flex-wrap gap-2 max-w-2xl">
               <FeaturePill icon={Mic} label="Talk to it" />
+              <FeaturePill icon={Boxes} label="Real 3D games" />
+              <FeaturePill icon={Palette} label="AI character art" />
               <FeaturePill icon={Camera} label="Upload photos" />
-              <FeaturePill icon={Wand2} label="AI image restyle" />
-              <FeaturePill icon={Globe} label="Real facts" />
+              <FeaturePill icon={Globe} label="Real facts & images" />
               <FeaturePill icon={ShieldCheck} label="Safe by default" />
               <FeaturePill icon={Share2} label="Share & print" />
             </div>
@@ -443,38 +457,107 @@ export default function HomePage() {
               Real kids, real projects
             </p>
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-800">
-              Here&apos;s what kids actually built this week.
+              Here&apos;s what kids are building.
             </h2>
             <p className="text-slate-500 max-w-xl mx-auto">
-              Tap to play. Every one of these was built by typing or talking to Spark — no code editor, no copy-paste.
+              Tap to play the shareable ones. Every one was built by typing or talking to Spark — no code editor, no copy-paste.
             </p>
           </div>
           <div className="grid sm:grid-cols-3 gap-4">
             <KidBuildCard
-              builder="Knox, age 11"
-              title="Mando Partner Rescue"
-              desc="129 messages of iteration. Real game. Shareable link. Pick Boba or IG-11 as your partner. Beat the boss."
-              href="/s/mando-partner-rescue-2bs9"
-              tag="Game"
-              image="/landing/build-mando.png"
-            />
-            <KidBuildCard
-              builder="Myles, age 8"
-              title="Pokémon Flashcards"
-              desc="Multiple-choice flashcards using PokeAPI sprites — no typing needed. Real study tool, built in plain words."
-              href="/s/pok-mon-multiple-choice-flashcar-suyr"
-              tag="Flashcards"
-              image="/landing/build-flashcards.png"
+              builder="Sara, age 6"
+              title="Neighborhood Drive"
+              desc="A real 3D driving game built with Three.js — blue car, chase camera, houses with red roofs, a giraffe walking around, and a HUD showing the driver. Tap to play."
+              href="/s/neighborhood-drive-p3pf"
+              tag="3D game"
+              image="/landing/build-neighborhood.png"
             />
             <KidBuildCard
               builder="Knox, age 11"
-              title="Garbage Can Cleaning Flyer"
-              desc="A printable flyer for a neighborhood cleaning business. Vibe coded, then printed for the front door."
-              href="/s/knox-garbage-can-cleaning-flyer-mkt3"
-              tag="Poster"
-              image="/landing/build-flyer.png"
+              title="Pokémon Region Adventure"
+              desc="A walk-around region game with travel between Kanto, Johto, Hoenn, and Sinnoh — wild encounters, companions, badges to earn, particles, sound. Real characters and tile maps, not text."
+              href="/s/pok-mon-region-adventure-4k8k"
+              tag="Adventure"
+              image="/landing/build-region-adventure.png"
+            />
+            <KidBuildCard
+              builder="Bella, age 12"
+              title="BlockCraft Builder"
+              desc="A Minecraft-style 3D sandbox — walk around with WASD, jump, mouse-look, place blocks, knock them out, build houses or towers. Bounce blocks, teleporters, a rocket launcher, and a mobile control layer. Real Three.js."
+              href="/s/blockcraft-builder-cw2w"
+              tag="3D sandbox"
+              image="/landing/build-blockcraft.png"
             />
           </div>
+        </div>
+      </section>
+
+      {/* JUST SHIPPED — recent investment + active product velocity. Kept
+          fresh as new capability lands; surfaces what changed for both
+          parents (we are actively building) and kids (new things to try). */}
+      <section className="px-4 sm:px-8 py-14 bg-gradient-to-br from-violet-50 via-pink-50 to-amber-50 border-y border-violet-100">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10 space-y-2">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-bold text-violet-700 shadow-sm">
+              <Sparkles className="h-3.5 w-3.5" />
+              Shipped this week
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-800">
+              Spark gets stronger every week.
+            </h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              Real builds from real kids drive what we ship next. Here&apos;s what landed in the last few days.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <ShippedCard
+              icon={Boxes}
+              tag="New capability"
+              title="Real 3D games"
+              desc="First-person mouse-look, chase-cam racers, Minecraft-style block sandboxes. Real Three.js geometry — not a flat canvas pretending. Ask for a driving game, get a driving game."
+              accent="from-violet-500 to-indigo-500"
+            />
+            <ShippedCard
+              icon={ImageIcon}
+              tag="New data source"
+              title="Real Pokémon trading cards"
+              desc="Pulls actual high-res card art straight from the official Pokémon TCG API. Build a card matching game, a deck-builder, a Pokédex — with the real images, not stand-ins."
+              accent="from-amber-500 to-orange-500"
+            />
+            <ShippedCard
+              icon={Palette}
+              tag="Better art"
+              title="Character art that looks right"
+              desc='Ask for "a young Jedi with a blue lightsaber" or "a sneaky pirate captain" and Spark generates real painted-movie-poster art that fits — no awkward "I can&apos;t draw that" refusals on style asks.'
+              accent="from-pink-500 to-rose-500"
+            />
+            <ShippedCard
+              icon={MessageSquareWarning}
+              tag="Honesty mode"
+              title="Spark tells the truth when stuck"
+              desc='When something breaks, the build itself reports the actual error ("the network blocked api.pokemontcg.io") and Spark addresses it directly — instead of saying "fixed it!" three turns in a row while nothing changes.'
+              accent="from-emerald-500 to-teal-500"
+            />
+            <ShippedCard
+              icon={CheckCircle2}
+              tag="One-tap recovery"
+              title='"Ask Spark to fix it" button'
+              desc="When a build hits a real error, a single tap sends the full error context to Spark and it tries a different approach. The kid doesn&apos;t need to know any of the technical details."
+              accent="from-sky-500 to-cyan-500"
+            />
+            <ShippedCard
+              icon={GraduationCap}
+              tag="Learning"
+              title="15 bite-sized AI lessons"
+              desc="60–90 second reads. Three tracks: talking to AI well, how AI thinks, and being a smart AI user. Real AI literacy in plain English — the lessons transfer to ChatGPT, Claude, anything they&apos;ll use next."
+              accent="from-fuchsia-500 to-purple-500"
+            />
+          </div>
+
+          <p className="text-center text-xs text-slate-500 mt-8">
+            Most of these landed in the last 72 hours. We ship daily.
+          </p>
         </div>
       </section>
 
@@ -926,6 +1009,35 @@ function ExampleCard({ icon: Icon, title, desc, accent }: { icon: LucideIcon; ti
       </div>
       <h3 className="font-bold text-slate-800 text-lg">{title}</h3>
       <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
+    </div>
+  );
+}
+
+function ShippedCard({
+  icon: Icon,
+  tag,
+  title,
+  desc,
+  accent,
+}: {
+  icon: LucideIcon;
+  tag: string;
+  title: string;
+  desc: string;
+  accent: string;
+}) {
+  return (
+    <div className="p-5 rounded-2xl bg-white shadow-sm border border-white space-y-3 hover:shadow-md transition">
+      <div className="flex items-center justify-between">
+        <div className={`inline-flex w-12 h-12 rounded-2xl bg-gradient-to-br ${accent} text-white items-center justify-center shadow-md`}>
+          <Icon className="w-6 h-6" />
+        </div>
+        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          {tag}
+        </span>
+      </div>
+      <h3 className="font-bold text-slate-800 text-lg leading-tight">{title}</h3>
+      <p className="text-sm text-slate-600 leading-relaxed">{desc}</p>
     </div>
   );
 }
