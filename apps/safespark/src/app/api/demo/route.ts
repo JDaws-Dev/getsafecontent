@@ -369,9 +369,13 @@ export async function POST(request: Request) {
     day: 'numeric',
   });
 
-  const system = `CURRENT DATE: Today is ${todayHuman} (UTC). Use this for any "what day / what year / how many days until" questions.
-
-You are SafeSpark — full ChatGPT capability with parental content rails. Talk to the user like a smart, curious teenager who's actually building software with you. Never condescend, never baby-talk. Build at the same quality you'd ship to a real client.
+  // CACHE-STABLE PREFIX: keep this system prompt free of volatile content
+  // (date, per-project checkpoint) so OpenAI prompt-caches the full ~4.4K-token
+  // block byte-identically across every turn / kid / project. Volatile context
+  // (today's date + checkpoint recap) is injected into the user message below
+  // instead (see datePreamble) — the model reads it the same either way, but
+  // this lets ~4.4K input tokens/turn bill at the cached rate after the first.
+  const system = `You are SafeSpark — full ChatGPT capability with parental content rails. Talk to the user like a smart, curious teenager who's actually building software with you. Never condescend, never baby-talk. Build at the same quality you'd ship to a real client.
 
 You do two things, and the user picks which by what they ask:
 
@@ -744,7 +748,10 @@ ${message}`;
   // checkpoint is regenerated every ~10 turns by the client (post-save).
   // Best-effort: any failure here = no checkpoint = same behavior as
   // pre-checkpoint days, never blocks the user.
-  let systemWithCheckpoint = system;
+  // Volatile per-turn context lives in the USER message, NOT the system
+  // prompt, so the cache-stable system prefix stays byte-identical. Capture
+  // the checkpoint recap here; it gets prepended to the user text below.
+  let checkpointRecap = '';
   if (body.projectId) {
     try {
       const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
@@ -755,14 +762,23 @@ ${message}`;
           { projectId: body.projectId as Id<'safesparkProjects'> },
         )) as { content: string; fromTurnCount: number } | null;
         if (checkpoint?.content) {
-          systemWithCheckpoint =
-            `PROJECT RECAP (auto-generated after turn ${checkpoint.fromTurnCount} so you don't lose context across long builds — the user hasn't seen this, it's for YOU):\n\n${checkpoint.content}\n\n---\n\n${system}`;
+          checkpointRecap =
+            `PROJECT RECAP (auto-generated after turn ${checkpoint.fromTurnCount} so you don't lose context across long builds — the user hasn't seen this, it's for YOU):\n\n${checkpoint.content}\n\n---\n\n`;
         }
       }
     } catch (err) {
       console.error('[checkpoint] failed to fetch latest:', err);
     }
   }
+
+  // Prepend date + checkpoint recap to the user text (userContent[0] is always
+  // the text part; any image is pushed after). This keeps all volatile context
+  // out of the cached system prefix without changing what the model sees.
+  const datePreamble = `CURRENT DATE: Today is ${todayHuman} (UTC). Use this for any "what day / what year / how many days until" questions.\n\n`;
+  userContent[0] = {
+    type: 'text',
+    text: `${datePreamble}${checkpointRecap}${(userContent[0] as { type: 'text'; text: string }).text}`,
+  };
 
   try {
     // Non-streaming. We used to stream, but on long gpt-5.5 builds
@@ -780,7 +796,7 @@ ${message}`;
     const completion = (await openai.chat.completions.create({
       model: chosenModel,
       messages: [
-        { role: 'system', content: systemWithCheckpoint },
+        { role: 'system', content: system },
         { role: 'user', content: userContent as never },
       ],
       response_format: { type: 'json_object' },
@@ -898,7 +914,7 @@ ${message}`;
                   const retryRes = await openai.chat.completions.create({
                     model: PREMIUM_MODEL,
                     messages: [
-                      { role: 'system', content: systemWithCheckpoint },
+                      { role: 'system', content: system },
                       { role: 'user', content: retryUserContent as never },
                     ],
                     response_format: { type: 'json_object' },
