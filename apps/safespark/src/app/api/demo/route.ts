@@ -209,6 +209,19 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Keep the request under 4000 characters.' }, { status: 400 });
   }
 
+  // Global pause kill-switch (cost control). When SAFESPARK_PAUSED is set we
+  // short-circuit BEFORE any OpenAI spend — builds, images, moderation, the
+  // intent classifier, everything downstream. Kids see a friendly "short
+  // break" line via the same refusal stream used for the parent-pause gate,
+  // so the workbench renders it as a normal reply rather than an error.
+  // Reversible: unset SAFESPARK_PAUSED (Vercel + Convex) to restore.
+  if (process.env.SAFESPARK_PAUSED === 'true') {
+    return parentControlStream(
+      '✨ SafeSpark is taking a short break — check back soon!',
+      body.jobId,
+    );
+  }
+
   // Flip the job (if any) from 'pending' to 'running' so a rehydrating
   // client can show "still building" instead of "queued." Fire-and-
   // forget — never block the response.

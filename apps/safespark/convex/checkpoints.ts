@@ -143,6 +143,11 @@ export const maybeCreateCheckpoint = action({
       }
     }
 
+    // Global pause kill-switch (cost control). Checkpoints are summary
+    // calls triggered by builds; with builds paused this rarely fires, but
+    // gate it so no path can spend while SAFESPARK_PAUSED is set.
+    if (process.env.SAFESPARK_PAUSED === 'true') return { created: false, reason: 'paused' };
+
     const apiKey = args.apiKey || process.env.OPENAI_API_KEY;
     if (!apiKey) return { created: false, reason: 'no OPENAI_API_KEY' };
 

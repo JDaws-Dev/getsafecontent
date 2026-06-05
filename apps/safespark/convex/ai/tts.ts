@@ -93,6 +93,11 @@ export const synthesize = action({
       if (!allowed) return { ok: false, reason: 'budget' };
     }
 
+    // Global pause kill-switch (cost control). Block fresh OpenAI synthesis;
+    // cache hits above still serve for free, and SpeakButton falls back to
+    // the browser's built-in voice, so kids still hear text — at $0 spend.
+    if (process.env.SAFESPARK_PAUSED === 'true') return { ok: false, reason: 'unavailable' };
+
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return { ok: false, reason: 'unavailable' };
 
