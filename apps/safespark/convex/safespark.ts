@@ -355,6 +355,95 @@ export const saveProject = mutation({
   },
 });
 
+// Fork an existing project (a curated template, a publicly shared game, or one
+// of your own) into a fresh project owned by the caller. The kid then iterates
+// on a polished base instead of paying for a from-scratch build — the single
+// biggest cost lever, since ~88% of SafeSpark spend is OUTPUT tokens and a
+// blank-canvas build emits 20KB+ of fresh HTML every time.
+export const forkProject = mutation({
+  args: {
+    sourceProjectId: v.id('safesparkProjects'),
+    sessionToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { clerkUserId, email } = await resolveSafeSparkIdentity(
+      ctx as SafeSparkCtx,
+      args.sessionToken,
+    );
+    const source = await ctx.db.get(args.sourceProjectId);
+    if (!source) throw new Error('That project no longer exists.');
+
+    // Authorize: remix your own, a curated template, or any publicly shared
+    // project (its HTML is already public via /s/, so copying it adds no new
+    // exposure). Anything else is off-limits.
+    const isOwn = source.clerkUserId === clerkUserId;
+    const isTemplate = source.isTemplate === true;
+    let isShared = false;
+    if (!isOwn && !isTemplate) {
+      const share = await ctx.db
+        .query('safesparkShares')
+        .withIndex('by_project', (q) => q.eq('projectId', args.sourceProjectId))
+        .first();
+      isShared = share !== null;
+    }
+    if (!isOwn && !isTemplate && !isShared) {
+      throw new Error('That project can’t be remixed.');
+    }
+
+    const now = Date.now();
+    const base = (source.title || 'Project').trim().slice(0, 100);
+    const title = (isOwn ? `Copy of ${base}` : `Remix of ${base}`).slice(0, 120);
+
+    // Fresh, empty chat thread = a clean (and cheaper) context window. The
+    // copied HTML is the starting point; the kid's first prompt iterates from
+    // there rather than regenerating it.
+    const projectId = await ctx.db.insert('safesparkProjects', {
+      clerkUserId,
+      email,
+      title,
+      html: source.html,
+      messages: [],
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    // Seed v1 so "revert to the original" works from the very first edit.
+    await ctx.db.insert('safesparkVersions', {
+      projectId,
+      clerkUserId,
+      html: source.html,
+      label: title.slice(0, 80),
+      messagesSnapshot: [],
+      createdAt: now,
+    });
+
+    return projectId;
+  },
+});
+
+// Curated starter gallery — the projects flagged isTemplate, so the maker can
+// offer "start from a template" instead of a blank canvas. Full scan is fine
+// at current scale (tens of projects); add an index if the table grows large.
+export const listTemplates = query({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query('safesparkProjects').collect();
+    return all
+      .filter((p) => p.isTemplate === true && !p.deletedAt)
+      .map((p) => ({ id: p._id, title: p.title, html: p.html }));
+  },
+});
+
+// Operator-only: flag/unflag a project as a forkable template. Run via
+// `npx convex run safespark:adminMarkTemplate '{"projectId":"...","isTemplate":true}'`.
+export const adminMarkTemplate = internalMutation({
+  args: { projectId: v.id('safesparkProjects'), isTemplate: v.boolean() },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.projectId, { isTemplate: args.isTemplate });
+    return { ok: true };
+  },
+});
+
 // Session-aware version listing. The original `listVersions` uses
 // `ctx.auth.getUserIdentity()` which doesn't work for kid sessions
 // (kids have no Convex identity, only `sessionToken`) and doesn't see

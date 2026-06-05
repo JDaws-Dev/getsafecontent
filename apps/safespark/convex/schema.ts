@@ -238,6 +238,12 @@ export default defineSchema({
     // on /parent so the parent sees an amber "Has shared chat/message"
     // badge and knows to inspect the spark.db contents.
     isCommunication: v.optional(v.boolean()),
+    // Curated "start from a template" source. When true, this project is a
+    // forkable starter (a proven game shape) any kid can remix via
+    // forkProject — the first prompt then iterates on a polished base instead
+    // of a from-scratch premium build (cheaper output + higher quality). Set
+    // by the adminMarkTemplate operator mutation; surfaced by listTemplates.
+    isTemplate: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
