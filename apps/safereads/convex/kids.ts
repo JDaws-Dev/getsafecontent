@@ -1,12 +1,14 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
+import { requireOwnerSoft } from "./identity";
 
 /**
  * List all kids for a user.
  */
 export const listByUser = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "kids.listByUser");
     return await ctx.db
       .query("kids")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -18,9 +20,12 @@ export const listByUser = query({
  * Get a single kid by ID.
  */
 export const getById = query({
-  args: { kidId: v.id("kids") },
+  args: { kidId: v.id("kids"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.kidId);
+    const kid = await ctx.db.get(args.kidId);
+    if (!kid) return null;
+    await requireOwnerSoft(ctx, args.userToken, kid.userId, "kids.getById");
+    return kid;
   },
 });
 
@@ -35,8 +40,10 @@ export const create = mutation({
     color: v.optional(v.string()),
     pin: v.optional(v.string()),
     readingLevel: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "kids.create");
     return await ctx.db.insert("kids", {
       userId: args.userId,
       name: args.name,
@@ -60,9 +67,14 @@ export const update = mutation({
     color: v.optional(v.string()),
     pin: v.optional(v.string()),
     readingLevel: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { kidId, ...updates } = args;
+    const kid = await ctx.db.get(args.kidId);
+    if (!kid) throw new Error("Kid not found.");
+    await requireOwnerSoft(ctx, args.userToken, kid.userId, "kids.update");
+    // Exclude routing/auth args; only persist the editable kid fields.
+    const { kidId, userToken: _t, ...updates } = args;
     // Filter out undefined values
     const definedUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
@@ -75,8 +87,11 @@ export const update = mutation({
  * Delete a kid and all their wishlist entries, approved books, requests, and reading progress.
  */
 export const remove = mutation({
-  args: { kidId: v.id("kids") },
+  args: { kidId: v.id("kids"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const kid = await ctx.db.get(args.kidId);
+    if (!kid) return;
+    await requireOwnerSoft(ctx, args.userToken, kid.userId, "kids.remove");
     // Delete wishlist entries
     const wishlistItems = await ctx.db
       .query("wishlists")
