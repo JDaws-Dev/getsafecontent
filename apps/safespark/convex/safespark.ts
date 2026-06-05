@@ -2454,11 +2454,69 @@ export const adminSeedProject = internalMutation({
 const PRICE_CENTS_PER_INPUT_TOKEN_GPT55 = 0.000125;   // $1.25 / 1M tokens
 const PRICE_CENTS_PER_OUTPUT_TOKEN_GPT55 = 0.001;     // $10 / 1M tokens
 const PRICE_CENTS_PER_IMAGE_TRANSFORM = 6;            // $0.06 medium 1024x1024
+// gpt-image-1 GENERATION at 1024x1024 by quality (output-image-token pricing).
+// 'medium' is the SafeSpark default; 'high' is ~4x. Used so sprite generation
+// shows up in safesparkUsage — previously generated on every build but never
+// counted, which is why the tracked spend was a fraction of the real bill.
+const PRICE_CENTS_PER_SPRITE: Record<string, number> = {
+  low: 1.1,
+  medium: 4.2,
+  high: 16.7,
+};
 
 function yearMonthUTC(now: number): string {
   const d = new Date(now);
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 }
+
+// Record ONE freshly-generated sprite against the kid's monthly usage so image
+// spend stops being invisible. Fired best-effort from generateSpriteSafely on a
+// cache MISS only — cache hits and failures cost nothing and aren't recorded.
+// quality sets the price (medium default). Aggregates into the same per-(kid,
+// month) row as chat usage, so totalCents finally reflects reality.
+export const recordSpriteUsage = mutation({
+  args: { sessionToken: v.optional(v.string()), quality: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    let identity: { clerkUserId: string; email: string };
+    try {
+      identity = await resolveSafeSparkIdentity(ctx as SafeSparkCtx, args.sessionToken);
+    } catch {
+      return { ok: false, reason: 'no identity' };
+    }
+    const { clerkUserId, email } = identity;
+    const now = Date.now();
+    const yearMonth = yearMonthUTC(now);
+    const cents =
+      PRICE_CENTS_PER_SPRITE[args.quality ?? 'medium'] ?? PRICE_CENTS_PER_SPRITE.medium;
+    const existing = await ctx.db
+      .query('safesparkUsage')
+      .withIndex('by_clerk_month', (q) =>
+        q.eq('clerkUserId', clerkUserId).eq('yearMonth', yearMonth),
+      )
+      .first();
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        spriteImages: (existing.spriteImages ?? 0) + 1,
+        totalCents: existing.totalCents + cents,
+        updatedAt: now,
+      });
+    } else {
+      await ctx.db.insert('safesparkUsage', {
+        clerkUserId,
+        email,
+        yearMonth,
+        chatTurns: 0,
+        chatInputTokens: 0,
+        chatOutputTokens: 0,
+        imageTransforms: 0,
+        spriteImages: 1,
+        totalCents: cents,
+        updatedAt: now,
+      });
+    }
+    return { ok: true };
+  },
+});
 
 export const recordUsage = mutation({
   args: {

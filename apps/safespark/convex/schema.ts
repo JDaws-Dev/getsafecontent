@@ -427,7 +427,8 @@ export default defineSchema({
     chatInputTokens: v.number(),
     chatOutputTokens: v.number(),
     imageTransforms: v.number(),
-    totalCents: v.number(),          // running total in US cents
+    spriteImages: v.optional(v.number()),  // generated gpt-image-1 sprites — additive; older rows lack it. Closes the blind spot that made the real bill ~6x the tracked number.
+    totalCents: v.number(),          // running total in US cents (now includes sprite generation)
     updatedAt: v.number(),
   })
     .index('by_clerk_month', ['clerkUserId', 'yearMonth']),

@@ -1646,11 +1646,19 @@ async function generateSpriteSafely(
         sessionToken,
       );
       if (url) {
-        // Populate the cache so the next identical prompt is free.
         if (cacheClient) {
+          // Populate the cache so the next identical prompt is free.
           void cacheClient
             .mutation(api.safespark.writeSpriteCache, { hash: cacheHash, url })
             .catch((err) => console.warn('[safespark] sprite cache write failed:', err));
+          // Record the paid generation so image spend is finally visible in
+          // safesparkUsage (cache hits returned earlier and cost nothing).
+          void cacheClient
+            .mutation(api.safespark.recordSpriteUsage, {
+              sessionToken: sessionToken ?? undefined,
+              quality,
+            })
+            .catch((err) => console.warn('[safespark] sprite usage record failed:', err));
         }
         return url;
       }
