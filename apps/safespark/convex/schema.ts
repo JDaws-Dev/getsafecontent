@@ -518,6 +518,22 @@ export default defineSchema({
   }).index('by_hash', ['hash'])
     .index('by_last_used', ['lastUsedAt']),
 
+  // Global generated-sprite cache. gpt-image-1 is the single biggest cost in
+  // SafeSpark (~$0.04-0.17/image, untracked); a kid iterating on a sprite-heavy
+  // game used to regenerate the same art every full rebuild, and every kid
+  // building a Pokemon game regenerated "pikachu" from scratch. Key on a hash
+  // of the (moderated) sprite prompt + quality so identical prompts reuse the
+  // already-generated Convex-storage URL — across turns AND across kids. Safe:
+  // an identical prompt was already moderated, so the cached image is too.
+  safesparkSpriteCache: defineTable({
+    hash: v.string(), // sha256(styledPrompt + quality + model)
+    url: v.string(),  // Convex storage URL of the generated PNG
+    createdAt: v.number(),
+    lastUsedAt: v.number(),
+    hitCount: v.number(),
+  }).index('by_hash', ['hash'])
+    .index('by_last_used', ['lastUsedAt']),
+
   // Per-kid daily TTS call counter — protects against spam-tapping the
   // Listen button. Resets per UTC day. Mirrors the existing
   // dailyQueryBudget pattern on kidProfiles.

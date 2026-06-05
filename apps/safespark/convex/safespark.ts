@@ -417,6 +417,26 @@ export const forkProject = mutation({
       createdAt: now,
     });
 
+    // Carry project memory forward so the remix isn't amnesiac: seed a
+    // checkpoint from the source's latest recap (premise, art direction,
+    // design decisions). If the source has no recap, the fork starts clean.
+    const sourceRecap = await ctx.db
+      .query('safesparkCheckpoints')
+      .withIndex('by_project_latest', (q) => q.eq('projectId', args.sourceProjectId))
+      .order('desc')
+      .first();
+    if (sourceRecap?.content) {
+      await ctx.db.insert('safesparkCheckpoints', {
+        projectId,
+        clerkUserId,
+        content: `(Starting point — remixed from "${base}". The premise and art direction below describe the BASE this project was built on; the kid will set their own new direction from here.)\n\n${sourceRecap.content}`,
+        fromTurnCount: 0,
+        htmlSize: source.html.length,
+        model: sourceRecap.model,
+        createdAt: now,
+      });
+    }
+
     return projectId;
   },
 });
@@ -440,6 +460,53 @@ export const adminMarkTemplate = internalMutation({
   args: { projectId: v.id('safesparkProjects'), isTemplate: v.boolean() },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.projectId, { isTemplate: args.isTemplate });
+    return { ok: true };
+  },
+});
+
+// Sprite cache lookup — returns the stored image URL for a prompt hash, or
+// null. Public: the /api/demo route checks this (via ConvexHttpClient) before
+// paying gpt-image-1, the same way it reads checkpoints. A hit means $0 spend.
+export const getSpriteCache = query({
+  args: { hash: v.string() },
+  handler: async (ctx, args) => {
+    const row = await ctx.db
+      .query('safesparkSpriteCache')
+      .withIndex('by_hash', (q) => q.eq('hash', args.hash))
+      .first();
+    return row ? row.url : null;
+  },
+});
+
+// Sprite cache write — records a freshly generated sprite so identical prompts
+// reuse it (across turns and across kids). Idempotent on hash. Hardened: only
+// this deployment's Convex storage URLs are cacheable, which blocks
+// data:/javascript:/external-URL poisoning of the shared cache.
+export const writeSpriteCache = mutation({
+  args: { hash: v.string(), url: v.string() },
+  handler: async (ctx, args) => {
+    if (!/^https:\/\/[a-z0-9-]+\.convex\.cloud\/api\/storage\//i.test(args.url)) {
+      return { ok: false, reason: 'not a storage url' };
+    }
+    if (args.url.length > 2000 || args.hash.length > 128) {
+      return { ok: false, reason: 'oversized' };
+    }
+    const now = Date.now();
+    const existing = await ctx.db
+      .query('safesparkSpriteCache')
+      .withIndex('by_hash', (q) => q.eq('hash', args.hash))
+      .first();
+    if (existing) {
+      await ctx.db.patch(existing._id, { lastUsedAt: now, hitCount: existing.hitCount + 1 });
+      return { ok: true, deduped: true };
+    }
+    await ctx.db.insert('safesparkSpriteCache', {
+      hash: args.hash,
+      url: args.url,
+      createdAt: now,
+      lastUsedAt: now,
+      hitCount: 0,
+    });
     return { ok: true };
   },
 });

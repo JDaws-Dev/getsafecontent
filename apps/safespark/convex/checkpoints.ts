@@ -28,6 +28,11 @@ import type { Id } from './_generated/dataModel';
 
 const CHECKPOINT_MODEL = process.env.BELLA_CHECKPOINT_MODEL || 'gpt-4o-mini';
 const TURNS_BETWEEN_CHECKPOINTS = 10;
+// The FIRST recap fires sooner so a fast-moving new build establishes its
+// premise + art direction in project memory early, instead of running on just
+// the rolling 8-message window for its first ~10 turns. Later recaps cadence
+// at TURNS_BETWEEN_CHECKPOINTS.
+const FIRST_CHECKPOINT_AT = 5;
 const STALE_AFTER_MS = 48 * 60 * 60 * 1000; // 48h
 const RECAP_MAX_OUTPUT_TOKENS = 700;
 const HTML_SNIPPET_BYTES = 4000; // first/last slice we feed the recap LLM
@@ -129,8 +134,12 @@ export const maybeCreateCheckpoint = action({
     const { project, latest } = data;
     const totalTurns = project.messages.length;
 
-    // Bail if the project is too short to need a checkpoint at all.
-    if (totalTurns < TURNS_BETWEEN_CHECKPOINTS) {
+    // Bail if the project is too short for even the first recap. The first
+    // checkpoint fires at FIRST_CHECKPOINT_AT; subsequent ones cadence at
+    // TURNS_BETWEEN_CHECKPOINTS via the "recent checkpoint covers this" gate
+    // below.
+    const minTurns = latest ? TURNS_BETWEEN_CHECKPOINTS : FIRST_CHECKPOINT_AT;
+    if (totalTurns < minTurns) {
       return { created: false, reason: 'too few turns' };
     }
 

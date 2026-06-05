@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../../../../convex/_generated/api';
 import type { Id } from '../../../../convex/_generated/dataModel';
+import { createHash } from 'node:crypto';
 import {
   classifyIntent,
   type IntentCategory,
@@ -1596,11 +1597,43 @@ async function generateSpriteSafely(
   // cute Disney cartoon back. Transparent background is suggested
   // (sprites usually drop into a game) but not forced.
   const styled = `${safe}. Age-appropriate for kids ages 9-15 — no gore, no sexual content. Transparent background preferred.`;
+
+  // Image quality is THE cost dial. gpt-image-1 1024² is ~$0.17 at 'high' vs
+  // ~$0.04 at 'medium' — 4× cheaper, and medium is plenty for kid game
+  // sprites. Default medium; env override (SAFESPARK_IMAGE_QUALITY) for
+  // special cases. Previously unset → defaulted to 'high', the hidden cost.
+  const quality = (process.env.SAFESPARK_IMAGE_QUALITY || 'medium') as
+    | 'low'
+    | 'medium'
+    | 'high';
+
+  // Global sprite cache: an identical prompt (same hash) reuses the already-
+  // generated image instead of paying gpt-image-1 again — across a kid's
+  // iterations AND across kids (everyone's "pikachu running"). This is what
+  // stops the "regenerate the same art every rebuild" bleed. Best-effort:
+  // any cache error falls through to a normal generation.
+  const cacheHash = createHash('sha256')
+    .update(`gpt-image-1|${quality}|${styled}`)
+    .digest('hex');
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+  const cacheClient = convexUrl ? new ConvexHttpClient(convexUrl) : null;
+  if (cacheClient) {
+    try {
+      const cached = (await cacheClient.query(api.safespark.getSpriteCache, {
+        hash: cacheHash,
+      })) as string | null;
+      if (cached) return cached; // cache hit → $0
+    } catch (err) {
+      console.warn('[safespark] sprite cache read failed (continuing):', err);
+    }
+  }
+
   try {
     const result = await openai.images.generate({
       model: 'gpt-image-1',
       prompt: styled,
       size: '1024x1024',
+      quality,
       n: 1,
     } as never);
     const b64 = result.data?.[0]?.b64_json;
@@ -1612,7 +1645,15 @@ async function generateSpriteSafely(
         convexToken,
         sessionToken,
       );
-      if (url) return url;
+      if (url) {
+        // Populate the cache so the next identical prompt is free.
+        if (cacheClient) {
+          void cacheClient
+            .mutation(api.safespark.writeSpriteCache, { hash: cacheHash, url })
+            .catch((err) => console.warn('[safespark] sprite cache write failed:', err));
+        }
+        return url;
+      }
       console.warn('[safespark] sprite upload failed despite having auth — falling back to inline base64');
     } else {
       console.warn('[safespark] no auth (no convexToken, no sessionToken) — falling back to inline base64 sprite');
