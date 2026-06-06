@@ -254,6 +254,10 @@ export const login = httpAction(async (ctx, request): Promise<Response> => {
       sub: credentials.userId as string,
       email: credentials.email,
       entitledApps: credentials.entitledApps || [],
+      // Unified family code on the token so every app gets the authoritative
+      // code straight from the signed login — no reliance on a side-channel
+      // sync that can drift (see docs/UNIFIED-IDENTITY.md). Omitted if unset.
+      familyCode: credentials.familyCode ?? undefined,
     })
       .setProtectedHeader({ alg: JWT_ALGORITHM })
       .setIssuedAt(now)
@@ -820,6 +824,8 @@ export const resetPassword = httpAction(async (ctx, request): Promise<Response> 
       sub: freshCredentials.userId as string,
       email: freshCredentials.email,
       entitledApps: freshCredentials.entitledApps || [],
+      // Unified family code on the token (see docs/UNIFIED-IDENTITY.md).
+      familyCode: freshCredentials.familyCode ?? undefined,
     })
       .setProtectedHeader({ alg: JWT_ALGORITHM })
       .setIssuedAt(now)
@@ -938,6 +944,10 @@ export const generateOAuthToken = httpAction(async (ctx, request): Promise<Respo
       sub: credentials.userId as string,
       email: credentials.email,
       entitledApps: credentials.entitledApps || [],
+      // Unified family code on the token so every app gets the authoritative
+      // code straight from the signed login — no reliance on a side-channel
+      // sync that can drift (see docs/UNIFIED-IDENTITY.md). Omitted if unset.
+      familyCode: credentials.familyCode ?? undefined,
     })
       .setProtectedHeader({ alg: JWT_ALGORITHM })
       .setIssuedAt(now)
