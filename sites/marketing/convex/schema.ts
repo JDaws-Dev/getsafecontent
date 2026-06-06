@@ -118,7 +118,8 @@ export default defineSchema({
     .index("phone", ["phone"]) // Required by Convex Auth
     .index("by_stripe_customer_id", ["stripeCustomerId"])
     .index("by_stripe_subscription_id", ["stripeSubscriptionId"])
-    .index("by_subscription_status", ["subscriptionStatus"]),
+    .index("by_subscription_status", ["subscriptionStatus"])
+    .index("by_familyCode", ["familyCode"]),
 
   // Unified kid profiles — foundation for syncing kid metadata across all 4 apps.
   // Apps currently each store their own kid records; this table becomes the source

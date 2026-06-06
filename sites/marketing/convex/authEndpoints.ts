@@ -1,5 +1,6 @@
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 import { Scrypt } from "lucia";
 import { SignJWT, jwtVerify } from "jose";
 
@@ -246,6 +247,18 @@ export const login = httpAction(async (ctx, request): Promise<Response> => {
       );
     }
 
+    // Guarantee a unified family code (central is the source of truth). Lazy
+    // backfill at login so a code always exists by the time any app reads it
+    // off the token — covers accounts created before central owned the code.
+    // Idempotent: returns the existing code or mints a unique one.
+    const familyCode =
+      credentials.familyCode ??
+      (
+        await ctx.runMutation(internal.familyCode.ensureFamilyCode, {
+          userId: credentials.userId as Id<"users">,
+        })
+      ).familyCode;
+
     // Generate JWT token
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = now + JWT_EXPIRY_SECONDS;
@@ -256,8 +269,8 @@ export const login = httpAction(async (ctx, request): Promise<Response> => {
       entitledApps: credentials.entitledApps || [],
       // Unified family code on the token so every app gets the authoritative
       // code straight from the signed login — no reliance on a side-channel
-      // sync that can drift (see docs/UNIFIED-IDENTITY.md). Omitted if unset.
-      familyCode: credentials.familyCode ?? undefined,
+      // sync that can drift (see docs/UNIFIED-IDENTITY.md).
+      familyCode: familyCode ?? undefined,
     })
       .setProtectedHeader({ alg: JWT_ALGORITHM })
       .setIssuedAt(now)
@@ -936,6 +949,18 @@ export const generateOAuthToken = httpAction(async (ctx, request): Promise<Respo
       );
     }
 
+    // Guarantee a unified family code (central is the source of truth). Lazy
+    // backfill at login so a code always exists by the time any app reads it
+    // off the token — covers accounts created before central owned the code.
+    // Idempotent: returns the existing code or mints a unique one.
+    const familyCode =
+      credentials.familyCode ??
+      (
+        await ctx.runMutation(internal.familyCode.ensureFamilyCode, {
+          userId: credentials.userId as Id<"users">,
+        })
+      ).familyCode;
+
     // Generate JWT token
     const now = Math.floor(Date.now() / 1000);
     const expiresAt = now + JWT_EXPIRY_SECONDS;
@@ -946,8 +971,8 @@ export const generateOAuthToken = httpAction(async (ctx, request): Promise<Respo
       entitledApps: credentials.entitledApps || [],
       // Unified family code on the token so every app gets the authoritative
       // code straight from the signed login — no reliance on a side-channel
-      // sync that can drift (see docs/UNIFIED-IDENTITY.md). Omitted if unset.
-      familyCode: credentials.familyCode ?? undefined,
+      // sync that can drift (see docs/UNIFIED-IDENTITY.md).
+      familyCode: familyCode ?? undefined,
     })
       .setProtectedHeader({ alg: JWT_ALGORITHM })
       .setIssuedAt(now)
