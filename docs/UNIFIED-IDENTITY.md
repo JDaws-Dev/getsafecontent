@@ -112,3 +112,40 @@ drifted (e.g., push central's `ERLW4U` to SafeTube to overwrite the stale
   (`ABCDEFGHJKLMNPQRSTUVWXYZ23456789`) for one canonical generator in central.
 - **Session TTL on rotation:** rotation hard-invalidates immediately (that's the
   point); normal expiry is the 30-day kid-session TTL from AUTH-ARCHITECTURE.
+
+---
+
+## Go-live runbook — central foundation (ready now)
+
+What's built + committed (dev only; prod untouched): the family code rides the
+login JWT, and central generates/guarantees a code for every account. This slice
+is **additive and non-breaking** — apps that don't read the new claim simply
+ignore it; logins keep working exactly as before. Deploy it on its own to lay the
+foundation, then verify, before any app starts *enforcing*.
+
+### Deploy (deliberate)
+1. **Central → prod:** `cd sites/marketing && npx convex deploy --prod`
+   (or via Vercel as usual). Ships the JWT `familyCode` claim, the
+   `by_familyCode` index, and the `familyCode.ts` generator.
+2. **Backfill the 4 codeless accounts:**
+   `npx convex run familyCode:backfillFamilyCodes --prod`
+   → expect `{ total: 43, created: 4 }` (idempotent; safe to re-run).
+
+### Verify
+- Coverage: every central `users` row now has a `familyCode`
+  (`npx convex data users --prod` → no empty code column).
+- Token: log in once and decode the JWT (jwt.io) → confirm a `familyCode` claim
+  is present alongside `entitledApps`.
+
+### Rollback
+- Non-destructive. The claim + `ensureFamilyCode` are harmless; to revert code,
+  redeploy the prior commit. The backfill only *fills empty* codes — it never
+  overwrites or deletes, so there's nothing to undo.
+
+### NOT in this slice (deliberately later, higher risk)
+- Apps reading the claim + dropping their own generators.
+- Apps *enforcing* identity (the `requireOwner` hard-flip) — needs each app's
+  frontend to thread the token first.
+- Kid sessions + rotation — need the per-app session tables.
+- Prereq for any app-side enforcement: set `MARKETING_JWT_SECRET` on each app's
+  Convex deployment (= the value already on SafeSpark/Marketing).
