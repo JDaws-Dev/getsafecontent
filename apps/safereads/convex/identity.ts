@@ -1,5 +1,8 @@
 import { GenericDatabaseReader } from "convex/server";
+import { v } from "convex/values";
+import { mutation } from "./_generated/server";
 import { DataModel, Id } from "./_generated/dataModel";
+import { verifyMarketingToken } from "./safeAuth";
 
 type Db = GenericDatabaseReader<DataModel>;
 
@@ -15,33 +18,14 @@ type Db = GenericDatabaseReader<DataModel>;
  * session token in a later phase.
  */
 
-/**
- * Verify a Marketing Central login JWT. Marketing signs with HS256 + a shared
- * secret (issuer "getsafefamily.com"). SafeReads' convex/auth.config.ts can't
- * verify HS256 (Convex only supports JWKS providers), so the frontend passes
- * the JWT as an arg and we verify it here with the mirrored
- * MARKETING_JWT_SECRET. Returns {marketingUserId, email} or null on ANY failure
- * (no secret, bad signature, expired, wrong issuer, malformed, missing claims).
- */
-export async function verifyMarketingToken(
-  token: string,
-): Promise<{ marketingUserId: string; email: string } | null> {
-  const secret = process.env.MARKETING_JWT_SECRET;
-  if (!secret) return null;
-  try {
-    const { jwtVerify } = await import("jose");
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(secret),
-      { issuer: "getsafefamily.com" },
-    );
-    const marketingUserId = typeof payload.sub === "string" ? payload.sub : null;
-    const email = typeof payload.email === "string" ? payload.email : null;
-    if (!marketingUserId || !email) return null;
-    return { marketingUserId, email: email.toLowerCase() };
-  } catch {
-    return null;
-  }
+// JWT verification lives in the shared toolkit (convex/safeAuth.ts, vendored
+// from packages/safe-auth) so it's byte-identical across every app. It returns
+// the verified { marketingUserId, email, familyCode?, entitledApps? } — the
+// familyCode claim is the unified family code (docs/UNIFIED-IDENTITY.md).
+
+// Thin wrapper that supplies SafeReads' mirrored secret.
+function verifyToken(token: string | undefined) {
+  return verifyMarketingToken(token, process.env.MARKETING_JWT_SECRET);
 }
 
 type UserRow = DataModel["users"]["document"];
@@ -56,7 +40,7 @@ export async function resolveReaderIdentity(
   userToken?: string,
 ): Promise<UserRow | null> {
   if (!userToken) return null;
-  const verified = await verifyMarketingToken(userToken);
+  const verified = await verifyToken(userToken);
   if (!verified) return null;
   const row = await ctx.db
     .query("users")
@@ -106,3 +90,29 @@ export async function requireOwnerSoft(
   }
   await requireOwner(ctx, userToken, ownerId);
 }
+
+/**
+ * Pull the authoritative family code from the verified login token onto the
+ * local `users` row. The frontend calls this on login so SafeReads always
+ * tracks Central's one canonical code (docs/UNIFIED-IDENTITY.md) — replacing
+ * the local `generateCode()` fallback that caused drift. Idempotent; no-op when
+ * unchanged. Requires MARKETING_JWT_SECRET to be set, else verification fails
+ * closed and this throws (frontend treats as "log in again").
+ */
+export const syncIdentityFromToken = mutation({
+  args: { userToken: v.string() },
+  handler: async (ctx, args) => {
+    const verified = await verifyToken(args.userToken);
+    if (!verified) throw new Error("Please sign in again.");
+    const row = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", verified.email))
+      .first();
+    if (!row) return { synced: false as const };
+    if (verified.familyCode && verified.familyCode !== row.familyCode) {
+      await ctx.db.patch(row._id, { familyCode: verified.familyCode });
+      return { synced: true as const, familyCode: verified.familyCode, changed: true };
+    }
+    return { synced: true as const, familyCode: row.familyCode ?? null, changed: false };
+  },
+});

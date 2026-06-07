@@ -1,3 +1,9 @@
+// GENERATED FILE — DO NOT EDIT BY HAND.
+// Source of truth: packages/safe-auth/src/index.ts
+// Regenerate: node scripts/sync-safe-auth.mjs
+// Vendored per-app (repo is not an npm workspace) so the security-critical
+// auth logic stays byte-identical across all Safe Family apps.
+
 /**
  * @safefamily/safe-auth — canonical shared auth primitives for every Safe
  * Family app (parent + kid). PURE: no DB, no Convex imports, Web-Crypto only,
