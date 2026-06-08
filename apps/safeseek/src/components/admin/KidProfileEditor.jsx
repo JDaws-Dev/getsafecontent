@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { X, Save, ChevronDown, ChevronUp, Shield, BookOpen, MessageSquare, Lock } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 const COLORS = [
   { name: 'red', class: 'bg-red-500' },
@@ -64,6 +65,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
   const [error, setError] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(!!profile);
 
+  const { token } = useAuth();
   const createProfile = useMutation(api.kidProfiles.createProfile);
   const updateProfile = useMutation(api.kidProfiles.updateProfile);
 
@@ -151,9 +153,9 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
       };
 
       if (profile) {
-        await updateProfile({ kidProfileId: profile._id, ...data });
+        await updateProfile({ kidProfileId: profile._id, ...data, userToken: token ?? undefined });
       } else {
-        await createProfile({ userId, ...data });
+        await createProfile({ userId, ...data, userToken: token ?? undefined });
       }
       onSave();
     } catch (err) {

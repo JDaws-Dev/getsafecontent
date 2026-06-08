@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Save, X, ChevronDown, ChevronUp, Shield, BookOpen, MessageSquare } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 const BLOCKED_TOPIC_OPTIONS = [
   { id: 'violence', label: 'Violence & weapons' },
@@ -20,6 +21,7 @@ const BLOCKED_TOPIC_OPTIONS = [
 ];
 
 export default function KidProfileCustomize({ profile, onClose }) {
+  const { token } = useAuth();
   const updateProfile = useMutation(api.kidProfiles.updateProfile);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -66,6 +68,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
         allowImageSearch,
         lexileLevel: lexileLevel || 'auto',
         accessibilityNeeds,
+        userToken: token ?? undefined,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);

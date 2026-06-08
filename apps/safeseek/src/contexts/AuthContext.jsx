@@ -320,6 +320,9 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
+    // Raw Marketing Central JWT — pass as `userToken` to Convex calls that touch
+    // user-owned records so the server can verify ownership (convex/identity.ts).
+    token,
     isAuthenticated: !!user,
     isLoading,
     login,

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Check if a value matches a preset (not custom)
 const PRESET_VALUES = new Set([0, 10, 20, 30, 50, 100]);
@@ -46,9 +47,10 @@ export default function TimeLimits({ userId, defaultKidId }) {
   const [saving, setSaving] = useState(false);
   const [showTimeWindow, setShowTimeWindow] = useState(false);
 
+  const { token } = useAuth();
   const timeLimitsData = useQuery(
     api.timeLimits.getTimeLimitsForUser,
-    userId ? { userId } : 'skip'
+    userId ? { userId, userToken: token ?? undefined } : 'skip'
   );
 
   const setTimeLimit = useMutation(api.timeLimits.setTimeLimit);
@@ -114,6 +116,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
         weekendLimitSearches: formState.weekendLimitSearches,
         allowedStartHour: showTimeWindow ? formState.allowedStartHour : undefined,
         allowedEndHour: showTimeWindow ? formState.allowedEndHour : undefined,
+        userToken: token ?? undefined,
       });
     } catch (err) {
       console.error('Failed to save time limit:', err);
@@ -126,7 +129,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
     if (!selectedKid) return;
     setSaving(true);
     try {
-      await deleteTimeLimit({ kidProfileId: selectedKid });
+      await deleteTimeLimit({ kidProfileId: selectedKid, userToken: token ?? undefined });
       setFormState({
         dailyLimitSearches: 50,
         weekendLimitSearches: undefined,

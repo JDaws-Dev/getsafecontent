@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireOwnerSoft } from "./identity";
 
 /**
  * Create a topic request when a kid's search is blocked
@@ -50,8 +51,9 @@ export const createRequest = mutation({
  * Get all pending requests for a parent
  */
 export const getPendingRequests = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "topicRequests.getPendingRequests");
     return await ctx.db
       .query("topicRequests")
       .withIndex("by_user", (q) =>
@@ -65,8 +67,9 @@ export const getPendingRequests = query({
  * Get all requests (pending, approved, denied) for a parent, most recent first
  */
 export const getAllRequests = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "topicRequests.getAllRequests");
     const requests = await ctx.db
       .query("topicRequests")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -81,12 +84,13 @@ export const getAllRequests = query({
  * Approve a topic request — sets status and adds query to kid's allowedTopics
  */
 export const approveRequest = mutation({
-  args: { requestId: v.id("topicRequests") },
+  args: { requestId: v.id("topicRequests"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) {
       throw new Error("Request not found");
     }
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "topicRequests.approveRequest");
     if (request.status !== "pending") {
       throw new Error("Request already responded to");
     }
@@ -117,12 +121,13 @@ export const approveRequest = mutation({
  * Deny a topic request
  */
 export const denyRequest = mutation({
-  args: { requestId: v.id("topicRequests") },
+  args: { requestId: v.id("topicRequests"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) {
       throw new Error("Request not found");
     }
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "topicRequests.denyRequest");
     if (request.status !== "pending") {
       throw new Error("Request already responded to");
     }
@@ -140,8 +145,9 @@ export const denyRequest = mutation({
  * Get count of pending requests for a parent (for badge display)
  */
 export const getPendingCount = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "topicRequests.getPendingCount");
     const pending = await ctx.db
       .query("topicRequests")
       .withIndex("by_user", (q) =>

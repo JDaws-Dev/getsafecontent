@@ -362,6 +362,7 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
   const [activityDateFilter, setActivityDateFilter] = useState('all');
   const [dismissedIds, setDismissedIds] = useState(new Set());
   const [talkTooltipId, setTalkTooltipId] = useState(null);
+  const { token } = useAuth();
   const updateProfile = useMutation(api.kidProfiles.updateProfile);
 
   const handleAllowTopic = async (entry) => {
@@ -372,6 +373,7 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
     await updateProfile({
       kidProfileId: entry.kidProfileId,
       allowedTopics: [...currentAllowed, entry.query.toLowerCase()],
+      userToken: token ?? undefined,
     });
     setDismissedIds((prev) => new Set([...prev, entry._id]));
   };
@@ -1161,7 +1163,7 @@ function RequestsTab({ allRequests, pendingRequests, onApprove, onDeny }) {
 // =============================================
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { user, logout, isAuthenticated, isLoading } = useAuth();
+  const { user, token, logout, isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [toast, setToast] = useState(null);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -1183,9 +1185,13 @@ export default function AdminDashboard() {
   const approveRequestMutation = useMutation(api.topicRequests.approveRequest);
   const denyRequestMutation = useMutation(api.topicRequests.denyRequest);
   const createOrUpdateUser = useMutation(api.users.createOrUpdateUser);
+  // Pulls the authoritative family code off the verified login token onto the
+  // local users row (docs/UNIFIED-IDENTITY.md) — replaces local code generation.
+  const syncIdentity = useMutation(api.identity.syncIdentityFromToken);
 
   // Track whether we've already attempted to auto-provision the local user
   const [provisionAttempted, setProvisionAttempted] = useState(false);
+  const [identitySynced, setIdentitySynced] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -1202,32 +1208,32 @@ export default function AdminDashboard() {
 
   const kidProfiles = useQuery(
     api.kidProfiles.getProfiles,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
 
   const searchHistory = useQuery(
     api.searchQueries.getAllSearchHistory,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
 
   const blockedSearches = useQuery(
     api.searchQueries.getBlockedSearches,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
 
   const pendingRequestCount = useQuery(
     api.topicRequests.getPendingCount,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
 
   const pendingRequests = useQuery(
     api.topicRequests.getPendingRequests,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
 
   const allRequests = useQuery(
     api.topicRequests.getAllRequests,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
 
   // Auto-provision: if JWT user is authenticated but has no local user record, create one
@@ -1251,6 +1257,17 @@ export default function AdminDashboard() {
       });
     }
   }, [isLoading, isAuthenticated, user, userData, provisionAttempted, createOrUpdateUser]);
+
+  // Once the local user exists and we hold a verified token, sync the unified
+  // family code from the token onto the local row (idempotent, fires once).
+  // Soft/no-op until MARKETING_JWT_SECRET is set on this deployment; safe before.
+  useEffect(() => {
+    if (!token || identitySynced || !userData) return;
+    setIdentitySynced(true);
+    syncIdentity({ userToken: token })
+      .then((result) => console.log('[AdminDashboard] Identity sync:', result))
+      .catch((err) => console.warn('[AdminDashboard] Identity sync skipped:', err?.message ?? err));
+  }, [token, identitySynced, userData, syncIdentity]);
 
   const handleLogout = () => {
     logout();
@@ -1541,11 +1558,11 @@ export default function AdminDashboard() {
             initialShowBlocked={activityShowBlocked}
             pendingRequests={pendingRequests}
             onApproveRequest={async (requestId) => {
-              await approveRequestMutation({ requestId });
+              await approveRequestMutation({ requestId, userToken: token ?? undefined });
               showToast('Topic approved! Your child can now search this.');
             }}
             onDenyRequest={async (requestId) => {
-              await denyRequestMutation({ requestId });
+              await denyRequestMutation({ requestId, userToken: token ?? undefined });
               showToast('Request denied.', 'info');
             }}
           />
@@ -1557,11 +1574,11 @@ export default function AdminDashboard() {
             allRequests={allRequests}
             pendingRequests={pendingRequests}
             onApprove={async (id) => {
-              await approveRequestMutation({ requestId: id });
+              await approveRequestMutation({ requestId: id, userToken: token ?? undefined });
               showToast('Topic approved! They can now search for this.');
             }}
             onDeny={async (id) => {
-              await denyRequestMutation({ requestId: id });
+              await denyRequestMutation({ requestId: id, userToken: token ?? undefined });
               showToast('Request denied.', 'info');
             }}
           />
@@ -1612,7 +1629,7 @@ export default function AdminDashboard() {
           confirmVariant="danger"
           onConfirm={async () => {
             try {
-              await deleteProfileMutation({ kidProfileId: confirmDelete });
+              await deleteProfileMutation({ kidProfileId: confirmDelete, userToken: token ?? undefined });
               setConfirmDelete(null);
               showToast('Profile deleted', 'success');
             } catch (err) {

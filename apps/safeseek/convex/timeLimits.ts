@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
 
 // Get time limit settings for a kid
 export const getTimeLimit = query({
@@ -22,8 +23,10 @@ export const setTimeLimit = mutation({
     weekendLimitMinutes: v.optional(v.number()),
     allowedStartHour: v.optional(v.number()),
     allowedEndHour: v.optional(v.number()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireProfileOwnerSoft(ctx, args.userToken, args.kidProfileId, "timeLimits.setTimeLimit");
     const existing = await ctx.db
       .query("timeLimits")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
@@ -55,8 +58,9 @@ export const setTimeLimit = mutation({
 
 // Delete time limit for a kid (removes all restrictions)
 export const deleteTimeLimit = mutation({
-  args: { kidProfileId: v.id("kidProfiles") },
+  args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireProfileOwnerSoft(ctx, args.userToken, args.kidProfileId, "timeLimits.deleteTimeLimit");
     const existing = await ctx.db
       .query("timeLimits")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
@@ -267,8 +271,9 @@ export const canSearch = query({
 
 // Get all time limits for a user's kids (simple version)
 export const getAllTimeLimits = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "timeLimits.getAllTimeLimits");
     // Get all kid profiles
     const profiles = await ctx.db
       .query("kidProfiles")
@@ -294,8 +299,9 @@ export const getAllTimeLimits = query({
 
 // Get time limits for all kids of a user (for parent dashboard)
 export const getTimeLimitsForUser = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "timeLimits.getTimeLimitsForUser");
     // Get all kid profiles
     const profiles = await ctx.db
       .query("kidProfiles")

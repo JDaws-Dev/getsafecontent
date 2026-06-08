@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, internalQuery } from "./_generated/server";
 import { cascadeDeleteKidProfile } from "./lib/cascadeDelete";
+import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
 
 /**
  * Strip sensitive fields (pin, rate-limit internals) from a profile
@@ -13,8 +14,9 @@ function sanitizeProfile(profile: Record<string, any>) {
 
 // Get all kid profiles for a user (client-safe: no PIN value)
 export const getProfiles = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "kidProfiles.getProfiles");
     const profiles = await ctx.db
       .query("kidProfiles")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -62,8 +64,10 @@ export const createProfile = mutation({
     allowFollowUp: v.boolean(),
     allowTopicRequests: v.optional(v.boolean()),
     pin: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "kidProfiles.createProfile");
     const user = await ctx.db.get(args.userId);
     if (!user) {
       throw new Error("User not found");
@@ -115,9 +119,15 @@ export const updateProfile = mutation({
     allowFollowUp: v.optional(v.boolean()),
     allowTopicRequests: v.optional(v.boolean()),
     pin: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const profile = await ctx.db.get(args.kidProfileId);
+    const profile = await requireProfileOwnerSoft(
+      ctx,
+      args.userToken,
+      args.kidProfileId,
+      "kidProfiles.updateProfile",
+    );
     if (!profile) {
       throw new Error("Kid profile not found");
     }
@@ -222,9 +232,14 @@ export const verifyKidPin = mutation({
 
 // Delete a kid profile and all related data
 export const deleteProfile = mutation({
-  args: { kidProfileId: v.id("kidProfiles") },
+  args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const profile = await ctx.db.get(args.kidProfileId);
+    const profile = await requireProfileOwnerSoft(
+      ctx,
+      args.userToken,
+      args.kidProfileId,
+      "kidProfiles.deleteProfile",
+    );
     if (!profile) {
       throw new Error("Kid profile not found");
     }

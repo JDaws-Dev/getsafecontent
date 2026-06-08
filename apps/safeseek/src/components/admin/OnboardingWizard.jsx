@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   Search, ArrowRight, ArrowLeft, Copy, Check, Sparkles,
   LayoutDashboard, UserPlus, ExternalLink, Shield,
@@ -664,6 +665,7 @@ export default function OnboardingWizard({ userId, familyCode, onComplete }) {
     accessibilityNeeds: [],
   });
 
+  const { token } = useAuth();
   const createProfile = useMutation(api.kidProfiles.createProfile);
   const updateProfile = useMutation(api.kidProfiles.updateProfile);
   const completeOnboarding = useMutation(api.users.completeOnboarding);
@@ -696,6 +698,7 @@ export default function OnboardingWizard({ userId, familyCode, onComplete }) {
         blockedTopics: formData.blockedTopics,
         allowImageSearch: formData.allowImageSearch,
         allowFollowUp: true,
+        userToken: token ?? undefined,
       });
 
       // Patch additional fields via updateProfile
@@ -705,7 +708,7 @@ export default function OnboardingWizard({ userId, familyCode, onComplete }) {
       if (formData.accessibilityNeeds.length > 0) extras.accessibilityNeeds = formData.accessibilityNeeds;
 
       if (Object.keys(extras).length > 0) {
-        await updateProfile({ kidProfileId: profileId, ...extras });
+        await updateProfile({ kidProfileId: profileId, ...extras, userToken: token ?? undefined });
       }
 
       setStep(6);
@@ -715,7 +718,7 @@ export default function OnboardingWizard({ userId, familyCode, onComplete }) {
     } finally {
       setSaving(false);
     }
-  }, [userId, formData, createProfile, updateProfile]);
+  }, [userId, formData, createProfile, updateProfile, token]);
 
   const handleComplete = useCallback(() => {
     completeOnboarding({ userId });
