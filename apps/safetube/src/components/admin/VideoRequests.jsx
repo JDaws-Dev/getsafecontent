@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { formatDuration, getChannelVideos, getChannelDetails } from '../../config/youtube';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Format timestamp to relative time
 function formatTimeAgo(timestamp) {
@@ -57,6 +58,7 @@ function formatPublishedDate(dateString) {
 }
 
 export default function VideoRequests({ userId }) {
+  const { token } = useAuth();
   const [filter, setFilter] = useState('pending'); // 'pending', 'all'
   const [requestType, setRequestType] = useState('all'); // 'all', 'videos', 'channels'
   const [processingId, setProcessingId] = useState(null);
@@ -81,18 +83,18 @@ export default function VideoRequests({ userId }) {
   // Video requests
   const pendingVideoRequests = useQuery(
     api.videoRequests.getPendingRequests,
-    userId ? { userId } : 'skip'
+    userId ? { userId, userToken: token ?? undefined } : 'skip'
   );
 
   const allVideoRequests = useQuery(
     api.videoRequests.getAllRequests,
-    filter === 'all' && userId ? { userId, limit: 50 } : 'skip'
+    filter === 'all' && userId ? { userId, limit: 50, userToken: token ?? undefined } : 'skip'
   );
 
   // Channel requests
   const pendingChannelRequests = useQuery(
     api.channelRequests.getPendingRequests,
-    userId ? { userId } : 'skip'
+    userId ? { userId, userToken: token ?? undefined } : 'skip'
   );
 
   // Mutations
@@ -105,9 +107,9 @@ export default function VideoRequests({ userId }) {
     setProcessingId(request._id);
     try {
       if (request.type === 'channel') {
-        await approveChannelRequest({ requestId: request._id });
+        await approveChannelRequest({ requestId: request._id, userToken: token ?? undefined });
       } else {
-        await approveVideoRequest({ requestId: request._id });
+        await approveVideoRequest({ requestId: request._id, userToken: token ?? undefined });
       }
     } catch (err) {
       console.error('Failed to approve request:', err);
@@ -120,9 +122,9 @@ export default function VideoRequests({ userId }) {
     setProcessingId(request._id);
     try {
       if (request.type === 'channel') {
-        await denyChannelRequest({ requestId: request._id });
+        await denyChannelRequest({ requestId: request._id, userToken: token ?? undefined });
       } else {
-        await denyVideoRequest({ requestId: request._id });
+        await denyVideoRequest({ requestId: request._id, userToken: token ?? undefined });
       }
     } catch (err) {
       console.error('Failed to deny request:', err);

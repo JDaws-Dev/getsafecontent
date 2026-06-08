@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
 
 // Get all approved channels for a kid
 export const getApprovedChannels = query({
@@ -43,8 +44,10 @@ export const addApprovedChannel = mutation({
     description: v.optional(v.string()),
     subscriberCount: v.optional(v.string()),
     videoCount: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "channels.addApprovedChannel");
     // Check if already approved
     const existing = await ctx.db
       .query("approvedChannels")
@@ -93,8 +96,10 @@ export const addChannelToMultipleKids = mutation({
     description: v.optional(v.string()),
     subscriberCount: v.optional(v.string()),
     videoCount: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "channels.addChannelToMultipleKids");
     const results = [];
 
     for (const kidProfileId of args.kidProfileIds) {
@@ -136,8 +141,10 @@ export const removeApprovedChannel = mutation({
   args: {
     kidProfileId: v.id("kidProfiles"),
     channelId: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireProfileOwnerSoft(ctx, args.userToken, args.kidProfileId, "channels.removeApprovedChannel");
     const channel = await ctx.db
       .query("approvedChannels")
       .withIndex("by_channel", (q) =>

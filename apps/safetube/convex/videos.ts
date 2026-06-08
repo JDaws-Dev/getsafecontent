@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
 
 // Get all approved videos for a kid
 export const getApprovedVideos = query({
@@ -64,8 +65,10 @@ export const addApprovedVideo = mutation({
     durationSeconds: v.number(),
     madeForKids: v.boolean(),
     publishedAt: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "videos.addApprovedVideo");
     // Check if already approved
     const existing = await ctx.db
       .query("approvedVideos")
@@ -116,8 +119,10 @@ export const addApprovedVideos = mutation({
         publishedAt: v.optional(v.string()),
       })
     ),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "videos.addApprovedVideos");
     const results = [];
 
     for (const video of args.videos) {
@@ -171,8 +176,10 @@ export const addVideoToMultipleKids = mutation({
     durationSeconds: v.number(),
     madeForKids: v.boolean(),
     publishedAt: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "videos.addVideoToMultipleKids");
     const results = [];
 
     for (const kidProfileId of args.kidProfileIds) {
@@ -218,8 +225,10 @@ export const removeApprovedVideo = mutation({
   args: {
     kidProfileId: v.id("kidProfiles"),
     videoId: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireProfileOwnerSoft(ctx, args.userToken, args.kidProfileId, "videos.removeApprovedVideo");
     const video = await ctx.db
       .query("approvedVideos")
       .withIndex("by_video", (q) =>
@@ -248,8 +257,10 @@ export const removeApprovedVideo = mutation({
 export const clearAllApprovedVideosForUser = mutation({
   args: {
     userId: v.id("users"),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "videos.clearAllApprovedVideosForUser");
     // Get all approved videos for this user
     const videos = await ctx.db
       .query("approvedVideos")

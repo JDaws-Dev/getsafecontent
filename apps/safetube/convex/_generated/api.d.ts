@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as addChannelAdmin from "../addChannelAdmin.js";
 import type * as admin from "../admin.js";
 import type * as adminDashboard from "../adminDashboard.js";
 import type * as ai_channelReview from "../ai/channelReview.js";
@@ -19,18 +18,20 @@ import type * as crons from "../crons.js";
 import type * as deleteUser from "../deleteUser.js";
 import type * as emails from "../emails.js";
 import type * as extensionApi from "../extensionApi.js";
-import type * as fixUserData from "../fixUserData.js";
 import type * as grantLifetime from "../grantLifetime.js";
 import type * as http from "../http.js";
 import type * as httpRateLimit from "../httpRateLimit.js";
+import type * as identity from "../identity.js";
 import type * as kidPlaylists from "../kidPlaylists.js";
 import type * as kidProfiles from "../kidProfiles.js";
 import type * as provisionUser from "../provisionUser.js";
+import type * as safeAuth from "../safeAuth.js";
 import type * as setSubscriptionStatus from "../setSubscriptionStatus.js";
 import type * as setupOnboarding from "../setupOnboarding.js";
 import type * as stripe from "../stripe.js";
 import type * as stripeActions from "../stripeActions.js";
 import type * as subscriptionEvents from "../subscriptionEvents.js";
+import type * as syncFamilyCode from "../syncFamilyCode.js";
 import type * as timeLimits from "../timeLimits.js";
 import type * as trialExpiration from "../trialExpiration.js";
 import type * as trialExpirationActions from "../trialExpirationActions.js";
@@ -48,7 +49,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  addChannelAdmin: typeof addChannelAdmin;
   admin: typeof admin;
   adminDashboard: typeof adminDashboard;
   "ai/channelReview": typeof ai_channelReview;
@@ -59,18 +59,20 @@ declare const fullApi: ApiFromModules<{
   deleteUser: typeof deleteUser;
   emails: typeof emails;
   extensionApi: typeof extensionApi;
-  fixUserData: typeof fixUserData;
   grantLifetime: typeof grantLifetime;
   http: typeof http;
   httpRateLimit: typeof httpRateLimit;
+  identity: typeof identity;
   kidPlaylists: typeof kidPlaylists;
   kidProfiles: typeof kidProfiles;
   provisionUser: typeof provisionUser;
+  safeAuth: typeof safeAuth;
   setSubscriptionStatus: typeof setSubscriptionStatus;
   setupOnboarding: typeof setupOnboarding;
   stripe: typeof stripe;
   stripeActions: typeof stripeActions;
   subscriptionEvents: typeof subscriptionEvents;
+  syncFamilyCode: typeof syncFamilyCode;
   timeLimits: typeof timeLimits;
   trialExpiration: typeof trialExpiration;
   trialExpirationActions: typeof trialExpirationActions;

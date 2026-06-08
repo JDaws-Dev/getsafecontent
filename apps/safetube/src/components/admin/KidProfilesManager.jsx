@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const COLORS = [
   { id: 'red', bg: 'bg-red-500', ring: 'ring-red-400' },
@@ -46,6 +47,7 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel }) {
 }
 
 export default function KidProfilesManager({ userId, kidProfiles }) {
+  const { token } = useAuth();
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ name: '', color: 'red', requestsEnabled: true });
@@ -66,6 +68,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
         icon: 'none', // No icon, just color
         color: formData.color,
         requestsEnabled: formData.requestsEnabled,
+        userToken: token ?? undefined,
       });
       setFormData({ name: '', color: 'red', requestsEnabled: true });
       setIsCreating(false);
@@ -86,6 +89,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
         icon: 'none', // No icon, just color
         color: formData.color,
         requestsEnabled: formData.requestsEnabled,
+        userToken: token ?? undefined,
       });
       setEditingId(null);
       setFormData({ name: '', color: 'red', requestsEnabled: true });
@@ -102,7 +106,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
       message: `Delete ${profileName}'s profile? This will also delete all their approved content.`,
       onConfirm: async () => {
         try {
-          await deleteProfile({ profileId });
+          await deleteProfile({ profileId, userToken: token ?? undefined });
         } catch (err) {
           console.error('Failed to delete profile:', err);
         }

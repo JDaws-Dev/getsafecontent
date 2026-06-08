@@ -15,7 +15,7 @@ import { useSubscriptionSync } from '../hooks/useSubscriptionSync';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { user: centralUser, isAuthenticated, isLoading: sessionPending, logout } = useAuth();
+  const { user: centralUser, token, isAuthenticated, isLoading: sessionPending, logout } = useAuth();
   const [copiedCode, setCopiedCode] = useState(false);
 
   // Get local SafeTube user data by email
@@ -27,6 +27,12 @@ export default function AdminDashboard() {
   // Auto-provision: if JWT-authenticated but no local user record, create one
   const ensureUser = useMutation(api.userSync.ensureSafeTubeUser);
   const [provisionAttempted, setProvisionAttempted] = useState(false);
+
+  // Pull the authoritative family code off the verified login token onto the
+  // local users row (docs/UNIFIED-IDENTITY.md) — replaces local code generation.
+  // Idempotent, fires once. Soft/no-op until MARKETING_JWT_SECRET is set; safe before.
+  const syncIdentity = useMutation(api.identity.syncIdentityFromToken);
+  const [identitySynced, setIdentitySynced] = useState(false);
 
   useEffect(() => {
     if (
@@ -48,6 +54,16 @@ export default function AdminDashboard() {
       });
     }
   }, [sessionPending, isAuthenticated, centralUser, localUser, provisionAttempted, ensureUser]);
+
+  // Once the local user exists and we hold a verified token, sync the unified
+  // family code from the token onto the local row (idempotent, fires once).
+  useEffect(() => {
+    if (!token || identitySynced || !localUser) return;
+    setIdentitySynced(true);
+    syncIdentity({ userToken: token })
+      .then((result) => console.log('[AdminDashboard] Identity sync:', result))
+      .catch((err) => console.warn('[AdminDashboard] Identity sync skipped:', err?.message ?? err));
+  }, [token, identitySynced, localUser, syncIdentity]);
 
   // Combine central auth data with local user data
   const currentUser = localUser ? {
@@ -85,17 +101,17 @@ export default function AdminDashboard() {
   // Get kid profiles
   const kidProfiles = useQuery(
     api.kidProfiles.getKidProfiles,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
 
   // Get pending requests count for badge
   const pendingVideoRequests = useQuery(
     api.videoRequests.getPendingRequests,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
   const pendingChannelRequests = useQuery(
     api.channelRequests.getPendingRequests,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
 
   const pendingRequestsCount = (pendingVideoRequests?.length || 0) + (pendingChannelRequests?.length || 0);

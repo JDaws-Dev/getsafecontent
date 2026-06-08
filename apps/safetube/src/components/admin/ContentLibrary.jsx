@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { formatDuration } from '../../config/youtube';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Confirm Modal component
 function ConfirmModal({ isOpen, title, message, onConfirm, onCancel }) {
@@ -32,6 +33,7 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel }) {
 }
 
 export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onSelectKid }) {
+  const { token } = useAuth();
   const [viewMode, setViewMode] = useState('channels'); // 'channels', 'partial', or 'videos'
   const [expandedChannel, setExpandedChannel] = useState(null);
   const [confirmModal, setConfirmModal] = useState(null);
@@ -57,7 +59,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
       message: `Remove ${channelTitle}? This will NOT remove videos from this channel that were individually added.`,
       onConfirm: async () => {
         try {
-          await removeChannel({ kidProfileId: selectedKidId, channelId });
+          await removeChannel({ kidProfileId: selectedKidId, channelId, userToken: token ?? undefined });
         } catch (err) {
           console.error('Failed to remove channel:', err);
         }
@@ -72,7 +74,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
       message: `Remove "${videoTitle}"?`,
       onConfirm: async () => {
         try {
-          await removeVideo({ kidProfileId: selectedKidId, videoId });
+          await removeVideo({ kidProfileId: selectedKidId, videoId, userToken: token ?? undefined });
         } catch (err) {
           console.error('Failed to remove video:', err);
         }

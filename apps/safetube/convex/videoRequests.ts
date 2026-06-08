@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
 
 // Create a video request from a kid
 export const createRequest = mutation({
@@ -64,8 +65,9 @@ export const createRequest = mutation({
 
 // Get pending requests for a parent
 export const getPendingRequests = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "videoRequests.getPendingRequests");
     const requests = await ctx.db
       .query("videoRequests")
       .withIndex("by_user_status", (q) =>
@@ -95,8 +97,10 @@ export const getAllRequests = query({
   args: {
     userId: v.id("users"),
     limit: v.optional(v.number()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "videoRequests.getAllRequests");
     const limit = args.limit || 50;
 
     const requests = await ctx.db
@@ -138,10 +142,11 @@ export const getKidRequests = query({
 
 // Approve a request
 export const approveRequest = mutation({
-  args: { requestId: v.id("videoRequests") },
+  args: { requestId: v.id("videoRequests"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "videoRequests.approveRequest");
     if (request.status !== "pending") throw new Error("Request already processed");
 
     // Update request status
@@ -174,10 +179,12 @@ export const denyRequest = mutation({
   args: {
     requestId: v.id("videoRequests"),
     reason: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "videoRequests.denyRequest");
     if (request.status !== "pending") throw new Error("Request already processed");
 
     await ctx.db.patch(args.requestId, {
@@ -192,8 +199,9 @@ export const denyRequest = mutation({
 
 // Bulk approve all pending requests from a kid
 export const bulkApproveForKid = mutation({
-  args: { kidProfileId: v.id("kidProfiles") },
+  args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireProfileOwnerSoft(ctx, args.userToken, args.kidProfileId, "videoRequests.bulkApproveForKid");
     const pendingRequests = await ctx.db
       .query("videoRequests")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
@@ -233,8 +241,10 @@ export const bulkDenyForKid = mutation({
   args: {
     kidProfileId: v.id("kidProfiles"),
     reason: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireProfileOwnerSoft(ctx, args.userToken, args.kidProfileId, "videoRequests.bulkDenyForKid");
     const pendingRequests = await ctx.db
       .query("videoRequests")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
@@ -260,8 +270,10 @@ export const clearOldRequests = mutation({
   args: {
     userId: v.id("users"),
     daysToKeep: v.number(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "videoRequests.clearOldRequests");
     const cutoffTime = Date.now() - args.daysToKeep * 24 * 60 * 60 * 1000;
 
     const oldRequests = await ctx.db

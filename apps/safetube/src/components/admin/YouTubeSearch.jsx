@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useMutation, useQuery, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { formatDuration, formatSubscribers, formatViewCount, formatTimeAgo, decodeHtmlEntities } from '../../config/youtube';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Video Preview Modal Component
 function VideoPreviewModal({ video, onClose, onAdd, isAdded, isAdding, canAdd }) {
@@ -112,6 +113,7 @@ function Toast({ message, type = 'success', onClose }) {
 }
 
 export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSelectKid }) {
+  const { token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState('channels'); // 'channels' or 'videos'
   const [videoDuration, setVideoDuration] = useState('any'); // 'any', 'short', 'medium', 'long'
@@ -282,6 +284,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
         description: channel.description,
         subscriberCount: channel.subscriberCount,
         videoCount: channel.videoCount,
+        userToken: token ?? undefined,
       });
 
       setAddedIds(prev => new Set([...prev, channel.channelId]));
@@ -314,6 +317,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
         durationSeconds: video.durationSeconds,
         madeForKids: video.madeForKids,
         publishedAt: video.publishedAt,
+        userToken: token ?? undefined,
       });
 
       setAddedIds(prev => new Set([...prev, video.videoId]));
@@ -372,6 +376,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
           durationSeconds: video.durationSeconds,
           madeForKids: video.madeForKids,
           publishedAt: video.publishedAt,
+          userToken: token ?? undefined,
         });
         setAddedIds(prev => new Set([...prev, video.videoId]));
         addedCount++;
