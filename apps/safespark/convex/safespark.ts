@@ -1550,6 +1550,39 @@ export const adminSetSubscription = internalMutation({
   },
 });
 
+// Operator-only: set the per-kid daily build budget for every kid under a
+// parent (by email). Used to bound token cost on comped accounts without
+// needing the parent's own auth token (setKidDailyBudget requires it). Pass
+// budget=null/omit to clear back to the system default.
+export const adminSetKidDailyBudget = internalMutation({
+  args: { email: v.string(), budget: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const lowered = args.email.toLowerCase();
+    const parent = await ctx.db
+      .query('users')
+      .withIndex('by_email', (q) => q.eq('email', lowered))
+      .first();
+    if (!parent) return { ok: false, error: 'parent not found' };
+
+    let clamped: number | undefined;
+    if (args.budget != null && args.budget > 0) {
+      clamped = Math.max(1, Math.min(500, Math.round(args.budget)));
+    }
+
+    const kids = await ctx.db
+      .query('kidProfiles')
+      .withIndex('by_parent', (q) => q.eq('parentUserId', parent._id))
+      .collect();
+
+    const updated: string[] = [];
+    for (const kid of kids) {
+      await ctx.db.patch(kid._id, { dailyQueryBudget: clamped, updatedAt: Date.now() });
+      updated.push(kid.displayName ?? kid._id);
+    }
+    return { ok: true, email: lowered, dailyQueryBudget: clamped, kids: updated };
+  },
+});
+
 export const adminDeleteUser = internalMutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {

@@ -22,6 +22,7 @@ import type * as kidSessions from "../kidSessions.js";
 import type * as migrations from "../migrations.js";
 import type * as provisionUser from "../provisionUser.js";
 import type * as provisionUserInternal from "../provisionUserInternal.js";
+import type * as safeAuth from "../safeAuth.js";
 import type * as safespark from "../safespark.js";
 import type * as sparkdb from "../sparkdb.js";
 import type * as users from "../users.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   migrations: typeof migrations;
   provisionUser: typeof provisionUser;
   provisionUserInternal: typeof provisionUserInternal;
+  safeAuth: typeof safeAuth;
   safespark: typeof safespark;
   sparkdb: typeof sparkdb;
   users: typeof users;
