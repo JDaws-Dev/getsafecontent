@@ -13,12 +13,16 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   // Use central JWT auth for authentication state
-  const { user: centralUser, isAuthenticated, isLoading } = useAuth();
+  const { user: centralUser, token, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   // Track whether we've already attempted to provision the local user
   const [provisionAttempted, setProvisionAttempted] = useState(false);
+  const [identitySynced, setIdentitySynced] = useState(false);
   const ensureUser = useMutation(api.userSync.ensureSafeReadsUser);
+  // Pulls the authoritative family code off the verified login token onto the
+  // local users row (docs/UNIFIED-IDENTITY.md) — replaces local code generation.
+  const syncIdentity = useMutation(api.identity.syncIdentityFromToken);
 
   // Get local SafeReads user data (kid profiles, onboarding status, etc.)
   // The subscription status comes from centralUser (JWT auth)
@@ -50,6 +54,22 @@ export default function DashboardLayout({
       });
     }
   }, [isLoading, isAuthenticated, centralUser, localUser, provisionAttempted, ensureUser]);
+
+  // Once the local user exists and we hold a verified token, sync the unified
+  // family code from the token onto the local row (idempotent, fires once).
+  // Soft/no-op until MARKETING_JWT_SECRET is set on this deployment; safe before.
+  useEffect(() => {
+    if (!token || identitySynced || !localUser) return;
+    setIdentitySynced(true);
+    syncIdentity({ userToken: token })
+      .then((result) => {
+        console.log("[DashboardLayout] Identity sync:", result);
+      })
+      .catch((err) => {
+        // Fail open — pre-secret deployments reject verification; don't block UI.
+        console.warn("[DashboardLayout] Identity sync skipped:", err?.message ?? err);
+      });
+  }, [token, identitySynced, localUser, syncIdentity]);
 
   // Combine central auth data with local user data
   const convexUser = localUser ? {

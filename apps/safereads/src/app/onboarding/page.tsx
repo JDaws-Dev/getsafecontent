@@ -13,7 +13,7 @@ type AddedKid = { name: string; age?: number; color?: string; pin?: string; read
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { user: authUser } = useAuth();
+  const { user: authUser, token } = useAuth();
 
   const currentUser = useQuery(
     api.users.currentUser,
@@ -80,6 +80,7 @@ export default function OnboardingPage() {
           color: kid.color,
           pin: kid.pin,
           readingLevel: kid.readingLevel,
+          userToken: token ?? undefined,
         });
       }
       // Save content preferences

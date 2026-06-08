@@ -71,20 +71,21 @@ export default function WishlistPage({
   params: Promise<{ kidId: string }>;
 }) {
   const { kidId } = use(params);
-  const { user: authUser } = useAuth();
+  const { user: authUser, token } = useAuth();
   const currentUser = useQuery(
     api.users.currentUser,
     authUser?.email ? { email: authUser.email } : "skip"
   );
   const kid = useQuery(api.kids.getById, {
     kidId: kidId as Id<"kids">,
+    userToken: token ?? undefined,
   });
   const wishlist = useQuery(api.wishlists.listByKid, {
     kidId: kidId as Id<"kids">,
   });
   const kids = useQuery(
     api.kids.listByUser,
-    currentUser?._id ? { userId: currentUser._id } : "skip"
+    currentUser?._id ? { userId: currentUser._id, userToken: token ?? undefined } : "skip"
   );
   const removeItem = useMutation(api.wishlists.remove);
   const updateStatus = useMutation(api.wishlists.updateStatus);

@@ -30,6 +30,12 @@ interface User {
 
 interface AuthContextValue {
   user: User | null;
+  /**
+   * The raw Marketing Central JWT. Pass this as `userToken` to Convex
+   * mutations/queries that touch user-owned records so the server can verify
+   * ownership (see convex/identity.ts). Null when unauthenticated.
+   */
+  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; code?: string; user?: User }>;
@@ -335,6 +341,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value: AuthContextValue = {
     user,
+    token,
     isAuthenticated: !!user,
     isLoading,
     login,
@@ -351,6 +358,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 // Default auth value for SSR/prerendering
 const defaultAuthValue: AuthContextValue = {
   user: null,
+  token: null,
   isAuthenticated: false,
   isLoading: true,
   login: async () => ({ success: false, error: "Not initialized" }),

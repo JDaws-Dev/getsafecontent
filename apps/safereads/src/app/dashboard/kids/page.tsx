@@ -31,14 +31,14 @@ type Kid = {
 };
 
 export default function KidsPage() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, token } = useAuth();
   const currentUser = useQuery(
     api.users.currentUser,
     authUser?.email ? { email: authUser.email } : "skip"
   );
   const kids = useQuery(
     api.kids.listByUser,
-    currentUser?._id ? { userId: currentUser._id } : "skip"
+    currentUser?._id ? { userId: currentUser._id, userToken: token ?? undefined } : "skip"
   );
 
   const createKid = useMutation(api.kids.create);
@@ -72,6 +72,7 @@ export default function KidsPage() {
           color: values.color,
           pin: values.pin,
           readingLevel: values.readingLevel,
+          userToken: token ?? undefined,
         });
       } else {
         await createKid({
@@ -81,6 +82,7 @@ export default function KidsPage() {
           color: values.color,
           pin: values.pin,
           readingLevel: values.readingLevel,
+          userToken: token ?? undefined,
         });
       }
       setDialogOpen(false);
@@ -93,7 +95,7 @@ export default function KidsPage() {
   async function handleDelete(kidId: Id<"kids">) {
     setDeleting(kidId);
     try {
-      await removeKid({ kidId });
+      await removeKid({ kidId, userToken: token ?? undefined });
     } finally {
       setDeleting(null);
     }

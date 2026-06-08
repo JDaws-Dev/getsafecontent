@@ -24,11 +24,11 @@ const STATUS_OPTIONS: { value: WishlistStatus; label: string; icon: React.ReactN
 ];
 
 export function WishlistButton({ bookId }: { bookId: Id<"books"> }) {
-  const { user: authUser } = useAuth();
+  const { user: authUser, token } = useAuth();
   const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
   const kids = useQuery(
     api.kids.listByUser,
-    userId ? { userId } : "skip"
+    userId ? { userId, userToken: token ?? undefined } : "skip"
   );
 
   const [dialogOpen, setDialogOpen] = useState(false);

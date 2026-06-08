@@ -31,7 +31,7 @@ const VERDICT_STYLES: Record<string, { bg: string; text: string; label: string }
 };
 
 export default function DashboardPage() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, token } = useAuth();
   const searchParams = useSearchParams();
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
@@ -48,7 +48,7 @@ export default function DashboardPage() {
 
   const kids = useQuery(
     api.kids.listByUser,
-    userId ? { userId } : "skip"
+    userId ? { userId, userToken: token ?? undefined } : "skip"
   );
 
   const recentAnalyses = useQuery(api.analyses.listRecent, { count: 5 });

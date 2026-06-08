@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import * as Dialog from "@radix-ui/react-dialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 type ApprovedBook = {
   _id: Id<"approvedBooks">;
@@ -48,8 +49,10 @@ export default function ManageBooksPage({
   params: Promise<{ kidId: string }>;
 }) {
   const { kidId } = use(params);
+  const { token } = useAuth();
   const kid = useQuery(api.kids.getById, {
     kidId: kidId as Id<"kids">,
+    userToken: token ?? undefined,
   });
   const approvedBooks = useQuery(api.approvedBooks.listForKid, {
     kidId: kidId as Id<"kids">,
