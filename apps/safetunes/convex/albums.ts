@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { requireOwnerSoft } from "./identity";
 
 // ============================================================================
 // UNIFIED ALBUM MODEL
@@ -13,8 +14,9 @@ import { query, mutation } from "./_generated/server";
 
 // Get all approved albums for a user - UNIFIED VIEW
 export const getApprovedAlbums = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "albums.getApprovedAlbums");
     // Get all albums (now ONE record per album)
     const albums = await ctx.db
       .query("approvedAlbums")

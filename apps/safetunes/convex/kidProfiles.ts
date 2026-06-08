@@ -1,10 +1,12 @@
 import { v } from "convex/values";
 import { query, mutation, internalMutation } from "./_generated/server";
+import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
 
 // Get all kid profiles for a user
 export const getKidProfiles = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "kidProfiles.getKidProfiles");
     return await ctx.db
       .query("kidProfiles")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -73,8 +75,10 @@ export const createKidProfile = mutation({
     favoriteArtists: v.optional(v.array(v.string())),
     musicPreferences: v.optional(v.string()),
     dailyLimitMinutes: v.optional(v.number()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "kidProfiles.createKidProfile");
     return await ctx.db.insert("kidProfiles", {
       userId: args.userId,
       name: args.name,
@@ -130,9 +134,11 @@ export const updateKidProfile = mutation({
     allowedStartTime: v.optional(v.string()),
     allowedEndTime: v.optional(v.string()),
     timeOfDayEnabled: v.optional(v.boolean()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { profileId, ...updates } = args;
+    const { profileId, userToken, ...updates } = args;
+    await requireProfileOwnerSoft(ctx, userToken, profileId, "kidProfiles.updateKidProfile");
 
     // Filter out undefined values
     const definedUpdates = Object.fromEntries(
@@ -145,8 +151,9 @@ export const updateKidProfile = mutation({
 
 // Delete kid profile
 export const deleteKidProfile = mutation({
-  args: { profileId: v.id("kidProfiles") },
+  args: { profileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireProfileOwnerSoft(ctx, args.userToken, args.profileId, "kidProfiles.deleteKidProfile");
     await ctx.db.delete(args.profileId);
   },
 });
@@ -156,8 +163,10 @@ export const setMusicPaused = mutation({
   args: {
     profileId: v.id("kidProfiles"),
     paused: v.boolean(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireProfileOwnerSoft(ctx, args.userToken, args.profileId, "kidProfiles.setMusicPaused");
     await ctx.db.patch(args.profileId, {
       musicPaused: args.paused,
     });
@@ -171,9 +180,9 @@ export const setMusicPaused = mutation({
 // This gives the kid a fresh start - removes all their music, playlists,
 // listening history, requests, etc. The profile itself remains.
 export const resetKidProfile = mutation({
-  args: { profileId: v.id("kidProfiles") },
+  args: { profileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const profile = await ctx.db.get(args.profileId);
+    const profile = await requireProfileOwnerSoft(ctx, args.userToken, args.profileId, "kidProfiles.resetKidProfile");
     if (!profile) {
       throw new Error("Kid profile not found");
     }
@@ -272,9 +281,9 @@ export const resetKidProfile = mutation({
 // Archives all kid data for 30 days, then deletes the profile.
 // Parent can restore within 30 days.
 export const archiveAndDeleteKidProfile = mutation({
-  args: { profileId: v.id("kidProfiles") },
+  args: { profileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const profile = await ctx.db.get(args.profileId);
+    const profile = await requireProfileOwnerSoft(ctx, args.userToken, args.profileId, "kidProfiles.archiveAndDeleteKidProfile");
     if (!profile) {
       throw new Error("Kid profile not found");
     }
@@ -381,8 +390,9 @@ export const archiveAndDeleteKidProfile = mutation({
 // GET ARCHIVED PROFILES
 // ============================================
 export const getArchivedProfiles = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "kidProfiles.getArchivedProfiles");
     const now = Date.now();
     const archives = await ctx.db
       .query("archivedKidProfiles")
@@ -405,12 +415,13 @@ export const getArchivedProfiles = query({
 // RESTORE KID PROFILE FROM ARCHIVE
 // ============================================
 export const restoreKidProfile = mutation({
-  args: { archiveId: v.id("archivedKidProfiles") },
+  args: { archiveId: v.id("archivedKidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const archive = await ctx.db.get(args.archiveId);
     if (!archive) {
       throw new Error("Archive not found");
     }
+    await requireOwnerSoft(ctx, args.userToken, archive.userId, "kidProfiles.restoreKidProfile");
 
     if (archive.expiresAt < Date.now()) {
       throw new Error("This archive has expired and cannot be restored");
@@ -483,12 +494,13 @@ export const restoreKidProfile = mutation({
 // PERMANENTLY DELETE ARCHIVE (skip restore)
 // ============================================
 export const permanentlyDeleteArchive = mutation({
-  args: { archiveId: v.id("archivedKidProfiles") },
+  args: { archiveId: v.id("archivedKidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const archive = await ctx.db.get(args.archiveId);
     if (!archive) {
       throw new Error("Archive not found");
     }
+    await requireOwnerSoft(ctx, args.userToken, archive.userId, "kidProfiles.permanentlyDeleteArchive");
     await ctx.db.delete(args.archiveId);
     return { success: true };
   },

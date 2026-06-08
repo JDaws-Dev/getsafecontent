@@ -2,11 +2,13 @@ import { v } from "convex/values";
 import { query, mutation, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
+import { requireOwnerSoft } from "./identity";
 
 // Get all pending requests for a user (parent)
 export const getPendingRequests = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "albumRequests.getPendingRequests");
     return await ctx.db
       .query("albumRequests")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -17,8 +19,9 @@ export const getPendingRequests = query({
 
 // Get all denied requests for a user (parent)
 export const getDeniedRequests = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "albumRequests.getDeniedRequests");
     return await ctx.db
       .query("albumRequests")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -139,10 +142,12 @@ export const approveRequest = mutation({
       isExplicit: v.optional(v.boolean()),
     }))),
     hideArtwork: v.optional(v.boolean()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "albumRequests.approveRequest");
 
     // Update request status
     await ctx.db.patch(args.requestId, {
@@ -252,10 +257,12 @@ export const denyRequest = mutation({
   args: {
     requestId: v.id("albumRequests"),
     denialReason: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "albumRequests.denyRequest");
 
     await ctx.db.patch(args.requestId, {
       status: "denied",
@@ -274,10 +281,11 @@ export const denyRequest = mutation({
 
 // Undo album approval (revert to pending)
 export const undoApproval = mutation({
-  args: { requestId: v.id("albumRequests") },
+  args: { requestId: v.id("albumRequests"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "albumRequests.undoApproval");
 
     // Revert request status back to pending
     await ctx.db.patch(args.requestId, {
@@ -303,8 +311,11 @@ export const undoApproval = mutation({
 
 // Undo album denial (revert to pending)
 export const undoDenial = mutation({
-  args: { requestId: v.id("albumRequests") },
+  args: { requestId: v.id("albumRequests"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "albumRequests.undoDenial");
     await ctx.db.patch(args.requestId, {
       status: "pending",
       reviewedAt: undefined,
@@ -326,10 +337,12 @@ export const approveDeniedRequest = mutation({
       isExplicit: v.optional(v.boolean()),
     }))),
     hideArtwork: v.optional(v.boolean()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "albumRequests.approveDeniedRequest");
     if (request.status !== "denied") throw new Error("Request is not denied");
 
     // Validate that appleAlbumId exists
@@ -445,10 +458,12 @@ export const markAsPartiallyApproved = mutation({
   args: {
     requestId: v.id("albumRequests"),
     partialApprovalNote: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "albumRequests.markAsPartiallyApproved");
 
     // Update request status to partially_approved
     await ctx.db.patch(args.requestId, {

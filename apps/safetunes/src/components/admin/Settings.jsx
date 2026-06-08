@@ -9,6 +9,7 @@ import BillingHistory from './BillingHistory';
 import ExportPlaylistsModal from './ExportPlaylistsModal';
 import { useIsNativeApp } from '../../hooks/useIsNativeApp';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { ThemeSelector } from '../common/ThemeToggle';
 
 // Chevron Right Icon Component
@@ -34,16 +35,17 @@ const BackButton = ({ onClick, label = 'Back' }) => (
 function Settings({ user, onLogout, initialSection }) {
   const navigate = useNavigate();
   const { showToast, ToastContainer } = useToast();
+  const { token } = useAuth();
   const isNativeApp = useIsNativeApp();
   const fullUser = useQuery(api.users.getUser, user ? { userId: user._id } : 'skip');
-  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id } : 'skip') || [];
+  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
   const updateKidProfile = useMutation(api.kidProfiles.updateKidProfile);
   const createKidProfile = useMutation(api.kidProfiles.createKidProfile);
   const archiveAndDeleteKidProfile = useMutation(api.kidProfiles.archiveAndDeleteKidProfile);
   const resetKidProfileMutation = useMutation(api.kidProfiles.resetKidProfile);
   const restoreKidProfileMutation = useMutation(api.kidProfiles.restoreKidProfile);
   const permanentlyDeleteArchiveMutation = useMutation(api.kidProfiles.permanentlyDeleteArchive);
-  const archivedProfiles = useQuery(api.kidProfiles.getArchivedProfiles, user ? { userId: user._id } : 'skip') || [];
+  const archivedProfiles = useQuery(api.kidProfiles.getArchivedProfiles, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
   const createPortalSession = useAction(api.stripeActions.createPortalSession);
   const sendCancellationReason = useAction(api.emails.sendCancellationReasonEmail);
   const updateUserMutation = useMutation(api.users.updateUser);
@@ -244,7 +246,7 @@ function Settings({ user, onLogout, initialSection }) {
 
     setDeleteKidLoading(true);
     try {
-      const result = await archiveAndDeleteKidProfile({ profileId: kidToDelete._id });
+      const result = await archiveAndDeleteKidProfile({ profileId: kidToDelete._id, userToken: token ?? undefined });
       showToast(`${kidToDelete.name}'s profile has been archived. You can restore it within 30 days.`, 'success');
       setShowDeleteKidModal(false);
       setKidToDelete(null);
@@ -263,7 +265,7 @@ function Settings({ user, onLogout, initialSection }) {
 
     setResetKidLoading(true);
     try {
-      const result = await resetKidProfileMutation({ profileId: kidToReset._id });
+      const result = await resetKidProfileMutation({ profileId: kidToReset._id, userToken: token ?? undefined });
       const counts = result.deletedCounts;
       showToast(
         `${kidToReset.name}'s profile has been reset. Cleared ${counts.songs} songs, ${counts.playlists} playlists, and all history.`,
@@ -285,7 +287,7 @@ function Settings({ user, onLogout, initialSection }) {
 
     setRestoreLoading(true);
     try {
-      const result = await restoreKidProfileMutation({ archiveId: archiveToRestore._id });
+      const result = await restoreKidProfileMutation({ archiveId: archiveToRestore._id, userToken: token ?? undefined });
       showToast(
         `${archiveToRestore.name}'s profile has been restored with ${result.restored.songs} songs and ${result.restored.playlists} playlists!`,
         'success'
@@ -303,7 +305,7 @@ function Settings({ user, onLogout, initialSection }) {
   // Permanently delete archive handler
   const handlePermanentlyDeleteArchive = async (archive) => {
     try {
-      await permanentlyDeleteArchiveMutation({ archiveId: archive._id });
+      await permanentlyDeleteArchiveMutation({ archiveId: archive._id, userToken: token ?? undefined });
       showToast(`${archive.name}'s archived data has been permanently deleted.`, 'success');
     } catch (error) {
       console.error('Failed to permanently delete archive:', error);
@@ -382,11 +384,13 @@ function Settings({ user, onLogout, initialSection }) {
           name: formData.name,
           color: formData.color,
           pin: formData.pin || undefined,
+          userToken: token ?? undefined,
         });
         setFormSuccess('Kid profile created successfully!');
       } else {
         const updates = {
           profileId: editingKidId,
+          userToken: token ?? undefined,
           name: formData.name,
           color: formData.color,
           timeLimitEnabled: formData.timeLimitEnabled,

@@ -2,11 +2,13 @@ import { v } from "convex/values";
 import { query, mutation, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
+import { requireOwnerSoft } from "./identity";
 
 // Get all pending song requests for a user (parent)
 export const getPendingSongRequests = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "songRequests.getPendingSongRequests");
     return await ctx.db
       .query("songRequests")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -17,8 +19,9 @@ export const getPendingSongRequests = query({
 
 // Get all denied song requests for a user (parent)
 export const getDeniedSongRequests = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwnerSoft(ctx, args.userToken, args.userId, "songRequests.getDeniedSongRequests");
     return await ctx.db
       .query("songRequests")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -133,10 +136,12 @@ export const approveSongRequest = mutation({
   args: {
     requestId: v.id("songRequests"),
     hideArtwork: v.optional(v.boolean()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "songRequests.approveSongRequest");
 
     // Update request status
     await ctx.db.patch(args.requestId, {
@@ -173,10 +178,12 @@ export const denySongRequest = mutation({
   args: {
     requestId: v.id("songRequests"),
     denialReason: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "songRequests.denySongRequest");
 
     await ctx.db.patch(args.requestId, {
       status: "denied",
@@ -195,10 +202,11 @@ export const denySongRequest = mutation({
 
 // Undo song approval (revert to pending)
 export const undoApproval = mutation({
-  args: { requestId: v.id("songRequests") },
+  args: { requestId: v.id("songRequests"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "songRequests.undoApproval");
 
     // Revert request status back to pending
     await ctx.db.patch(args.requestId, {
@@ -224,8 +232,11 @@ export const undoApproval = mutation({
 
 // Undo song denial (revert to pending)
 export const undoDenial = mutation({
-  args: { requestId: v.id("songRequests") },
+  args: { requestId: v.id("songRequests"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "songRequests.undoDenial");
     await ctx.db.patch(args.requestId, {
       status: "pending",
       reviewedAt: undefined,
@@ -239,10 +250,12 @@ export const approveDeniedSongRequest = mutation({
   args: {
     requestId: v.id("songRequests"),
     hideArtwork: v.optional(v.boolean()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
+    await requireOwnerSoft(ctx, args.userToken, request.userId, "songRequests.approveDeniedSongRequest");
     if (request.status !== "denied") throw new Error("Request is not denied");
 
     // Validate that appleSongId exists

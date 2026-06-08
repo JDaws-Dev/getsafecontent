@@ -13,6 +13,7 @@ import ParentDashboardHome from './ParentDashboardHome';
 import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
 import EmptyState from '../common/EmptyState';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useExpoPushToken } from '../../hooks/useExpoPushToken';
 
 // Compact Kid Card Component - New streamlined design
@@ -473,6 +474,7 @@ function KidActivityCard({ kid, kidAlbums, kidTracks, getAvatarIcon, getColorCla
 
 function AdminDashboard({ user, onLogout }) {
   const { showToast } = useToast();
+  const { token } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
   const [settingsSection, setSettingsSection] = useState(null); // 'account', 'apple-music', 'kids', 'subscription', 'support'
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -480,6 +482,19 @@ function AdminDashboard({ user, onLogout }) {
 
   // Register for push notifications (mobile app)
   useExpoPushToken({ userId: user?._id });
+
+  // Pull the authoritative family code off the verified login token onto the
+  // local users row (docs/UNIFIED-IDENTITY.md) — replaces local code generation.
+  // Idempotent, fires once. Soft/no-op until MARKETING_JWT_SECRET is set; safe before.
+  const syncIdentity = useMutation(api.identity.syncIdentityFromToken);
+  const [identitySynced, setIdentitySynced] = useState(false);
+  useEffect(() => {
+    if (!token || identitySynced || !user?._id) return;
+    setIdentitySynced(true);
+    syncIdentity({ userToken: token })
+      .then((result) => console.log('[AdminDashboard] Identity sync:', result))
+      .catch((err) => console.warn('[AdminDashboard] Identity sync skipped:', err?.message ?? err));
+  }, [token, identitySynced, user, syncIdentity]);
 
   // Save active tab to localStorage whenever it changes
   useEffect(() => {
@@ -531,12 +546,12 @@ function AdminDashboard({ user, onLogout }) {
 
   // Fetch real kid profiles from Convex
   const kidProfiles = useQuery(api.kidProfiles.getKidProfiles,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   // Fetch approved albums from Convex
   const approvedAlbums = useQuery(api.albums.getApprovedAlbums,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   // Fetch featured albums (Discover pool)
@@ -556,10 +571,10 @@ function AdminDashboard({ user, onLogout }) {
 
   // Fetch pending requests from Convex
   const pendingRequests = useQuery(api.albumRequests.getPendingRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
   const pendingSongRequests = useQuery(api.songRequests.getPendingSongRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
   const unreadBlockedSearchesCount = useQuery(api.blockedSearches.getUnreadBlockedSearchesCount,
     user ? { userId: user._id } : 'skip'
