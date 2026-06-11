@@ -627,8 +627,8 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
       const { url } = await finalizeImageUpload({ storageId, sessionToken: kidSessionToken ?? undefined });
       setPendingImageUrl(url);
     } catch (err) {
-      const text = err instanceof Error ? err.message : String(err);
-      setError(`Image upload failed: ${text}`);
+      console.error('[safespark] image upload failed:', err);
+      setError("That photo didn't make it through — try attaching it again, or pick a different one.");
     } finally {
       setImageUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -678,8 +678,8 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
         truncated: parsed.truncated,
       });
     } catch (err) {
-      const text = err instanceof Error ? err.message : String(err);
-      setError(`PDF upload failed: ${text}`);
+      console.error('[safespark] pdf upload failed:', err);
+      setError("That PDF didn't make it through — try attaching it again, or pick a different one.");
     } finally {
       setPdfUploading(false);
       if (pdfInputRef.current) pdfInputRef.current.value = '';
@@ -1278,8 +1278,8 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             });
             setActiveProjectId(savedId as unknown as string);
           } catch (saveErr) {
-            const text = saveErr instanceof Error ? saveErr.message : String(saveErr);
-            setError(`Couldn't save to your account: ${text}`);
+            console.error('[safespark] cloud save failed:', saveErr);
+            setError("Couldn't save that to your account — your project is still here, just tap Send again to retry.");
           }
         }
         setProjectTitle(finalTitle);
@@ -1325,8 +1325,8 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
               console.warn('[checkpoint] background trigger failed', err);
             });
           } catch (saveErr) {
-            const text = saveErr instanceof Error ? saveErr.message : String(saveErr);
-            setError(`Couldn't save to your account: ${text}`);
+            console.error('[safespark] cloud save failed:', saveErr);
+            setError("Couldn't save that to your account — your project is still here, just tap Send again to retry.");
           }
         } else {
           const saved = upsertProject({
@@ -1386,7 +1386,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
         );
       } else {
         const text = err instanceof Error ? err.message : String(err);
-        setError(text);
+        console.error('[safespark] build error:', text);
         const lowered = text.toLowerCase();
         const kidMessage = lowered.includes('stream-stalled')
           ? 'The connection went quiet — that usually happens when you switch tabs while I\'m building. Tap your idea again and I\'ll start over.'
@@ -1403,6 +1403,9 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
           : lowered.includes('terminated') || lowered.includes('fetch failed') || lowered.includes('network')
           ? "The connection to my brain dropped for a second. Tap your idea again and I'll try once more."
           : 'Something went wrong on my side. Tap your idea again and I\'ll try once more — if it keeps happening, ask for a smaller version first.';
+        // The error strip renders this string verbatim — kid-friendly only,
+        // never the raw exception text (that goes to console + logErrorRaw).
+        setError(kidMessage);
         setMessages((current) =>
           finalizePlaceholder(current, placeholderId, { content: kidMessage, status: 'error' }),
         );

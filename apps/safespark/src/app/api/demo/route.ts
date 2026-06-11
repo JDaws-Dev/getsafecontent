@@ -1295,8 +1295,19 @@ ${message}`;
       },
     });
   } catch (error) {
+    // The client surfaces this string to the kid — keep it kid-natural and
+    // keep the raw error in server logs only. Include coarse keywords
+    // (quota/rate) so the client's error map can still classify it.
     const messageText = error instanceof Error ? error.message : String(error);
-    return Response.json({ error: `Demo AI failed: ${messageText}` }, { status: 500 });
+    console.error('[safespark] demo route failed before streaming:', messageText);
+    const lowered = messageText.toLowerCase();
+    const kidText =
+      lowered.includes('quota') || lowered.includes('billing') || lowered.includes('insufficient_quota')
+        ? 'quota: Spark ran out of credits for the month. Tell your parent — they need to top up before you can build more.'
+        : lowered.includes('429') || lowered.includes('rate')
+          ? 'rate: A lot of kids are asking Spark right now. Try again in a few seconds.'
+          : "Spark hit a snag starting that build. Tap your idea again and I'll give it another go.";
+    return Response.json({ error: kidText }, { status: 500 });
   }
 }
 
