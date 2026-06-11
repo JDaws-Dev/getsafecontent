@@ -58,7 +58,9 @@ export default defineSchema({
     name: v.string(),
     avatar: v.optional(v.string()),
     color: v.optional(v.string()),
-    pin: v.optional(v.string()), // 4-digit PIN (optional - for sibling protection)
+    pin: v.optional(v.string()), // 4-digit PIN — PBKDF2 hash (legacy rows may be plaintext until migrated)
+    pinFailedAttempts: v.optional(v.number()), // wrong-PIN counter for lockout
+    pinLockedUntil: v.optional(v.number()), // ms epoch; PIN entry locked until then
     createdAt: v.number(),
     // Music preferences for future AI recommendations
     favoriteGenres: v.optional(v.array(v.string())),
@@ -491,4 +493,14 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_expires", ["expiresAt"]),
+
+  // Records each daily orphan check so the alerter can email only on delta or weekly heartbeat
+  orphanCheckHistory: defineTable({
+    checkedAt: v.number(),
+    totalOrphans: v.number(),
+    summaryJson: v.string(), // JSON.stringify of summary-by-table
+    emailSent: v.boolean(),
+    emailReason: v.string(), // "delta" | "heartbeat" | "first-run" | "silent"
+  })
+    .index("by_checkedAt", ["checkedAt"]),
 }, { schemaValidation: false }); // Disable schema validation temporarily to allow legacy data

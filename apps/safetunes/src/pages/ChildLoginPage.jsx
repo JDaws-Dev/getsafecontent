@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { AVATAR_ICONS, COLORS } from '../constants/avatars';
 import musicKitService from '../config/musickit';
@@ -17,6 +17,7 @@ function ChildLoginPage() {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [kidProfile, setKidProfile] = useState(null);
+  const attemptKidPin = useMutation(api.kidProfiles.attemptKidPin);
 
   // Check if family code is already saved in localStorage
   useEffect(() => {
@@ -108,8 +109,9 @@ function ChildLoginPage() {
     setPin('');
     setError('');
 
-    // If profile has no PIN, log in directly
-    if (!profile.pin) {
+    // If profile has no PIN, log in directly (hasPin comes from the server;
+    // the PIN itself never reaches the client)
+    if (!profile.hasPin) {
       localStorage.setItem('safetunes_kid_profile', JSON.stringify(profile));
       // Clear any saved tab preference to start fresh on home
       localStorage.removeItem('safetunes_child_tab');
@@ -138,18 +140,33 @@ function ChildLoginPage() {
     setError('');
   };
 
-  const verifyPin = (pinToVerify) => {
-    if (pinToVerify === selectedProfile.pin) {
-      // Success - save to localStorage
-      localStorage.setItem('safetunes_kid_profile', JSON.stringify(selectedProfile));
-      // Clear any saved tab preference to start fresh on home
-      localStorage.removeItem('safetunes_child_tab');
-      setKidProfile(selectedProfile);
-      setStep('dashboard');
-    } else {
-      setError('Incorrect PIN');
-      setPin('');
+  const verifyPin = async (pinToVerify) => {
+    try {
+      // Server-side check with failed-attempt lockout — the PIN (or its
+      // hash) is never shipped to the kid client.
+      const result = await attemptKidPin({
+        profileId: selectedProfile._id,
+        pin: pinToVerify,
+      });
+      if (result?.valid) {
+        // Success - save to localStorage
+        localStorage.setItem('safetunes_kid_profile', JSON.stringify(selectedProfile));
+        // Clear any saved tab preference to start fresh on home
+        localStorage.removeItem('safetunes_child_tab');
+        setKidProfile(selectedProfile);
+        setStep('dashboard');
+        return;
+      }
+      if (result?.locked) {
+        const mins = Math.max(1, Math.ceil((result.retryAfterSeconds || 300) / 60));
+        setError(`Too many tries — ask a parent, or wait ${mins} min`);
+      } else {
+        setError('Incorrect PIN');
+      }
+    } catch {
+      setError('Something went wrong — try again');
     }
+    setPin('');
   };
 
   const handleLogout = () => {

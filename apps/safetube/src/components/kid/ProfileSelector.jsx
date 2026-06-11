@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from 'convex/react';
+import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 
 export default function ProfileSelector({ profiles, onSelect, familyCode, onChangeCode }) {
@@ -10,29 +10,34 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
   const [pinError, setPinError] = useState('');
   const pinRefs = [useRef(), useRef(), useRef(), useRef()];
 
-  // Verify PIN query
-  const pinVerification = useQuery(
-    api.kidProfiles.verifyKidPin,
-    selectedProfile && pinInput.every(d => d !== '')
-      ? { profileId: selectedProfile._id, pin: pinInput.join('') }
-      : 'skip'
-  );
+  // Server-side PIN check with failed-attempt lockout
+  const attemptKidPin = useMutation(api.kidProfiles.attemptKidPin);
 
-  // Auto-submit when all 4 digits entered
-  useEffect(() => {
-    if (pinVerification?.valid === true) {
-      setIsLoading(true);
-      onSelect(selectedProfile);
-    } else if (pinVerification?.valid === false) {
-      setPinError('Wrong PIN');
-      setPinInput(['', '', '', '']);
-      pinRefs[0].current?.focus();
+  const submitPin = async (profile, pin) => {
+    try {
+      const result = await attemptKidPin({ profileId: profile._id, pin });
+      if (result?.valid) {
+        setIsLoading(true);
+        onSelect(profile);
+        return;
+      }
+      if (result?.locked) {
+        const mins = Math.max(1, Math.ceil((result.retryAfterSeconds || 300) / 60));
+        setPinError(`Too many tries — ask a parent, or wait ${mins} min`);
+      } else {
+        setPinError('Wrong PIN');
+      }
+    } catch {
+      setPinError('Something went wrong — try again');
     }
-  }, [pinVerification]);
+    setPinInput(['', '', '', '']);
+    pinRefs[0].current?.focus();
+  };
 
   const handleSelect = async (profile) => {
-    // If profile has a PIN, show PIN entry
-    if (profile.pin) {
+    // If profile has a PIN, show PIN entry (hasPin comes from the server;
+    // the PIN itself never reaches the client)
+    if (profile.hasPin) {
       setSelectedProfile(profile);
       setPinInput(['', '', '', '']);
       setPinError('');
@@ -59,6 +64,11 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
     // Auto-advance to next input
     if (value && index < 3) {
       pinRefs[index + 1].current?.focus();
+    }
+
+    // Auto-submit when all 4 digits entered
+    if (value && index === 3 && newPin.every(d => d !== '') && selectedProfile) {
+      submitPin(selectedProfile, newPin.join(''));
     }
   };
 
@@ -182,7 +192,7 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-gray-900 font-semibold text-lg">{profile.name}</span>
-                      {profile.pin && (
+                      {profile.hasPin && (
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>

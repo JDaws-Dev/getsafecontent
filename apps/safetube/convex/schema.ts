@@ -52,7 +52,9 @@ export default defineSchema({
     favoriteGenres: v.optional(v.array(v.string())), // Legacy field for backwards compatibility
     favoriteArtists: v.optional(v.array(v.string())), // Legacy field for backwards compatibility
     musicPreferences: v.optional(v.string()), // Legacy field for backwards compatibility
-    pin: v.optional(v.string()), // Legacy field for backwards compatibility
+    pin: v.optional(v.string()), // 4-digit PIN — PBKDF2 hash (legacy rows may be plaintext until migrated)
+    pinFailedAttempts: v.optional(v.number()), // wrong-PIN counter for lockout
+    pinLockedUntil: v.optional(v.number()), // ms epoch; PIN entry locked until then
     dailyTimeLimitMinutes: v.optional(v.number()), // Legacy field for backwards compatibility
     expoPushToken: v.optional(v.string()), // Legacy field for backwards compatibility
     musicPaused: v.optional(v.boolean()), // Legacy field for backwards compatibility

@@ -233,7 +233,7 @@ function KidProfileManager() {
               </div>
 
               <h3 className="text-xl font-bold text-gray-900 mb-1">{profile.name}</h3>
-              <p className="text-sm text-gray-500">PIN: {profile.pin.replace(/./g, '•')}</p>
+              <p className="text-sm text-gray-500">PIN: {profile.pin ? '••••' : 'None'}</p>
             </div>
           ))}
         </div>

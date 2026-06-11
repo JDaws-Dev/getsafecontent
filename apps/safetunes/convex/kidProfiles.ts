@@ -1,6 +1,12 @@
 import { v } from "convex/values";
 import { query, mutation, internalMutation } from "./_generated/server";
 import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
+import { hashPin, verifyPin, isHashedPin } from "./safeAuth";
+
+// PINs are 4 digits (10k combinations) — the lockout is the real defense,
+// hashing removes the at-rest plaintext. See safeAuth.ts.
+const PIN_MAX_ATTEMPTS = 5;
+const PIN_LOCK_MS = 5 * 60 * 1000;
 
 // Get all kid profiles for a user
 export const getKidProfiles = query({
@@ -34,10 +40,16 @@ export const getKidProfilesByFamilyCode = query({
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
 
+    // Never ship the PIN (or its hash) to the kid client — the kid side only
+    // needs to know whether a PIN gate exists. Verification happens
+    // server-side via attemptKidPin.
     return {
       userId: user._id,
       familyName: user.name,
-      profiles: profiles,
+      profiles: profiles.map(({ pin, ...rest }) => ({
+        ...rest,
+        hasPin: Boolean(pin),
+      })),
     };
   },
 });
@@ -50,7 +62,8 @@ export const getKidProfile = query({
   },
 });
 
-// Verify kid PIN
+// Verify kid PIN (read-only compat shim — prefer attemptKidPin, which
+// enforces the failed-attempt lockout).
 export const verifyKidPin = query({
   args: {
     profileId: v.id("kidProfiles"),
@@ -58,7 +71,83 @@ export const verifyKidPin = query({
   },
   handler: async (ctx, args) => {
     const profile = await ctx.db.get(args.profileId);
-    return profile?.pin === args.pin;
+    if (!profile?.pin) return false;
+    if (profile.pinLockedUntil && profile.pinLockedUntil > Date.now()) return false;
+    return await verifyPin(args.pin, profile.pin);
+  },
+});
+
+// Verify kid PIN with lockout enforcement. 5 wrong attempts locks the
+// profile's PIN entry for 5 minutes. Successful verification resets the
+// counter and transparently upgrades legacy plaintext PINs to PBKDF2.
+export const attemptKidPin = mutation({
+  args: {
+    profileId: v.id("kidProfiles"),
+    pin: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db.get(args.profileId);
+    if (!profile?.pin) return { valid: false, locked: false };
+
+    const now = Date.now();
+    if (profile.pinLockedUntil && profile.pinLockedUntil > now) {
+      return {
+        valid: false,
+        locked: true,
+        retryAfterSeconds: Math.ceil((profile.pinLockedUntil - now) / 1000),
+      };
+    }
+
+    const valid = await verifyPin(args.pin, profile.pin);
+    if (valid) {
+      const patch: Record<string, unknown> = {
+        pinFailedAttempts: 0,
+        pinLockedUntil: undefined,
+      };
+      // Lazy migration: re-store legacy plaintext PINs as PBKDF2 hashes.
+      if (!isHashedPin(profile.pin)) {
+        patch.pin = await hashPin(args.pin);
+      }
+      await ctx.db.patch(args.profileId, patch);
+      return { valid: true, locked: false };
+    }
+
+    const attempts = (profile.pinFailedAttempts ?? 0) + 1;
+    const locked = attempts >= PIN_MAX_ATTEMPTS;
+    await ctx.db.patch(args.profileId, {
+      pinFailedAttempts: locked ? 0 : attempts,
+      pinLockedUntil: locked ? now + PIN_LOCK_MS : undefined,
+    });
+    return {
+      valid: false,
+      locked,
+      retryAfterSeconds: locked ? Math.ceil(PIN_LOCK_MS / 1000) : undefined,
+    };
+  },
+});
+
+// One-time migration: hash any legacy plaintext kid PINs (kidProfiles +
+// archivedKidProfiles). Idempotent — already-hashed PINs are skipped.
+// Run: npx convex run kidProfiles:migrateKidPinsToHash --prod
+export const migrateKidPinsToHash = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    let migrated = 0;
+    const profiles = await ctx.db.query("kidProfiles").collect();
+    for (const p of profiles) {
+      if (p.pin && !isHashedPin(p.pin)) {
+        await ctx.db.patch(p._id, { pin: await hashPin(p.pin) });
+        migrated++;
+      }
+    }
+    const archived = await ctx.db.query("archivedKidProfiles").collect();
+    for (const a of archived) {
+      if (a.pin && !isHashedPin(a.pin)) {
+        await ctx.db.patch(a._id, { pin: await hashPin(a.pin) });
+        migrated++;
+      }
+    }
+    return { migrated };
   },
 });
 
@@ -84,7 +173,7 @@ export const createKidProfile = mutation({
       name: args.name,
       avatar: args.avatar,
       color: args.color,
-      pin: args.pin,
+      pin: args.pin ? await hashPin(args.pin) : undefined,
       createdAt: Date.now(),
       ageRange: args.ageRange,
       favoriteGenres: args.favoriteGenres,
@@ -144,6 +233,16 @@ export const updateKidProfile = mutation({
     const definedUpdates = Object.fromEntries(
       Object.entries(updates).filter(([_, value]) => value !== undefined)
     );
+
+    // Never store a plaintext PIN; empty string removes the PIN.
+    if (typeof definedUpdates.pin === "string") {
+      if (definedUpdates.pin === "") {
+        delete definedUpdates.pin;
+        await ctx.db.patch(profileId, { pin: undefined, pinFailedAttempts: undefined, pinLockedUntil: undefined });
+      } else {
+        definedUpdates.pin = await hashPin(definedUpdates.pin);
+      }
+    }
 
     await ctx.db.patch(profileId, definedUpdates);
   },
