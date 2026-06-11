@@ -25,6 +25,11 @@ export type IntentResult = {
   category: IntentCategory;
   confidence: number; // 0..1
   rationale: string; // one sentence — for parent dashboard
+  // True when the LLM gate was unavailable (no key / API error) and the
+  // query passed with regex-only screening. The always-escalate ED and
+  // self-harm alerts can't fire from the LLM path while degraded — callers
+  // should surface this to the operator (see opsAlerts.ts).
+  degraded?: boolean;
 };
 
 const CATEGORY_LIST: IntentCategory[] = [
@@ -114,6 +119,7 @@ async function llmClassify(query: string, apiKey: string): Promise<IntentResult>
     category: "other",
     confidence: 0,
     rationale: "Classifier unavailable.",
+    degraded: true,
   };
 
   try {
@@ -186,7 +192,7 @@ export async function classifyIntent(
   if (fast) return fast;
 
   if (!apiKey) {
-    return { category: "other", confidence: 0, rationale: "No API key." };
+    return { category: "other", confidence: 0, rationale: "No API key.", degraded: true };
   }
 
   return await llmClassify(query, apiKey);

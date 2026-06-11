@@ -500,6 +500,27 @@ export const searchFromKid = action({
     //     search runs. Fails open: classifier errors don't block the kid.
     const intent = await classifyIntent(sanitized, process.env.OPENAI_API_KEY);
 
+    // Fail-open is deliberate, but it must not be silent: while degraded,
+    // the always-escalate ED/self-harm alerts can't fire from the LLM path.
+    // Surface to the operator (deduped to one email per 24h).
+    if (intent.degraded) {
+      console.error(
+        `[searchFromKid] intent classifier DEGRADED (${intent.rationale}) — query passed with regex-only screening`
+      );
+      try {
+        const shouldAlert = await ctx.runMutation(internal.opsAlerts.noteClassifierDegraded, {
+          rationale: intent.rationale,
+        });
+        if (shouldAlert) {
+          await ctx.scheduler.runAfter(0, internal.opsAlerts.sendClassifierDownAlert, {
+            rationale: intent.rationale,
+          });
+        }
+      } catch (err) {
+        console.error("[searchFromKid] failed to record classifier degradation:", err);
+      }
+    }
+
     const decision = shouldBlockCategory(
       intent.category as any,
       kidProfile.contentStrictness || "moderate",

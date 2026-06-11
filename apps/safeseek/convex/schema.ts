@@ -173,4 +173,13 @@ export default defineSchema({
     timestamps: v.array(v.number()), // request timestamps within the window
   })
     .index("by_user_action", ["userId", "action"]),
+
+  // Operator-facing system events (e.g. classifier-down alert dedupe markers).
+  // See opsAlerts.ts.
+  systemEvents: defineTable({
+    kind: v.string(),
+    createdAt: v.number(),
+    meta: v.optional(v.string()),
+  })
+    .index("by_kind_time", ["kind", "createdAt"]),
 });
