@@ -1,6 +1,27 @@
 import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 
+// Family codes are 6 chars (~1B combinations with the 32-char alphabet, but
+// only a few dozen are live) — per-IP rate limiting makes enumeration
+// impractical without affecting real extension/kid usage.
+function rateLimitResponse(retryAfter: number, corsHeaders: Record<string, string>): Response {
+  return new Response(
+    JSON.stringify({ error: "Too many requests. Please try again later." }),
+    {
+      status: 429,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        "Retry-After": String(retryAfter),
+      },
+    }
+  );
+}
+
+function clientIp(request: Request): string {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
 // Extension API: Add video to SafeTube
 // Called from Chrome extension when parent clicks "Add to SafeTube"
 const extensionAddVideo = httpAction(async (ctx, request) => {
@@ -15,6 +36,13 @@ const extensionAddVideo = httpAction(async (ctx, request) => {
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
+
+  const rate = await ctx.runMutation(internal.rateLimit.checkAndCount, {
+    identifier: `ext-add:${clientIp(request)}`,
+    maxRequests: 30,
+    windowMs: 60 * 1000,
+  });
+  if (rate.limited) return rateLimitResponse(rate.retryAfter, corsHeaders);
 
   try {
     const body = await request.json();
@@ -117,6 +145,15 @@ const extensionGetKids = httpAction(async (ctx, request) => {
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
+
+  // Tighter limit here: this endpoint maps family codes → kid names, the
+  // exact lookup an enumeration attack needs.
+  const rate = await ctx.runMutation(internal.rateLimit.checkAndCount, {
+    identifier: `ext-kids:${clientIp(request)}`,
+    maxRequests: 10,
+    windowMs: 60 * 1000,
+  });
+  if (rate.limited) return rateLimitResponse(rate.retryAfter, corsHeaders);
 
   try {
     const url = new URL(request.url);

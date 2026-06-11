@@ -261,4 +261,12 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_kid", ["kidProfileId"])
     .index("by_user_recent", ["userId", "timestamp"]),
+
+  // Per-IP sliding-window rate limiting for HTTP actions (see rateLimit.ts —
+  // the in-memory limiter doesn't survive Convex's per-invocation isolates).
+  httpRateLimits: defineTable({
+    identifier: v.string(),
+    timestamps: v.array(v.number()),
+  })
+    .index("by_identifier", ["identifier"]),
 }, { schemaValidation: false });
