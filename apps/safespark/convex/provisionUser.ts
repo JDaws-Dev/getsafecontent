@@ -1,8 +1,6 @@
 import { httpAction } from './_generated/server';
 import { internal } from './_generated/api';
 
-const HARDCODED_ADMIN_KEY = 'IscYPRsiaDdpuN378QS5tEvp2uCT+UHPyHpZG6lVko4=';
-
 function corsHeaders(): Record<string, string> {
   return {
     'Access-Control-Allow-Origin': '*',
@@ -39,7 +37,7 @@ const provisionUser = httpAction(async (ctx, request): Promise<Response> => {
   const url = new URL(request.url);
   const key = url.searchParams.get('key');
   const ADMIN_KEY =
-    process.env.SAFESPARK_ADMIN_KEY || process.env.ADMIN_KEY || HARDCODED_ADMIN_KEY;
+    process.env.SAFESPARK_ADMIN_KEY || process.env.ADMIN_KEY;
 
   if (!key || key !== ADMIN_KEY) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {

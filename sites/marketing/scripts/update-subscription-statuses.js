@@ -13,7 +13,11 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuration
-const ADMIN_KEY = 'u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=';
+const ADMIN_KEY = process.env.ADMIN_API_KEY;
+if (!ADMIN_KEY) {
+  console.error('Set ADMIN_API_KEY in the environment before running this script.');
+  process.exit(1);
+}
 const MARKETING_URL = 'https://adamant-crow-705.convex.site';
 const BACKUP_BASE = path.join(process.env.HOME, 'Desktop/convex-backups');
 

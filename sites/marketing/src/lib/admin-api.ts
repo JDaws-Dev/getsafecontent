@@ -11,8 +11,8 @@ import type {
   RevenueBreakdown,
 } from "@/types/admin";
 
-// Use environment variable, with fallback to hardcoded key for local development
-const ADMIN_KEY = process.env.ADMIN_API_KEY || "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=";
+// Server-side only. Fails closed (403 from the app endpoints) when unset.
+const ADMIN_KEY = process.env.ADMIN_API_KEY ?? "";
 
 const ENDPOINTS = {
   safetunes: {

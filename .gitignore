@@ -84,3 +84,17 @@ Thumbs.db
 # Misc local-only files
 *.log
 .turbo/
+
+# Session screenshots / images dropped in repo root by QA + agent runs.
+# Root-level only — app public/ assets are unaffected.
+/*.png
+/*.PNG
+/*.jpg
+/*.JPG
+/*.jpeg
+
+# Beads daemon log archives (rotated gzips; live db stays tracked via issues.jsonl)
+.beads/daemon-*.log.gz
+
+# Codex CLI scratch
+.codex/

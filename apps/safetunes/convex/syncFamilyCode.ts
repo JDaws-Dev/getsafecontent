@@ -1,15 +1,13 @@
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-const HARDCODED_ADMIN_KEY = "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=";
-
 export default httpAction(async (ctx, request) => {
   const url = new URL(request.url);
   const key = url.searchParams.get("key");
   const email = url.searchParams.get("email");
   const code = url.searchParams.get("code");
 
-  const ADMIN_SECRET = process.env.ADMIN_KEY || HARDCODED_ADMIN_KEY;
+  const ADMIN_SECRET = process.env.ADMIN_KEY;
   if (!key || key !== ADMIN_SECRET) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,

@@ -54,12 +54,15 @@ function checkRateLimit(clientIp: string): {
 
 /**
  * Get the JWT secret from environment.
- * Falls back to ADMIN_KEY if JWT_SECRET is not set (for backwards compatibility).
+ * JWT_SECRET must be a dedicated secret — never the admin API key, which is
+ * shared with every app's HTTP endpoints and would let an admin-key holder
+ * forge login tokens. Deploy prerequisite: `npx convex env set JWT_SECRET ...`
+ * (and mirror the value to each app's MARKETING_JWT_SECRET).
  */
 function getJwtSecret(): Uint8Array {
-  const secret = process.env.JWT_SECRET || process.env.ADMIN_KEY;
+  const secret = process.env.JWT_SECRET;
   if (!secret) {
-    throw new Error("JWT_SECRET or ADMIN_KEY environment variable is required");
+    throw new Error("JWT_SECRET environment variable is required");
   }
   return new TextEncoder().encode(secret);
 }

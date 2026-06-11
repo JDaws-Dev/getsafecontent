@@ -5,6 +5,24 @@
 
 ---
 
+## ✅ UPDATE June 11, 2026 — Admin key + JWT secret rotation COMPLETE
+
+The shared admin key (hardcoded in 16 convex files + the marketing client bundle)
+and the safespark variant were rotated across all 6 Convex prods + Vercel.
+Old keys verified rejected (403) on every admin endpoint. Marketing now signs
+login JWTs with a dedicated `JWT_SECRET` (was falling back to the admin key),
+and `MARKETING_JWT_SECRET` is set on all 5 apps. All hardcoded fallbacks
+removed from source; endpoints fail closed on missing env.
+
+**New key values are NOT in this repo** — they live in the operator's password
+manager. Remaining items from the original Feb checklist that still need a human:
+
+- [ ] Delete the old YouTube API key from Google Cloud Console (SafeTubeV02 project)
+- [ ] Remove the key values documented below in this file's history (now-dead keys, but tidy)
+- [ ] Set up GitHub secret scanning alerts
+
+---
+
 ## API Keys to Rotate
 
 ### 1. YouTube API Key (SafeTube) - ✅ ROTATED

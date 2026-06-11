@@ -2,8 +2,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const ADMIN_KEY =
-  process.env.ADMIN_API_KEY || "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=";
+const ADMIN_KEY = process.env.ADMIN_API_KEY ?? "";
 
 const ENDPOINTS = {
   marketing: "https://adamant-crow-705.convex.site",

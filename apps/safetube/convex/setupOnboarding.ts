@@ -1,10 +1,6 @@
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-// TEMPORARY WORKAROUND: Convex has a bug where env vars set via CLI don't propagate
-// to HTTP actions. Using a hardcoded key until Convex fixes this.
-const HARDCODED_ADMIN_KEY = "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=";
-
 /**
  * HTTP endpoint to create a kid profile from onboarding
  *
@@ -24,7 +20,7 @@ export default httpAction(async (ctx, request) => {
     const kidName = url.searchParams.get("kidName");
     const color = url.searchParams.get("color") || "blue";
 
-    const ADMIN_SECRET = process.env.ADMIN_KEY || HARDCODED_ADMIN_KEY;
+    const ADMIN_SECRET = process.env.ADMIN_KEY;
 
     // Validate admin key
     if (!secretKey || secretKey !== ADMIN_SECRET) {

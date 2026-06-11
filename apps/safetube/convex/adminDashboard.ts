@@ -8,10 +8,6 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-// TEMPORARY WORKAROUND: Convex has a bug where env vars set via CLI don't propagate
-// to HTTP actions. Using a hardcoded key until Convex fixes this.
-const HARDCODED_ADMIN_KEY = "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=";
-
 // Admin-only HTTP endpoint - completely server-side
 // Supports both HTML (default) and JSON (format=json) responses
 export default httpAction(async (ctx, request) => {
@@ -24,7 +20,7 @@ export default httpAction(async (ctx, request) => {
     const url = new URL(request.url);
     const secretKey = url.searchParams.get("key");
     const format = url.searchParams.get("format"); // "json" for API access
-    const ADMIN_SECRET = process.env.ADMIN_KEY || HARDCODED_ADMIN_KEY;
+    const ADMIN_SECRET = process.env.ADMIN_KEY;
 
     if (!secretKey || secretKey !== ADMIN_SECRET) {
       if (format === "json") {

@@ -2,10 +2,6 @@ import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { checkHttpRateLimit, getClientIp, rateLimitedResponse } from "./httpRateLimit";
 
-// TEMPORARY WORKAROUND: Convex has a bug where env vars set via CLI don't propagate
-// to HTTP actions. Using a hardcoded key until Convex fixes this.
-const HARDCODED_ADMIN_KEY = "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0=";
-
 // Rate limit: 10 requests per minute per IP
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
@@ -44,7 +40,7 @@ export default httpAction(async (ctx, request): Promise<Response> => {
 
   const url = new URL(request.url);
   const key = url.searchParams.get("key");
-  const ADMIN_KEY = process.env.ADMIN_KEY || HARDCODED_ADMIN_KEY;
+  const ADMIN_KEY = process.env.ADMIN_KEY;
 
   // Validate admin key
   if (!key || key !== ADMIN_KEY) {

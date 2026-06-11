@@ -283,12 +283,11 @@ export default function UserDetailPage() {
   const handlePasswordReset = async () => {
     setActionLoading("password-reset");
     try {
-      const encodedKey = encodeURIComponent(
-        "u2A0NLQwYgNCGVz3/6b9v97bFsP6v3TnqqtxFL8rOQ0="
-      );
-      const res = await fetch(
-        `https://adamant-crow-705.convex.site/requestPasswordReset?email=${encodeURIComponent(email)}&key=${encodedKey}`
-      );
+      const res = await fetch("/api/admin/password-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
       if (!res.ok) {
         throw new Error("Failed to send password reset");
       }
