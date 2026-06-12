@@ -1523,6 +1523,26 @@ export async function POST(req: Request) {
       processingTimeMs,
     });
 
+    // Provisioning failures on grant-path events return 500 so Stripe
+    // retries (exponential backoff, up to ~3 days). App-side provisionUser
+    // is idempotent (upsert by email), so re-running a grant is safe —
+    // already-provisioned apps just re-patch, failed apps get another shot.
+    // Previously these returned 200 and a paid customer could be left with
+    // 3 of 4 apps, with only an admin email standing between them and
+    // silence. Scoped to event types whose retries re-send ADMIN emails
+    // only — customer.subscription.deleted is excluded because it sends a
+    // customer-facing re-engagement email after the revoke.
+    const retrySafeEvents = ["checkout.session.completed", "customer.subscription.updated"];
+    if (
+      (webhookContext.status === "failure" || webhookContext.status === "partial_failure") &&
+      retrySafeEvents.includes(event.type)
+    ) {
+      return NextResponse.json(
+        { received: true, willRetry: true, errors: webhookContext.errors },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Webhook handler error:", error);
