@@ -1,0 +1,60 @@
+name: App checks
+
+# Lint + typecheck per app on every push/PR that touches it.
+# First CI gate for the apps themselves (previously only marketing had
+# any automation). Deploys stay manual — this just catches regressions
+# before they reach a `convex deploy` / `vercel --prod` from a dirty tree.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/**"
+      - "sites/marketing/**"
+      - ".github/workflows/app-checks.yml"
+  pull_request:
+    paths:
+      - "apps/**"
+      - "sites/marketing/**"
+      - ".github/workflows/app-checks.yml"
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # tsc:false = Vite/JS app or no typescript dep (safetunes)
+          - { name: safetunes, dir: apps/safetunes, tsc: false }
+          - { name: safetube, dir: apps/safetube, tsc: false }
+          - { name: safereads, dir: apps/safereads, tsc: true }
+          - { name: safestudy, dir: apps/safeseek, tsc: false }
+          - { name: safespark, dir: apps/safespark, tsc: true }
+          - { name: marketing, dir: sites/marketing, tsc: true }
+    name: ${{ matrix.name }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ matrix.dir }}/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      # Advisory only for now — every app carries pre-existing lint debt
+      # (281 errors in safetunes alone as of 2026-06-11). Flip to blocking
+      # per-app as the debt is paid down.
+      - name: Lint (advisory)
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Typecheck
+        if: ${{ matrix.tsc }}
+        run: npx tsc --noEmit
