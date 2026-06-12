@@ -157,16 +157,17 @@ export const addSongsToPlaylist = mutation({
       // If approveForKid is true, also approve these songs for the kid's library
       if (args.approveForKid) {
         for (const song of newSongs) {
-          // Check if song is already approved
+          // Check if song is already approved. by_user_and_song narrows to
+          // this family's copies of this one song (≈ #kids rows) — the
+          // previous unindexed filter scanned the whole approvedSongs table
+          // per song in this loop (32k-read cliff, same shape as the May 4
+          // kidRequests incident).
           const existing = await ctx.db
             .query("approvedSongs")
-            .filter((q) =>
-              q.and(
-                q.eq(q.field("userId"), playlist.userId),
-                q.eq(q.field("appleSongId"), song.appleSongId),
-                q.eq(q.field("kidProfileId"), playlist.kidProfileId)
-              )
+            .withIndex("by_user_and_song", (q) =>
+              q.eq("userId", playlist.userId).eq("appleSongId", song.appleSongId)
             )
+            .filter((q) => q.eq(q.field("kidProfileId"), playlist.kidProfileId))
             .first();
 
           if (!existing) {

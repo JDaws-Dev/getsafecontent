@@ -94,27 +94,24 @@ export const approveSong = mutation({
     }
 
     // For Discover songs (featured=true), check by appleSongId only (no kidProfileId)
-    // For Library songs, check by appleSongId AND kidProfileId
+    // For Library songs, check by appleSongId AND kidProfileId.
+    // by_user_and_song narrows to this family's copies of this one song
+    // (≈ #kids rows) — the previous unindexed filter scanned the entire
+    // approvedSongs table across all families (32k-read cliff).
     const existing = args.featured === true
       ? await ctx.db
           .query("approvedSongs")
-          .filter((q) =>
-            q.and(
-              q.eq(q.field("userId"), args.userId),
-              q.eq(q.field("appleSongId"), args.appleSongId),
-              q.eq(q.field("featured"), true)
-            )
+          .withIndex("by_user_and_song", (q) =>
+            q.eq("userId", args.userId).eq("appleSongId", args.appleSongId)
           )
+          .filter((q) => q.eq(q.field("featured"), true))
           .first()
       : await ctx.db
           .query("approvedSongs")
-          .filter((q) =>
-            q.and(
-              q.eq(q.field("userId"), args.userId),
-              q.eq(q.field("appleSongId"), args.appleSongId),
-              q.eq(q.field("kidProfileId"), args.kidProfileId)
-            )
+          .withIndex("by_user_and_song", (q) =>
+            q.eq("userId", args.userId).eq("appleSongId", args.appleSongId)
           )
+          .filter((q) => q.eq(q.field("kidProfileId"), args.kidProfileId))
           .first();
 
     if (existing) {
