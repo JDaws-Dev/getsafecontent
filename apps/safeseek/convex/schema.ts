@@ -174,6 +174,18 @@ export default defineSchema({
   })
     .index("by_user_action", ["userId", "action"]),
 
+  // LLM intent-classification cache — intent depends only on query text.
+  // See intentCache.ts.
+  intentCache: defineTable({
+    normalizedQuery: v.string(),
+    category: v.string(),
+    confidence: v.number(),
+    rationale: v.string(),
+    cachedAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_query", ["normalizedQuery"]),
+
   // Operator-facing system events (e.g. classifier-down alert dedupe markers).
   // See opsAlerts.ts.
   systemEvents: defineTable({

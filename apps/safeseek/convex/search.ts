@@ -5,6 +5,7 @@ import { action, internalAction } from "./_generated/server";
 import { internal, api } from "./_generated/api";
 import { sanitizeQuery as sanitizeInput, detectPromptInjection, filterResponse } from "./ai/inputFilter";
 import { classifyIntent, shouldBlockCategory, redirectMessage } from "./ai/intentClassifier";
+import { normalizeForIntentCache } from "./intentCache";
 import { isLoop, loopMessage } from "./ai/loopDetector";
 import { normalizeQuery } from "./lib/utils";
 
@@ -498,7 +499,28 @@ export const searchFromKid = action({
     // --- Intent classifier: catches synonym-shuffled aesthetic browsing,
     //     self-image queries, ED/self-harm signals BEFORE the expensive
     //     search runs. Fails open: classifier errors don't block the kid.
-    const intent = await classifyIntent(sanitized, process.env.OPENAI_API_KEY);
+    //     Cached by normalized query text (30d TTL) — identical queries
+    //     shouldn't re-bill gpt-4o-mini or pay its latency.
+    const intentCacheKey = normalizeForIntentCache(sanitized);
+    let intent = (await ctx.runQuery(internal.intentCache.get, {
+      normalizedQuery: intentCacheKey,
+    })) as Awaited<ReturnType<typeof classifyIntent>> | null;
+    if (!intent) {
+      intent = await classifyIntent(sanitized, process.env.OPENAI_API_KEY);
+      if (!intent.degraded) {
+        // Fire-and-forget; a cache-write failure must not affect the search.
+        try {
+          await ctx.runMutation(internal.intentCache.put, {
+            normalizedQuery: intentCacheKey,
+            category: intent.category,
+            confidence: intent.confidence,
+            rationale: intent.rationale,
+          });
+        } catch (err) {
+          console.warn("[searchFromKid] intent cache write failed:", err);
+        }
+      }
+    }
 
     // Fail-open is deliberate, but it must not be silent: while degraded,
     // the always-escalate ED/self-harm alerts can't fire from the LLM path.
