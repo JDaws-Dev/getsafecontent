@@ -205,8 +205,12 @@ export const _checkBudget = internalQuery({
       .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken))
       .first();
     if (!session) return true; // unknown session → permissive; cache + dailyQueryBudget already protect
-    const profile = await ctx.db.get(session.kidProfileId);
-    const cap = profile?.dailyQueryBudget ?? DEFAULT_DAILY_CAP;
+    // Independent TTS cap — deliberately NOT profile.dailyQueryBudget (the
+    // BUILD cap). Coupling them meant raising a kid's build budget silently
+    // raised allowed TTS spend, and gave no way to cap TTS on its own.
+    // Cache hits don't count (only fresh syntheses bill OpenAI). Tunable
+    // via SAFESPARK_TTS_DAILY_CAP without a deploy.
+    const cap = Number(process.env.SAFESPARK_TTS_DAILY_CAP) || DEFAULT_DAILY_CAP;
     const day = todayUTC(Date.now());
     const usage = await ctx.db
       .query('safesparkTtsUsage')
