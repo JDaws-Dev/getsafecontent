@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { getActor } from './actors';
+import { getActor, verifyMarketingToken } from './actors';
 
 export const upsertFromClerk = mutation({
   args: {
@@ -104,7 +104,6 @@ export const getCurrent = query({
     // verify Marketing's HS256-signed tokens, so ctx.auth.getUserIdentity()
     // returns null for them).
     if (args.userToken) {
-      const { verifyMarketingToken } = await import('./actors');
       const verified = await verifyMarketingToken(args.userToken);
       if (verified) {
         const row = await ctx.db

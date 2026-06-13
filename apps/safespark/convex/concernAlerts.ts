@@ -10,6 +10,7 @@ import { internal } from './_generated/api';
 import type { Doc } from './_generated/dataModel';
 import { findUserRowByIdentity } from './safespark';
 import type { SafeSparkCtx } from './safespark';
+import { verifyMarketingToken } from './actors';
 
 /**
  * SafeSpark concern alerts — surfaces always-escalate intent-classifier
@@ -39,7 +40,6 @@ export const listForUser = query({
       | null;
     let userRow: Doc<'users'> | null = null;
     if (args.userToken) {
-      const { verifyMarketingToken } = await import('./actors');
       const verified = await verifyMarketingToken(args.userToken);
       if (verified) {
         userRow = (await ctx.db

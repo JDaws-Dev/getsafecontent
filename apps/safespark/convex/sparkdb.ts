@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { verifyMarketingToken } from './actors';
 
 // Caps. Kept generous enough for leaderboards / chatrooms but tight enough
 // that a runaway loop in a kid's project can't rack up cost.
@@ -165,7 +166,6 @@ export const dbWipe = mutation({
       if (session) callerOwnerKey = `kid:${session.kidProfileId}`;
     }
     if (!callerOwnerKey && args.userToken) {
-      const { verifyMarketingToken } = await import('./actors');
       const verified = await verifyMarketingToken(args.userToken);
       if (verified) {
         const userRow = await ctx.db
