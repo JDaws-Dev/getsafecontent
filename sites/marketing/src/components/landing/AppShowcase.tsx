@@ -259,7 +259,7 @@ const appSections = [
       "Works with your existing Apple Music subscription",
     ],
     href: "https://getsafetunes.com",
-    gradient: "from-indigo-500 to-purple-500",
+    gradient: "from-purple-600 to-pink-500",
     price: "$4.99",
     pricePeriod: "/month",
   },
@@ -293,7 +293,7 @@ const appSections = [
       "Works at the bookstore or library",
     ],
     href: "https://getsafereads.com",
-    gradient: "from-emerald-500 to-teal-500",
+    gradient: "from-amber-500 to-amber-700",
     price: "$4.99",
     pricePeriod: "/month",
   },
@@ -310,7 +310,7 @@ const appSections = [
       "Daily query limits per kid",
     ],
     href: "https://getsafestudy.com",
-    gradient: "from-cyan-500 to-blue-500",
+    gradient: "from-blue-500 to-cyan-500",
     price: "$4.99",
     pricePeriod: "/month",
   },
@@ -327,7 +327,7 @@ const appSections = [
       "Built for kids 9-15 who'll grow up with AI everywhere",
     ],
     href: "https://getsafespark.com",
-    gradient: "from-amber-500 to-orange-500",
+    gradient: "from-violet-600 to-fuchsia-500",
     price: "Coming soon",
     pricePeriod: "",
     isNew: true,
@@ -345,7 +345,7 @@ export default function AppShowcase() {
             <div className="flex-1 max-w-xl">
               {/* App badge */}
               <div className="inline-flex items-center gap-2 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
                   <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
                   </svg>
@@ -383,7 +383,7 @@ export default function AppShowcase() {
                   href={appSections[0].href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                  className="inline-flex items-center gap-2 font-semibold text-purple-600 hover:text-purple-700 transition-colors"
                 >
                   Learn more
                   <svg
@@ -502,7 +502,7 @@ export default function AppShowcase() {
             <div className="flex-1 max-w-xl">
               {/* App badge */}
               <div className="inline-flex items-center gap-2 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-700 rounded-2xl flex items-center justify-center shadow-lg">
                   <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                   </svg>
@@ -540,7 +540,7 @@ export default function AppShowcase() {
                   href={appSections[2].href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+                  className="inline-flex items-center gap-2 font-semibold text-amber-700 hover:text-amber-800 transition-colors"
                 >
                   Learn more
                   <svg

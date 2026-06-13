@@ -81,15 +81,21 @@ function LandingPageSimple() {
             </Link>
 
             <div className="flex items-center space-x-2 sm:space-x-4">
+              <a
+                href="https://getsafefamily.com"
+                className="hidden sm:inline-flex text-gray-500 hover:text-purple-600 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors"
+              >
+                Safe Family
+              </a>
               <Link to="/login" className="text-gray-700 hover:text-purple-700 font-medium text-xs sm:text-base whitespace-nowrap transition-colors">
                 Parent Login
               </Link>
               <Link
                 to="/kids"
-                className="hidden sm:inline-flex items-center gap-0.5 text-gray-500 hover:text-purple-600 font-medium text-xs whitespace-nowrap transition-colors"
+                className="hidden sm:inline-flex items-center gap-0.5 text-gray-500 hover:text-purple-600 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors"
                 title="Kid login"
               >
-                Kids &rarr;
+                Kid Login
               </Link>
               <Link
                 to="/signup"

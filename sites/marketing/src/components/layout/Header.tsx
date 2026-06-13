@@ -8,9 +8,9 @@ import { ThemeToggle } from "../ThemeToggle";
 const apps = [
   { name: "SafeTunes", href: "https://getsafetunes.com", icon: Music, color: "text-purple-600", isNew: false },
   { name: "SafeTube", href: "https://getsafetube.com", icon: PlaySquare, color: "text-red-500", isNew: false },
-  { name: "SafeReads", href: "https://getsafereads.com", icon: Book, color: "text-emerald-600", isNew: false },
-  { name: "SafeStudy", href: "https://getsafestudy.com", icon: Search, color: "text-cyan-600", isNew: false },
-  { name: "SafeSpark", href: "https://getsafespark.com", icon: Sparkles, color: "text-amber-600", isNew: true },
+  { name: "SafeReads", href: "https://getsafereads.com", icon: Book, color: "text-amber-600", isNew: false },
+  { name: "SafeStudy", href: "https://getsafestudy.com", icon: Search, color: "text-blue-600", isNew: false },
+  { name: "SafeSpark", href: "https://getsafespark.com", icon: Sparkles, color: "text-violet-600", isNew: true },
 ];
 
 export default function Header() {
