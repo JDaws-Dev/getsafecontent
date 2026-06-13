@@ -325,7 +325,7 @@ cd ~/safecontent/sites/marketing && vercel --prod
 
 ### Marketing Site (Vercel)
 - `STRIPE_SECRET_KEY` - Stripe API key
-- `STRIPE_WEBHOOK_SECRET` - `whsec_iEPhQgt9sFmVzNMgwEjZhw2yfmiIOA16`
+- `STRIPE_WEBHOOK_SECRET` - `whsec_<REDACTED — real value was committed here until 2026-06-12; roll it in the Stripe dashboard>`
 - `STRIPE_BUNDLE_PRICE_ID` - `price_1SxaerKgkIT46sg7NHNy0wk8`
 - `ADMIN_API_KEY` - Same as Convex ADMIN_KEY
 - `NEXT_PUBLIC_URL` - `https://getsafefamily.com`
