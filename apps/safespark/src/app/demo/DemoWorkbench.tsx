@@ -2781,7 +2781,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                   ref={previewIframeRef}
                   title="Project preview"
                   srcDoc={injectSparkDb(html, looksLikeConvexId(activeProjectId) ? activeProjectId : null)}
-                  sandbox="allow-scripts allow-same-origin allow-pointer-lock"
+                  sandbox="allow-scripts allow-pointer-lock"
                   allow="fullscreen"
                   className="h-full w-full rounded-xl bg-white"
                 />
@@ -2835,7 +2835,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
           <iframe
             title="Project preview (full screen)"
             srcDoc={injectSparkDb(html, looksLikeConvexId(activeProjectId) ? activeProjectId : null)}
-            sandbox="allow-scripts allow-same-origin allow-pointer-lock"
+            sandbox="allow-scripts allow-pointer-lock"
             allow="fullscreen"
             className="h-full w-full border-0"
           />

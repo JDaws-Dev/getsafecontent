@@ -11,17 +11,23 @@ export function injectSparkDb(html: string, projectId: string | null | undefined
   // in any environment that's actually talking to Convex) by swapping
   // `.convex.cloud` for `.convex.site`. This makes the inject work on
   // Vercel without depending on a second env var to be remembered.
-  const convexCloud = process.env.NEXT_PUBLIC_CONVEX_URL ?? '';
-  const convexSite =
-    process.env.NEXT_PUBLIC_CONVEX_SITE_URL ??
-    convexCloud.replace(/\.convex\.cloud(\/?)$/i, '.convex.site$1');
+  // trim(): the Vercel env var carried a trailing newline (added via a
+  // piped `vercel env add`), which defeated the $-anchored replace below —
+  // the injected script src became `…convex.cloud\n/sparkdb.js` (404) and
+  // spark.db was silently dead in every preview/share. Found 2026-06-12.
+  const convexCloud = (process.env.NEXT_PUBLIC_CONVEX_URL ?? '').trim();
+  const convexSite = (
+    process.env.NEXT_PUBLIC_CONVEX_SITE_URL?.trim() ||
+    convexCloud.replace(/\.convex\.cloud(\/?)$/i, '.convex.site$1')
+  );
   if (!convexSite) return html;
   const pidLiteral = projectId ? JSON.stringify(projectId) : 'null';
   // CSP injection — caps what the kid's iframe can talk to over the network.
-  // The iframe has `sandbox="allow-scripts allow-same-origin allow-pointer-lock"` so JS inside
-  // it can read the parent's localStorage (which holds Marketing JWT etc.)
-  // — without this CSP, a prompt-injected LLM emission could exfiltrate
-  // tokens to an attacker URL via fetch(). CSP `connect-src` blocks that.
+  // All render surfaces use sandbox WITHOUT allow-same-origin (opaque
+  // origin) as of 2026-06-12, so generated code can no longer read the
+  // parent's localStorage (Marketing JWT, kid session tokens). The CSP
+  // remains as the second layer: even an opaque iframe can fetch(), and
+  // `connect-src` keeps egress limited to the approved public APIs.
   // Added 2026-05-29 safety audit (D2). Allowlist matches the public APIs
   // the system prompt explicitly approves for live data in kid projects.
   const cspContent = [
@@ -114,9 +120,44 @@ export function injectSparkDb(html: string, projectId: string | null | undefined
   }
 </style>
 `;
+  // Opaque-origin storage shim. The sandbox (no allow-same-origin) makes
+  // window.localStorage/sessionStorage THROW on access — and the system
+  // prompt tells the model localStorage is fine for per-device prefs, so
+  // generated games use it. Shadow both with in-memory stores so those
+  // games run instead of crashing (this was already silently breaking
+  // localStorage games in the share viewer, which has always been opaque).
+  // Persistence across reloads is lost in the sandbox; spark.db is the
+  // blessed path for anything durable. Must run before the error bridge,
+  // the sparkdb shim, and all project code.
+  const storageShim = `
+<script>
+(function(){
+  function memStorage(){
+    var mem = Object.create(null);
+    return {
+      getItem: function(k){ k = String(k); return k in mem ? mem[k] : null; },
+      setItem: function(k, v){ mem[String(k)] = String(v); },
+      removeItem: function(k){ delete mem[String(k)]; },
+      clear: function(){ mem = Object.create(null); },
+      key: function(i){ var ks = Object.keys(mem); return i >= 0 && i < ks.length ? ks[i] : null; },
+      get length(){ return Object.keys(mem).length; }
+    };
+  }
+  function needsShim(name){
+    try { void window[name].length; return false; } catch (e) { return true; }
+  }
+  ['localStorage', 'sessionStorage'].forEach(function(name){
+    if (needsShim(name)) {
+      try { Object.defineProperty(window, name, { value: memStorage(), configurable: true }); } catch (e) {}
+    }
+  });
+})();
+</script>
+`;
   const inject = `
 <meta http-equiv="Content-Security-Policy" content="${cspContent}">
 ${mobileTouchCss}
+${storageShim}
 ${errorBridge}
 <script>window.__SPARK_PROJECT_ID__ = ${pidLiteral};</script>
 <script src="${convexSite}/sparkdb.js"></script>
