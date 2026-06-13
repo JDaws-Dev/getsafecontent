@@ -47,23 +47,23 @@ const principles = [
 
 export default function SafeSparkSpotlight() {
   return (
-    <section id="safespark" className="relative bg-gradient-to-br from-amber-50 via-white to-violet-50 py-20 sm:py-28 overflow-hidden">
+    <section id="safespark" className="relative bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 py-20 sm:py-28 overflow-hidden">
       {/* Decorative gradient blobs */}
-      <div aria-hidden className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-amber-200/40 blur-3xl" />
+      <div aria-hidden className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-violet-200/40 blur-3xl" />
       <div aria-hidden className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-violet-200/40 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16 mb-16">
           {/* Left — story */}
           <div className="flex-1 max-w-xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-800 mb-5">
+            <span className="inline-flex items-center gap-2 rounded-full bg-violet-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-violet-800 mb-5">
               <Sparkles className="h-3.5 w-3.5" />
               New · SafeSpark
             </span>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-navy mb-5 leading-tight">
               Your kids will grow up with AI everywhere.
-              <span className="block mt-2 bg-gradient-to-r from-amber-500 via-orange-500 to-violet-600 bg-clip-text text-transparent">
+              <span className="block mt-2 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-purple-600 bg-clip-text text-transparent">
                 Teach them how to use it well.
               </span>
             </h2>
@@ -107,7 +107,7 @@ export default function SafeSparkSpotlight() {
           <div className="flex-1 w-full max-w-xl">
             <div className="relative">
               {/* Background card */}
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-amber-200 to-violet-300 rotate-3" />
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-violet-200 to-fuchsia-300 rotate-3" />
               {/* Main image card */}
               <div className="relative rounded-3xl bg-white p-5 shadow-2xl">
                 <div className="flex items-center justify-between mb-3">
@@ -159,10 +159,10 @@ export default function SafeSparkSpotlight() {
             {principles.map((p, i) => (
               <div
                 key={p.title}
-                className="rounded-2xl bg-white/80 backdrop-blur-sm border border-amber-100 p-5 shadow-sm"
+                className="rounded-2xl bg-white/80 backdrop-blur-sm border border-violet-100 p-5 shadow-sm"
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-violet-500 flex items-center justify-center shadow-sm">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-sm">
                     <p.icon className="h-4 w-4 text-white" />
                   </div>
                   <span className="text-xs font-bold uppercase tracking-wider text-navy/40">

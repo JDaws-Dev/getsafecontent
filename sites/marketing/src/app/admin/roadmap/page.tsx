@@ -342,9 +342,9 @@ const APP_BADGE_CLASSES: Record<App, string> = {
   marketing: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300",
   safetunes: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
   safetube: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-  safereads: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
-  safestudy: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
-  safespark: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+  safereads: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+  safestudy: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+  safespark: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300",
 };
 
 function AppBadge({ app }: { app: App }) {

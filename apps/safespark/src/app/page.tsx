@@ -23,7 +23,9 @@ import {
   Palette,
   ShieldCheck,
   Share2,
+  Smartphone,
   Sparkles,
+  Target,
   TrendingUp,
   Users,
   Wand2,
@@ -77,10 +79,10 @@ const NAV_LINKS = [
 // see SafeSpark is part of the family lineup, not a standalone product.
 const SIBLING_APPS: Array<{ name: string; href: string; bg: string }> = [
   { name: 'SafeFamily', href: 'https://getsafefamily.com', bg: 'bg-rose-500' },
-  { name: 'SafeTube', href: 'https://getsafetube.com', bg: 'bg-orange-500' },
-  { name: 'SafeTunes', href: 'https://getsafetunes.com', bg: 'bg-indigo-500' },
-  { name: 'SafeReads', href: 'https://getsafereads.com', bg: 'bg-emerald-500' },
-  { name: 'SafeStudy', href: 'https://getsafestudy.com', bg: 'bg-cyan-500' },
+  { name: 'SafeTunes', href: 'https://getsafetunes.com', bg: 'bg-purple-600' },
+  { name: 'SafeTube', href: 'https://getsafetube.com', bg: 'bg-red-500' },
+  { name: 'SafeReads', href: 'https://getsafereads.com', bg: 'bg-amber-500' },
+  { name: 'SafeStudy', href: 'https://getsafestudy.com', bg: 'bg-blue-500' },
 ];
 
 const FAQS = [
@@ -293,14 +295,14 @@ export default function HomePage() {
       {/* TRUST STRIP — just below the hero */}
       <section className="px-4 sm:px-8 py-6 border-y border-violet-100 bg-white">
         <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-          {[
-            ['👨‍👩‍👧', 'Parent is the account holder'],
-            ['🛡️', 'No data sold, ever'],
-            ['🎯', 'Designed for ages 10–13'],
-            ['📱', 'Works on any device'],
-          ].map(([icon, label]) => (
+          {([
+            [Users, 'Parent is the account holder'],
+            [ShieldCheck, 'No data sold, ever'],
+            [Target, 'Designed for ages 10–13'],
+            [Smartphone, 'Works on any device'],
+          ] as Array<[LucideIcon, string]>).map(([Icon, label]) => (
             <div key={label} className="flex flex-col items-center gap-1">
-              <div className="text-2xl">{icon}</div>
+              <Icon className="h-7 w-7 text-violet-600" aria-hidden="true" />
               <p className="text-xs font-bold text-slate-700 leading-tight">{label}</p>
             </div>
           ))}

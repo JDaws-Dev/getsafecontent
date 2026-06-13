@@ -33,7 +33,7 @@ function TabletMockup({ children }: { children: React.ReactNode }) {
 // SafeTunes mockup content - Music player UI
 function SafeTunesMockupContent() {
   return (
-    <div className="h-full bg-gradient-to-b from-indigo-500 to-purple-600 p-4 flex flex-col">
+    <div className="h-full bg-gradient-to-b from-purple-600 to-pink-500 p-4 flex flex-col">
       {/* Header */}
       <div className="text-center text-white mb-4 pt-6">
         <p className="text-xs opacity-80">Now Playing</p>
@@ -151,18 +151,18 @@ function SafeTubeMockupContent() {
 // SafeReads mockup content - Book Analysis Safety Report
 function SafeReadsMockupContent() {
   return (
-    <div className="h-full bg-gradient-to-b from-emerald-50 to-teal-50 p-5 flex flex-col">
+    <div className="h-full bg-gradient-to-b from-amber-50 to-orange-50 p-5 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-amber-700 rounded-lg flex items-center justify-center">
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
             </svg>
           </div>
           <div>
             <span className="font-bold text-gray-900 text-sm">Book Analysis</span>
-            <span className="text-emerald-600 text-sm font-semibold ml-2">Safety Report</span>
+            <span className="text-amber-700 text-sm font-semibold ml-2">Safety Report</span>
           </div>
         </div>
       </div>
@@ -214,11 +214,11 @@ function SafeReadsMockupContent() {
         </div>
 
         {/* AI badge */}
-        <div className="mt-4 flex items-center justify-center gap-2 py-2 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-lg border border-teal-100">
-          <svg className="w-4 h-4 text-teal-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <div className="mt-4 flex items-center justify-center gap-2 py-2 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-100">
+          <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
           </svg>
-          <span className="text-xs font-medium text-teal-700">AI-powered analysis</span>
+          <span className="text-xs font-medium text-amber-700">AI-powered analysis</span>
         </div>
       </div>
     </div>

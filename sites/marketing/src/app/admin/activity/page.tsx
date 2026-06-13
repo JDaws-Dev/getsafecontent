@@ -15,9 +15,9 @@ interface ActivityData {
 }
 
 const appColors: Record<string, string> = {
-  safetunes: "bg-indigo-500",
+  safetunes: "bg-purple-500",
   safetube: "bg-red-500",
-  safereads: "bg-emerald-500",
+  safereads: "bg-amber-500",
 };
 
 const appLabels: Record<string, string> = {
