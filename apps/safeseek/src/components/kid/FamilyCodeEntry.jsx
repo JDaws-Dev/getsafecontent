@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { Search, Sparkles, Rocket, HelpCircle } from 'lucide-react';
+import SafeFamilySwitcher from '../SafeFamilySwitcher';
 
 const CODE_LENGTH = 6;
 
@@ -124,40 +125,9 @@ export default function FamilyCodeEntry({ codeInput, setCodeInput, error, codeSh
           </p>
         </div>
 
-        <OtherSafeFamilyApps current="safestudy" familyCode={codeInput} />
-      </div>
-    </div>
-  );
-}
-
-const OTHER_APPS = [
-  { id: 'safetunes', label: 'Music', emoji: '🎵', host: 'https://getsafetunes.com', url: '/play', accent: 'text-pink-500' },
-  { id: 'safetube', label: 'Video', emoji: '📺', host: 'https://getsafetube.com', url: '/play', accent: 'text-red-500' },
-  { id: 'safereads', label: 'Books', emoji: '📚', host: 'https://getsafereads.com', url: '/read', accent: 'text-orange-500' },
-  { id: 'safestudy', label: 'Search', emoji: '🔎', host: 'https://getsafestudy.com', url: '/play', accent: 'text-blue-500' },
-  { id: 'safespark', label: 'Build', emoji: '✨', host: 'https://getsafespark.com', url: '/make', accent: 'text-violet-500' },
-];
-
-function OtherSafeFamilyApps({ current, familyCode }) {
-  const others = OTHER_APPS.filter((a) => a.id !== current);
-  const fc = (familyCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-  const suffix = fc.length === 6 ? `?fc=${fc}` : '';
-  return (
-    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-      <p className="text-[11px] uppercase tracking-widest font-bold text-gray-400 dark:text-gray-500 mb-3 text-center">
-        Other Safe Family apps
-      </p>
-      <div className="grid grid-cols-4 gap-2">
-        {others.map((a) => (
-          <a
-            key={a.id}
-            href={`${a.host}${a.url}${suffix}`}
-            className="flex flex-col items-center gap-1 px-2 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-          >
-            <span className="text-2xl leading-none">{a.emoji}</span>
-            <span className={`text-[11px] font-bold ${a.accent}`}>{a.label}</span>
-          </a>
-        ))}
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <SafeFamilySwitcher current="safestudy" familyCode={codeInput} />
+        </div>
       </div>
     </div>
   );

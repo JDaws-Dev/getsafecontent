@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { BookOpen, ArrowRight, KeyRound } from "lucide-react";
+import { BookOpen, ArrowRight, Sparkles, Castle, Library, HelpCircle } from "lucide-react";
 
 interface FamilyCodeEntryProps {
   onSubmit: (code: string) => void;
@@ -89,20 +89,12 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
 
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4">
-      {/* Floating decorative emojis -- hidden on very small screens */}
-      <div className="pointer-events-none absolute inset-0 hidden overflow-hidden sm:block">
-        <span className="animate-float absolute left-[10%] top-[15%] text-3xl opacity-20" style={{ animationDelay: "0s" }}>
-          {"📖"}
-        </span>
-        <span className="animate-float absolute right-[12%] top-[20%] text-2xl opacity-20" style={{ animationDelay: "1s" }}>
-          {"🔑"}
-        </span>
-        <span className="animate-float absolute left-[20%] bottom-[25%] text-2xl opacity-20" style={{ animationDelay: "0.5s" }}>
-          {"🏰"}
-        </span>
-        <span className="animate-float absolute right-[18%] bottom-[30%] text-3xl opacity-20" style={{ animationDelay: "1.5s" }}>
-          {"📚"}
-        </span>
+      {/* Floating decorative icons -- hidden on very small screens */}
+      <div className="pointer-events-none absolute inset-0 hidden overflow-hidden text-purple-400 sm:block">
+        <BookOpen className="animate-float absolute left-[10%] top-[15%] h-8 w-8 opacity-20" style={{ animationDelay: "0s" }} />
+        <Sparkles className="animate-float absolute right-[12%] top-[20%] h-7 w-7 opacity-20" style={{ animationDelay: "1s" }} />
+        <Castle className="animate-float absolute left-[20%] bottom-[25%] h-7 w-7 opacity-20" style={{ animationDelay: "0.5s" }} />
+        <Library className="animate-float absolute right-[18%] bottom-[30%] h-8 w-8 opacity-20" style={{ animationDelay: "1.5s" }} />
       </div>
 
       {/* Logo / Header */}
@@ -110,10 +102,6 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
         <div className="relative">
           <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-400 via-purple-500 to-indigo-600 shadow-xl shadow-purple-200">
             <BookOpen className="h-12 w-12 text-white" />
-          </div>
-          {/* Key icon overlay */}
-          <div className="absolute -bottom-1 -right-1 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-orange-400 shadow-lg">
-            <KeyRound className="h-5 w-5 text-white" />
           </div>
         </div>
         <h1 className="mt-6 text-center font-serif text-3xl font-bold text-gray-900">
@@ -158,7 +146,6 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
       {/* Error Message */}
       {error && (
         <div className="mt-5 flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2.5">
-          <span className="text-lg">{"😕"}</span>
           <p className="text-sm font-medium text-red-600">
             {error}
           </p>
@@ -189,8 +176,8 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
 
       {/* Help text */}
       <div className="mt-8 rounded-2xl bg-white/60 px-6 py-4 text-center shadow-sm ring-1 ring-black/5 backdrop-blur-sm">
-        <p className="text-sm font-medium text-gray-500">
-          {"🤔"} Don&apos;t have a code?
+        <p className="flex items-center justify-center gap-1.5 text-sm font-medium text-gray-500">
+          <HelpCircle className="h-4 w-4" aria-hidden="true" /> Don&apos;t have a code?
         </p>
         <p className="mt-1 text-xs text-gray-400">
           Ask your parent for the family code from SafeReads settings.

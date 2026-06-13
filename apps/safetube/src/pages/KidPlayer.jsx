@@ -7,6 +7,7 @@ import { api } from '../../convex/_generated/api';
 import ProfileSelector from '../components/kid/ProfileSelector';
 import KidHome from '../components/kid/KidHome';
 import VideoPlayer from '../components/kid/VideoPlayer';
+import SafeFamilySwitcher from '../components/SafeFamilySwitcher';
 
 export default function KidPlayer() {
   const { familyCode: urlFamilyCode } = useParams();
@@ -189,7 +190,9 @@ export default function KidPlayer() {
           </p>
         </div>
 
-        <OtherSafeFamilyApps current="safetube" familyCode={codeInput} />
+        <div className="mt-8 pt-6 border-t border-gray-200 w-full max-w-xs">
+          <SafeFamilySwitcher current="safetube" familyCode={codeInput} />
+        </div>
       </div>
     );
   }
@@ -315,35 +318,3 @@ export default function KidPlayer() {
   );
 }
 
-const OTHER_APPS = [
-  { id: 'safetunes', label: 'Music', emoji: '🎵', host: 'https://getsafetunes.com', url: '/play', accent: 'text-pink-500' },
-  { id: 'safetube', label: 'Video', emoji: '📺', host: 'https://getsafetube.com', url: '/play', accent: 'text-red-500' },
-  { id: 'safereads', label: 'Books', emoji: '📚', host: 'https://getsafereads.com', url: '/read', accent: 'text-orange-500' },
-  { id: 'safestudy', label: 'Search', emoji: '🔎', host: 'https://getsafestudy.com', url: '/play', accent: 'text-blue-500' },
-  { id: 'safespark', label: 'Build', emoji: '✨', host: 'https://getsafespark.com', url: '/make', accent: 'text-violet-500' },
-];
-
-function OtherSafeFamilyApps({ current, familyCode }) {
-  const others = OTHER_APPS.filter((a) => a.id !== current);
-  const fc = (familyCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-  const suffix = fc.length === 6 ? `?fc=${fc}` : '';
-  return (
-    <div className="mt-8 pt-6 border-t border-gray-200 w-full max-w-xs">
-      <p className="text-[11px] uppercase tracking-widest font-bold text-gray-400 mb-3 text-center">
-        Other Safe Family apps
-      </p>
-      <div className="grid grid-cols-4 gap-2">
-        {others.map((a) => (
-          <a
-            key={a.id}
-            href={`${a.host}${a.url}${suffix}`}
-            className="flex flex-col items-center gap-1 px-2 py-2 rounded-xl hover:bg-gray-100 transition"
-          >
-            <span className="text-2xl leading-none">{a.emoji}</span>
-            <span className={`text-[11px] font-bold ${a.accent}`}>{a.label}</span>
-          </a>
-        ))}
-      </div>
-    </div>
-  );
-}
