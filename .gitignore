@@ -86,12 +86,14 @@ Thumbs.db
 .turbo/
 
 # Session screenshots / images dropped in repo root by QA + agent runs.
-# Root-level only — app public/ assets are unaffected.
+# Root-level only — app public/ assets are unaffected. Old ones live in
+# screenshots-archive/ (local only).
 /*.png
 /*.PNG
 /*.jpg
 /*.JPG
 /*.jpeg
+screenshots-archive/
 
 # Beads daemon log archives (rotated gzips; live db stays tracked via issues.jsonl)
 .beads/daemon-*.log.gz
