@@ -1048,10 +1048,11 @@ ${message}`;
               }
             }
             if (spriteJobs.length > 0) {
-              const results = await Promise.all(
-                spriteJobs.map((j) =>
-                  generateSpriteSafely(openai, j.prompt, convexToken, body.sessionToken ?? null),
-                ),
+              const results = await generateSpritesPooled(
+                openai,
+                spriteJobs.map((j) => j.prompt),
+                convexToken,
+                body.sessionToken ?? null,
               );
               for (let i = 0; i < spriteJobs.length; i++) {
                 const url = results[i];
@@ -1094,10 +1095,11 @@ ${message}`;
               }
             }
             if (spriteJobs.length > 0) {
-              const results = await Promise.all(
-                spriteJobs.map((j) =>
-                  generateSpriteSafely(openai, j.prompt, convexToken, body.sessionToken ?? null),
-                ),
+              const results = await generateSpritesPooled(
+                openai,
+                spriteJobs.map((j) => j.prompt),
+                convexToken,
+                body.sessionToken ?? null,
               );
               for (let i = 0; i < spriteJobs.length; i++) {
                 const url = results[i];
@@ -1127,10 +1129,11 @@ ${message}`;
               }
             }
             if (spriteJobs.length > 0) {
-              const results = await Promise.all(
-                spriteJobs.map((j) =>
-                  generateSpriteSafely(openai, j.prompt, convexToken, body.sessionToken ?? null),
-                ),
+              const results = await generateSpritesPooled(
+                openai,
+                spriteJobs.map((j) => j.prompt),
+                convexToken,
+                body.sessionToken ?? null,
               );
               for (let i = 0; i < spriteJobs.length; i++) {
                 const url = results[i];
@@ -1162,8 +1165,11 @@ ${message}`;
             const spriteRegex = /SAFESPARK_SPRITE:([^"'<>]+?)(?=["'<>])/g;
             const matches = Array.from(parsed.html.matchAll(spriteRegex)).slice(0, 12);
             if (matches.length > 0) {
-              const results = await Promise.all(
-                matches.map((m) => generateSpriteSafely(openai, m[1].trim(), convexToken, body.sessionToken ?? null)),
+              const results = await generateSpritesPooled(
+                openai,
+                matches.map((m) => m[1].trim()),
+                convexToken,
+                body.sessionToken ?? null,
               );
               for (let i = 0; i < matches.length; i++) {
                 const url = results[i];
@@ -1580,6 +1586,29 @@ async function uploadToConvexStorage(
     console.error('[safespark] convex storage upload failed:', err);
     return null;
   }
+}
+
+// Generate a batch of sprites at most 3 at a time. A cache-miss-heavy
+// deck could otherwise fire up to 12 concurrent gpt-image-1 calls in one
+// Promise.all (~$0.50 burst + rate-limit pressure). The common case is
+// mostly cache hits, so the pool adds little latency where it matters.
+async function generateSpritesPooled(
+  openai: OpenAI,
+  prompts: string[],
+  convexToken: string | null,
+  sessionToken: string | null,
+  limit = 3,
+): Promise<Array<string | null>> {
+  const results: Array<string | null> = new Array(prompts.length).fill(null);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, prompts.length) }, async () => {
+    while (next < prompts.length) {
+      const i = next++;
+      results[i] = await generateSpriteSafely(openai, prompts[i], convexToken, sessionToken);
+    }
+  });
+  await Promise.all(workers);
+  return results;
 }
 
 async function generateSpriteSafely(
