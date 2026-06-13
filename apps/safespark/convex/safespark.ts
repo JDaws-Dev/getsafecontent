@@ -3052,6 +3052,83 @@ async function requireParentOfKid(
   return { profile, parentUserId: parent._id };
 }
 
+// Parent-facing: move ONE project from one of their kids to another.
+// Re-stamps the project + its versions + its share rows with the
+// destination kid's synthetic clerkUserId (kid:<profileId>). Parent must
+// own BOTH the source and destination profiles. HTML, title, share
+// shortIds and all row IDs are preserved. (The CLI adminReassign* tools
+// move ALL of a kid's projects in bulk; this is the per-game version.)
+export const moveProjectToKid = mutation({
+  args: {
+    projectId: v.id('safesparkProjects'),
+    toKidProfileId: v.id('kidProfiles'),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    // Parent must own the destination kid.
+    const { parentUserId, profile: destProfile } = await requireParentOfKid(
+      ctx as never,
+      args.toKidProfileId,
+      args.userToken,
+    );
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error('Project not found.');
+
+    // Derive the source kid from the project owner and confirm the parent
+    // owns it too — a parent can only shuffle games among their own kids.
+    const owner = project.clerkUserId || '';
+    if (!owner.startsWith('kid:')) {
+      throw new Error("That project isn't owned by a kid profile.");
+    }
+    const srcProfileId = owner.slice(4) as Id<'kidProfiles'>;
+    if (srcProfileId === args.toKidProfileId) {
+      return { ok: true, moved: false, title: project.title };
+    }
+    const srcProfile = await ctx.db.get(srcProfileId);
+    if (!srcProfile || srcProfile.parentUserId !== parentUserId) {
+      throw new Error('You do not own the source kid profile.');
+    }
+
+    const newOwner = `kid:${args.toKidProfileId}`;
+    const now = Date.now();
+
+    await ctx.db.patch(project._id, {
+      clerkUserId: newOwner,
+      email: destProfile.displayName,
+      updatedAt: now,
+    });
+
+    // Versions are keyed by projectId — re-stamp owner on each.
+    const versions = await ctx.db
+      .query('safesparkVersions')
+      .withIndex('by_project_time', (q) => q.eq('projectId', project._id))
+      .collect();
+    for (const ver of versions) {
+      await ctx.db.patch(ver._id, { clerkUserId: newOwner });
+    }
+
+    // Share rows for this project keep their shortId (public URL unchanged).
+    const shares = await ctx.db
+      .query('safesparkShares')
+      .withIndex('by_project', (q) => q.eq('projectId', project._id))
+      .collect();
+    for (const sh of shares) {
+      if (sh.ownerClerkUserId === owner) {
+        await ctx.db.patch(sh._id, { ownerClerkUserId: newOwner });
+      }
+    }
+
+    return {
+      ok: true,
+      moved: true,
+      title: project.title,
+      versions: versions.length,
+      to: destProfile.displayName,
+    };
+  },
+});
+
 export const getKidSettings = query({
   args: { kidProfileId: v.id('kidProfiles'), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {

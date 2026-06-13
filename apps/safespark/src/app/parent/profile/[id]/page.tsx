@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { use, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
-import { ChevronLeft, Database } from 'lucide-react';
+import { ChevronLeft, Database, CornerUpRight } from 'lucide-react';
 import { api } from '../../../../../convex/_generated/api';
 import type { Id } from '../../../../../convex/_generated/dataModel';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
@@ -27,6 +27,14 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
     api.safespark.getProfileDetail,
     isSignedIn ? { profileId, userToken: marketing.token ?? undefined } : 'skip',
   );
+  // Other kids in the family — destinations for moving a game.
+  const family = useQuery(
+    api.safespark.listFamilyForParent,
+    isSignedIn ? { userToken: marketing.token ?? undefined } : 'skip',
+  );
+  const siblings = (family?.kids ?? [])
+    .filter((k) => k.id !== profileId)
+    .map((k) => ({ id: k.id, name: k.displayName }));
 
   if (!isLoaded) {
     return <main className="flex min-h-screen items-center justify-center text-slate-500">Loading…</main>;
@@ -137,7 +145,7 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {projects.map((p) => (
-                <ProjectCardWithWipe key={p.id} project={p} />
+                <ProjectCardWithWipe key={p.id} project={p} siblings={siblings} />
               ))}
             </div>
           )}
@@ -230,6 +238,7 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
 
 function ProjectCardWithWipe({
   project,
+  siblings,
 }: {
   project: {
     id: Id<'safesparkProjects'>;
@@ -239,14 +248,36 @@ function ProjectCardWithWipe({
     lastPrompt?: string;
     isCommunication?: boolean;
   };
+  siblings: { id: Id<'kidProfiles'>; name: string }[];
 }) {
   // Parent calls dbWipe through the Marketing JWT — dbWipe was made
   // auth-gated 2026-05-29 after the safety audit (previously public).
   // Without userToken the parent's wipe button would throw 401.
   const marketing = useMarketingAuth();
   const wipe = useMutation(api.sparkdb.dbWipe);
+  const moveProject = useMutation(api.safespark.moveProjectToKid);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [moving, setMoving] = useState<string | null>(null);
+  const [moved, setMoved] = useState(false);
+
+  const onMove = async (toKidProfileId: Id<'kidProfiles'>, name: string) => {
+    if (!confirm(`Move "${project.title}" to ${name}? It keeps all its history and share link.`)) return;
+    setMoving(name);
+    try {
+      await moveProject({
+        projectId: project.id,
+        toKidProfileId,
+        userToken: marketing.token ?? undefined,
+      });
+      setMoved(true);
+      setResult(`Moved to ${name}.`);
+    } catch (err) {
+      setResult(err instanceof Error ? err.message : 'Move failed.');
+    } finally {
+      setMoving(null);
+    }
+  };
   const onWipe = async () => {
     if (!confirm(`Wipe shared data for "${project.title}"? Any leaderboard / message wall / shared state will be cleared.`)) {
       return;
@@ -294,16 +325,32 @@ function ProjectCardWithWipe({
           {formatDate(project.updatedAt)}
         </p>
         <ProjectDataInspector projectId={project.id} />
-        <button
-          type="button"
-          onClick={onWipe}
-          disabled={busy}
-          className="mt-2 inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
-          title="Wipe leaderboard / shared data for this project"
-        >
-          <Database className="h-3 w-3" />
-          {busy ? 'Wiping…' : 'Wipe shared data'}
-        </button>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={onWipe}
+            disabled={busy}
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+            title="Wipe leaderboard / shared data for this project"
+          >
+            <Database className="h-3 w-3" />
+            {busy ? 'Wiping…' : 'Wipe shared data'}
+          </button>
+          {!moved &&
+            siblings.map((sib) => (
+              <button
+                key={sib.id}
+                type="button"
+                onClick={() => onMove(sib.id, sib.name)}
+                disabled={moving !== null}
+                className="inline-flex items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-700 hover:bg-violet-100 disabled:opacity-50"
+                title={`Move this game to ${sib.name}'s profile`}
+              >
+                <CornerUpRight className="h-3 w-3" />
+                {moving === sib.name ? 'Moving…' : `Move to ${sib.name}`}
+              </button>
+            ))}
+        </div>
         {result && <p className="mt-1 text-[10px] font-bold text-emerald-700">{result}</p>}
       </div>
     </article>
