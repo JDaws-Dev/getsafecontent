@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from 'convex/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
+import SafeFamilySwitcher from '../SafeFamilySwitcher';
 import { formatDuration, getChannelVideos, searchVideos, searchChannels, formatSubscribers } from '../../config/youtube';
 import { validateSearchQuery, filterVideoResults, filterChannelResults } from '../../utils/contentFilter';
 
@@ -46,6 +47,8 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
   const [hasMoreVideos, setHasMoreVideos] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [appsOpen, setAppsOpen] = useState(false);
+  const { familyCode } = useParams();
   const [showAddToPlaylistModal, setShowAddToPlaylistModal] = useState(null); // Video to add to playlist (for channel detail view)
   const profileMenuRef = useRef(null);
 
@@ -651,6 +654,15 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
         {/* Bottom Actions */}
         <div className="px-3 py-4 border-t border-gray-100 space-y-1">
           <button
+            onClick={() => setAppsOpen(true)}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-100 transition"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+            </svg>
+            <span>Other apps</span>
+          </button>
+          <button
             onClick={onSwitchProfile}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-100 transition"
           >
@@ -710,6 +722,18 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
             {/* Dropdown Menu */}
             {showProfileMenu && (
               <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-1 min-w-[180px] z-50">
+                <button
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    setAppsOpen(true);
+                  }}
+                  className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition"
+                >
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                  </svg>
+                  Other apps
+                </button>
                 <button
                   onClick={() => {
                     setShowProfileMenu(false);
@@ -860,6 +884,34 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
           ))}
         </div>
       </nav>
+
+      {/* Other Safe Family apps — modal sheet */}
+      {appsOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+          onClick={() => setAppsOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setAppsOpen(false)}
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <p className="mb-1 text-center text-lg font-bold text-gray-900">Jump to another app</p>
+            <p className="mb-5 text-center text-sm text-gray-500">
+              Same family code — no need to type it again.
+            </p>
+            <SafeFamilySwitcher current="safetube" familyCode={familyCode} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

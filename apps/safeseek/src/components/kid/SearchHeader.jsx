@@ -1,5 +1,5 @@
 import {
-  Search, Clock, Shield, Sun, Moon, Users, ArrowLeft, AlertCircle
+  Search, Clock, Shield, Sun, Moon, Users, ArrowLeft, AlertCircle, LayoutGrid
 } from 'lucide-react';
 import { getColorClass, getAvatarIcon } from './utils';
 
@@ -15,6 +15,7 @@ export default function SearchHeader({
   searchInputRef,
   onBack,
   onSwitchProfile,
+  onOpenApps,
   onToggleDarkMode,
   onToggleRequestsInbox,
 }) {
@@ -67,6 +68,17 @@ export default function SearchHeader({
               <Users className="w-3.5 h-3.5" />
             </button>
           </div>
+          {onOpenApps && (
+            <button
+              onClick={onOpenApps}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+              aria-label="Other Safe Family apps"
+              title="Other Safe Family apps"
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span className="hidden sm:inline">Apps</span>
+            </button>
+          )}
           <button
             onClick={onToggleDarkMode}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"

@@ -9,6 +9,7 @@ import FamilyCodeEntry from '../components/kid/FamilyCodeEntry';
 import ProfileSelection from '../components/kid/ProfileSelection';
 import TimeLimitModal from '../components/kid/TimeLimitModal';
 import SearchHeader from '../components/kid/SearchHeader';
+import SafeFamilySwitcher from '../components/SafeFamilySwitcher';
 import SearchBar from '../components/kid/SearchBar';
 import RequestsInbox from '../components/kid/RequestsInbox';
 // SearchHistoryPanel: removed from kid UI Apr 2026 (reinforced loop behavior).
@@ -41,6 +42,7 @@ export default function KidSearch() {
   const [familyCode, setFamilyCode] = useState(urlFamilyCode || '');
   const [codeInput, setCodeInput] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [appsOpen, setAppsOpen] = useState(false);
   const [pinProfile, setPinProfile] = useState(null);
   const [pinInput, setPinInput] = useState(['', '', '', '']);
   const [pinError, setPinError] = useState('');
@@ -797,6 +799,7 @@ export default function KidSearch() {
           }, 50);
         }}
         onSwitchProfile={() => setSelectedProfile(null)}
+        onOpenApps={() => setAppsOpen(true)}
         onToggleDarkMode={toggleDarkMode}
         onToggleRequestsInbox={() => setShowRequestsInbox(!showRequestsInbox)}
       />
@@ -948,6 +951,34 @@ export default function KidSearch() {
           />
         )}
       </div>
+
+      {/* Other Safe Family apps — modal sheet */}
+      {appsOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+          onClick={() => setAppsOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-3xl bg-white dark:bg-gray-900 p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setAppsOpen(false)}
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 transition"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <p className="mb-1 text-center text-lg font-bold text-gray-900 dark:text-white">Jump to another app</p>
+            <p className="mb-5 text-center text-sm text-gray-500 dark:text-gray-400">
+              Same family code — no need to type it again.
+            </p>
+            <SafeFamilySwitcher current="safestudy" familyCode={familyCode} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

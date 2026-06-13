@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
+import SafeFamilySwitcher from '../SafeFamilySwitcher';
 import musicKitService from '../../config/musickit';
 import {
   MiniPlayer,
@@ -61,7 +62,19 @@ function ChildDashboard({ onLogout }) {
   const navigate = useNavigate();
   const [kidProfile, setKidProfile] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
+  const [appsOpen, setAppsOpen] = useState(false);
+  const familyCode = typeof window !== 'undefined' ? (localStorage.getItem('safetunes_family_code') || '') : '';
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [showKidWelcome, setShowKidWelcome] = useState(false);
+
+  const dismissKidWelcome = () => {
+    setShowKidWelcome(false);
+    try {
+      if (kidProfile?._id) {
+        localStorage.setItem(`safetunes_kid_welcomed_${kidProfile._id}`, '1');
+      }
+    } catch { /* ignore */ }
+  };
 
   // Register for push notifications (mobile app)
   useExpoPushToken({ kidProfileId: kidProfile?._id });
@@ -217,6 +230,15 @@ function ChildDashboard({ onLogout }) {
     }
 
     setKidProfile(profile);
+
+    // First-visit welcome: show once per kid profile so new kids aren't
+    // dropped into an empty library without context.
+    try {
+      const welcomeKey = `safetunes_kid_welcomed_${profile._id}`;
+      if (!localStorage.getItem(welcomeKey)) {
+        setShowKidWelcome(true);
+      }
+    } catch { /* ignore */ }
   }, [navigate]);
 
 
@@ -2135,6 +2157,50 @@ function ChildDashboard({ onLogout }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 pb-16 md:pb-32">
+      {/* First-visit welcome modal — sets expectations so kids aren't
+          dropped into an empty library without context */}
+      {showKidWelcome && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="kid-welcome-title"
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
+            <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${getColorClass(kidProfile?.color || 'purple')} text-white shadow-md`}>
+              {getAvatarIcon(kidProfile?.avatar || 'music-note')}
+            </div>
+            <h2 id="kid-welcome-title" className="text-center text-xl font-bold text-gray-900">
+              Welcome, {kidProfile?.name || 'friend'}! 🎵
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600 leading-relaxed">
+              Here&rsquo;s how SafeTunes works:
+            </p>
+            <ul className="mt-4 space-y-3 text-sm text-gray-700">
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-purple-700">1</span>
+                <span><strong>Search for songs</strong> you want to hear.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-purple-700">2</span>
+                <span>Tap <strong>Request</strong> — your parent will review it.</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-purple-700">3</span>
+                <span>Approved songs show up in your library to play anytime.</span>
+              </li>
+            </ul>
+            <button
+              type="button"
+              onClick={dismissKidWelcome}
+              className="mt-6 w-full rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 py-3 font-bold text-white shadow-md transition-transform active:scale-[0.98] hover:from-purple-600 hover:to-pink-600"
+            >
+              Let&rsquo;s go! 🚀
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-white shadow-lg sticky top-0 z-40 border-b-2 border-purple-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -2439,16 +2505,44 @@ function ChildDashboard({ onLogout }) {
                     const alreadyRequested = isAlbum ? isAlbumRequested(item.id) : isSongRequested(item.id);
                     const justRequested = requestSuccess === String(item.id);
 
+                    // On web, show real Apple Music artwork so a kid searching
+                    // "Frozen" gets visual confirmation. In the iOS/TWA wrappers
+                    // we keep the gradient icon (App Store compliance around
+                    // un-approved content previews).
+                    const isNativeApp =
+                      typeof window !== 'undefined' &&
+                      (window.isInSafeTunesApp ||
+                        window.isSafeTunesApp ||
+                        /SafeTunesApp/.test(navigator.userAgent));
+                    const artworkTemplate = item.attributes?.artwork?.url;
+                    const artworkSrc = artworkTemplate
+                      ? artworkTemplate.replace('{w}', '120').replace('{h}', '120')
+                      : null;
+                    const showArtwork = !isNativeApp && !!artworkSrc;
+
                     return (
                       <div key={item.id} className="border-b border-gray-100 last:border-b-0">
                         {/* Main Item Row */}
                         <div className="flex items-center gap-3 p-4 hover:bg-gray-50 transition">
-                          {/* Icon */}
-                          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-                            </svg>
-                          </div>
+                          {/* Artwork (web) or gradient icon (native) */}
+                          {showArtwork ? (
+                            <img
+                              src={artworkSrc}
+                              alt=""
+                              loading="lazy"
+                              referrerPolicy="no-referrer"
+                              className="w-12 h-12 rounded-lg object-cover flex-shrink-0 bg-gradient-to-br from-purple-500 to-pink-500"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+                              </svg>
+                            </div>
+                          )}
 
                           {/* Info */}
                           <div className="flex-1 min-w-0">
@@ -4564,6 +4658,17 @@ function ChildDashboard({ onLogout }) {
                 </div>
               </div>
 
+              {/* Other Safe Family apps */}
+              <button
+                onClick={() => setAppsOpen(true)}
+                className="w-full mb-3 py-4 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                </svg>
+                <span>Other Safe Family apps</span>
+              </button>
+
               {/* Logout Button */}
               <button
                 onClick={handleLogout}
@@ -5044,6 +5149,34 @@ function ChildDashboard({ onLogout }) {
               animation: slide-up 0.3s ease-out;
             }
           `}</style>
+        </div>
+      )}
+
+      {/* Other Safe Family apps — modal sheet */}
+      {appsOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+          onClick={() => setAppsOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setAppsOpen(false)}
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <p className="mb-1 text-center text-lg font-bold text-gray-900">Jump to another app</p>
+            <p className="mb-5 text-center text-sm text-gray-500">
+              Same family code — no need to type it again.
+            </p>
+            <SafeFamilySwitcher current="safetunes" familyCode={familyCode} />
+          </div>
         </div>
       )}
     </div>
