@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Library, BookMarked, LogOut, Users, BookOpen } from "lucide-react";
+import { Home, Library, BookMarked, LogOut, Users, BookOpen, LayoutGrid, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import SafeFamilySwitcher from "@/components/SafeFamilySwitcher";
 
 const COLOR_GRADIENTS: Record<string, { bg: string; text: string; dot: string; gradient: string; border: string }> = {
   red: { bg: "bg-red-50", text: "text-red-600", dot: "from-red-500 to-rose-500", gradient: "from-red-500 to-rose-500", border: "border-red-500" },
@@ -26,12 +27,15 @@ export function KidNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [kidProfile, setKidProfile] = useState<KidProfile | null>(null);
+  const [familyCode, setFamilyCode] = useState("");
+  const [appsOpen, setAppsOpen] = useState(false);
 
   useEffect(() => {
     const data = localStorage.getItem("safereads_kid_profile");
     if (data) {
       try { setKidProfile(JSON.parse(data)); } catch { /* ignore */ }
     }
+    setFamilyCode(localStorage.getItem("safereads_family_code") || "");
   }, []);
 
   const handleLogout = () => {
@@ -92,6 +96,15 @@ export function KidNav() {
               </Link>
             );
           })}
+
+          {/* Other Safe Family apps */}
+          <button
+            onClick={() => setAppsOpen(true)}
+            className="kid-touch flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 text-gray-400 transition-all duration-200 hover:text-gray-600 active:scale-95 sm:px-5"
+          >
+            <LayoutGrid className="h-[22px] w-[22px]" strokeWidth={1.8} />
+            <span className="mt-0.5 text-[10px] font-bold">Apps</span>
+          </button>
 
           {/* Switch Profile button */}
           <button
@@ -158,6 +171,13 @@ export function KidNav() {
         {/* Bottom actions */}
         <div className="mt-auto border-t border-gray-100 px-3 py-4">
           <button
+            onClick={() => setAppsOpen(true)}
+            className="flex w-full items-center gap-3 rounded-xl border-l-[3px] border-transparent px-3 py-2.5 text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-gray-700"
+          >
+            <LayoutGrid className="h-5 w-5 shrink-0" strokeWidth={1.8} />
+            <span className="text-sm font-medium">Other apps</span>
+          </button>
+          <button
             onClick={handleSwitchProfile}
             className="flex w-full items-center gap-3 rounded-xl border-l-[3px] border-transparent px-3 py-2.5 text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-gray-700"
           >
@@ -173,6 +193,32 @@ export function KidNav() {
           </button>
         </div>
       </nav>
+
+      {/* Other Safe Family apps — modal sheet */}
+      {appsOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+          onClick={() => setAppsOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setAppsOpen(false)}
+              aria-label="Close"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <p className="mb-1 text-center text-lg font-bold text-gray-900">Jump to another app</p>
+            <p className="mb-5 text-center text-sm text-gray-500">
+              Same family code — no need to type it again.
+            </p>
+            <SafeFamilySwitcher current="safereads" familyCode={familyCode} />
+          </div>
+        </div>
+      )}
     </>
   );
 }
