@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import {
   Copy,
@@ -44,17 +44,28 @@ export default function ParentDashboard() {
     : 'skip';
   const me = useQuery(api.users.getCurrent, meArgs);
 
-  // NO auto-upsert useEffect here. The earlier version (commit 3f30fa63)
-  // called upsertFromClerk when me === null, but `displayName` was in the
-  // deps array and gets recomputed every render (Clerk's useUser returns
-  // new object refs on re-render, marketing context updates, etc.), so
-  // the mutation fired → re-render → fired again → infinite loop. Caught
-  // 2026-05-28 when Jeremiah reported /parent flickering and "going
-  // crazy." Every user who reaches this page has already been provisioned
-  // (3 Clerk originals, 23 backfilled lifetimes, and any new signup via
-  // /provisionUser), so the auto-upsert was dead code anyway. If a user
-  // ever does need creation, that should happen in the signin/provisioning
-  // flow, not as a side effect of viewing the dashboard.
+  // Auto-adopt the unified family code from the login JWT on first load.
+  // This self-heals ANY parent (incl. ones never provisioned into SafeSpark,
+  // e.g. families who joined via another Safe Family app): it upserts their
+  // parent row + family to the authoritative code carried on the token, so
+  // there's never a "create a family code" / migration step and the code
+  // always matches their other apps.
+  //
+  // LOOP-SAFE (the 3f30fa63 incident — an auto-upsert useEffect with the
+  // churning `displayName` object in its deps fired → re-render → fired,
+  // flickering /parent). Here the only dep is the stable token *string* and
+  // we fire once via a ref; the mutation is idempotent. Do NOT add object
+  // deps (marketing.user, displayName) to this effect.
+  const syncParent = useMutation(api.families.syncParentFromToken);
+  const syncedTokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    const token = marketing.token;
+    if (!token || syncedTokenRef.current === token) return;
+    syncedTokenRef.current = token;
+    syncParent({ userToken: token }).catch(() => {
+      syncedTokenRef.current = null; // allow retry on transient failure
+    });
+  }, [marketing.token, syncParent]);
 
   const family = useQuery(
     api.safespark.listFamilyForParent,

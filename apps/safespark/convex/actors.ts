@@ -16,7 +16,7 @@ type Ctx = QueryCtx | MutationCtx;
  */
 export async function verifyMarketingToken(
   token: string,
-): Promise<{ userId: string; email: string } | null> {
+): Promise<{ userId: string; email: string; familyCode?: string } | null> {
   const secret = process.env.MARKETING_JWT_SECRET;
   if (!secret) return null;
   try {
@@ -29,7 +29,17 @@ export async function verifyMarketingToken(
     const userId = typeof payload.sub === 'string' ? payload.sub : null;
     const email = typeof payload.email === 'string' ? payload.email : null;
     if (!userId || !email) return null;
-    return { userId, email: email.toLowerCase() };
+    // Unified family code carried on the login JWT — the authoritative,
+    // same-across-every-app code. Apps must ADOPT this, never mint their own.
+    const familyCode =
+      typeof payload.familyCode === 'string'
+        ? payload.familyCode.toUpperCase().replace(/[^A-Z0-9]/g, '')
+        : undefined;
+    return {
+      userId,
+      email: email.toLowerCase(),
+      familyCode: familyCode && familyCode.length === 6 ? familyCode : undefined,
+    };
   } catch {
     return null;
   }
