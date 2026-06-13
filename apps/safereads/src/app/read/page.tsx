@@ -6,7 +6,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { FamilyCodeEntry } from "@/components/kid/FamilyCodeEntry";
 import { ProfileSelector } from "@/components/kid/ProfileSelector";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Hourglass, Library } from "lucide-react";
 import SafeFamilySwitcher from "@/components/SafeFamilySwitcher";
 
 /**
@@ -108,7 +108,7 @@ export default function PlayPage() {
   if (step === "loading") {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-400 to-purple-600 shadow-lg">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-700 shadow-lg">
           <BookOpen className="h-8 w-8 animate-pulse text-white" />
         </div>
       </div>
@@ -119,18 +119,18 @@ export default function PlayPage() {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-50">
-          <span className="text-4xl">{"\u23F3"}</span>
+          <Hourglass className="h-9 w-9 text-amber-600" aria-hidden="true" />
         </div>
         <p className="mt-5 text-xl font-bold text-gray-800">
           Subscription Inactive
         </p>
         <p className="mt-2 max-w-xs text-sm text-gray-500">
           Ask your parent to renew the subscription at{" "}
-          <span className="font-medium text-purple-600">getsafefamily.com</span>
+          <span className="font-medium text-amber-700">getsafefamily.com</span>
         </p>
         <button
           onClick={handleBack}
-          className="kid-touch mt-6 rounded-full bg-white px-6 py-3 text-sm font-bold text-purple-600 shadow-md transition-all hover:shadow-lg active:scale-95"
+          className="kid-touch mt-6 rounded-full bg-white px-6 py-3 text-sm font-bold text-amber-700 shadow-md transition-all hover:shadow-lg active:scale-95"
         >
           Try a different code
         </button>
@@ -157,7 +157,7 @@ export default function PlayPage() {
   if (familyData === undefined) {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-400 to-purple-600 shadow-lg">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-700 shadow-lg">
           <BookOpen className="h-8 w-8 animate-pulse text-white" />
         </div>
         <p className="mt-4 text-sm font-medium text-gray-400">Loading your family...</p>
@@ -181,8 +181,8 @@ export default function PlayPage() {
   // Family code valid but no kids (issue #8: add parent link)
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 text-center">
-      <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-purple-50">
-        <span className="text-4xl">{"\uD83D\uDCDA"}</span>
+      <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-amber-50">
+        <Library className="h-9 w-9 text-amber-600" aria-hidden="true" />
       </div>
       <p className="mt-5 text-xl font-bold text-gray-800">
         No reader profiles yet
@@ -192,13 +192,13 @@ export default function PlayPage() {
       </p>
       <p className="mt-3 text-xs text-gray-400">
         Parents:{" "}
-        <a href="/dashboard" className="font-medium text-purple-600 underline">
+        <a href="/dashboard" className="font-medium text-amber-700 underline">
           tap here to add profiles
         </a>
       </p>
       <button
         onClick={handleBack}
-        className="kid-touch mt-6 rounded-full bg-white px-6 py-3 text-sm font-bold text-purple-600 shadow-md transition-all hover:shadow-lg active:scale-95"
+        className="kid-touch mt-6 rounded-full bg-white px-6 py-3 text-sm font-bold text-amber-700 shadow-md transition-all hover:shadow-lg active:scale-95"
       >
         Try a different code
       </button>

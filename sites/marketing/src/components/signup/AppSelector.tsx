@@ -33,10 +33,10 @@ const apps = [
     name: "SafeTunes",
     tagline: "Music with Apple Music",
     icon: Music,
-    gradient: "from-indigo-500 to-purple-500",
-    bgLight: "bg-indigo-50",
-    borderSelected: "border-indigo-500",
-    checkBg: "bg-indigo-500",
+    gradient: "from-purple-600 to-pink-500",
+    bgLight: "bg-purple-50",
+    borderSelected: "border-purple-500",
+    checkBg: "bg-purple-500",
   },
   {
     id: "safetube" as AppId,
@@ -53,10 +53,10 @@ const apps = [
     name: "SafeReads",
     tagline: "Book analysis",
     icon: BookOpen,
-    gradient: "from-emerald-500 to-teal-500",
-    bgLight: "bg-emerald-50",
-    borderSelected: "border-emerald-500",
-    checkBg: "bg-emerald-500",
+    gradient: "from-amber-500 to-amber-700",
+    bgLight: "bg-amber-50",
+    borderSelected: "border-amber-500",
+    checkBg: "bg-amber-500",
   },
   {
     id: "safestudy" as AppId,
@@ -241,7 +241,7 @@ export default function AppSelector({
 
       {/* Pricing display */}
       <div className="bg-gray-50 rounded-xl p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-navy/60">
               {selectedApps.size === 1

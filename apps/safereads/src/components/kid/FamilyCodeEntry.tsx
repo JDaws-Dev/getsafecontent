@@ -90,7 +90,7 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4">
       {/* Floating decorative icons -- hidden on very small screens */}
-      <div className="pointer-events-none absolute inset-0 hidden overflow-hidden text-purple-400 sm:block">
+      <div className="pointer-events-none absolute inset-0 hidden overflow-hidden text-amber-500 sm:block">
         <BookOpen className="animate-float absolute left-[10%] top-[15%] h-8 w-8 opacity-20" style={{ animationDelay: "0s" }} />
         <Sparkles className="animate-float absolute right-[12%] top-[20%] h-7 w-7 opacity-20" style={{ animationDelay: "1s" }} />
         <Castle className="animate-float absolute left-[20%] bottom-[25%] h-7 w-7 opacity-20" style={{ animationDelay: "0.5s" }} />
@@ -100,14 +100,14 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
       {/* Logo / Header */}
       <div className="relative mb-8 flex flex-col items-center">
         <div className="relative">
-          <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-400 via-purple-500 to-indigo-600 shadow-xl shadow-purple-200">
+          <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 shadow-xl shadow-amber-200">
             <BookOpen className="h-12 w-12 text-white" />
           </div>
         </div>
         <h1 className="mt-6 text-center font-serif text-3xl font-bold text-gray-900">
           SafeReads
         </h1>
-        <p className="mt-3 text-center text-lg font-medium text-purple-600">
+        <p className="mt-3 text-center text-lg font-medium text-amber-700">
           Enter your family&apos;s secret code!
         </p>
         <p className="mt-1 text-center text-sm text-gray-400">
@@ -134,8 +134,8 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
               error
                 ? "border-red-300 text-red-600 focus:border-red-400 focus:ring-red-100"
                 : digit
-                  ? "border-purple-400 text-purple-700 shadow-purple-100 focus:border-purple-500 focus:ring-purple-100"
-                  : "border-gray-200 text-gray-900 focus:border-purple-400 focus:ring-purple-100"
+                  ? "border-amber-400 text-amber-800 shadow-amber-100 focus:border-amber-500 focus:ring-amber-100"
+                  : "border-gray-200 text-gray-900 focus:border-amber-400 focus:ring-amber-100"
             }`}
             disabled={isLoading}
             aria-label={`Code digit ${index + 1}`}
@@ -159,7 +159,7 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
           if (code.length === 6) onSubmit(code);
         }}
         disabled={digits.join("").length < 6 || isLoading}
-        className="kid-touch mt-8 flex items-center gap-2.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-10 py-4 text-lg font-bold text-white shadow-lg shadow-purple-200 transition-all duration-200 hover:from-violet-600 hover:to-purple-700 hover:shadow-xl hover:shadow-purple-300 active:scale-95 disabled:opacity-40 disabled:shadow-none disabled:hover:from-violet-500"
+        className="kid-touch mt-8 flex items-center gap-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-700 px-10 py-4 text-lg font-bold text-white shadow-lg shadow-amber-200 transition-all duration-200 hover:from-amber-600 hover:to-amber-800 hover:shadow-xl hover:shadow-amber-300 active:scale-95 disabled:opacity-40 disabled:shadow-none disabled:hover:from-amber-500"
       >
         {isLoading ? (
           <>
@@ -188,7 +188,7 @@ export function FamilyCodeEntry({ onSubmit, error, isLoading }: FamilyCodeEntryP
       <div className="mt-6 text-center">
         <p className="text-xs text-gray-400">
           Are you a parent?{" "}
-          <a href="/" className="font-medium text-purple-500 transition-colors hover:text-purple-600">
+          <a href="/" className="font-medium text-amber-600 transition-colors hover:text-amber-700">
             Log in here &rarr;
           </a>
         </p>

@@ -130,11 +130,11 @@ function SuccessContent() {
   const selectedApps = sessionData?.apps || ["safetunes", "safetube", "safereads", "safestudy"];
 
   const APP_ICONS = {
-    safetunes: { icon: Music, gradient: "from-indigo-500 to-purple-600", name: "SafeTunes" },
+    safetunes: { icon: Music, gradient: "from-purple-600 to-pink-500", name: "SafeTunes" },
     safetube: { icon: Play, gradient: "from-red-500 to-orange-500", name: "SafeTube" },
-    safereads: { icon: BookOpen, gradient: "from-emerald-500 to-teal-500", name: "SafeReads" },
+    safereads: { icon: BookOpen, gradient: "from-amber-500 to-amber-700", name: "SafeReads" },
     safestudy: { icon: Search, gradient: "from-blue-500 to-cyan-500", name: "SafeStudy" },
-    safespark: { icon: Sparkles, gradient: "from-amber-500 to-orange-500", name: "SafeSpark" },
+    safespark: { icon: Sparkles, gradient: "from-violet-600 to-fuchsia-500", name: "SafeSpark" },
   };
 
   return (

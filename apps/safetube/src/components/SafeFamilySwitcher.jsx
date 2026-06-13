@@ -25,7 +25,8 @@
 // packages/ui/ and re-run scripts/sync-safe-family-switcher.mjs.
 // ─────────────────────────────────────────────────────────────────────────
 
-// Canonical app catalog. Gradients mirror the marketing hub's AppCards.
+// Canonical app catalog. Colors are the locked brand palette — keep in
+// sync with packages/ui/brand-tokens.js and the hub's AppCards.tsx.
 const APPS = [
   {
     id: 'safetunes',
@@ -33,8 +34,8 @@ const APPS = [
     tagline: 'Music',
     host: 'https://getsafetunes.com',
     path: '/play',
-    from: '#6366f1', // indigo-500
-    to: '#a855f7', // purple-500
+    from: '#9333ea', // purple
+    to: '#ec4899', // pink
     glyph: 'music',
   },
   {
@@ -43,8 +44,8 @@ const APPS = [
     tagline: 'Video',
     host: 'https://getsafetube.com',
     path: '/play',
-    from: '#ef4444', // red-500
-    to: '#f97316', // orange-500
+    from: '#ef4444', // red
+    to: '#f97316', // orange
     glyph: 'play',
   },
   {
@@ -53,8 +54,8 @@ const APPS = [
     tagline: 'Books',
     host: 'https://getsafereads.com',
     path: '/read',
-    from: '#10b981', // emerald-500
-    to: '#14b8a6', // teal-500
+    from: '#f59e0b', // amber
+    to: '#b45309', // sepia
     glyph: 'book',
   },
   {
@@ -63,8 +64,8 @@ const APPS = [
     tagline: 'Search',
     host: 'https://getsafestudy.com',
     path: '/play',
-    from: '#3b82f6', // blue-500
-    to: '#06b6d4', // cyan-500
+    from: '#3b82f6', // blue
+    to: '#06b6d4', // cyan
     glyph: 'search',
   },
   {
@@ -73,8 +74,8 @@ const APPS = [
     tagline: 'Build',
     host: 'https://getsafespark.com',
     path: '/make',
-    from: '#f59e0b', // amber-500
-    to: '#8b5cf6', // violet-500
+    from: '#7c3aed', // violet
+    to: '#d946ef', // fuchsia
     glyph: 'spark',
   },
 ];
