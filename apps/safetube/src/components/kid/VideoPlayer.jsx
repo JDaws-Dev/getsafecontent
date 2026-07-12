@@ -52,12 +52,16 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
   );
 
   useEffect(() => {
-    if (canWatchStatus && canWatchStatus.canWatch === false && watchIdRef.current) {
-      // Limit reached during this session — wrap up and bounce to KidPlayer.
-      // KidPlayer's canWatchStatus will then show the time-limit modal.
+    if (canWatchStatus && canWatchStatus.canWatch === false) {
+      // Limit reached (or hours ended) — stop playback immediately, then wrap up
+      // and bounce to KidPlayer, which shows the time-limit modal.
+      // Pause FIRST so nothing keeps playing during the async save. Do NOT gate
+      // on watchIdRef here: if the denial arrives before recordWatch() has
+      // resolved, we must still stop — saveWatchDuration() already no-ops when
+      // there is no watch id yet.
+      sendCommand('pauseVideo');
       endPlaySpan();
       saveWatchDuration().finally(() => {
-        sendCommand('pauseVideo');
         onClose();
       });
     }

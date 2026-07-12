@@ -108,19 +108,34 @@ export default function KidPlayer() {
     setPlayingVideo(null);
   };
 
-  // handlePlayVideo now accepts optional context for shorts navigation
+  // Single source of truth for whether playback is currently allowed.
+  // Returns a restriction object to block on, or null to allow.
+  // `strict` fails CLOSED while the limit query is still loading — used for
+  // unattended shorts auto-advance so a pending/stale query can't leak videos.
+  const getPlaybackRestriction = ({ strict = false } = {}) => {
+    if (currentProfile?.videoPaused) return { reason: 'paused_by_parent' };
+    if (!canWatchStatus) return strict ? { reason: 'loading' } : null;
+    if (!canWatchStatus.canWatch) return canWatchStatus;
+    return null;
+  };
+
+  // 24h hour -> "12AM".."11AM".."12PM".."11PM" (0 and 12 must not render as "0").
+  const formatHour12 = (h) => `${(h % 12) || 12}${h < 12 ? 'AM' : 'PM'}`;
+
+  const showRestrictionModal = (restriction) => {
+    // 'loading' is a transient unknown — block playback but don't flash a
+    // scary "Time's Up" modal at the kid.
+    if (restriction.reason === 'loading') return;
+    setTimeLimitInfo(restriction);
+    setShowTimeLimitModal(true);
+  };
+
+  // handlePlayVideo accepts optional context for shorts navigation
   // context: { shortsList: Video[], isFromChannel: boolean }
   const handlePlayVideo = (video, context = null) => {
-    // Check if video access is paused by parent
-    if (currentProfile?.videoPaused) {
-      setTimeLimitInfo({ reason: 'paused_by_parent' });
-      setShowTimeLimitModal(true);
-      return;
-    }
-    // Check time limits before playing
-    if (canWatchStatus && !canWatchStatus.canWatch) {
-      setTimeLimitInfo(canWatchStatus);
-      setShowTimeLimitModal(true);
+    const restriction = getPlaybackRestriction();
+    if (restriction) {
+      showRestrictionModal(restriction);
       return;
     }
     setPlayingVideo(video);
@@ -132,8 +147,19 @@ export default function KidPlayer() {
     setPlayContext(null);
   };
 
-  // Handle playing next short (called from VideoPlayer)
+  // Handle playing next short (called from VideoPlayer when a short ends).
+  // Gated identically to handlePlayVideo — plus fail-closed while the limit
+  // query is loading — because this auto-advance path previously bypassed the
+  // daily cap entirely (a kid could binge shorts far past their limit:
+  // observed 208 min against a 90 min cap).
   const handlePlayNextShort = (nextVideo) => {
+    const restriction = getPlaybackRestriction({ strict: true });
+    if (restriction) {
+      setPlayingVideo(null);
+      setPlayContext(null);
+      showRestrictionModal(restriction);
+      return;
+    }
     // Keep same context but switch video
     setPlayingVideo(nextVideo);
   };
@@ -302,7 +328,7 @@ export default function KidPlayer() {
             )}
             {timeLimitInfo?.reason === 'outside_hours' && timeLimitInfo?.allowedStartHour !== undefined && (
               <p className="text-gray-500 text-sm mb-4">
-                Videos are available {timeLimitInfo.allowedStartHour < 12 ? timeLimitInfo.allowedStartHour : timeLimitInfo.allowedStartHour - 12}{timeLimitInfo.allowedStartHour < 12 ? 'AM' : 'PM'} - {timeLimitInfo.allowedEndHour < 12 ? timeLimitInfo.allowedEndHour : timeLimitInfo.allowedEndHour - 12}{timeLimitInfo.allowedEndHour < 12 ? 'AM' : 'PM'}
+                Videos are available {formatHour12(timeLimitInfo.allowedStartHour)} - {formatHour12(timeLimitInfo.allowedEndHour)}
               </p>
             )}
             <button
