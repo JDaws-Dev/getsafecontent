@@ -1,5 +1,5 @@
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 // CORS headers for cross-origin API access from marketing site
 const CORS_HEADERS = {
@@ -52,7 +52,7 @@ export default httpAction(async (ctx, request) => {
     }
 
     // Fetch all users with kid counts
-    const users = await ctx.runQuery(api.admin.getAllUsersWithKids);
+    const users = await ctx.runQuery(internal.admin.getAllUsersWithKids);
 
     // Sort by createdAt descending (newest first)
     users.sort((a, b) => {

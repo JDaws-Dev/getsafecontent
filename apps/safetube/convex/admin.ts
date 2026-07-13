@@ -1,8 +1,10 @@
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 
 // Get all users with kid counts for admin dashboard
-export const getAllUsersWithKids = query({
+// Internal-only: called solely by the key-gated admin dashboard HTTP action
+// (adminDashboard.ts). Was a public query dumping every family's PII + counts.
+export const getAllUsersWithKids = internalQuery({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();
@@ -137,7 +139,8 @@ export const applyPromoCode = mutation({
 });
 
 // Grant lifetime subscription to a user by email (admin use via CLI)
-export const grantLifetimeByEmail = mutation({
+// Internal-only: was a public mutation granting lifetime to any email. No callers.
+export const grantLifetimeByEmail = internalMutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
     const user = await ctx.db
