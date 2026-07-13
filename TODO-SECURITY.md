@@ -92,3 +92,19 @@ This is optional since you're rotating the keys anyway.
 2. Test SafeTunes Apple Music functionality
 3. Verify Stripe payments still work
 4. Check all three apps load correctly in production
+
+## SafeTube — server-side time-limit enforcement (filed 2026-07-12)
+
+**Priority: P0.** SafeTube daily watch-time limits are enforced CLIENT-SIDE only. `convex/watchHistory.ts` `recordWatch`/`updateWatchDuration` accept writes without checking the cap, and `timeLimits.canWatch` only *reports* status. A page reload or modified client bypasses the cap entirely. The 2026-07-12 fix (branch fix/safetube-shorts-timelimit) closed the shorts auto-advance loophole and made the client backstop reliable, but true enforcement requires: (1) `recordWatch` to atomically reject when over cap, and (2) a heartbeat/update mutation that returns whether playback remains authorized so the player pauses on a denied response. SOL-reviewed; tracked in memory project_safetube_timelimit_enforcement.
+
+## SafeSpark — cost-abuse hardening (2026-07-12, partial)
+
+DONE (branch security/p0-lockdown, SOL SHIP):
+- Removed hardcoded `BELLA-BUILD` demo-code fallback -> fails closed. **DEPLOY PRECONDITION: `BELLA_DEMO_CODE` MUST be set in Vercel prod env or the whole /api/demo route 401s.**
+- Fail-closed when a sessionToken is supplied but does not resolve to a valid kid (was fail-open -> forged/expired token bypassed pause/budget/blocklist).
+
+STILL OPEN (P0, needs its own tested PR):
+- Direct callers can OMIT sessionToken and take the unrestricted parent/guest path (no per-kid budget). Need a trusted parent/guest-vs-kid distinction.
+- Budget is enforced only because the CLIENT calls `logRequest` (writes safesparkRequests). A direct API caller never does -> not counted. Move prompt recording + the daily-budget check+increment SERVER-SIDE into the route, atomically, before the LLM call.
+- `recordUsage` (safesparkUsage cost tracking) is dead: gated on `convexToken` which is always null post-Clerk. Re-wire to the sessionToken path so cost analytics count again.
+- convex/ai/tts.ts public TTS action spends the OpenAI key with no session — gate it.

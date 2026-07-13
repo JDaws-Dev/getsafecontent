@@ -171,7 +171,6 @@ type PatchOp = {
   replace: string;
 };
 
-const DEFAULT_DEMO_CODE = 'BELLA-BUILD';
 // gpt-5.5 with reasoning_effort:'low' — flagship intelligence without
 // the reasoning-token burn. Earlier we swapped to gpt-4o after a default-
 // reasoning_effort:medium call burned 10/10 tokens on internal CoT and
@@ -240,6 +239,17 @@ export async function POST(request: Request) {
   // Treat undefined as ON (default). For non-kid (parent) callers, no
   // enforcement applies — the parent isn't restricting themselves.
   const enforcement = await fetchKidEnforcement(body.sessionToken ?? null);
+  // Fail CLOSED: a session token was supplied but did not resolve to a valid,
+  // active kid (forged/expired token, or the lookup failed). Previously this
+  // fell through as an unrestricted parent/guest, letting a bad token bypass
+  // the pause, daily-budget, and blocked-topic gates. Parents self-test with
+  // NO token (body.sessionToken absent), so that legitimate path is unaffected.
+  if (body.sessionToken && !enforcement) {
+    return parentControlStream(
+      "Spark couldn't check your settings just now. Reload and pick your profile again to keep building.",
+      body.jobId,
+    );
+  }
   if (enforcement) {
     // Phase 2 — paused-by-parent gate. Refuses BEFORE the LLM call so a
     // paused kid never burns a token. Friendly refusal stream so the kid
@@ -1318,7 +1328,11 @@ ${message}`;
 }
 
 function isAllowedDemoCode(code: string | undefined): boolean {
-  const expected = (process.env.BELLA_DEMO_CODE || DEFAULT_DEMO_CODE).trim().toUpperCase();
+  // Fail CLOSED when no code is configured. Never fall back to a
+  // source-hardcoded value — that published the "secret" gating all OpenAI
+  // spend on this route. BELLA_DEMO_CODE MUST be set in the deployment env.
+  const expected = process.env.BELLA_DEMO_CODE?.trim().toUpperCase();
+  if (!expected) return false;
   return Boolean(code && code.trim().toUpperCase() === expected);
 }
 
