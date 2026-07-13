@@ -86,7 +86,9 @@ export const createUser = mutation({
 });
 
 // Update user subscription status
-export const updateSubscriptionStatus = mutation({
+// Internal-only: Stripe webhook (stripe.ts) is the sole caller. Was a public
+// mutation — anyone could set any email's subscription status.
+export const updateSubscriptionStatus = internalMutation({
   args: {
     email: v.string(),
     subscriptionStatus: v.string(),
@@ -112,7 +114,8 @@ export const updateSubscriptionStatus = mutation({
 });
 
 // Update subscription by Stripe subscription ID
-export const updateSubscriptionByStripeId = mutation({
+// Internal-only: Stripe webhook (stripe.ts) is the sole caller.
+export const updateSubscriptionByStripeId = internalMutation({
   args: {
     subscriptionId: v.string(),
     subscriptionStatus: v.string(),
