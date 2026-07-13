@@ -1,4 +1,4 @@
-import { query, mutation, internalMutation, QueryCtx, MutationCtx } from "./_generated/server";
+import { query, mutation, internalMutation, internalQuery, QueryCtx, MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 
 // Admin emails - add your email here
@@ -139,7 +139,9 @@ export const isAdmin = query({
  * Get all users with stats for admin dashboard.
  * Called from HTTP endpoint (no auth check - endpoint handles auth).
  */
-export const getAllUsersWithStats = query({
+// Internal-only: called solely by the key-gated admin dashboard HTTP action
+// (adminDashboard.ts). Was a public query dumping all families' PII + stats.
+export const getAllUsersWithStats = internalQuery({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();

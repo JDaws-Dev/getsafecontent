@@ -1,5 +1,5 @@
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 // Type for user data from getAllUsersWithStats query
 type UserWithStats = {
@@ -76,7 +76,7 @@ export default httpAction(async (ctx, request): Promise<Response> => {
     }
 
     // Fetch all users with stats
-    const users = (await ctx.runQuery(api.admin.getAllUsersWithStats)) as UserWithStats[];
+    const users = (await ctx.runQuery(internal.admin.getAllUsersWithStats)) as UserWithStats[];
 
     // Sort by createdAt descending (newest first)
     users.sort((a, b) => {

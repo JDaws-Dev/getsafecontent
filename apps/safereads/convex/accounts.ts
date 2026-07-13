@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 
 /**
  * Central Accounts API
@@ -675,7 +675,9 @@ export const updateSubscription = mutation({
  * Adds a new app to user's entitled apps list.
  * Used when user upgrades to add more apps.
  */
-export const addAppEntitlement = mutation({
+// Internal-only: was a public mutation granting app entitlements to any
+// account. No app callers (entitlements flow from the central Stripe path).
+export const addAppEntitlement = internalMutation({
   args: {
     userId: v.id("users"),
     app: appValidator,

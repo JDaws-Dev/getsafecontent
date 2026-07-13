@@ -177,7 +177,9 @@ export const setStripeCustomerId = mutation({
 /**
  * Internal mutation to update subscription by email (for manual activation).
  */
-export const updateSubscriptionByEmail = mutation({
+// Internal-only: documented as internal but was a public mutation — anyone
+// could activate any email's subscription. No app callers.
+export const updateSubscriptionByEmail = internalMutation({
   args: {
     email: v.string(),
     subscriptionStatus: v.union(
