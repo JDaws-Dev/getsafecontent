@@ -31,7 +31,7 @@ import {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { logout, user: authUser } = useAuth();
+  const { logout, user: authUser, token } = useAuth();
   const user = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
   const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
   const familyCode = useQuery(api.familyCodes.getByUser, userId ? { userId } : "skip");
@@ -116,10 +116,10 @@ export default function SettingsPage() {
     setDeleteError("");
 
     try {
-      if (!authUser?.email) {
+      if (!token) {
         throw new Error("Not authenticated");
       }
-      await deleteOwnAccount({ email: authUser.email });
+      await deleteOwnAccount({ userToken: token });
       await logout();
       router.push("/");
     } catch (error) {
