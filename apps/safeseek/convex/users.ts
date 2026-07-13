@@ -63,7 +63,9 @@ export const getUser = query({
 });
 
 // Get user by ID
-export const getUserById = query({
+// Internal-only: called by server actions (concernAlerts, weeklyDigest).
+// Was a public query returning full user rows (PII) by arbitrary id.
+export const getUserById = internalQuery({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.userId);
@@ -377,7 +379,9 @@ export const setTimezone = mutation({
 });
 
 // Grant lifetime subscription to a user by email (admin use)
-export const grantLifetime = mutation({
+// Internal-only: grants lifetime access with no auth and has no callers.
+// Was a public mutation (anyone could grant themselves lifetime via the URL).
+export const grantLifetime = internalMutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
     const user = await ctx.db
@@ -448,7 +452,9 @@ export const updateSubscriptionStatus = mutation({
 });
 
 // Update subscription by Stripe subscription ID (used by webhook for subscription updates/deletions)
-export const updateSubscriptionByStripeId = mutation({
+// Internal-only: called solely by the Stripe webhook (convex/stripe.ts).
+// Was a public mutation — anyone could forge a subscription by Stripe id.
+export const updateSubscriptionByStripeId = internalMutation({
   args: {
     subscriptionId: v.string(),
     subscriptionStatus: v.string(),
@@ -495,5 +501,28 @@ export const syncFamilyCodeByEmailInternal = internalMutation({
       return { found: true, familyCode: args.code, updated: true };
     }
     return { found: true, familyCode: user.familyCode ?? null, updated: false };
+  },
+});
+
+// Re-point an account's email by id. Login + concern-alert emails resolve the
+// parent by email, so this moves an account off a stale address to one the
+// parent actually monitors. Guarded against collisions. Internal-only; run via
+// CLI: npx convex run users:setUserEmailById '{"userId":"...","email":"..."}'
+export const setUserEmailById = internalMutation({
+  args: { userId: v.id("users"), email: v.string() },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+    if (existing && existing._id !== args.userId) {
+      throw new Error(`Another user (${existing._id}) already uses ${email}`);
+    }
+    const user = await ctx.db.get(args.userId);
+    if (!user) throw new Error(`No user with id ${args.userId}`);
+    const previous = user.email ?? null;
+    await ctx.db.patch(args.userId, { email });
+    return { userId: args.userId, previous, email };
   },
 });

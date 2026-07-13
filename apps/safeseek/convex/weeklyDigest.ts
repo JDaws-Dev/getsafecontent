@@ -47,7 +47,7 @@ export const sendForParent = internalAction({
       return { sent: false, reason: "no_resend_key" };
     }
 
-    const user = await ctx.runQuery(api.users.getUserById, { userId: args.userId });
+    const user = await ctx.runQuery(internal.users.getUserById, { userId: args.userId });
     if (!user?.email) return { sent: false, reason: "no_email" };
     if (user.weeklyDigestOptOut) return { sent: false, reason: "opted_out" };
     // Don't send to expired/cancelled — the email is a value-add, not a dunning notice

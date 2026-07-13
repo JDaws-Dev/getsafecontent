@@ -2,6 +2,32 @@ import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import Stripe from "stripe";
 
+// All Safe Family apps (+ AnswerAxis) share ONE Stripe account, which fans every
+// event out to every webhook endpoint. Without gating, a SafeTunes/SafeReads/
+// AnswerAxis checkout would flip this customer's SafeStudy status (and emit a
+// "User not found" 500 retry storm for customers who have no SafeStudy account).
+// Only act on purchases that actually include SafeStudy.
+const SAFESTUDY_PRICE_IDS = new Set(
+  [process.env.STRIPE_PRICE_ID, process.env.SAFESTUDY_PRICE_ID].filter(
+    Boolean
+  ) as string[]
+);
+
+function purchaseIncludesSafeStudy(
+  session: Stripe.Checkout.Session,
+  sub: Stripe.Subscription
+): boolean {
+  const appsMeta = (sub.metadata?.apps || session.metadata?.apps || "")
+    .toLowerCase();
+  if (appsMeta) {
+    return appsMeta
+      .split(",")
+      .map((a) => a.trim())
+      .includes("safestudy");
+  }
+  return sub.items.data.some((item) => SAFESTUDY_PRICE_IDS.has(item.price.id));
+}
+
 // Stripe webhook handler
 export default httpAction(async (ctx, request) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -47,6 +73,14 @@ export default httpAction(async (ctx, request) => {
         const sub = await stripe.subscriptions.retrieve(session.subscription as string);
         const isTrial = sub.status === "trialing";
 
+        // Ignore checkouts that don't include SafeStudy (shared Stripe account).
+        if (!purchaseIncludesSafeStudy(session, sub)) {
+          console.log(
+            `[Webhook] Skipping checkout.session.completed for ${customerEmail} — purchase does not include SafeStudy`
+          );
+          return new Response("Ignored: not a SafeStudy purchase", { status: 200 });
+        }
+
         // Update user subscription status
         try {
           await ctx.runMutation(api.users.updateSubscriptionStatus, {
@@ -68,7 +102,7 @@ export default httpAction(async (ctx, request) => {
         const newStatus = subscription.status === "active" ? "active" : "inactive";
 
         try {
-          await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+          await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
             subscriptionId: subscription.id,
             subscriptionStatus: newStatus,
             subscriptionEndsAt: subscription.cancel_at_period_end ? subscription.current_period_end * 1000 : undefined,
@@ -106,7 +140,7 @@ export default httpAction(async (ctx, request) => {
 
         if (!hasOtherActiveSubscription) {
           try {
-            await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+            await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
               subscriptionId: deletedSubscription.id,
               subscriptionStatus: "expired",
             });
@@ -123,7 +157,7 @@ export default httpAction(async (ctx, request) => {
 
         if (invoice.subscription) {
           try {
-            await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+            await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
               subscriptionId: invoice.subscription as string,
               subscriptionStatus: "past_due",
             });
