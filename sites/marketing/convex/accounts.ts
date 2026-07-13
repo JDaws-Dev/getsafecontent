@@ -1,5 +1,7 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
+import type { MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "./auth";
 
 /**
@@ -314,7 +316,9 @@ export const getAccount = query({
  *
  * Returns all user accounts for admin dashboard.
  */
-export const getAllAccounts = query({
+// INTERNAL ONLY — exposes every account. Callable only from key-gated HTTP
+// actions (admin dashboard), never the public Convex API.
+export const getAllAccounts = internalQuery({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();
@@ -367,6 +371,12 @@ export const updateAccount = mutation({
   },
   handler: async (ctx, args) => {
     const { userId, name, timezone, onboardingCompleted } = args;
+
+    // Authorization: a caller may only edit their OWN account.
+    const callerId = await getAuthUserId(ctx);
+    if (!callerId || callerId !== userId) {
+      throw new Error("Not authorized");
+    }
 
     const user = await ctx.db.get(userId);
     if (!user) {
@@ -433,13 +443,13 @@ export const updateLastLogin = mutation({
  * Soft-deletes the account by removing personal data but keeping audit trail.
  * Logs the deletion event for compliance.
  */
-export const deleteAccount = mutation({
-  args: {
-    userId: v.id("users"),
-    reason: v.optional(v.string()), // User-provided reason for deletion
-  },
-  handler: async (ctx, args) => {
-    const { userId, reason } = args;
+// Shared deletion logic. Callers are responsible for authorization.
+async function performAccountDeletion(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  reason?: string
+) {
+  {
     const now = Date.now();
 
     const user = await ctx.db.get(userId);
@@ -479,6 +489,36 @@ export const deleteAccount = mutation({
     }
 
     return { success: true, deletedAt: now };
+  }
+}
+
+// Public: a signed-in user deleting THEIR OWN account. Verifies ownership via
+// the Convex Auth session — previously this trusted a caller-supplied userId,
+// so anyone could permanently delete any family's account (IDOR).
+export const deleteAccount = mutation({
+  args: {
+    userId: v.id("users"),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const callerId = await getAuthUserId(ctx);
+    if (!callerId) throw new Error("Not authenticated");
+    if (callerId !== args.userId) {
+      throw new Error("Forbidden: you can only delete your own account");
+    }
+    return performAccountDeletion(ctx, args.userId, args.reason);
+  },
+});
+
+// Internal-only: the trusted, key-gated /deleteUser HTTP admin route calls this
+// via runMutation (it has no Convex Auth session, so it can't use the public path).
+export const deleteAccountInternal = internalMutation({
+  args: {
+    userId: v.id("users"),
+    reason: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    return performAccountDeletion(ctx, args.userId, args.reason);
   },
 });
 
@@ -588,7 +628,10 @@ export const verifyAppAccess = query({
  * Called by Stripe webhook to update subscription state.
  * This is an internal mutation - not exposed to frontend directly.
  */
-export const updateSubscription = mutation({
+// INTERNAL ONLY — sets subscriptionStatus + entitledApps. Must never be public
+// (a public version is a free-lifetime-grant vector). Called by the Stripe
+// webhook + the key-gated /updateSubscription HTTP action.
+export const updateSubscription = internalMutation({
   args: {
     email: v.string(),
     subscriptionStatus: v.union(
@@ -690,7 +733,8 @@ export const updateSubscription = mutation({
  * Adds a new app to user's entitled apps list.
  * Used when user upgrades to add more apps.
  */
-export const addAppEntitlement = mutation({
+// INTERNAL ONLY — grants an app entitlement (no auth in body).
+export const addAppEntitlement = internalMutation({
   args: {
     userId: v.id("users"),
     app: appValidator,
@@ -739,6 +783,12 @@ export const removeAppEntitlement = mutation({
     app: appValidator,
   },
   handler: async (ctx, args) => {
+    // Authorization: a caller may only modify their OWN entitlements.
+    const callerId = await getAuthUserId(ctx);
+    if (!callerId || callerId !== args.userId) {
+      throw new Error("Not authorized");
+    }
+
     const user = await ctx.db.get(args.userId);
     if (!user) {
       throw new Error("Account not found");
@@ -779,7 +829,8 @@ export const removeAppEntitlement = mutation({
  * Returns the current subscription ID and validates the request.
  * The actual Stripe update is done client-side via /api/subscription/update-apps.
  */
-export const prepareSubscriptionChange = mutation({
+// INTERNAL ONLY — no callers; would let any account's trial apps be rewritten.
+export const prepareSubscriptionChange = internalMutation({
   args: {
     userId: v.id("users"),
     newApps: v.array(appValidator),
@@ -874,6 +925,13 @@ export const confirmSubscriptionChange = mutation({
     const { userId, newApps, newPriceId, priceChanged } = args;
     const now = Date.now();
 
+    // Authorization: a caller may only change their OWN subscription. The
+    // /api/subscription/update-apps route forwards the Convex Auth token.
+    const callerId = await getAuthUserId(ctx);
+    if (!callerId || callerId !== userId) {
+      throw new Error("Not authorized");
+    }
+
     const user = await ctx.db.get(userId);
     if (!user) {
       throw new Error("Account not found");
@@ -916,10 +974,13 @@ export const confirmSubscriptionChange = mutation({
  * Admin function to grant lifetime access to all apps.
  * Used for special users (friends, family, etc.).
  */
-export const grantLifetimeAccess = mutation({
+// Internal-only: the only caller is the key-gated /grantLifetime HTTP route
+// (via runMutation). Was a public mutation, which meant anyone could grant
+// lifetime access by supplying the (leaked, shared) admin key as an argument.
+export const grantLifetimeAccess = internalMutation({
   args: {
     email: v.string(),
-    adminKey: v.string(), // For authentication
+    adminKey: v.string(), // defense-in-depth; HTTP route already gates on it
     apps: v.optional(v.array(appValidator)), // Which apps to grant (default: all)
   },
   handler: async (ctx, args) => {
@@ -1203,7 +1264,8 @@ export const markProvisioned = internalMutation({
  * Used to upgrade early adopters to have access to all apps.
  * Keeps their current subscription status if they exist.
  */
-export const grantAllAppsToUser = mutation({
+// INTERNAL ONLY — grants ALL apps (no auth in body). Free-grant vector if public.
+export const grantAllAppsToUser = internalMutation({
   args: {
     email: v.string(),
     name: v.optional(v.string()),

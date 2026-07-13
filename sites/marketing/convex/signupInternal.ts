@@ -257,6 +257,7 @@ export const getUserCredentials = internalQuery({
         passwordHash: passwordAuthAccount.secret,
         subscriptionStatus: user.subscriptionStatus,
         entitledApps: user.entitledApps,
+        familyCode: user.familyCode ?? null,
       };
     }
 
@@ -284,6 +285,7 @@ export const getUserCredentials = internalQuery({
         name: user.name || null,
         subscriptionStatus: user.subscriptionStatus,
         entitledApps: user.entitledApps,
+        familyCode: user.familyCode ?? null,
       };
     }
 
@@ -298,6 +300,7 @@ export const getUserCredentials = internalQuery({
       name: user.name || null,
       subscriptionStatus: user.subscriptionStatus,
       entitledApps: user.entitledApps,
+      familyCode: user.familyCode ?? null,
     };
   },
 });
@@ -511,7 +514,10 @@ export const getMigrationStatus = internalQuery({
  * Used to upgrade early adopters to have access to all apps
  * without changing their payment status.
  */
-export const grantAllApps = mutation({
+// Internal-only: grants all apps to an email with NO auth. Was a public
+// mutation (anyone could grant themselves every app via the deployment URL);
+// it has no client callers, so it is now internal.
+export const grantAllApps = internalMutation({
   args: {
     email: v.string(),
   },
@@ -979,5 +985,34 @@ export const findIncompleteSignups = internalQuery({
       total: incompleteUsers.length,
       users: incompleteUsers,
     };
+  },
+});
+
+/**
+ * Read or set the unified familyCode for a central user.
+ * Call with no `code` to read; pass a code to upsert.
+ * Marketing Central is the source of truth for the family code; apps
+ * should pull from here during provisioning and sync to it after
+ * generating a fresh code.
+ */
+export const syncFamilyCodeByEmailInternal = internalMutation({
+  args: {
+    email: v.string(),
+    code: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const email = args.email.toLowerCase().trim();
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+    if (!user) {
+      return { found: false, familyCode: null, updated: false };
+    }
+    if (args.code) {
+      await ctx.db.patch(user._id, { familyCode: args.code });
+      return { found: true, familyCode: args.code, updated: true };
+    }
+    return { found: true, familyCode: user.familyCode ?? null, updated: false };
   },
 });
