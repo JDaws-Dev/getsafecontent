@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
+import { requireOwner, requireProfileOwner } from "./identity";
 
 // Get all approved videos for a kid
 export const getApprovedVideos = query({
@@ -68,7 +68,7 @@ export const addApprovedVideo = mutation({
     userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "videos.addApprovedVideo");
+    await requireOwner(ctx, args.userToken, args.userId, "videos.addApprovedVideo");
     // Check if already approved
     const existing = await ctx.db
       .query("approvedVideos")
@@ -122,7 +122,7 @@ export const addApprovedVideos = mutation({
     userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "videos.addApprovedVideos");
+    await requireOwner(ctx, args.userToken, args.userId, "videos.addApprovedVideos");
     const results = [];
 
     for (const video of args.videos) {
@@ -179,7 +179,7 @@ export const addVideoToMultipleKids = mutation({
     userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "videos.addVideoToMultipleKids");
+    await requireOwner(ctx, args.userToken, args.userId, "videos.addVideoToMultipleKids");
     const results = [];
 
     for (const kidProfileId of args.kidProfileIds) {
@@ -228,7 +228,7 @@ export const removeApprovedVideo = mutation({
     userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireProfileOwnerSoft(ctx, args.userToken, args.kidProfileId, "videos.removeApprovedVideo");
+    await requireProfileOwner(ctx, args.userToken, args.kidProfileId, "videos.removeApprovedVideo");
     const video = await ctx.db
       .query("approvedVideos")
       .withIndex("by_video", (q) =>
@@ -260,7 +260,7 @@ export const clearAllApprovedVideosForUser = mutation({
     userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "videos.clearAllApprovedVideosForUser");
+    await requireOwner(ctx, args.userToken, args.userId, "videos.clearAllApprovedVideosForUser");
     // Get all approved videos for this user
     const videos = await ctx.db
       .query("approvedVideos")

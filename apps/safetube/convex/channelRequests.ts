@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireOwnerSoft } from "./identity";
+import { requireOwner } from "./identity";
 
 // Create a channel request from a kid
 export const createRequest = mutation({
@@ -63,7 +63,7 @@ export const createRequest = mutation({
 export const getPendingRequests = query({
   args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "channelRequests.getPendingRequests");
+    await requireOwner(ctx, args.userToken, args.userId, "channelRequests.getPendingRequests");
     const requests = await ctx.db
       .query("channelRequests")
       .withIndex("by_user_status", (q) =>
@@ -108,7 +108,7 @@ export const approveRequest = mutation({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
-    await requireOwnerSoft(ctx, args.userToken, request.userId, "channelRequests.approveRequest");
+    await requireOwner(ctx, args.userToken, request.userId, "channelRequests.approveRequest");
     if (request.status !== "pending") throw new Error("Request already processed");
 
     // Update request status
@@ -143,7 +143,7 @@ export const denyRequest = mutation({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
-    await requireOwnerSoft(ctx, args.userToken, request.userId, "channelRequests.denyRequest");
+    await requireOwner(ctx, args.userToken, request.userId, "channelRequests.denyRequest");
     if (request.status !== "pending") throw new Error("Request already processed");
 
     await ctx.db.patch(args.requestId, {

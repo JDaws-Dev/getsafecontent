@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
-import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
+import { requireOwner, requireProfileOwner } from "./identity";
 import { hashPin, verifyPin, isHashedPin } from "./safeAuth";
 
 // PINs are 4 digits (10k combinations) — the lockout is the real defense,
@@ -16,7 +16,7 @@ const DEFAULT_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'p
 export const getKidProfiles = query({
   args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "kidProfiles.getKidProfiles");
+    await requireOwner(ctx, args.userToken, args.userId, "kidProfiles.getKidProfiles");
     const profiles = await ctx.db
       .query("kidProfiles")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -77,7 +77,7 @@ export const createKidProfile = mutation({
     userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "kidProfiles.createKidProfile");
+    await requireOwner(ctx, args.userToken, args.userId, "kidProfiles.createKidProfile");
     // Get existing profiles to pick unique icon/color
     const existing = await ctx.db
       .query("kidProfiles")
@@ -156,7 +156,7 @@ export const updateKidProfile = mutation({
     userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireProfileOwnerSoft(ctx, args.userToken, args.profileId, "kidProfiles.updateKidProfile");
+    await requireProfileOwner(ctx, args.userToken, args.profileId, "kidProfiles.updateKidProfile");
     const updates: Record<string, string | boolean | number | undefined> = {};
     if (args.name) updates.name = args.name;
     if (args.icon) updates.icon = args.icon;
@@ -272,7 +272,7 @@ export const migrateKidPinsToHash = internalMutation({
 export const deleteKidProfile = mutation({
   args: { profileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    await requireProfileOwnerSoft(ctx, args.userToken, args.profileId, "kidProfiles.deleteKidProfile");
+    await requireProfileOwner(ctx, args.userToken, args.profileId, "kidProfiles.deleteKidProfile");
     // Delete all approved channels
     const channels = await ctx.db
       .query("approvedChannels")
