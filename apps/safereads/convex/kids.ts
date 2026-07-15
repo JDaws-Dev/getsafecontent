@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
-import { requireOwnerSoft } from "./identity";
+import { requireOwner } from "./identity";
 
 /**
  * List all kids for a user.
@@ -8,7 +8,7 @@ import { requireOwnerSoft } from "./identity";
 export const listByUser = query({
   args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "kids.listByUser");
+    await requireOwner(ctx, args.userToken, args.userId, "kids.listByUser");
     return await ctx.db
       .query("kids")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -24,7 +24,7 @@ export const getById = query({
   handler: async (ctx, args) => {
     const kid = await ctx.db.get(args.kidId);
     if (!kid) return null;
-    await requireOwnerSoft(ctx, args.userToken, kid.userId, "kids.getById");
+    await requireOwner(ctx, args.userToken, kid.userId, "kids.getById");
     return kid;
   },
 });
@@ -43,7 +43,7 @@ export const create = mutation({
     userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "kids.create");
+    await requireOwner(ctx, args.userToken, args.userId, "kids.create");
     return await ctx.db.insert("kids", {
       userId: args.userId,
       name: args.name,
@@ -72,7 +72,7 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const kid = await ctx.db.get(args.kidId);
     if (!kid) throw new Error("Kid not found.");
-    await requireOwnerSoft(ctx, args.userToken, kid.userId, "kids.update");
+    await requireOwner(ctx, args.userToken, kid.userId, "kids.update");
     // Exclude routing/auth args; only persist the editable kid fields.
     const { kidId, userToken: _t, ...updates } = args;
     // Filter out undefined values
@@ -91,7 +91,7 @@ export const remove = mutation({
   handler: async (ctx, args) => {
     const kid = await ctx.db.get(args.kidId);
     if (!kid) return;
-    await requireOwnerSoft(ctx, args.userToken, kid.userId, "kids.remove");
+    await requireOwner(ctx, args.userToken, kid.userId, "kids.remove");
     // Delete wishlist entries
     const wishlistItems = await ctx.db
       .query("wishlists")

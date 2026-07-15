@@ -63,6 +63,7 @@ export async function requireOwner(
   ctx: { db: Db },
   userToken: string | undefined,
   ownerId: Id<"users">,
+  _label?: string, // accepted for call-site parity with requireOwnerSoft
 ): Promise<Id<"users">> {
   const me = await resolveReaderIdentity(ctx, userToken);
   if (!me) throw new Error("Please sign in again.");
