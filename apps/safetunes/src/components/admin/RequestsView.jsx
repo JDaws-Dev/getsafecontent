@@ -7,6 +7,7 @@ import { useToast } from '../common/Toast';
 import EmptyState from '../common/EmptyState';
 import { useConvex } from 'convex/react';
 import { SafeTunesLogo } from '../shared/SafeTunesLogo';
+import { useAuth } from '../../contexts/AuthContext';
 
 // ============================================================
 // ICONS (inline SVGs to avoid lucide-react dependency issues)
@@ -1459,13 +1460,14 @@ function RequestCard({
 function RequestsView({ user }) {
   const { showToast, ToastContainer } = useToast();
   const convex = useConvex();
+  const { token } = useAuth();
 
   // Queries
-  const pendingAlbumRequests = useQuery(api.albumRequests.getPendingRequests, user ? { userId: user._id } : 'skip') || [];
-  const pendingSongRequests = useQuery(api.songRequests.getPendingSongRequests, user ? { userId: user._id } : 'skip') || [];
-  const deniedAlbumRequests = useQuery(api.albumRequests.getDeniedRequests, user ? { userId: user._id } : 'skip') || [];
-  const deniedSongRequests = useQuery(api.songRequests.getDeniedSongRequests, user ? { userId: user._id } : 'skip') || [];
-  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id } : 'skip') || [];
+  const pendingAlbumRequests = useQuery(api.albumRequests.getPendingRequests, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
+  const pendingSongRequests = useQuery(api.songRequests.getPendingSongRequests, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
+  const deniedAlbumRequests = useQuery(api.albumRequests.getDeniedRequests, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
+  const deniedSongRequests = useQuery(api.songRequests.getDeniedSongRequests, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
+  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
   const blockedSearches = useQuery(api.blockedSearches.getBlockedSearches, user ? { userId: user._id } : 'skip') || [];
   const unreadBlockedSearchesCount = useQuery(api.blockedSearches.getUnreadBlockedSearchesCount, user ? { userId: user._id } : 'skip') || 0;
 
@@ -1677,9 +1679,9 @@ function RequestsView({ user }) {
           }
         }
 
-        await approveAlbumRequest({ requestId, tracks, hideArtwork });
+        await approveAlbumRequest({ requestId, tracks, hideArtwork, userToken: token ?? undefined });
       } else {
-        await approveSongRequest({ requestId, hideArtwork });
+        await approveSongRequest({ requestId, hideArtwork, userToken: token ?? undefined });
       }
 
       showToast(`${requestName || 'Request'} approved ✓`, 'success');
@@ -1703,7 +1705,7 @@ function RequestsView({ user }) {
         isExplicit: track.isExplicit,
       }));
 
-      await approveAlbumRequest({ requestId: request._id, tracks, hideArtwork });
+      await approveAlbumRequest({ requestId: request._id, tracks, hideArtwork, userToken: token ?? undefined });
 
       if (skippedCount > 0) {
         showToast(`Approved ${selectedTracks.length} songs. ${skippedCount} restricted songs were skipped.`, 'success');
@@ -1721,12 +1723,14 @@ function RequestsView({ user }) {
       if (requestType === 'album') {
         await denyAlbumRequest({
           requestId,
-          denialReason: reason || undefined
+          denialReason: reason || undefined,
+          userToken: token ?? undefined
         });
       } else {
         await denySongRequest({
           requestId,
-          denialReason: reason || undefined
+          denialReason: reason || undefined,
+          userToken: token ?? undefined
         });
       }
 
@@ -1767,7 +1771,7 @@ function RequestsView({ user }) {
 
       try {
         if (request.requestType === 'song') {
-          await approveSongRequest({ requestId: request._id, hideArtwork });
+          await approveSongRequest({ requestId: request._id, hideArtwork, userToken: token ?? undefined });
           approved++;
         } else {
           // For albums, we need tracks - fetch them first
@@ -1781,7 +1785,7 @@ function RequestsView({ user }) {
             durationInMillis: track.attributes?.durationInMillis,
             isExplicit: track.attributes?.contentRating === 'explicit',
           }));
-          await approveAlbumRequest({ requestId: request._id, tracks, hideArtwork });
+          await approveAlbumRequest({ requestId: request._id, tracks, hideArtwork, userToken: token ?? undefined });
           approved++;
         }
       } catch (err) {
@@ -1813,9 +1817,9 @@ function RequestsView({ user }) {
 
       try {
         if (request.requestType === 'song') {
-          await denySongRequest({ requestId: request._id, denialReason: reason || undefined });
+          await denySongRequest({ requestId: request._id, denialReason: reason || undefined, userToken: token ?? undefined });
         } else {
-          await denyAlbumRequest({ requestId: request._id, denialReason: reason || undefined });
+          await denyAlbumRequest({ requestId: request._id, denialReason: reason || undefined, userToken: token ?? undefined });
         }
         denied++;
       } catch (err) {

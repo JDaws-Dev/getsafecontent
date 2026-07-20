@@ -15,7 +15,7 @@ const DAILY_LIMIT_OPTIONS = [
 
 function OnboardingPage() {
   const navigate = useNavigate();
-  const { user: centralUser, isAuthenticated, isLoading: isPending } = useAuth();
+  const { user: centralUser, isAuthenticated, isLoading: isPending, token } = useAuth();
   const updateUser = useMutation(api.users.updateUser);
   const createKidProfile = useMutation(api.kidProfiles.createKidProfile);
 
@@ -169,6 +169,7 @@ function OnboardingPage() {
           color: kid.color,
           pin: kid.pin.trim() || undefined, // Only set PIN if provided
           dailyLimitMinutes: kid.dailyLimitMinutes || undefined,
+          userToken: token ?? undefined,
         });
       }
 

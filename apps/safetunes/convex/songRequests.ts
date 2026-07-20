@@ -2,13 +2,13 @@ import { v } from "convex/values";
 import { query, mutation, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
-import { requireOwnerSoft } from "./identity";
+import { requireOwner } from "./identity";
 
 // Get all pending song requests for a user (parent)
 export const getPendingSongRequests = query({
   args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "songRequests.getPendingSongRequests");
+    await requireOwner(ctx, args.userToken, args.userId, "songRequests.getPendingSongRequests");
     return await ctx.db
       .query("songRequests")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -21,7 +21,7 @@ export const getPendingSongRequests = query({
 export const getDeniedSongRequests = query({
   args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "songRequests.getDeniedSongRequests");
+    await requireOwner(ctx, args.userToken, args.userId, "songRequests.getDeniedSongRequests");
     return await ctx.db
       .query("songRequests")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -141,7 +141,7 @@ export const approveSongRequest = mutation({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
-    await requireOwnerSoft(ctx, args.userToken, request.userId, "songRequests.approveSongRequest");
+    await requireOwner(ctx, args.userToken, request.userId, "songRequests.approveSongRequest");
 
     // Update request status
     await ctx.db.patch(args.requestId, {
@@ -183,7 +183,7 @@ export const denySongRequest = mutation({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
-    await requireOwnerSoft(ctx, args.userToken, request.userId, "songRequests.denySongRequest");
+    await requireOwner(ctx, args.userToken, request.userId, "songRequests.denySongRequest");
 
     await ctx.db.patch(args.requestId, {
       status: "denied",
@@ -206,7 +206,7 @@ export const undoApproval = mutation({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
-    await requireOwnerSoft(ctx, args.userToken, request.userId, "songRequests.undoApproval");
+    await requireOwner(ctx, args.userToken, request.userId, "songRequests.undoApproval");
 
     // Revert request status back to pending
     await ctx.db.patch(args.requestId, {
@@ -236,7 +236,7 @@ export const undoDenial = mutation({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
-    await requireOwnerSoft(ctx, args.userToken, request.userId, "songRequests.undoDenial");
+    await requireOwner(ctx, args.userToken, request.userId, "songRequests.undoDenial");
     await ctx.db.patch(args.requestId, {
       status: "pending",
       reviewedAt: undefined,
@@ -255,7 +255,7 @@ export const approveDeniedSongRequest = mutation({
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
-    await requireOwnerSoft(ctx, args.userToken, request.userId, "songRequests.approveDeniedSongRequest");
+    await requireOwner(ctx, args.userToken, request.userId, "songRequests.approveDeniedSongRequest");
     if (request.status !== "denied") throw new Error("Request is not denied");
 
     // Validate that appleSongId exists

@@ -4,9 +4,11 @@ import { api } from '../../../convex/_generated/api';
 import musicKitService from '../../config/musickit';
 import { useToast } from '../common/Toast';
 import PlaylistInspector from './PlaylistInspector';
+import { useAuth } from '../../contexts/AuthContext';
 
 function PlaylistImport({ user }) {
   const { showToast, ToastContainer } = useToast();
+  const { token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isMusicKitReady, setIsMusicKitReady] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -31,7 +33,7 @@ function PlaylistImport({ user }) {
   const [importing, setImporting] = useState(false);
 
   // Fetch kid profiles
-  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id } : 'skip') || [];
+  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
 
   // Debug logging
   useEffect(() => {

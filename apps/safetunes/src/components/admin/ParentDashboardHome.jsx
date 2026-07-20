@@ -3,6 +3,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { COLORS } from '../../constants/avatars';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   Music,
   ChevronRight,
@@ -495,6 +496,7 @@ function FloatingActionBar({ onAddMusic }) {
 
 export default function ParentDashboardHome({ user, onNavigateToTab }) {
   const { showToast } = useToast();
+  const { token } = useAuth();
   const [dismissedAlert, setDismissedAlert] = useState(false);
 
   // Mutation to pause/unpause music for a kid
@@ -502,7 +504,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
 
   // Convex Queries - Real data
   const kidProfiles = useQuery(api.kidProfiles.getKidProfiles,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const fullUser = useQuery(api.users.getUser,
@@ -510,11 +512,11 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
   );
 
   const pendingRequests = useQuery(api.albumRequests.getPendingRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const pendingSongRequests = useQuery(api.songRequests.getPendingSongRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const unreadBlockedSearchesCount = useQuery(api.blockedSearches.getUnreadBlockedSearchesCount,
@@ -602,7 +604,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
   // Handlers
   const handlePauseToggle = async (kidId, isPaused) => {
     try {
-      await setMusicPaused({ profileId: kidId, paused: isPaused });
+      await setMusicPaused({ profileId: kidId, paused: isPaused, userToken: token ?? undefined });
       showToast(
         isPaused ? 'Music access paused' : 'Music access restored',
         isPaused ? 'info' : 'success'

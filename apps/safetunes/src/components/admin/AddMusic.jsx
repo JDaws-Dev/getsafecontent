@@ -8,6 +8,7 @@ import AlbumOverviewModal from './AlbumOverviewModal';
 import PlaylistImport from './PlaylistImport';
 import AlbumInspector from './AlbumInspector';
 import SearchResults from './SearchResults';
+import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 
 // Helper to initialize MusicKit with timeout
@@ -751,6 +752,7 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
 
 // Main AddMusic Component
 export default function AddMusic({ user }) {
+  const { token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -798,7 +800,7 @@ export default function AddMusic({ user }) {
   const aiMusicSearch = useAction(api.ai.aiSearch.aiMusicSearch);
 
   // Get kid profiles
-  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id } : 'skip') || [];
+  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
 
   // Initialize MusicKit
   useEffect(() => {

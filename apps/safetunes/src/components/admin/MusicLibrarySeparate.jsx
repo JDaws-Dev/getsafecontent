@@ -8,6 +8,7 @@ import ContentReviewModal from './ContentReviewModal';
 import AlbumOverviewModal from './AlbumOverviewModal';
 import SafeTunesLogo from '../shared/SafeTunesLogo';
 import PlaylistImport from './PlaylistImport';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   KidSelector,
   DiscoverList,
@@ -1174,6 +1175,7 @@ function EditDiscoverAlbumModal({ isOpen, onClose, albumId, userId, onRemove, ki
 
 // Main Component
 function MusicLibrarySeparate({ user }) {
+  const { token } = useAuth();
   const [activeTab, setActiveTab] = useState('library');
   const [successMessage, setSuccessMessage] = useState('');
   // For album modal (used by Library tab - full editing with checkboxes)
@@ -1244,11 +1246,11 @@ function MusicLibrarySeparate({ user }) {
 
   // Fetch data
   const kidProfiles = useQuery(api.kidProfiles.getKidProfiles,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const approvedAlbums = useQuery(api.albums.getApprovedAlbums,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const featuredAlbums = useQuery(api.featured.getFeaturedAlbums,
