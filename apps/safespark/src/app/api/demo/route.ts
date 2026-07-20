@@ -250,6 +250,27 @@ export async function POST(request: Request) {
       body.jobId,
     );
   }
+
+  // "On hold except an allowlist" gate. When SAFESPARK_ALLOWED_KIDS is set (a
+  // comma-separated list of kidProfileIds), ONLY those profiles may build —
+  // every other caller (other kids, guests, and no-token parent/guest requests)
+  // gets a friendly on-hold message BEFORE any OpenAI spend. Used to park
+  // SafeSpark for everyone but Bella while it's mothballed. Reversible: clear
+  // the env var to reopen SafeSpark to everyone.
+  const sparkAllowlist = (process.env.SAFESPARK_ALLOWED_KIDS || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (sparkAllowlist.length > 0) {
+    const kidId = enforcement?.kidProfileId ?? null;
+    if (!kidId || !sparkAllowlist.includes(kidId)) {
+      return parentControlStream(
+        "SafeSpark is on a break right now. Check back later — or have a grown-up email jeremiah@getsafefamily.com.",
+        body.jobId,
+      );
+    }
+  }
+
   if (enforcement) {
     // Phase 2 — paused-by-parent gate. Refuses BEFORE the LLM call so a
     // paused kid never burns a token. Friendly refusal stream so the kid
