@@ -6,6 +6,75 @@
 
 ---
 
+## Current Status (July 12–22, 2026)
+
+A long arc across three fronts: **child-safety fixes → security P0 lockdown → cost surgery**, then a design/UX pass. Everything in "Deployed" is live in prod; the glow-up + SSO work is staged on branches and **not deployed**.
+
+### Deployed to prod
+
+**Child safety**
+- **SafeTube daily time-limit was bypassable** — `handlePlayNextShort` (shorts auto-advance) never checked the cap, so a kid could binge past it (observed **208 min against a 90-min cap**). Gated it, made the mid-playback backstop reliable, fixed the modal's mismatched field names. SOL-reviewed SHIP. `rightful-rabbit-333` + Vercel.
+- **Concern alerts were landing in a dead inbox.** SafeStudy's parent-alert emails (eating-disorder / self-harm categories) went to `metrotter@gmail.com`. Repointed that account to `michelle.e.daws@gmail.com` (no collision; it also reconnects the profile to her real login).
+
+**Security — P0 lockdown (all 5 apps + hub), from a SOL full-suite audit**
+- Internalized every dead/server-only **public privileged Convex function** across all apps: `grantLifetime`, `updateSubscription*` (subscription forgery), `getAllUsers*`/`getUserById` PII dumps, SafeReads `updateSubscriptionByEmail`/`addAppEntitlement`, and SafeTunes **`bulkDeleteUsers`** (a public mutation that deleted *all* users).
+- **Marketing hub**: `grantAllApps` + `grantLifetimeAccess` → internal; **`deleteAccount` IDOR** (deleted any account by caller-supplied userId) → ownership-checked + internal admin split. Committed admin key scrubbed from `AGENTS.md`.
+- **`requireOwnerSoft` → hard `requireOwner`** on parent-only kid-data endpoints in **SafeStudy, SafeReads, SafeTube, SafeTunes** (SafeTunes also required threading `userToken` through its live parent dashboard first). Kid family-code paths deliberately left soft.
+- **SafeSpark**: removed the hardcoded `BELLA-BUILD` demo-code fallback (fail closed) and stopped a forged/expired session token from bypassing pause/budget/blocklist.
+- All SOL-reviewed SHIP. See `TODO-SECURITY.md` for residuals (server-side time-limit enforcement, kid-session token, PII DTOs, PIN hashing).
+
+**Cost**
+- **Musixmatch cancelled — $59/mo / ~$708/yr.** SafeTunes moved to free lyrics (LRCLIB → lyrics.ovh → optional Musixmatch free tier). See [LRCLIB-MIGRATION.md](LRCLIB-MIGRATION.md).
+- **SafeSpark parked to Bella only** via a new `SAFESPARK_ALLOWED_KIDS` env allowlist checked before any OpenAI spend; everyone else gets a friendly on-hold message. Reversible by clearing the env var. ($0 revenue, and its cost was driven by comped users.)
+- **Backups fixed and moved local** — GitHub Actions/R2 retired (all repo secrets were missing); now a launchd job → iCloud covering **all 6** deployments. See [CONVEX-BACKUP-SETUP.md](CONVEX-BACKUP-SETUP.md).
+
+### Business reality check (July 19)
+Audited usage + revenue: **~$25/mo from exactly 3 genuine paying customers**; everything else is family, comps, trials, or expired. **SafeTunes is the only app with real outside traction** (~7 parents / 9 kids active in 30 days) and holds all 3 payers. SafeTube/Study/Reads are near-dormant outside the owner's family; **SafeSpark had $0 revenue** and was the main variable cost. Post-changes the suite runs ~$10–15/mo.
+
+### Staged, NOT deployed
+- **Interface glow-up** (branch `design/glow-up`) — approved design system reviving the abandoned Safe Family brand: cream `#FBF6EF` / navy `#221D2E` / peach umbrella, **Fredoka** (display) + **Quicksand** (body), one accent per app (Tunes grape `#7C4DE0`, Tube coral `#F0603A`, Reads leaf `#3AA06B`, Study cobalt `#2F6BF0`, Spark amber `#F2A413`). **SafeTunes reskinned and verified live** in a dev server against prod data. Other four + parent dashboards pending.
+- **Cross-app SSO + nav** — diagnosed (not built): sessions are per-domain localStorage so each site is a cold start, and the switcher is mounted on **kid screens only, never a parent dashboard**, passing just `?fc=`. The fix largely exists (the hub's `/oauth` mint + every app's `?token=` consumer); missing is routing the switcher through it, mounting it in parent headers, adding `getsafestudy.com`/`getsafespark.com` to the allow-list, and not `signOut()`-ing the hub session after minting.
+
+### Security branch
+`security/p0-lockdown` → PR [#2](https://github.com/JDaws-Dev/getsafecontent/pull/2). Deployed to prod but **not merged to main** — main is drifting behind what's running.
+
+---
+
+## Current Status (June 13, 2026)
+
+Three-day push (June 11–13): security hardening → design cohesion → SafeSpark unified-auth completion + live support fires. Everything below is **deployed to prod**; ~10 commits sit on local `main` unpushed (the apps run the code via direct deploys — commits bring git in line).
+
+### Where we've been (shipped + deployed this session)
+
+**Security (P0/P1/P2 from the June 9 eval):**
+- **Admin-key + JWT-secret rotation** across all 6 Convex prods + Vercel. The Feb-2026 leaked admin key was hardcoded in 16 files AND shipping in the marketing JS bundle; rotated, old key 403s everywhere, hardcoded fallbacks stripped. Marketing `JWT_SECRET` now dedicated (was falling back to the admin key = forgeable login tokens). `MARKETING_JWT_SECRET` set on all 5 apps → unified-auth verification ACTIVE.
+- **Kid PIN hashing + lockout** (SafeTunes + SafeTube) — were plaintext + shipped to the kid client; now PBKDF2 + server-side `attemptKidPin` (5-try/5-min lockout); kid queries expose only `hasPin`. (Batch migration `migrateKidPinsToHash` written, NOT yet run — lazy upgrade covers the gap.)
+- **SafeStudy** classifier-outage operator alerts + intent-classification cache (30d). **SafeSpark** kid-facing raw-error leak closed; TTS daily cap decoupled from build budget; sprite generation pooled 3-wide (was up to 12 concurrent gpt-image-1). **SafeTube** `/extension/get-kids` rate-limited (DB-backed; the in-memory limiter was dead on Convex isolates). **Marketing** webhook now 500s on provisioning failure so Stripe retries (idempotent). Unindexed approvedSongs scans fixed (32k-read cliff shape). First app CI (`.github/workflows/app-checks.yml`). Committed secrets (Resend key, Stripe webhook secret) redacted from docs.
+- **SafeSpark iframe origin isolation** — dropped `allow-same-origin` so LLM-generated kid code can't read parent localStorage; in-memory storage shim so localStorage games still run. Bonus catch: a trailing-newline in `NEXT_PUBLIC_CONVEX_URL` had silently 404'd `sparkdb.js` → spark.db was dead on every Vercel preview/share; fixed.
+
+**Design cohesion (make 5 apps feel like one family + easy switching):**
+- **Canonical cross-app switcher** on all 5 kid logins (`packages/ui/SafeFamilySwitcher.jsx`, vendored) — real brand-icon chips, app names, carries family code via `?fc=` so switching skips the destination code screen. Replaced 5 divergent emoji strips.
+- **Brand-color lock** — one canonical gradient per app (SafeTunes purple→pink, SafeTube red→orange, **SafeReads amber→sepia** [was undecided green/purple/orange], SafeStudy blue→cyan, SafeSpark violet→fuchsia), propagated to hub nav/cards/showcase/spotlight/signup/success/admin + the SafeReads app itself. Source of truth: `packages/ui/brand-tokens.js`.
+- **In-app cross-app switcher (G)** in all 5 apps — kids switch mid-session without logging out (SafeReads live-verified end-to-end with a throwaway test family; others build-verified).
+- **No-emoji rule** adopted (Jeremiah preference) — SafeReads login + SafeSpark trust strip de-emoji'd; broader sweep tracked.
+
+**SafeSpark — the app that slipped through unified-auth (all fixed live):**
+- **Parent-login crash:** `users:getCurrent` / `concernAlerts:listForUser` / `sparkdb:dbWipe` used `await import('./actors')` — dynamic LOCAL imports are unsupported in Convex queries → "Server Error" the moment parents hit the JWT path. Switched to static imports. (Michelle/metrotter@gmail.com reported it.)
+- **Unified family code auto-adopt:** SafeSpark was throwing away the JWT's `familyCode` claim and minting RANDOM codes per parent. Now `verifyMarketingToken` returns the claim, `families:syncParentFromToken` auto-upserts the parent + family to the token's code on `/parent` load (loop-safe), `ensureForParent` adopts it, `adminRepairFamilyByEmail` is the operator backstop. **Every parent now gets THE one code across all 5 apps, no migration.** Michelle repaired to her unified code `ERLW4U`.
+- **Parent "move game between kids"** feature (`moveProjectToKid` + UI on `/parent/profile/[id]`) — Jace's request.
+
+### Where we are
+- Operator to-dos pending (Jeremiah): save the new admin/JWT secrets from `/tmp/sf-rotation/` to a password manager (volatile!); rotate the Resend key + roll the Stripe webhook secret (both were in git history); delete the old YouTube key in Google Cloud; run the 2 PIN-hash migrations; send the Jace text. Push the ~10 unpushed commits when ready (activates CI).
+
+### Where we're going
+- **Kid training curriculum from Jace's kids' real usage** — mine Knox/Myles's actual prompts + failure patterns (vague asks, regressions, stream truncations, tactics never tried) to build the in-app AI-prompting training from evidence. **This gates the adult version** (Jeremiah: solidify kid training first).
+- **Adult SafeSpark "build mode"** (Chad Sullivan's idea — the in-between for adults who've only chatted with ChatGPT) — after kid training is solid. Engine already serves adults via a parent self-profile; it's a positioning/voice + funding-channel play (libraries/workforce/grants).
+- Design cohesion remainder: **B** (unify kid code-entry input), **D** (type system), **H** (parent-dashboard switch bar), emoji sweep, AppShowcase mockup polish.
+- Audit the other 4 apps' family-code adoption (SafeSpark slipped through; confirm the rest truly adopt the JWT code).
+- `requireOwnerSoft` → hard-enforce flip (~June 18, after watching UNVERIFIED logs).
+
+---
+
 ## Current Status (June 6, 2026)
 
 **Live across the suite:**

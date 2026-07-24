@@ -50,6 +50,25 @@ npm run build && vercel --prod
 
 ## Recent Updates
 
+### Safe Family Design System — "Glow-Up" (July 22, 2026) — branch `design/glow-up`, NOT deployed
+
+SafeTunes is the **first app reskinned** to the approved cross-app design system. Styling-only (no logic touched), builds clean, verified live in a dev server against prod data.
+
+**Tokens** (`tailwind.config.js`) — the previously-abandoned Safe Family brand, revived:
+- `brand.cream #FBF6EF` (page ground), `brand.cream-2 #F3EADD`, `brand.navy #221D2E` (ink), `brand.ink-soft #6A6275`, `brand.peach-start/end` (family umbrella)
+- `accent` = **grape** ramp — `accent-500 #7C4DE0`, `accent-600 #6A3CCB`. **SafeTunes' one signature accent.**
+
+**Type** (`index.html` + `index.css`): **Fredoka** (display — headings + `.font-display`) and **Quicksand** (body). Inter is retired.
+
+**Rules when styling SafeTunes:**
+1. **One accent.** Use the `accent-*` ramp — never raw `purple-*`/`pink-*`. The old `from-purple-600 to-pink-500` gradient is gone; primary actions are **solid** `bg-accent-500 hover:bg-accent-600`.
+2. **Cream ground** (`bg-brand-cream`), not `from-*-50 via-white to-*-50` washes.
+3. **No rainbow tabs.** All nav tabs share one language (active = `bg-accent-50 text-accent-700`).
+4. Headings get `font-display` + `text-brand-navy` (no gradient-clipped text).
+5. Sibling app accents: SafeTube coral `#F0603A`, SafeReads leaf `#3AA06B`, SafeStudy cobalt `#2F6BF0`, SafeSpark amber `#F2A413`.
+
+**Known gaps:** the "Sign in with Apple Music" button is still a purple→pink gradient; and `index.css` defines legacy `.bg-brand-cream`/`.text-brand-navy` classes that shadow the Tailwind config values (near-identical tones — remove if you want config to win).
+
 ### Stripe Webhook Fix & Admin Tools (January 1, 2026)
 Fixed critical issue where Stripe webhooks were returning 200 even when mutations failed, causing customers like Chad Watson to get stuck in "trial" status despite paying.
 

@@ -1,5 +1,33 @@
 # Convex Backup Automation Setup
 
+> ## ⚠️ RETIRED July 20, 2026 — replaced by a LOCAL backup
+>
+> The GitHub Actions + Cloudflare R2 pipeline described below is **disabled** (`daily-backup.yml` state = `disabled_manually`). It had failed every night since ~July 15 for two reasons:
+> 1. It ran `npx convex export` from the **repo root**, which has no `package.json` → `ENOENT` on every export. (Patched in commit `77426b61`, but moot — see below.)
+> 2. **The repo has ZERO GitHub Actions secrets** (`gh secret list` → 0). Every `CONVEX_DEPLOY_KEY_*`, `R2_*`, and `RESEND_API_KEY` resolved to an empty string → "No CONVEX_DEPLOYMENT set", dead R2 upload, and a `401` on the Resend alert.
+>
+> Rather than provision R2 + 6 deploy keys for a family-scale app, backups now run **locally**. See **[Current setup](#current-setup-local-launchd--icloud)** below. Everything after that section is kept for historical reference only.
+>
+> ---
+>
+> ## Current setup (local launchd → iCloud)
+>
+> - **Script**: `scripts/backup-convex-local.sh` — exports **all 6 production deployments** using the locally-authenticated Convex CLI. **No secrets, no R2, no deploy keys.**
+> - **Schedule**: launchd agent `~/Library/LaunchAgents/com.safefamily.convexbackup.plist` (label `com.safefamily.convexbackup`), **daily 3:00 AM local**. Log: `~/Library/Logs/safefamily-backup.log`.
+> - **Destination**: iCloud Drive — `~/Library/Mobile Documents/com~apple~CloudDocs/SafeFamilyBackups/` (off-site via iCloud sync). Override with `SAFEFAMILY_BACKUP_DIR`.
+> - **Retention**: 30 days (`find -mtime +30 -delete`).
+> - **Coverage**: safetunes, safetube, safereads, **safestudy**, **safespark**, marketing — the old CI skipped SafeStudy and SafeSpark entirely.
+> - **Run manually**: `launchctl start com.safefamily.convexbackup`
+> - **Restore**: `npx convex import` from the relevant `.zip`.
+>
+> **⚠️ Critical gotcha:** target each deployment **explicitly** with `npx convex export --deployment-name <name>`. Using `CONVEX_DEPLOYMENT=prod:<name>` **silently misroutes** — a SafeTunes export via that env hit the *dev* deployment (`reminiscent-cod-488`) instead of prod, producing a useless backup. `--deployment-name` and `--prod` both target correctly.
+>
+> Verified July 20, 2026: manual run produced all 6 zips in iCloud (safespark ~30M, safetunes 3M, safetube 1.4M, safestudy 385K, safereads 280K, marketing 64K) — "6 ok, none failed".
+
+---
+
+## Historical: GitHub Actions + R2 (retired)
+
 Automated daily backups of all Convex production deployments to Cloudflare R2.
 
 ## Overview
