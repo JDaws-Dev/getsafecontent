@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Color constants
 const COLORS = [
@@ -506,6 +507,7 @@ export default function KidsManager({ userId, kidProfiles }) {
 
   const createProfile = useMutation(api.kidProfiles.createKidProfile);
   const deleteProfile = useMutation(api.kidProfiles.deleteKidProfile);
+  const { token } = useAuth();
 
   // Get recent watch history
   const recentHistory = useQuery(
@@ -526,6 +528,7 @@ export default function KidsManager({ userId, kidProfiles }) {
         userId,
         name: formData.name.trim(),
         color: formData.color,
+        userToken: token ?? undefined,
       });
       setFormData({ name: '', color: 'red' });
       setIsCreating(false);

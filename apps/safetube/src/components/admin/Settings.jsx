@@ -3,6 +3,7 @@ import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import GettingStarted from './GettingStarted';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { ThemeSelector } from '../common/ThemeToggle';
 
 // Stripe Price ID - SafeTube Premium $4.99/month
@@ -1221,6 +1222,7 @@ function AddKidModal({ userId, onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createKid = useMutation(api.kidProfiles.createKidProfile);
+  const { token } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1232,6 +1234,7 @@ function AddKidModal({ userId, onClose }) {
         userId,
         name: name.trim(),
         color,
+        userToken: token ?? undefined,
       });
       onClose();
     } catch (err) {
