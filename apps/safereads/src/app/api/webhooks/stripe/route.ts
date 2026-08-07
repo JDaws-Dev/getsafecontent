@@ -79,6 +79,7 @@ export async function POST(req: Request) {
       // Real infrastructure errors (Convex down) will throw and return 500
       // so Stripe retries
       await convex.mutation(api.subscriptions.updateSubscription, {
+        webhookSecret: process.env.STRIPE_BRIDGE_SECRET,
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscription.id,
         subscriptionStatus: mapSubscriptionStatus(subscription.status),
@@ -121,6 +122,7 @@ export async function POST(req: Request) {
         subscription.items.data[0]?.current_period_end ?? 0;
 
       await convex.mutation(api.subscriptions.updateSubscription, {
+        webhookSecret: process.env.STRIPE_BRIDGE_SECRET,
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscription.id,
         subscriptionStatus: mapSubscriptionStatus(subscription.status),
@@ -145,6 +147,7 @@ export async function POST(req: Request) {
         subscription.items.data[0]?.current_period_end ?? 0;
 
       await convex.mutation(api.subscriptions.updateSubscription, {
+        webhookSecret: process.env.STRIPE_BRIDGE_SECRET,
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscription.id,
         subscriptionStatus: "canceled",

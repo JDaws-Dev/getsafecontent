@@ -11,7 +11,7 @@ interface UpgradePromptProps {
 }
 
 export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
-  const { user: authUser } = useAuth();
+  const { user: authUser, token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showCoupon, setShowCoupon] = useState(false);
   const [couponCode, setCouponCode] = useState("");
@@ -40,7 +40,7 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
     setCouponLoading(true);
     setCouponResult(null);
     try {
-      const result = await redeemCoupon({ email: authUser.email, code: couponCode });
+      const result = await redeemCoupon({ email: authUser.email, code: couponCode, userToken: token ?? undefined });
       setCouponResult(result);
       if (result.success) {
         // Reload after short delay to show success message

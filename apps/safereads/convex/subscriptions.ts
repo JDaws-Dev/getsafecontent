@@ -129,8 +129,27 @@ export const updateSubscription = mutation({
       v.literal("incomplete")
     ),
     subscriptionCurrentPeriodEnd: v.number(),
+    webhookSecret: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // This has to stay a PUBLIC mutation: it's called by the Stripe webhook
+    // route (src/app/api/webhooks/stripe/route.ts) via ConvexHttpClient, which
+    // can only reach public functions. The route verifies Stripe's signature,
+    // but nothing stopped someone calling this mutation directly and flipping
+    // a subscription to active/canceled — they'd only need the customer's
+    // Stripe id.
+    //
+    // Shared secret, enforced ONLY once STRIPE_BRIDGE_SECRET is set on the
+    // deployment. That ordering is deliberate: deploying this code before the
+    // env var exists changes nothing, so billing can't break mid-rollout. Set
+    // the var once the route is deployed and sending it, and the check goes
+    // live. If the var is ever cleared, this reverts to the old open behaviour
+    // rather than silently rejecting real payments.
+    const expected = process.env.STRIPE_BRIDGE_SECRET;
+    if (expected && args.webhookSecret !== expected) {
+      throw new Error("Not authorized");
+    }
+
     const user = await ctx.db
       .query("users")
       .withIndex("by_stripe_customer_id", (q) =>

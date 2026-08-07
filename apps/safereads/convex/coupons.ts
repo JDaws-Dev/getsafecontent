@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import { requireOwner } from "./identity";
 
 /**
  * Redeem a coupon code for a user by email.
@@ -9,6 +10,7 @@ export const redeemCoupon = mutation({
   args: {
     email: v.string(),
     code: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
@@ -19,6 +21,13 @@ export const redeemCoupon = mutation({
     if (!user) {
       return { success: false, message: "User not found" };
     }
+
+    // The email arrives from the client, so without this anyone could redeem
+    // against somebody else's account — burning their one-time coupon
+    // eligibility, or handing a stranger a subscription. Stays a public
+    // mutation (the checkout box legitimately calls it) but you must prove you
+    // own the account you're redeeming for.
+    await requireOwner(ctx, args.userToken, user._id, "coupons.redeemCoupon");
 
     // Check if user already redeemed a coupon
     if (user.redeemedCoupon) {
