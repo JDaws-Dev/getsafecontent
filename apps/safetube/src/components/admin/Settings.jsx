@@ -1227,7 +1227,6 @@ function AddKidModal({ userId, onClose }) {
   const { token } = useAuth();
 
   const createKid = useMutation(api.kidProfiles.createKidProfile);
-  const { token } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
