@@ -13,7 +13,7 @@ export default function EmptyState({
     <div className="text-center pt-12">
       {/* First-time walkthrough */}
       {showIntro && (
-        <div className="max-w-lg mx-auto mb-8 bg-gradient-to-br from-accent-50 to-accent-50 dark:from-accent-900/20 dark:to-accent-900/20 border border-accent-100 dark:border-accent-800 rounded-2xl p-5 text-left relative">
+        <div className="max-w-lg mx-auto mb-8 bg-accent-50 dark:bg-accent-900/20 border border-accent-100 dark:border-accent-800 rounded-2xl p-5 text-left relative">
           <button
             onClick={() => {
               localStorage.setItem(`safestudy_kid_intro_${selectedProfile?._id}`, 'true');

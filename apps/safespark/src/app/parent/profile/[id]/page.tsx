@@ -3,17 +3,22 @@
 import Link from 'next/link';
 import { use, useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
-import { ChevronLeft, Database, CornerUpRight } from 'lucide-react';
+import { Check, ChevronLeft, Database, CornerUpRight } from 'lucide-react';
 import { api } from '../../../../../convex/_generated/api';
 import type { Id } from '../../../../../convex/_generated/dataModel';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 
+// Per-kid avatar hues. This is kid IDENTITY data (stored as `avatarColor` on
+// the profile), not brand colour — the keys must keep matching what Convex
+// writes. Flattened from gradients to solids so they sit quietly next to the
+// one SafeSpark accent.
 const COLOR_CLASSES: Record<string, string> = {
-  violet: 'from-violet-500 to-pink-500',
-  pink: 'from-pink-500 to-amber-500',
-  emerald: 'from-emerald-500 to-sky-500',
-  amber: 'from-amber-500 to-rose-500',
-  sky: 'from-sky-500 to-violet-500',
+  violet: 'bg-violet-500',
+  pink: 'bg-pink-500',
+  emerald: 'bg-emerald-500',
+  amber: 'bg-amber-500',
+  sky: 'bg-sky-500',
+  rose: 'bg-rose-500',
 };
 
 export default function ProfileDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -37,18 +42,18 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
     .map((k) => ({ id: k.id, name: k.displayName }));
 
   if (!isLoaded) {
-    return <main className="flex min-h-screen items-center justify-center text-slate-500">Loading…</main>;
+    return <main className="flex min-h-screen items-center justify-center text-brand-ink-soft">Loading…</main>;
   }
   if (!isSignedIn) {
     return (
       <main className="flex min-h-screen items-center justify-center px-6 text-center">
         <div className="space-y-3">
-          <h1 className="text-2xl font-black text-slate-800">Sign in to view this profile</h1>
+          <h1 className="font-display text-2xl font-bold text-brand-navy">Sign in to view this profile</h1>
           <Link href="/login" className="inline-block rounded-2xl bg-accent-600 px-5 py-2 text-sm font-black text-brand-navy hover:bg-accent-700">
             Sign in with Safe Family
           </Link>
           <div>
-            <Link href="/" className="text-sm font-bold text-accent-600 hover:text-accent-800">Back to home</Link>
+            <Link href="/" className="text-sm font-bold text-accent-700 hover:text-accent-800">Back to home</Link>
           </div>
         </div>
       </main>
@@ -61,9 +66,9 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
     return (
       <main className="flex min-h-screen items-center justify-center px-6 text-center">
         <div className="space-y-3">
-          <h1 className="text-2xl font-black text-slate-800">Profile not found</h1>
-          <p className="text-sm text-slate-500">Either it doesn&apos;t exist or it belongs to a different family.</p>
-          <Link href="/parent" className="text-sm font-bold text-accent-600 hover:text-accent-800">← Back to dashboard</Link>
+          <h1 className="font-display text-2xl font-bold text-brand-navy">Profile not found</h1>
+          <p className="text-sm text-brand-ink-soft">Either it doesn&apos;t exist or it belongs to a different family.</p>
+          <Link href="/parent" className="text-sm font-bold text-accent-700 hover:text-accent-800">← Back to dashboard</Link>
         </div>
       </main>
     );
@@ -111,18 +116,18 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
   return (
     <main className="min-h-screen bg-brand-cream px-4 py-6 sm:px-8">
       <div className="mx-auto max-w-5xl space-y-6">
-        <Link href="/parent" className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-accent-500 hover:text-accent-700">
+        <Link href="/parent" className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-accent-700 hover:text-accent-800">
           <ChevronLeft className="h-3.5 w-3.5" />
           Back to dashboard
         </Link>
 
         <header className="flex flex-wrap items-center gap-4">
-          <div className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${colorClass} text-2xl font-black text-white shadow`}>
+          <div className={`flex h-16 w-16 items-center justify-center rounded-2xl ${colorClass} font-display text-2xl font-bold text-white shadow`}>
             {profile.displayName.slice(0, 1).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-black text-slate-900">{profile.displayName}</h1>
-            <p className="text-xs font-bold text-slate-500">
+            <h1 className="font-display text-2xl font-bold text-brand-navy">{profile.displayName}</h1>
+            <p className="text-xs font-bold text-brand-ink-soft">
               {profile.age != null ? `Age ${profile.age} · ` : ''}
               {profile.sex === 'adult' ? 'Adult' : profile.sex === 'girl' ? 'Girl' : 'Boy'}
               {' · '}
@@ -136,10 +141,10 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
           <StatTile label="Image restyles this month" value={usageThisMonth.imageTransforms.toLocaleString()} />
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-lg font-black text-slate-900">All projects</h2>
+        <section className="rounded-3xl border border-brand-cream-2 bg-white p-5 shadow-sm">
+          <h2 className="mb-3 font-display text-lg font-bold text-brand-navy">All projects</h2>
           {projects.length === 0 ? (
-            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-500">
+            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-brand-ink-soft">
               No projects yet. They&apos;ll show here as soon as {profile.displayName} starts building.
             </p>
           ) : (
@@ -155,11 +160,11 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
             attempts, and concern-alert events chronologically. The
             "everything {kid} typed to Spark" view Jeremiah asked for
             on 2026-05-29. Each entry color-coded by kind. */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-3xl border border-brand-cream-2 bg-white p-5 shadow-sm">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-black text-slate-900">Activity log</h2>
-              <p className="text-xs font-bold text-slate-500">
+              <h2 className="font-display text-lg font-bold text-brand-navy">Activity log</h2>
+              <p className="text-xs font-bold text-brand-ink-soft">
                 Everything {profile.displayName} asked Spark to build — including refusals
               </p>
             </div>
@@ -168,11 +173,11 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
             </p>
           </div>
           {activityLog.length === 0 ? (
-            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-500">
+            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-brand-ink-soft">
               Nothing yet. When {profile.displayName} starts building, every prompt shows here.
             </p>
           ) : (
-            <ol className="divide-y divide-slate-100">
+            <ol className="divide-y divide-brand-cream-2">
               {activityLog.map((entry) => (
                 <li key={`${entry.kind}-${entry.id}`} className="py-3 first:pt-0 last:pb-0">
                   {entry.kind === 'prompt' && (
@@ -190,7 +195,7 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
                           {formatDate(entry.createdAt)}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm font-semibold text-slate-700">{entry.prompt}</p>
+                      <p className="mt-1 text-sm font-semibold text-brand-navy">{entry.prompt}</p>
                     </>
                   )}
                   {entry.kind === 'blocked' && (
@@ -216,7 +221,10 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
                           {entry.category === 'self_harm_adjacent' ? 'Self-harm signal' : 'ED signal'}
                         </span>
                         {entry.acknowledged && (
-                          <span className="text-[10px] font-bold text-emerald-700">✓ Acknowledged</span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700">
+                            <Check className="h-3 w-3" aria-hidden="true" />
+                            Acknowledged
+                          </span>
                         )}
                         <span className="ml-auto text-[11px] font-bold text-slate-400">
                           {formatDate(entry.createdAt)}
@@ -297,8 +305,8 @@ function ProjectCardWithWipe({
     }
   };
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="aspect-video w-full bg-slate-100">
+    <article className="overflow-hidden rounded-2xl border border-brand-cream-2 bg-white shadow-sm">
+      <div className="aspect-video w-full bg-brand-cream-2">
         <iframe
           srcDoc={project.html}
           title={project.title}
@@ -308,7 +316,7 @@ function ProjectCardWithWipe({
       </div>
       <div className="p-3">
         <div className="flex items-center gap-2">
-          <h3 className="flex-1 truncate font-black text-slate-900" title={project.title}>{project.title}</h3>
+          <h3 className="flex-1 truncate font-bold text-brand-navy" title={project.title}>{project.title}</h3>
           {project.isCommunication && (
             <span
               className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-amber-800"
@@ -319,7 +327,7 @@ function ProjectCardWithWipe({
           )}
         </div>
         {project.lastPrompt && (
-          <p className="mt-1 line-clamp-2 text-xs text-slate-500" title={project.lastPrompt}>{project.lastPrompt}</p>
+          <p className="mt-1 line-clamp-2 text-xs text-brand-ink-soft" title={project.lastPrompt}>{project.lastPrompt}</p>
         )}
         <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
           {formatDate(project.updatedAt)}
@@ -330,7 +338,7 @@ function ProjectCardWithWipe({
             type="button"
             onClick={onWipe}
             disabled={busy}
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-brand-cream disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-lg border border-brand-cream-2 bg-white px-2 py-1 text-[10px] font-bold text-brand-ink-soft hover:bg-brand-cream disabled:opacity-50"
             title="Wipe leaderboard / shared data for this project"
           >
             <Database className="h-3 w-3" />
@@ -379,7 +387,7 @@ function ProjectDataInspector({ projectId }: { projectId: Id<'safesparkProjects'
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-brand-cream"
+        className="inline-flex items-center gap-1 rounded-lg border border-brand-cream-2 bg-white px-2 py-1 text-[10px] font-bold text-brand-ink-soft hover:bg-brand-cream"
         aria-expanded={open}
         title="See what data this project stores (leaderboards, chat messages, etc.)"
       >
@@ -387,11 +395,11 @@ function ProjectDataInspector({ projectId }: { projectId: Id<'safesparkProjects'
         {open ? 'Hide shared data' : `View shared data (${rows === undefined && open ? '…' : summary})`}
       </button>
       {open && (
-        <div className="mt-2 rounded-lg border border-slate-200 bg-brand-cream p-2">
+        <div className="mt-2 rounded-lg border border-brand-cream-2 bg-brand-cream p-2">
           {rows === undefined ? (
             <p className="text-[11px] font-semibold text-slate-400">Loading…</p>
           ) : rows.length === 0 ? (
-            <p className="text-[11px] font-semibold text-slate-500">
+            <p className="text-[11px] font-semibold text-brand-ink-soft">
               Nothing stored yet. If this project is a chat / leaderboard / message wall,
               it&apos;ll show up here as soon as someone uses it.
             </p>
@@ -425,7 +433,7 @@ function DataRow({ row }: { row: { key: string; value: string; updatedAt: number
         <span className="shrink-0 text-[9px] font-bold text-slate-400">{formatDate(row.updatedAt)}</span>
       </div>
       {Array.isArray(parsed) ? (
-        <ul className="mt-1 list-inside list-disc space-y-0.5 pl-1 text-[11px] text-slate-700">
+        <ul className="mt-1 list-inside list-disc space-y-0.5 pl-1 text-[11px] text-brand-navy">
           {parsed.slice(0, 10).map((item, idx) => (
             <li key={idx} className="line-clamp-1" title={typeof item === 'string' ? item : JSON.stringify(item)}>
               {typeof item === 'string'
@@ -440,11 +448,11 @@ function DataRow({ row }: { row: { key: string; value: string; updatedAt: number
           )}
         </ul>
       ) : typeof parsed === 'object' && parsed !== null ? (
-        <pre className="mt-1 overflow-x-auto rounded bg-slate-100 px-2 py-1 text-[10px] text-slate-700">
+        <pre className="mt-1 overflow-x-auto rounded bg-brand-cream-2 px-2 py-1 text-[10px] text-brand-navy">
           {JSON.stringify(parsed, null, 2).slice(0, 500)}
         </pre>
       ) : (
-        <p className="mt-1 line-clamp-2 text-[11px] text-slate-700" title={String(parsed)}>
+        <p className="mt-1 line-clamp-2 text-[11px] text-brand-navy" title={String(parsed)}>
           {String(parsed)}
         </p>
       )}
@@ -454,9 +462,9 @@ function DataRow({ row }: { row: { key: string; value: string; updatedAt: number
 
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-brand-cream-2 bg-white p-4 shadow-sm">
       <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{label}</p>
-      <p className="mt-1 text-2xl font-black text-slate-900">{value}</p>
+      <p className="mt-1 font-display text-2xl font-bold text-brand-navy">{value}</p>
     </div>
   );
 }

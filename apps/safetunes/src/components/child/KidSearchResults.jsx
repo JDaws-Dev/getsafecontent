@@ -72,12 +72,12 @@ function TopResultCard({ item, onTap, isApproved, isRequested }) {
 
   return (
     <div className="mb-6">
-      <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+      <h3 className="text-sm font-display font-semibold text-gray-500 uppercase tracking-wide mb-3">
         Top Result
       </h3>
       <button
         onClick={() => onTap(item)}
-        className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-transparent border border-gray-200 hover:border-purple-300 transition-all hover:shadow-lg"
+        className="w-full group relative overflow-hidden rounded-2xl bg-accent-50 border border-accent-100 hover:border-accent-300 transition-all hover:shadow-lg"
       >
         <div className="p-4 sm:p-5 flex items-center gap-4">
           {/* Artwork - only show if approved */}
@@ -100,17 +100,11 @@ function TopResultCard({ item, onTap, isApproved, isRequested }) {
 
           {/* Info */}
           <div className="flex-1 min-w-0 text-left">
-            <h4 className="text-lg sm:text-xl font-bold text-gray-900 truncate group-hover:text-purple-700 transition">
+            <h4 className="text-lg sm:text-xl font-bold text-gray-900 truncate group-hover:text-accent-700 transition">
               {item.attributes?.name}
             </h4>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                isArtist
-                  ? 'bg-indigo-100 text-indigo-700'
-                  : isAlbum
-                  ? 'bg-purple-100 text-purple-700'
-                  : 'bg-pink-100 text-pink-700'
-              }`}>
+              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-accent-100 text-accent-700">
                 {isArtist ? 'Artist' : isAlbum ? 'Album' : 'Song'}
               </span>
               {!isArtist && (
@@ -132,11 +126,11 @@ function TopResultCard({ item, onTap, isApproved, isRequested }) {
               <Check className="w-5 h-5 text-white" />
             </div>
           ) : isRequested ? (
-            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-              <Clock className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 rounded-full bg-accent-100 flex items-center justify-center flex-shrink-0">
+              <Clock className="w-5 h-5 text-accent-600" />
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-accent-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
               <ChevronRight className="w-5 h-5 text-white" />
             </div>
           )}
@@ -198,8 +192,8 @@ function SongRow({ song, onRequest, isApproved, isRequested, justRequested }) {
           <Check className="w-5 h-5 text-green-600" />
         </div>
       ) : (isRequested || justRequested) ? (
-        <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0" title="Request pending">
-          <Clock className="w-5 h-5 text-purple-600" />
+        <div className="w-9 h-9 rounded-full bg-accent-100 flex items-center justify-center flex-shrink-0" title="Request pending">
+          <Clock className="w-5 h-5 text-accent-600" />
         </div>
       ) : (
         <button
@@ -207,7 +201,7 @@ function SongRow({ song, onRequest, isApproved, isRequested, justRequested }) {
             e.stopPropagation();
             onRequest?.(song);
           }}
-          className="w-9 h-9 rounded-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center transition flex-shrink-0"
+          className="w-9 h-9 rounded-full bg-accent-600 hover:bg-accent-700 flex items-center justify-center transition flex-shrink-0"
           title="Request song"
         >
           <Plus className="w-5 h-5 text-white" />
@@ -285,13 +279,13 @@ function AlbumCard({
               <Check className="w-5 h-5 text-green-600" />
             </div>
           ) : (isRequested || justRequested) ? (
-            <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center" title="Request pending">
-              <Clock className="w-5 h-5 text-purple-600" />
+            <div className="w-9 h-9 rounded-full bg-accent-100 flex items-center justify-center" title="Request pending">
+              <Clock className="w-5 h-5 text-accent-600" />
             </div>
           ) : (
             <button
               onClick={() => onRequest?.(album)}
-              className="w-9 h-9 rounded-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center transition"
+              className="w-9 h-9 rounded-full bg-accent-600 hover:bg-accent-700 flex items-center justify-center transition"
               title="Request album"
             >
               <Plus className="w-5 h-5 text-white" />
@@ -305,7 +299,7 @@ function AlbumCard({
         <div className="border-t border-gray-100 bg-gray-50">
           {isLoadingTracks ? (
             <div className="flex items-center justify-center py-6 gap-3">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-accent-600"></div>
               <span className="text-sm text-gray-500">Loading tracks...</span>
             </div>
           ) : tracks && tracks.length > 0 ? (
@@ -339,13 +333,13 @@ function AlbumCard({
                         <Check className="w-4 h-4" />
                       </div>
                     ) : (trackRequested || trackJustRequested) ? (
-                      <div className="w-7 h-7 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-7 h-7 bg-accent-100 text-accent-600 rounded-full flex items-center justify-center flex-shrink-0">
                         <Clock className="w-4 h-4" />
                       </div>
                     ) : (
                       <button
                         onClick={() => onSongRequest?.(track, album.attributes?.name)}
-                        className="w-7 h-7 bg-purple-600 hover:bg-purple-700 text-white rounded-full flex items-center justify-center transition flex-shrink-0"
+                        className="w-7 h-7 bg-accent-600 hover:bg-accent-700 text-white rounded-full flex items-center justify-center transition flex-shrink-0"
                         title="Request this song"
                       >
                         <Plus className="w-4 h-4" />
@@ -377,7 +371,7 @@ function ArtistCard({ artist, onTap }) {
       <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center shadow-md group-hover:shadow-xl transition-shadow mx-auto">
         <SafeTunesLogo className="w-10 h-10 sm:w-12 sm:h-12 text-white/70" />
       </div>
-      <h5 className="mt-2 font-semibold text-gray-900 text-sm truncate group-hover:text-purple-700 transition">
+      <h5 className="mt-2 font-semibold text-gray-900 text-sm truncate group-hover:text-accent-700 transition">
         {artist.attributes?.name}
       </h5>
       <p className="text-xs text-gray-500">Artist</p>
@@ -445,7 +439,7 @@ export default function KidSearchResults({
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
       <div className="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">
+        <h3 className="font-display font-semibold text-brand-navy">
           Search Results
           <span className="ml-2 text-sm text-gray-500 font-normal">
             ({activeFilter === 'all' ? counts.all : counts[activeFilter]})
@@ -453,7 +447,7 @@ export default function KidSearchResults({
         </h3>
         <button
           onClick={onClear}
-          className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+          className="text-sm text-accent-600 hover:text-accent-700 font-medium"
         >
           Clear
         </button>
@@ -465,7 +459,7 @@ export default function KidSearchResults({
           onClick={() => setActiveFilter('all')}
           className={`px-4 py-2 rounded-full text-sm font-medium transition whitespace-nowrap ${
             activeFilter === 'all'
-              ? 'bg-purple-600 text-white shadow-md'
+              ? 'bg-accent-600 text-white shadow-md'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -476,7 +470,7 @@ export default function KidSearchResults({
             onClick={() => setActiveFilter('songs')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition whitespace-nowrap ${
               activeFilter === 'songs'
-                ? 'bg-pink-600 text-white shadow-md'
+                ? 'bg-accent-600 text-white shadow-md'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -488,7 +482,7 @@ export default function KidSearchResults({
             onClick={() => setActiveFilter('albums')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition whitespace-nowrap ${
               activeFilter === 'albums'
-                ? 'bg-purple-600 text-white shadow-md'
+                ? 'bg-accent-600 text-white shadow-md'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -500,7 +494,7 @@ export default function KidSearchResults({
             onClick={() => setActiveFilter('artists')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition whitespace-nowrap ${
               activeFilter === 'artists'
-                ? 'bg-indigo-600 text-white shadow-md'
+                ? 'bg-accent-600 text-white shadow-md'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -544,13 +538,13 @@ export default function KidSearchResults({
             {songs.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                  <h3 className="text-sm font-display font-semibold text-gray-500 uppercase tracking-wide">
                     Songs
                   </h3>
                   {songs.length > 4 && (
                     <button
                       onClick={() => setActiveFilter('songs')}
-                      className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                      className="text-sm text-accent-600 hover:text-accent-700 font-medium"
                     >
                       See all
                     </button>
@@ -575,13 +569,13 @@ export default function KidSearchResults({
             {albums.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
+                  <h3 className="text-sm font-display font-semibold text-gray-500 uppercase tracking-wide">
                     Albums
                   </h3>
                   {albums.length > 3 && (
                     <button
                       onClick={() => setActiveFilter('albums')}
-                      className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                      className="text-sm text-accent-600 hover:text-accent-700 font-medium"
                     >
                       See all
                     </button>
@@ -613,7 +607,7 @@ export default function KidSearchResults({
             {/* Artists Section */}
             {artists.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                <h3 className="text-sm font-display font-semibold text-gray-500 uppercase tracking-wide mb-3">
                   Artists
                 </h3>
                 <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4">

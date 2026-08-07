@@ -73,7 +73,7 @@ function AlbumSearchSimple({ user, onAlbumClick }) {
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck="false"
-              className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-base"
+              className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent text-base"
             />
             {searchQuery && (
               <button
@@ -89,7 +89,7 @@ function AlbumSearchSimple({ user, onAlbumClick }) {
           <button
             onClick={handleSearch}
             disabled={!searchQuery.trim() || isSearching || !isMusicKitReady}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition flex items-center gap-2"
+            className="px-6 py-3 bg-accent-600 text-white rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition flex items-center gap-2"
           >
             {isSearching ? (
               <>
@@ -139,13 +139,13 @@ function AlbumSearchSimple({ user, onAlbumClick }) {
                     className="w-full aspect-square object-cover rounded-lg shadow-md group-hover:shadow-xl transition-shadow mb-2"
                   />
                 ) : (
-                  <div className="w-full aspect-square bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg shadow-md group-hover:shadow-xl transition-shadow mb-2 flex items-center justify-center">
-                    <svg className="w-12 h-12 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="w-full aspect-square bg-accent-100 rounded-lg shadow-md group-hover:shadow-xl transition-shadow mb-2 flex items-center justify-center">
+                    <svg className="w-12 h-12 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                     </svg>
                   </div>
                 )}
-                <h3 className="font-medium text-sm text-gray-900 truncate group-hover:text-purple-600 transition">
+                <h3 className="font-medium text-sm text-gray-900 truncate group-hover:text-accent-600 transition">
                   {album.attributes.name}
                 </h3>
                 <p className="text-xs text-gray-600 truncate">{album.attributes.artistName}</p>

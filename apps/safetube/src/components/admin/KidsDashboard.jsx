@@ -61,8 +61,8 @@ export default function KidsDashboard({ userId, kidProfiles }) {
             onClick={() => setActiveSection('profiles')}
             className="bg-white hover:bg-gray-50 rounded-xl p-5 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-accent-200"
           >
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mb-3">
-              <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-10 h-10 bg-accent-100 rounded-lg flex items-center justify-center mb-3">
+              <svg className="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
@@ -123,8 +123,8 @@ export default function KidsDashboard({ userId, kidProfiles }) {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Kids</h3>
           {!kidProfiles || kidProfiles.length === 0 ? (
             <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-100">
-              <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 mx-auto mb-4 bg-accent-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
               </div>
@@ -132,7 +132,7 @@ export default function KidsDashboard({ userId, kidProfiles }) {
               <p className="text-gray-500 text-sm mb-4">Create a profile for each of your kids</p>
               <button
                 onClick={() => setActiveSection('profiles')}
-                className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-4 py-2 rounded-lg font-medium transition"
+                className="bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-lg font-medium transition"
               >
                 Add First Kid
               </button>

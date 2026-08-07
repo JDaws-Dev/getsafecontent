@@ -168,13 +168,13 @@ export default function ComparePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-brand-cream">
       {/* Header */}
       <header className="bg-white/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
+              <div className="w-9 h-9 bg-accent-500 rounded-xl flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -199,7 +199,7 @@ export default function ComparePage() {
       </header>
 
       {/* Hero Section - "Graduated from YouTube Kids" */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-red-600 to-orange-500">
+      <section className="py-12 sm:py-16 lg:py-20 bg-accent-500">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             {/* Badge */}
@@ -219,7 +219,7 @@ export default function ComparePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
               <Link
                 to="/signup"
-                className="w-full sm:w-auto bg-white hover:bg-gray-100 text-red-600 px-8 py-4 rounded-xl font-bold text-lg transition shadow-lg"
+                className="w-full sm:w-auto bg-white hover:bg-gray-100 text-accent-600 px-8 py-4 rounded-xl font-bold text-lg transition shadow-lg"
               >
                 Try SafeTube Free for 7 Days
               </Link>
@@ -280,7 +280,7 @@ export default function ComparePage() {
                   JUST RIGHT
                 </div>
                 <div className="pt-2">
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-accent-500 rounded-xl flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
@@ -339,7 +339,7 @@ export default function ComparePage() {
       </section>
 
       {/* Feature Comparison Table */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-brand-cream-2">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-4">
@@ -357,7 +357,7 @@ export default function ComparePage() {
                     <th className="text-left py-4 px-6 font-bold text-gray-700 w-1/4">Feature</th>
                     <th className="text-center py-4 px-4 w-5/16">
                       <div className="flex items-center justify-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center">
                           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                           </svg>
@@ -437,7 +437,7 @@ export default function ComparePage() {
       </section>
 
       {/* Key Difference: Whitelist vs Algorithm */}
-      <section className="py-16 bg-gradient-to-br from-red-600 to-orange-500">
+      <section className="py-16 bg-accent-500">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-4">
@@ -483,7 +483,7 @@ export default function ComparePage() {
               {/* SafeTube Approach */}
               <div className="bg-white rounded-2xl p-6 shadow-xl">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-accent-500 rounded-lg flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
@@ -592,7 +592,7 @@ export default function ComparePage() {
             </div>
 
             {/* Quote */}
-            <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl p-6 border-2 border-red-200 max-w-3xl mx-auto">
+            <div className="bg-accent-50 rounded-2xl p-6 border-2 border-accent-200 max-w-3xl mx-auto">
               <p className="text-lg text-gray-800 italic text-center mb-4">
                 "My 10-year-old was embarrassed to use YouTube Kids at a friend's house. Now with SafeTube, she watches Mark Rober and Veritasium—content I'm actually happy about."
               </p>
@@ -603,7 +603,7 @@ export default function ComparePage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-16 bg-gray-100">
+      <section className="py-16 bg-brand-cream-2">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8">
@@ -680,7 +680,7 @@ export default function ComparePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-16 bg-gradient-to-br from-red-600 to-orange-500">
+      <section className="py-16 bg-accent-500">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
@@ -691,7 +691,7 @@ export default function ComparePage() {
             </p>
             <Link
               to="/signup"
-              className="inline-block bg-white hover:bg-gray-100 text-red-600 px-10 py-4 rounded-xl font-bold text-lg transition shadow-lg"
+              className="inline-block bg-white hover:bg-gray-100 text-accent-600 px-10 py-4 rounded-xl font-bold text-lg transition shadow-lg"
             >
               Start Your 7-Day Free Trial
             </Link>

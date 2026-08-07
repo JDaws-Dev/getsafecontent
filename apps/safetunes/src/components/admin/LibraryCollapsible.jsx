@@ -190,7 +190,7 @@ function LibraryCollapsible() {
           </div>
           <button
             onClick={() => setShowImport(!showImport)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition"
+            className="flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -225,7 +225,7 @@ function LibraryCollapsible() {
               onClick={() => setSelectedKidFilter('all')}
               className={`px-4 py-2 rounded-lg font-medium text-sm transition ${
                 selectedKidFilter === 'all'
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-accent-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -237,7 +237,7 @@ function LibraryCollapsible() {
                 onClick={() => setSelectedKidFilter(kid._id)}
                 className={`px-4 py-2 rounded-lg font-medium text-sm transition flex items-center gap-2 ${
                   selectedKidFilter === kid._id
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-accent-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -265,7 +265,7 @@ function LibraryCollapsible() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search library..."
-            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
           />
           <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -304,7 +304,7 @@ function LibraryCollapsible() {
                   value={newPlaylistName}
                   onChange={(e) => setNewPlaylistName(e.target.value)}
                   placeholder="My Awesome Playlist"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -318,7 +318,7 @@ function LibraryCollapsible() {
                   onChange={(e) => setNewPlaylistDescription(e.target.value)}
                   placeholder="A collection of great songs..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
                 />
               </div>
 
@@ -332,7 +332,7 @@ function LibraryCollapsible() {
                       key={kid._id}
                       className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition ${
                         selectedKidsForPlaylist.includes(kid._id)
-                          ? 'border-purple-500 bg-purple-50'
+                          ? 'border-accent-500 bg-accent-50'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -341,7 +341,7 @@ function LibraryCollapsible() {
                         value={kid._id}
                         checked={selectedKidsForPlaylist.includes(kid._id)}
                         onChange={() => toggleKidSelection(kid._id)}
-                        className="w-4 h-4 text-purple-600 rounded"
+                        className="w-4 h-4 text-accent-600 rounded"
                       />
                       <div className={`w-8 h-8 rounded-full ${getColorClass(kid.color)} flex items-center justify-center text-white p-1.5`}>
                         {getAvatarIcon(kid.avatar)}
@@ -368,7 +368,7 @@ function LibraryCollapsible() {
                 <button
                   type="submit"
                   disabled={!newPlaylistName.trim() || selectedKidsForPlaylist.length === 0}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   Create Playlist{selectedKidsForPlaylist.length > 1 ? 's' : ''}
                 </button>
@@ -388,7 +388,7 @@ function LibraryCollapsible() {
             className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition"
           >
             <div className="flex items-center gap-3">
-              <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-6 h-6 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
               </svg>
               <div className="text-left">
@@ -412,7 +412,7 @@ function LibraryCollapsible() {
               <div className="p-4 border-b border-gray-100">
                 <button
                   onClick={() => setShowCreatePlaylist(true)}
-                  className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-purple-400 hover:text-purple-600 transition flex items-center justify-center gap-2"
+                  className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-accent-400 hover:text-accent-600 transition flex items-center justify-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -434,7 +434,7 @@ function LibraryCollapsible() {
                     return (
                       <div key={playlist._id} className="p-4 hover:bg-gray-50 transition">
                         <div className="flex items-start gap-4 cursor-pointer" onClick={() => setSelectedPlaylistForView(playlist)}>
-                          <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white">
+                          <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-accent-400 flex items-center justify-center text-white">
                             <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                             </svg>
@@ -487,7 +487,7 @@ function LibraryCollapsible() {
             className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition"
           >
             <div className="flex items-center gap-3">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <div className="text-left">
@@ -565,8 +565,8 @@ function LibraryCollapsible() {
                                   ) : album.artworkUrl ? (
                                     <img src={album.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={album.name} className="w-full h-full object-cover" />
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                                      <svg className="w-6 h-6 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                                    <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                                      <svg className="w-6 h-6 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                                       </svg>
                                     </div>
@@ -620,8 +620,8 @@ function LibraryCollapsible() {
                                           ) : song.artworkUrl ? (
                                             <img src={song.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={song.songName} className="w-full h-full object-cover" />
                                           ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                                              <svg className="w-5 h-5 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                                            <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                                              <svg className="w-5 h-5 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                                                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                                               </svg>
                                             </div>
@@ -730,7 +730,7 @@ function LibraryCollapsible() {
             className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition"
           >
             <div className="flex items-center gap-3">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               <div className="text-left">
@@ -776,8 +776,8 @@ function LibraryCollapsible() {
                       ) : album.artworkUrl ? (
                         <img src={album.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={album.name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                          <svg className="w-8 h-8 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                          <svg className="w-8 h-8 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                           </svg>
                         </div>
@@ -821,8 +821,8 @@ function LibraryCollapsible() {
                                 ) : song.artworkUrl ? (
                                   <img src={song.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={song.songName} className="w-full h-full object-cover" />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                                    <svg className="w-5 h-5 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                                  <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                                    <svg className="w-5 h-5 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                                       <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                                     </svg>
                                   </div>
@@ -904,7 +904,7 @@ function LibraryCollapsible() {
             className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition"
           >
             <div className="flex items-center gap-3">
-              <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-6 h-6 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
               </svg>
               <div className="text-left">
@@ -941,8 +941,8 @@ function LibraryCollapsible() {
                       ) : song.artworkUrl ? (
                         <img src={song.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={song.songName} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                          <svg className="w-6 h-6 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                          <svg className="w-6 h-6 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                           </svg>
                         </div>

@@ -116,7 +116,7 @@ export default function AppLandingPage() {
     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-6">
       {/* Logo */}
       <div className="mb-8 text-center">
-        <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div className="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
           <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
             <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
           </svg>
@@ -133,7 +133,9 @@ export default function AppLandingPage() {
           className="btn-brand block w-full rounded-xl text-lg"
         >
           <div className="flex items-center justify-center gap-3">
-            <span className="text-2xl">👤</span>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
             <span>Parent Login</span>
           </div>
         </Link>
@@ -141,10 +143,12 @@ export default function AppLandingPage() {
         {/* Kid Login */}
         <Link
           to="/child-login"
-          className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-6 rounded-xl font-semibold text-center text-lg transition shadow-lg"
+          className="block w-full bg-accent-500 hover:bg-accent-600 text-white py-4 px-6 rounded-xl font-semibold text-center text-lg transition shadow-lg"
         >
           <div className="flex items-center justify-center gap-3">
-            <span className="text-2xl">🎧</span>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 18v-6a9 9 0 0118 0v6M3 18a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3v5zM21 18a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3v5z" />
+            </svg>
             <span>Kid Login</span>
           </div>
         </Link>
@@ -154,7 +158,7 @@ export default function AppLandingPage() {
       <div className="mt-8 text-center">
         <p className="text-gray-400">
           Don't have an account?{' '}
-          <Link to="/signup" className="text-purple-400 hover:text-purple-300 font-semibold">
+          <Link to="/signup" className="text-accent-400 hover:text-accent-300 font-semibold">
             Sign Up
           </Link>
         </p>

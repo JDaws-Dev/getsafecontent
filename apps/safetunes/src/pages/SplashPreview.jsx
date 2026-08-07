@@ -41,7 +41,7 @@ export default function SplashPreview() {
 
             <button
               onClick={handleReplay}
-              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold hover:opacity-90 transition"
+              className="px-8 py-3 bg-accent-500 rounded-xl font-semibold hover:opacity-90 transition"
             >
               Replay Splash Screen
             </button>

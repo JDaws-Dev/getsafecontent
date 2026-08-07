@@ -12,7 +12,7 @@ export default function ConfirmModal({
   const confirmClasses =
     confirmVariant === 'danger'
       ? 'bg-red-500 hover:bg-red-600 text-white'
-      : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white';
+      : 'bg-accent-500 hover:bg-accent-600 text-white';
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -25,7 +25,7 @@ export default function ConfirmModal({
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
             )}
-            <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+            <h2 className="font-display text-lg font-bold text-brand-navy">{title}</h2>
           </div>
           <button
             onClick={onCancel}

@@ -3,11 +3,11 @@ import { Shield, CheckCircle } from 'lucide-react';
 
 function ImprovedHero() {
   return (
-    <section className="relative min-h-[60vh] md:min-h-[80vh] lg:min-h-screen flex items-center bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 overflow-hidden">
+    <section className="relative min-h-[60vh] md:min-h-[80vh] lg:min-h-screen flex items-center bg-accent-500 overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute -top-20 -left-20 w-40 sm:w-72 h-40 sm:h-72 bg-white rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-20 -right-20 w-48 sm:w-96 h-48 sm:h-96 bg-pink-300 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-20 -right-20 w-48 sm:w-96 h-48 sm:h-96 bg-accent-200 rounded-full blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-20 relative z-10">
@@ -24,10 +24,10 @@ function ImprovedHero() {
               </div>
 
               {/* Main Headline - 3 options to choose from */}
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight mb-6">
                 Real Music.<br />
                 Real Protection.<br />
-                <span className="text-pink-200">Zero Worry.</span>
+                <span className="text-accent-200">Zero Worry.</span>
               </h1>
 
               {/* Alternative Headlines (commented out) */}
@@ -35,20 +35,20 @@ function ImprovedHero() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
                 Finally Sleep at Night<br />
                 Knowing What Your<br />
-                <span className="text-pink-200">Kids Are Listening To</span>
+                <span className="text-accent-200">Kids Are Listening To</span>
               </h1>
               */}
 
               {/*
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
                 Let Them Listen to<br />
-                <span className="text-pink-200">Real Artists</span><br />
+                <span className="text-accent-200">Real Artists</span><br />
                 Without the Risk
               </h1>
               */}
 
               {/* Subheadline */}
-              <p className="text-xl md:text-2xl text-purple-100 mb-8 leading-relaxed">
+              <p className="text-xl md:text-2xl text-accent-100 mb-8 leading-relaxed">
                 Give your kids access to millions of songs on <strong>Apple Music</strong>—but only the ones <em>you</em> approve.
               </p>
 
@@ -56,25 +56,25 @@ function ImprovedHero() {
               <div className="space-y-3 mb-8">
                 <div className="flex items-start gap-3">
                   <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0 mt-1" />
-                  <p className="text-lg text-purple-50">
+                  <p className="text-lg text-accent-50">
                     <strong>Bring Your Own Apple Music</strong> subscription—no extra streaming costs
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0 mt-1" />
-                  <p className="text-lg text-purple-50">
+                  <p className="text-lg text-accent-50">
                     Block explicit album art and monitor every search
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0 mt-1" />
-                  <p className="text-lg text-purple-50">
+                  <p className="text-lg text-accent-50">
                     No Kidz Bop covers—let them hear <em>real artists</em>
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0 mt-1" />
-                  <p className="text-lg text-purple-50">
+                  <p className="text-lg text-accent-50">
                     <strong>Approve entire albums or cherry-pick individual songs</strong>—you're in complete control
                   </p>
                 </div>
@@ -97,7 +97,7 @@ function ImprovedHero() {
               </div>
 
               {/* Trust Badge */}
-              <p className="text-sm text-purple-200 mt-6">
+              <p className="text-sm text-accent-200 mt-6">
                 ✓ No credit card required  •  ✓ Cancel anytime  •  ✓ Works with your Apple Music subscription
               </p>
             </div>

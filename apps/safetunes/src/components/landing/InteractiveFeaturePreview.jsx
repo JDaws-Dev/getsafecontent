@@ -60,19 +60,19 @@ function InteractiveFeaturePreview() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex-1 p-6 rounded-xl border-2 transition-all text-left ${
                     activeTab === tab.id
-                      ? 'border-purple-600 bg-purple-50 shadow-lg'
-                      : 'border-gray-200 bg-white hover:border-purple-300'
+                      ? 'border-accent-600 bg-accent-50 shadow-lg'
+                      : 'border-gray-200 bg-white hover:border-accent-300'
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <TabIcon
                       className={`w-6 h-6 ${
-                        activeTab === tab.id ? 'text-purple-600' : 'text-gray-400'
+                        activeTab === tab.id ? 'text-accent-600' : 'text-gray-400'
                       }`}
                     />
                     <h3
                       className={`font-semibold text-lg ${
-                        activeTab === tab.id ? 'text-purple-900' : 'text-gray-700'
+                        activeTab === tab.id ? 'text-accent-900' : 'text-gray-700'
                       }`}
                     >
                       {tab.title}
@@ -89,12 +89,12 @@ function InteractiveFeaturePreview() {
           </div>
 
           {/* Content Area */}
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 md:p-12">
+          <div className="bg-accent-50 rounded-2xl p-8 md:p-12">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               {/* Left: Description */}
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-accent-500 rounded-xl flex items-center justify-center">
                     <Icon className="w-6 h-6 text-white" />
                   </div>
                   <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -168,8 +168,8 @@ function InteractiveFeaturePreview() {
                   />
                 </div>
                 {/* Decorative elements */}
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full opacity-20 blur-2xl"></div>
-                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full opacity-20 blur-2xl"></div>
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-accent-400 rounded-full opacity-20 blur-2xl"></div>
+                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-accent-400 rounded-full opacity-20 blur-2xl"></div>
               </div>
             </div>
           </div>

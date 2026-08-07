@@ -16,7 +16,7 @@ function getColorClass(color) {
     orange: 'bg-orange-500',
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
-    blue: 'bg-blue-500',
+    blue: 'bg-accent-500',
     purple: 'bg-purple-500',
     pink: 'bg-pink-500',
     gray: 'bg-gray-500',
@@ -361,7 +361,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 disabled:from-gray-300 disabled:to-gray-400 text-white py-2.5 rounded-lg font-medium transition"
+              className="flex-1 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white py-2.5 rounded-lg font-medium transition"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>

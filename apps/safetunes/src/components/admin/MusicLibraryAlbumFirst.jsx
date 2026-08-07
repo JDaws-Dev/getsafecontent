@@ -100,8 +100,8 @@ function MusicLibraryAlbumFirst({ user }) {
             className="w-full aspect-square object-cover rounded-lg shadow-md group-hover:shadow-xl transition-shadow mb-2"
           />
         ) : (
-          <div className="w-full aspect-square bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg shadow-md group-hover:shadow-xl transition-shadow mb-2 flex items-center justify-center">
-            <svg className="w-12 h-12 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+          <div className="w-full aspect-square bg-accent-100 rounded-lg shadow-md group-hover:shadow-xl transition-shadow mb-2 flex items-center justify-center">
+            <svg className="w-12 h-12 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
             </svg>
           </div>
@@ -141,7 +141,7 @@ function MusicLibraryAlbumFirst({ user }) {
             onClick={() => setActiveSubTab('library')}
             className={`${
               activeSubTab === 'library'
-                ? 'bg-purple-100 text-purple-700'
+                ? 'bg-accent-100 text-accent-700'
                 : 'text-gray-600 hover:bg-gray-100'
             } flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2`}
           >
@@ -149,7 +149,7 @@ function MusicLibraryAlbumFirst({ user }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
             <span>Your Music</span>
-            <span className="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-accent-200 text-accent-800 px-2 py-0.5 rounded-full">
               {approvedAlbums.length}
             </span>
           </button>
@@ -190,7 +190,7 @@ function MusicLibraryAlbumFirst({ user }) {
                   autoCapitalize="off"
                   autoCorrect="off"
                   spellCheck="false"
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 />
                 {searchQuery && (
                   <button
@@ -210,7 +210,7 @@ function MusicLibraryAlbumFirst({ user }) {
                   onClick={() => setFilterMode('all')}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                     filterMode === 'all'
-                      ? 'bg-purple-600 text-white'
+                      ? 'bg-accent-600 text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -244,7 +244,7 @@ function MusicLibraryAlbumFirst({ user }) {
           </div>
 
           {/* Info Banner - What is Discoverable */}
-          <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 border border-pink-100">
+          <div className="bg-accent-50 rounded-xl p-4 border border-pink-100">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center">
                 <svg className="w-4 h-4 text-pink-600" fill="currentColor" viewBox="0 0 20 20">
@@ -263,8 +263,8 @@ function MusicLibraryAlbumFirst({ user }) {
           {/* Albums Grid */}
           {filteredAlbums.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
-              <div className="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-                <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-20 h-20 mx-auto mb-4 bg-accent-100 rounded-full flex items-center justify-center">
+                <svg className="w-10 h-10 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                 </svg>
               </div>
@@ -276,7 +276,7 @@ function MusicLibraryAlbumFirst({ user }) {
                   </p>
                   <button
                     onClick={() => { setSearchQuery(''); setFilterMode('all'); }}
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition shadow-md"
+                    className="inline-flex items-center px-6 py-3 bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition shadow-md"
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -290,7 +290,7 @@ function MusicLibraryAlbumFirst({ user }) {
                   <p className="text-gray-600 mb-6">Start building your library by searching for albums</p>
                   <button
                     onClick={() => setActiveSubTab('add')}
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition shadow-md"
+                    className="inline-flex items-center px-6 py-3 bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition shadow-md"
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -326,7 +326,7 @@ function MusicLibraryAlbumFirst({ user }) {
       {activeSubTab === 'add' && (
         <div className="space-y-6">
           {/* Info Banner */}
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-md p-6 text-white">
+          <div className="bg-accent-500 rounded-xl shadow-md p-6 text-white">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">

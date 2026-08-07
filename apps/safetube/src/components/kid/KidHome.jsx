@@ -234,7 +234,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
     return (
       <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
+          <div className="w-16 h-16 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -486,7 +486,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                   <button
                     onClick={handleLoadMoreVideos}
                     disabled={isLoadingMore}
-                    className="px-6 py-3 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-xl font-medium hover:from-accent-600 hover:to-accent-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                    className="px-6 py-3 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
                   >
                     {isLoadingMore ? (
                       <span className="flex items-center gap-2">
@@ -511,7 +511,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
               {/* Video preview header */}
-              <div className="relative bg-gradient-to-br from-accent-500 to-accent-600 p-4">
+              <div className="relative bg-accent-500 p-4">
                 <button
                   onClick={() => setShowAddToPlaylistModal(null)}
                   className="absolute top-3 right-3 p-1.5 bg-black/30 hover:bg-black/50 rounded-full text-white transition"
@@ -621,7 +621,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
         {/* Logo/Brand */}
         <div className="px-6 py-5 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center shadow-md">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -668,7 +668,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition ${
                 activeTab === item.id
-                  ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
+                  ? 'bg-accent-500 text-white shadow-md'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -1330,7 +1330,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center border-2 border-accent-500 shadow-md">
+                  <div className="w-14 h-14 rounded-full bg-accent-500 flex items-center justify-center border-2 border-accent-500 shadow-md">
                     <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
@@ -1410,7 +1410,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
+                      <div className="w-full h-full bg-accent-500 flex items-center justify-center">
                         <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                         </svg>
@@ -1481,7 +1481,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
+                      <div className="w-full h-full bg-accent-500 flex items-center justify-center">
                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                         </svg>
@@ -1549,7 +1549,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
+                      <div className="w-full h-full bg-accent-500 flex items-center justify-center">
                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                         </svg>
@@ -1728,7 +1728,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
           </p>
           <button
             onClick={() => setSelectedFilter('all')}
-            className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-5 py-2 rounded-full font-medium text-sm transition"
+            className="bg-accent-500 hover:bg-accent-600 text-white px-5 py-2 rounded-full font-medium text-sm transition"
           >
             Show All Videos
           </button>
@@ -1741,7 +1741,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             {/* Video preview header */}
-            <div className="relative bg-gradient-to-br from-accent-500 to-accent-600 p-4">
+            <div className="relative bg-accent-500 p-4">
               <button
                 onClick={() => setShowAddToPlaylist(null)}
                 className="absolute top-3 right-3 p-1.5 bg-black/30 hover:bg-black/50 rounded-full text-white transition"
@@ -1843,7 +1843,7 @@ function ShortsCard({ video, onPlay }) {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
+          <div className="w-full h-full bg-accent-500 flex items-center justify-center">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -2085,7 +2085,7 @@ function ChannelsTab({ channels, onChannelClick, onPlayVideo }) {
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center shadow-sm">
+                <div className="w-14 h-14 rounded-full bg-accent-500 flex items-center justify-center shadow-sm">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
@@ -2325,7 +2325,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
           onClick={() => setActiveView('playlists')}
           className={`px-4 py-2 rounded-full font-medium transition ${
             activeView === 'playlists'
-              ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white'
+              ? 'bg-accent-500 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -2335,7 +2335,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
           onClick={() => setActiveView('all')}
           className={`px-4 py-2 rounded-full font-medium transition ${
             activeView === 'all'
-              ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white'
+              ? 'bg-accent-500 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -2415,7 +2415,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
               {requestsEnabled && (
                 <button
                   onClick={onGoToRequests}
-                  className="bg-gradient-to-r from-accent-500 to-accent-600 text-white px-6 py-2 rounded-full font-medium"
+                  className="bg-accent-500 text-white px-6 py-2 rounded-full font-medium"
                 >
                   Find Videos
                 </button>
@@ -2504,7 +2504,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
               <button
                 onClick={handleCreatePlaylist}
                 disabled={!newPlaylistName.trim() || isCreating}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="flex-1 px-4 py-3 bg-accent-500 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 {isCreating ? 'Creating...' : 'Create'}
               </button>
@@ -2518,7 +2518,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             {/* Video preview header */}
-            <div className="relative bg-gradient-to-br from-accent-500 to-accent-600 p-4">
+            <div className="relative bg-accent-500 p-4">
               <button
                 onClick={() => setShowAddToPlaylist(null)}
                 className="absolute top-3 right-3 p-1.5 bg-black/30 hover:bg-black/50 rounded-full text-white transition"
@@ -2914,7 +2914,7 @@ function RequestsTab({ requests, profileId, userId }) {
                           className="flex gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm items-center"
                         >
                           {/* Generic play icon instead of thumbnail */}
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center flex-shrink-0">
+                          <div className="w-12 h-12 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0">
                             <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                               <path d="M8 5v14l11-7z" />
                             </svg>
@@ -2966,7 +2966,7 @@ function RequestsTab({ requests, profileId, userId }) {
                           className="flex gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm"
                         >
                           {/* Generic channel icon - don't show actual thumbnails to avoid inappropriate content */}
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center flex-shrink-0">
+                          <div className="w-16 h-16 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0">
                             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
@@ -3131,7 +3131,7 @@ function RequestCard({ request }) {
           />
         ) : (
           <div className={`w-full aspect-video rounded-lg flex items-center justify-center ${
-            request.status === 'denied' ? 'bg-gray-300' : 'bg-gradient-to-br from-accent-500 to-accent-600'
+            request.status === 'denied' ? 'bg-gray-300' : 'bg-accent-500'
           }`}>
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -3197,7 +3197,7 @@ function ChannelRequestCard({ request }) {
         />
       ) : (
         <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-          request.status === 'denied' ? 'bg-gray-300' : 'bg-gradient-to-br from-accent-500 to-accent-600'
+          request.status === 'denied' ? 'bg-gray-300' : 'bg-accent-500'
         }`}>
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -3255,7 +3255,7 @@ function VideoCard({ video, onPlay, showChannel = true }) {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
+          <div className="w-full h-full bg-accent-500 flex items-center justify-center">
             <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

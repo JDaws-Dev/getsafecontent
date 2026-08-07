@@ -59,15 +59,9 @@ h1, h2, h3, h4, .font-display {
   background-color: var(--bg-tertiary);
 }
 
-/* Gradient backgrounds */
-.dark .bg-gradient-to-b.from-purple-50,
-.dark .bg-gradient-to-br.from-purple-50 {
-  --tw-gradient-from: #1f2937;
-  --tw-gradient-to: #111827;
-}
-
-.dark .from-purple-50 {
-  --tw-gradient-from: #1f2937;
+/* Page ground — the cream ground goes dark instead of the old purple wash */
+.dark .bg-brand-cream {
+  background-color: var(--bg-primary);
 }
 
 .dark .to-white {
@@ -125,8 +119,8 @@ h1, h2, h3, h4, .font-display {
 .dark input:focus,
 .dark textarea:focus,
 .dark select:focus {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  border-color: #7C4DE0;
+  box-shadow: 0 0 0 3px rgba(124, 77, 224, 0.2);
 }
 
 /* Card/container shadows in dark mode */
@@ -137,29 +131,29 @@ h1, h2, h3, h4, .font-display {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
 }
 
-/* Purple accent adjustments for dark mode */
-.dark .bg-purple-50 {
-  background-color: rgba(139, 92, 246, 0.1);
+/* Grape accent adjustments for dark mode */
+.dark .bg-accent-50 {
+  background-color: rgba(124, 77, 224, 0.1);
 }
 
-.dark .bg-purple-100 {
-  background-color: rgba(139, 92, 246, 0.2);
+.dark .bg-accent-100 {
+  background-color: rgba(124, 77, 224, 0.2);
 }
 
-.dark .text-purple-900 {
-  color: #c4b5fd;
+.dark .text-accent-900 {
+  color: #D4C3F6;
 }
 
-.dark .text-purple-800 {
-  color: #c4b5fd;
+.dark .text-accent-800 {
+  color: #D4C3F6;
 }
 
-.dark .text-purple-700 {
-  color: #a78bfa;
+.dark .text-accent-700 {
+  color: #B89BF0;
 }
 
-.dark .text-purple-600 {
-  color: #a78bfa;
+.dark .text-accent-600 {
+  color: #B89BF0;
 }
 
 /* Red/danger zone styling */
@@ -270,13 +264,9 @@ h1, h2, h3, h4, .font-display {
   border-color: transparent;
 }
 
-.bg-brand-cream {
-  background-color: #FDF8F3;
-}
-
-.text-brand-navy {
-  color: #1a1a2e;
-}
+/* NOTE: .bg-brand-cream / .text-brand-navy are supplied by tailwind.config.js
+   (#FBF6EF / #221D2E). The near-duplicate hand-rolled rules that used to live
+   here shadowed the config with slightly-off tones — removed so config wins. */
 
 /* Animation keyframes for Album Inspector */
 @keyframes slide-up {

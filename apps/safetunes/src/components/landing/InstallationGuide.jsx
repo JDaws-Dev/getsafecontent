@@ -3,7 +3,7 @@ import { Smartphone, Share2, Home, Lock } from 'lucide-react';
 
 function InstallationGuide() {
   return (
-    <section className="py-20 bg-gradient-to-br from-purple-50 to-pink-50">
+    <section className="py-20 bg-accent-50">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -12,7 +12,7 @@ function InstallationGuide() {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             No app store required. Install SafeTunes directly to your child's device like a native app.
           </p>
-          <p className="text-sm text-purple-600 font-semibold mt-4">
+          <p className="text-sm text-accent-600 font-semibold mt-4">
             ✨ Native iOS app coming soon
           </p>
         </div>
@@ -27,10 +27,10 @@ function InstallationGuide() {
             <div className="grid md:grid-cols-3 gap-8">
               {/* Step 1 */}
               <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <div className="w-20 h-20 bg-accent-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <Smartphone className="w-10 h-10 text-white" />
                 </div>
-                <div className="inline-block bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-semibold mb-3">
+                <div className="inline-block bg-accent-100 text-accent-700 px-3 py-1 rounded-full text-sm font-semibold mb-3">
                   Step 1
                 </div>
                 <h4 className="font-bold text-lg text-gray-900 mb-2">
@@ -43,12 +43,12 @@ function InstallationGuide() {
 
               {/* Step 2 */}
               <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <div className="w-20 h-20 bg-accent-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <div className="relative">
                     <Share2 className="w-10 h-10 text-white" />
                   </div>
                 </div>
-                <div className="inline-block bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-semibold mb-3">
+                <div className="inline-block bg-accent-100 text-accent-700 px-3 py-1 rounded-full text-sm font-semibold mb-3">
                   Step 2
                 </div>
                 <h4 className="font-bold text-lg text-gray-900 mb-2">
@@ -61,10 +61,10 @@ function InstallationGuide() {
 
               {/* Step 3 */}
               <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <div className="w-20 h-20 bg-accent-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <Home className="w-10 h-10 text-white" />
                 </div>
-                <div className="inline-block bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-semibold mb-3">
+                <div className="inline-block bg-accent-100 text-accent-700 px-3 py-1 rounded-full text-sm font-semibold mb-3">
                   Step 3
                 </div>
                 <h4 className="font-bold text-lg text-gray-900 mb-2">
@@ -78,7 +78,7 @@ function InstallationGuide() {
           </div>
 
           {/* Guided Access Section */}
-          <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-xl p-8 md:p-12 text-white">
+          <div className="bg-accent-500 rounded-2xl shadow-xl p-8 md:p-12 text-white">
             <div className="flex items-start gap-6">
               <div className="flex-shrink-0">
                 <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
@@ -109,7 +109,7 @@ function InstallationGuide() {
           </div>
 
           {/* Why Web App Section */}
-          <div className="mt-8 bg-white rounded-xl p-6 shadow-lg border-2 border-purple-200">
+          <div className="mt-8 bg-white rounded-xl p-6 shadow-lg border-2 border-accent-200">
             <h4 className="font-bold text-lg text-gray-900 mb-3 flex items-center gap-2">
               <span className="text-2xl">💡</span>
               Why start with a web app?
@@ -132,7 +132,7 @@ function InstallationGuide() {
                 <p>Same great features as a native app</p>
               </div>
             </div>
-            <p className="text-purple-600 font-semibold mt-4">
+            <p className="text-accent-600 font-semibold mt-4">
               Native iOS app launching soon for those who prefer it!
             </p>
           </div>

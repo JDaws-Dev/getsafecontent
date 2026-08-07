@@ -17,7 +17,7 @@ function AlbumGrid({ albums, onSelectAlbum }) {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className={`w-full h-full bg-gradient-to-br ${album.color || 'from-purple-400 to-pink-400'}`} />
+                <div className={`w-full h-full bg-gradient-to-br ${album.color || 'from-accent-400 to-accent-600'}`} />
               )}
             </div>
             <h3 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-1">

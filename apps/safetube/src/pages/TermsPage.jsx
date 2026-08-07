@@ -2,12 +2,12 @@ import { Link } from 'react-router-dom';
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50">
+    <div className="min-h-screen bg-brand-cream">
       {/* Header */}
       <header className="px-6 py-4 border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center shadow-md">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -128,7 +128,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">10. Contact</h2>
             <p className="text-gray-600 leading-relaxed">
               For questions about these Terms of Service, please contact us at{' '}
-              <a href="mailto:jeremiah@getsafefamily.com" className="text-red-500 hover:text-red-600">
+              <a href="mailto:jeremiah@getsafefamily.com" className="text-accent-500 hover:text-accent-600">
                 jeremiah@getsafefamily.com
               </a>
             </p>

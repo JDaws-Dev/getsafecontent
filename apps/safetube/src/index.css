@@ -60,13 +60,13 @@ h1, h2, h3, h4, .font-display {
 }
 
 /* Gradient backgrounds */
-.dark .bg-gradient-to-b.from-red-50,
-.dark .bg-gradient-to-br.from-red-50 {
+.dark .bg-gradient-to-b.from-accent-50,
+.dark .bg-gradient-to-br.from-accent-50 {
   --tw-gradient-from: #1f2937;
   --tw-gradient-to: #111827;
 }
 
-.dark .from-red-50 {
+.dark .from-accent-50 {
   --tw-gradient-from: #1f2937;
 }
 
@@ -137,7 +137,30 @@ h1, h2, h3, h4, .font-display {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
 }
 
-/* Red accent adjustments for dark mode */
+/* Coral (SafeTube accent) adjustments for dark mode */
+.dark .bg-accent-50 {
+  background-color: rgba(240, 96, 58, 0.1);
+}
+
+.dark .bg-accent-100 {
+  background-color: rgba(240, 96, 58, 0.2);
+}
+
+.dark .text-accent-900,
+.dark .text-accent-800 {
+  color: #FAC4B2;
+}
+
+.dark .text-accent-700,
+.dark .text-accent-600 {
+  color: #F7A188;
+}
+
+.dark .border-accent-200 {
+  border-color: rgba(240, 96, 58, 0.3);
+}
+
+/* Red stays semantic (errors / destructive) in dark mode */
 .dark .bg-red-50 {
   background-color: rgba(239, 68, 68, 0.1);
 }
@@ -146,18 +169,12 @@ h1, h2, h3, h4, .font-display {
   background-color: rgba(239, 68, 68, 0.2);
 }
 
-.dark .text-red-900 {
-  color: #fca5a5;
-}
-
+.dark .text-red-900,
 .dark .text-red-800 {
   color: #fca5a5;
 }
 
-.dark .text-red-700 {
-  color: #f87171;
-}
-
+.dark .text-red-700,
 .dark .text-red-600 {
   color: #f87171;
 }
@@ -166,7 +183,7 @@ h1, h2, h3, h4, .font-display {
   border-color: rgba(239, 68, 68, 0.3);
 }
 
-/* Orange accent adjustments for dark mode */
+/* Amber/orange stays semantic (warnings) in dark mode */
 .dark .bg-orange-50 {
   background-color: rgba(249, 115, 22, 0.1);
 }
@@ -297,6 +314,14 @@ h1, h2, h3, h4, .font-display {
 
 .dark .bg-brand-cream {
   background-color: #1f2937;
+}
+
+.bg-brand-cream-2 {
+  background-color: #F3EADD;
+}
+
+.dark .bg-brand-cream-2 {
+  background-color: #111827;
 }
 
 .text-brand-navy {

@@ -77,10 +77,10 @@ export default function LearnResults({
           {sections.map((section, index) => {
             const borderColor = getBorderColorClass(index);
             const borderMuted = [
-              'border-l-gray-300 dark:border-l-gray-600',
               'border-l-accent-300 dark:border-l-accent-700',
-              'border-l-teal-300 dark:border-l-teal-700',
-              'border-l-amber-300 dark:border-l-amber-700',
+              'border-l-accent-200 dark:border-l-accent-800',
+              'border-l-accent-400 dark:border-l-accent-600',
+              'border-l-accent-200 dark:border-l-accent-800',
               'border-l-accent-300 dark:border-l-accent-700',
             ];
             const mutedBorder = borderMuted[index % borderMuted.length];

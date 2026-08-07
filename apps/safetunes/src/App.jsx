@@ -38,9 +38,9 @@ const DeleteAccountPage = lazy(() => import('./pages/DeleteAccountPage'));
 // Loading spinner for lazy-loaded routes
 function PageLoader() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white flex items-center justify-center">
+    <div className="min-h-screen bg-brand-cream flex items-center justify-center">
       <div className="text-center">
-        <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+        <div className="w-12 h-12 border-4 border-accent-200 border-t-accent-600 rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-gray-600">Loading...</p>
       </div>
     </div>
@@ -70,20 +70,20 @@ function ErrorFallback({ error, resetError }) {
   const isNativeApp = checkIsNativeApp();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-brand-cream flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h1>
+        <h1 className="text-2xl font-display font-bold text-brand-navy mb-2">Something went wrong</h1>
         <p className="text-gray-600 mb-6">
           We're sorry, but something unexpected happened. Our team has been notified and we're working to fix it.
         </p>
         <button
           onClick={() => window.location.href = isNativeApp ? '/app' : '/'}
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition mb-3"
+          className="w-full bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-semibold transition mb-3"
         >
           {isNativeApp ? 'Go Back' : 'Go to Homepage'}
         </button>

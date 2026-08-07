@@ -46,11 +46,11 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-50 to-white">
+    <div className="min-h-screen bg-brand-cream">
       {/* Header */}
       <header className="container mx-auto px-6 py-6">
         <Link to="/" className="flex items-center space-x-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -82,7 +82,7 @@ function ForgotPasswordPage() {
 
                 <Link
                   to="/login"
-                  className="block w-full bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition text-center mb-3"
+                  className="block w-full bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-lg font-semibold transition text-center mb-3"
                 >
                   Go to Login
                 </Link>
@@ -92,7 +92,7 @@ function ForgotPasswordPage() {
                     setOauthOnly(false);
                     setEmail('');
                   }}
-                  className="text-sm text-red-500 hover:text-red-600"
+                  className="text-sm text-accent-500 hover:text-accent-600"
                 >
                   Try Another Email
                 </button>
@@ -123,7 +123,7 @@ function ForgotPasswordPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                       placeholder="you@example.com"
                     />
                   </div>
@@ -131,7 +131,7 @@ function ForgotPasswordPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Sending...' : 'Send Reset Code'}
                   </button>
@@ -140,7 +140,7 @@ function ForgotPasswordPage() {
                 <div className="mt-6 text-center">
                   <p className="text-sm text-gray-600">
                     Remember your password?{' '}
-                    <Link to="/login" className="text-red-500 hover:text-red-600 font-medium">
+                    <Link to="/login" className="text-accent-500 hover:text-accent-600 font-medium">
                       Sign in
                     </Link>
                   </p>
@@ -168,7 +168,7 @@ function ForgotPasswordPage() {
 
                 <button
                   onClick={() => navigate('/reset-password')}
-                  className="w-full bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition mb-3"
+                  className="w-full bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-lg font-semibold transition mb-3"
                 >
                   Enter Reset Code
                 </button>
@@ -178,7 +178,7 @@ function ForgotPasswordPage() {
                     setSubmitted(false);
                     setEmail('');
                   }}
-                  className="text-sm text-red-500 hover:text-red-600"
+                  className="text-sm text-accent-500 hover:text-accent-600"
                 >
                   Didn't receive it? Try again
                 </button>

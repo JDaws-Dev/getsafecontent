@@ -62,16 +62,16 @@ function UpgradePage() {
   // Native app version - direct to website for subscription
   if (isNativeApp) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+      <div className="min-h-screen bg-brand-cream">
         {/* Header */}
         <header className="container mx-auto px-6 py-6">
           <Link to="/admin" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
               <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
                 <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
               </svg>
             </div>
-            <span className="text-2xl font-bold text-gray-900">SafeTunes</span>
+            <span className="text-2xl font-display font-bold text-brand-navy">SafeTunes</span>
           </Link>
         </header>
 
@@ -80,13 +80,13 @@ function UpgradePage() {
             <div className="bg-white rounded-2xl shadow-xl p-8">
               {/* Icon */}
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
 
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl font-display font-bold text-brand-navy mb-2">
                   {isTrialExpired ? 'Your Trial Has Ended' : 'Subscribe to Continue'}
                 </h1>
                 <p className="text-gray-600">
@@ -95,19 +95,19 @@ function UpgradePage() {
               </div>
 
               {/* Instructions */}
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 mb-6">
+              <div className="bg-accent-50 rounded-xl p-6 mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3">How to subscribe:</h3>
                 <ol className="space-y-3 text-sm text-gray-700">
                   <li className="flex items-start gap-3">
-                    <span className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">1</span>
+                    <span className="w-6 h-6 bg-accent-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">1</span>
                     <span>Open Safari or your browser</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">2</span>
+                    <span className="w-6 h-6 bg-accent-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">2</span>
                     <span>Visit <strong>getsafetunes.com</strong></span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">3</span>
+                    <span className="w-6 h-6 bg-accent-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">3</span>
                     <span>Log in with your account and subscribe</span>
                   </li>
                 </ol>
@@ -150,7 +150,7 @@ function UpgradePage() {
               {/* Support link */}
               <div className="text-center mt-4 text-sm text-gray-500">
                 Questions?{' '}
-                <Link to="/support" className="text-purple-600 hover:text-purple-700 font-medium">
+                <Link to="/support" className="text-accent-600 hover:text-accent-700 font-medium">
                   Contact support
                 </Link>
               </div>
@@ -162,16 +162,16 @@ function UpgradePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="min-h-screen bg-brand-cream">
       {/* Header */}
       <header className="container mx-auto px-6 py-6">
         <Link to="/" className="flex items-center space-x-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
             <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
               <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
             </svg>
           </div>
-          <span className="text-2xl font-bold text-gray-900">SafeTunes</span>
+          <span className="text-2xl font-display font-bold text-brand-navy">SafeTunes</span>
         </Link>
       </header>
 
@@ -180,19 +180,19 @@ function UpgradePage() {
           <div className="bg-white rounded-2xl shadow-xl p-8">
             {/* Icon */}
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 {isTrialExpired ? (
-                  <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-8 h-8 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 ) : (
-                  <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-8 h-8 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 )}
               </div>
 
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-display font-bold text-brand-navy mb-2">
                 {isTrialExpired ? 'Your Trial Has Ended' : 'Upgrade to Continue'}
               </h1>
               <p className="text-gray-600">
@@ -209,10 +209,10 @@ function UpgradePage() {
             )}
 
             {/* Pricing Card */}
-            <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl p-6 text-white mb-6">
+            <div className="bg-accent-500 rounded-xl p-6 text-white mb-6">
               <div className="text-center mb-4">
                 <div className="text-4xl font-bold">$4.99</div>
-                <div className="text-purple-200">/month</div>
+                <div className="text-accent-200">/month</div>
               </div>
 
               <ul className="space-y-2 mb-6">
@@ -235,7 +235,7 @@ function UpgradePage() {
               <button
                 onClick={handleSubscribe}
                 disabled={loading || !isAuthenticated || !currentUser}
-                className="w-full bg-white text-purple-600 hover:bg-gray-100 py-3 rounded-lg font-bold text-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-white text-accent-600 hover:bg-gray-100 py-3 rounded-lg font-bold text-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Loading...' : 'Subscribe Now'}
               </button>
@@ -265,7 +265,7 @@ function UpgradePage() {
             <div className="text-center text-sm text-gray-500">
               <p>
                 Questions?{' '}
-                <Link to="/support" className="text-purple-600 hover:text-purple-700 font-medium">
+                <Link to="/support" className="text-accent-600 hover:text-accent-700 font-medium">
                   Contact support
                 </Link>
               </p>

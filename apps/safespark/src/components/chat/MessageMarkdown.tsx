@@ -69,7 +69,7 @@ export function MessageMarkdown({ content }: { content: string }) {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-violet-600 underline hover:text-violet-700"
+              className="text-accent-700 underline hover:text-accent-700"
             >
               {children}
             </a>

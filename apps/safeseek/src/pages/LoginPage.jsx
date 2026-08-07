@@ -70,11 +70,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex flex-col">
+    <div className="min-h-screen bg-brand-cream flex flex-col">
       {/* Header */}
       <header className="px-6 py-4">
         <Link to="/" className="flex items-center gap-2 w-fit">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center shadow-md">
             <Search className="w-5 h-5 text-white" />
           </div>
           <span className="font-semibold text-gray-900">SafeStudy</span>
@@ -85,17 +85,17 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md min-w-0">
           {/* Brand accent bar */}
-          <div className="h-1.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-t-2xl" />
+          <div className="h-1.5 bg-accent-500 rounded-t-2xl" />
 
           <div className="bg-white rounded-b-2xl shadow-xl p-8 border border-gray-100 border-t-0">
             {/* Logo centered */}
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 bg-accent-500 rounded-2xl flex items-center justify-center shadow-lg">
                 <Search className="w-8 h-8 text-white" />
               </div>
             </div>
 
-            <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">Welcome back</h1>
+            <h1 className="font-display text-3xl font-bold text-brand-navy text-center mb-2">Welcome back</h1>
             <p className="text-gray-500 text-center mb-8">Sign in to manage SafeStudy</p>
 
             {error && (
@@ -158,7 +158,7 @@ export default function LoginPage() {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   aria-invalid={error ? 'true' : undefined}
                   aria-describedby={error ? 'form-error' : undefined}
-                  className="w-full min-h-[44px] text-[16px] bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200"
+                  className="w-full min-h-[44px] text-[16px] bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-300 focus:border-accent-400 transition-all duration-200"
                   placeholder="you@example.com"
                   required
                 />
@@ -171,7 +171,7 @@ export default function LoginPage() {
                   </label>
                   <Link
                     to="/forgot-password"
-                    className="text-sm text-gray-400 hover:text-blue-600 transition-colors"
+                    className="text-sm text-gray-400 hover:text-accent-600 transition-colors"
                   >
                     Forgot password?
                   </Link>
@@ -184,7 +184,7 @@ export default function LoginPage() {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   aria-invalid={error ? 'true' : undefined}
                   aria-describedby={error ? 'form-error' : undefined}
-                  className="w-full min-h-[44px] text-[16px] bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200"
+                  className="w-full min-h-[44px] text-[16px] bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-300 focus:border-accent-400 transition-all duration-200"
                   placeholder="Enter your password"
                   required
                 />
@@ -193,7 +193,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading || googleLoading}
-                className="w-full min-h-[48px] bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-3 rounded-xl font-semibold text-lg shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                className="w-full min-h-[48px] bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-xl font-semibold text-lg shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
               >
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
@@ -201,7 +201,7 @@ export default function LoginPage() {
 
             <p className="text-center text-gray-500 mt-6">
               Don&apos;t have an account?{' '}
-              <Link to="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link to="/signup" className="text-accent-600 hover:text-accent-700 font-medium">
                 Start free trial
               </Link>
             </p>
@@ -209,7 +209,7 @@ export default function LoginPage() {
             <div className="mt-8 pt-6 border-t border-gray-100">
               <p className="text-center text-gray-400 text-sm">
                 Are you a kid?{' '}
-                <Link to="/search" className="text-blue-500 hover:text-blue-600 font-medium">
+                <Link to="/search" className="text-accent-500 hover:text-accent-600 font-medium">
                   Go to search &rarr;
                 </Link>
               </p>

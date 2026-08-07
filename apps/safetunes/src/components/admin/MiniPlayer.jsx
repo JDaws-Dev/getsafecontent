@@ -74,8 +74,8 @@ function MiniPlayer({ songId, songName, artistName, onAuthRequired }) {
         disabled={isLoading}
         className={`flex-shrink-0 px-4 py-2 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
           isCurrentSong
-            ? 'bg-purple-600 text-white'
-            : 'bg-purple-100 hover:bg-purple-200 text-purple-700'
+            ? 'bg-accent-600 text-white'
+            : 'bg-accent-100 hover:bg-accent-200 text-accent-700'
         }`}
         title="Play this song"
       >

@@ -21,6 +21,12 @@ export const alt = 'A kid-built project on SafeSpark';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
+// Safe Family glow-up tokens — ONE amber accent on brand navy. No gradients,
+// no emoji.
+const NAVY = '#221D2E';
+const ACCENT = '#F2A413';
+const ACCENT_700 = '#B06E0C';
+
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL ?? '';
 
 type Props = { params: Promise<{ id: string }> };
@@ -70,7 +76,7 @@ export default async function Image({ params }: Props) {
             height: '100%',
             display: 'flex',
             position: 'relative',
-            background: '#0f172a',
+            background: NAVY,
           }}
         >
           <img
@@ -95,7 +101,7 @@ export default async function Image({ params }: Props) {
               gap: 14,
               padding: '14px 22px',
               borderRadius: 999,
-              background: 'rgba(15,23,42,0.85)',
+              background: 'rgba(34,29,46,0.85)',
               boxShadow: '0 8px 30px rgba(0,0,0,0.45)',
             }}
           >
@@ -104,17 +110,28 @@ export default async function Image({ params }: Props) {
                 width: 36,
                 height: 36,
                 borderRadius: 10,
-                background:
-                  'linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #f59e0b 100%)',
+                background: ACCENT,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: 22,
-                color: 'white',
-                fontWeight: 900,
               }}
             >
-              ⚡
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={NAVY}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+              <path d="M20 3v4" />
+              <path d="M22 5h-4" />
+              <path d="M4 17v2" />
+              <path d="M5 18H3" />
+            </svg>
             </div>
             <span
               style={{
@@ -142,8 +159,7 @@ export default async function Image({ params }: Props) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background:
-            'linear-gradient(135deg, #1e1b4b 0%, #4c1d95 30%, #be185d 70%, #d97706 100%)',
+          background: NAVY,
           padding: '72px',
           fontFamily: 'system-ui, -apple-system, sans-serif',
           color: 'white',
@@ -156,16 +172,28 @@ export default async function Image({ params }: Props) {
               width: '56px',
               height: '56px',
               borderRadius: '16px',
-              background: 'rgba(255,255,255,0.18)',
+              background: ACCENT,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '32px',
-              fontWeight: 900,
-              backdropFilter: 'blur(8px)',
             }}
           >
-            ⚡
+            <svg
+            width="30"
+            height="30"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={NAVY}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+            <path d="M20 3v4" />
+            <path d="M22 5h-4" />
+            <path d="M4 17v2" />
+            <path d="M5 18H3" />
+          </svg>
           </div>
           <span
             style={{
@@ -224,7 +252,7 @@ export default async function Image({ params }: Props) {
               padding: '14px 28px',
               borderRadius: '999px',
               background: 'white',
-              color: '#4c1d95',
+              color: ACCENT_700,
               fontSize: '22px',
               fontWeight: 900,
               letterSpacing: '-0.01em',

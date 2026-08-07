@@ -59,15 +59,15 @@ export default function FamilyCodeEntry({ codeInput, setCodeInput, error, codeSh
     <div className="relative min-h-screen overflow-hidden bg-brand-cream dark:bg-gray-900 flex items-center justify-center px-6">
       {/* Decorative background blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-gradient-to-br from-accent-200/40 to-accent-200/40 dark:from-accent-500/10 dark:to-accent-500/10 blur-3xl" />
-        <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-gradient-to-br from-accent-200/40 to-accent-200/40 dark:from-accent-500/10 dark:to-accent-500/10 blur-3xl" />
+        <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-accent-200/40 dark:bg-accent-500/10 blur-3xl" />
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-accent-200/40 dark:bg-accent-500/10 blur-3xl" />
         <Sparkles className="absolute top-[12%] right-[14%] w-6 h-6 text-accent-300 dark:text-accent-500/60 animate-pulse" aria-hidden="true" />
         <Rocket className="absolute bottom-[18%] left-[10%] w-7 h-7 text-accent-300 dark:text-accent-500/60 rotate-12" aria-hidden="true" />
       </div>
 
       <div className="relative w-full max-w-sm text-center">
         {/* Logo */}
-        <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-accent-500/20">
+        <div className="w-16 h-16 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-accent-500/20">
           <Search className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
@@ -110,7 +110,7 @@ export default function FamilyCodeEntry({ codeInput, setCodeInput, error, codeSh
           <button
             type="submit"
             disabled={codeInput.length < CODE_LENGTH}
-            className="w-full bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-700 dark:disabled:to-gray-700 text-white py-3 rounded-xl font-bold text-lg shadow-md shadow-accent-500/20 transition-all duration-200 disabled:cursor-not-allowed disabled:shadow-none active:scale-[0.98]"
+            className="w-full bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white py-3 rounded-xl font-bold text-lg shadow-md shadow-accent-500/20 transition-all duration-200 disabled:cursor-not-allowed disabled:shadow-none active:scale-[0.98]"
           >
             Let&rsquo;s Go! &rarr;
           </button>

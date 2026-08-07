@@ -130,8 +130,8 @@ export function SpeakButton({
       disabled={loading && !speaking}
       className={
         active
-          ? 'inline-flex h-7 items-center gap-1 rounded-full bg-violet-600 px-2 text-[11px] font-black text-white shadow-sm hover:bg-violet-700 disabled:opacity-70'
-          : 'inline-flex h-7 items-center gap-1 rounded-full border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-600 hover:border-violet-200 hover:text-violet-700'
+          ? 'inline-flex h-7 items-center gap-1 rounded-full bg-accent-500 px-2 text-[11px] font-bold text-brand-navy shadow-sm hover:bg-accent-600 disabled:opacity-70'
+          : 'inline-flex h-7 items-center gap-1 rounded-full border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-600 hover:border-accent-200 hover:text-accent-700'
       }
       title={active ? 'Tap to stop' : 'Tap to hear it'}
       aria-label={active ? 'Stop speaking' : 'Speak this'}

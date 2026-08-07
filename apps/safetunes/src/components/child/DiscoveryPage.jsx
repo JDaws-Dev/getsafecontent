@@ -73,7 +73,7 @@ const MOOD_CARDS = [
     title: 'Pop Hits',
     subtitle: 'Chart Toppers',
     icon: TrendingUp,
-    gradient: 'from-pink-400 to-accent-500',
+    gradient: 'from-accent-400 to-accent-600',
     keywords: ['pop', 'hits', 'top', 'chart', 'radio', 'mainstream', 'popular']
   },
   {
@@ -202,7 +202,7 @@ function SectionHeader({ title, actionLabel, onAction, icon: Icon }) {
     <div className="flex items-center justify-between mb-3 px-4">
       <div className="flex items-center gap-2">
         {Icon && <Icon className="w-5 h-5 text-accent-600" />}
-        <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+        <h2 className="text-lg font-display font-bold text-brand-navy">{title}</h2>
       </div>
       {actionLabel && onAction && (
         <button
@@ -230,7 +230,7 @@ function MoodCard({ mood, onClick, albumCount }) {
     >
       <Icon className="w-8 h-8 text-white/90" />
       <div className="text-left">
-        <h3 className="text-white font-bold text-lg leading-tight">{mood.title}</h3>
+        <h3 className="text-white font-display font-bold text-lg leading-tight">{mood.title}</h3>
         <p className="text-white/80 text-xs">{mood.subtitle}</p>
         {albumCount > 0 && (
           <p className="text-white/60 text-xs mt-1">{albumCount} albums</p>
@@ -285,7 +285,7 @@ function SpotlightCard({ album, onPress, onPlay, onAdd, isInLibrary, hideArtwork
 
             <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
               <div>
-                <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2">
+                <h3 className="font-display font-bold text-brand-navy text-lg leading-tight line-clamp-2">
                   {album.albumName}
                 </h3>
                 <p className="text-gray-500 text-sm truncate mt-1">
@@ -440,7 +440,7 @@ function AlbumDetailModal({ album, tracks, loading, onClose, onPlayTrack, onPlay
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2">{album.albumName}</h2>
+            <h2 className="font-display font-bold text-brand-navy text-lg leading-tight line-clamp-2">{album.albumName}</h2>
             <p className="text-gray-500 text-sm truncate">{album.artistName}</p>
             <p className="text-gray-400 text-xs mt-1">{album.trackCount || tracks.length} tracks</p>
           </div>
@@ -633,7 +633,7 @@ function DrillDownView({ title, subtitle, albums, onBack, onAlbumPress, onAddAlb
           <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
             <Music className="w-10 h-10 text-accent-400" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">No albums here yet</h3>
+          <h3 className="text-lg font-display font-semibold text-brand-navy mb-1">No albums here yet</h3>
           <p className="text-gray-500 text-sm max-w-xs">Check back later!</p>
         </div>
       )}
@@ -1240,7 +1240,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
           {moodPlaylists.length > 0 && (
             <div className="mb-6">
               <div className="px-4 mb-3">
-                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <h2 className="text-lg font-display font-bold text-brand-navy flex items-center gap-2">
                   <ListMusic className="w-5 h-5 text-accent-600" />
                   Playlists
                 </h2>
@@ -1262,7 +1262,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
           {moodAlbums.length > 0 ? (
             <div className="px-4 pb-32">
               {moodPlaylists.length > 0 && (
-                <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <h2 className="text-lg font-display font-bold text-brand-navy mb-3 flex items-center gap-2">
                   <Music className="w-5 h-5 text-accent-600" />
                   Albums
                 </h2>
@@ -1315,7 +1315,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
               <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
                 <Music className="w-10 h-10 text-accent-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">No {mood.title.toLowerCase()} music yet</h3>
+              <h3 className="text-lg font-display font-semibold text-brand-navy mb-1">No {mood.title.toLowerCase()} music yet</h3>
               <p className="text-gray-500 text-sm max-w-xs">Check back later!</p>
             </div>
           ) : (
@@ -1628,7 +1628,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
           <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
             <Music className="w-10 h-10 text-accent-400" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <h3 className="text-lg font-display font-semibold text-brand-navy mb-1">
             {(featuredContent?.albums?.length > 0 || featuredContent?.playlists?.length > 0) ? 'All caught up!' : 'Nothing here yet'}
           </h3>
           <p className="text-gray-500 text-sm max-w-xs">

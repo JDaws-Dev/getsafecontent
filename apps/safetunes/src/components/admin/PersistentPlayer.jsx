@@ -115,7 +115,7 @@ function PersistentPlayer({ onAuthRequired }) {
             title="Click to seek"
           >
             <div
-              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
+              className="h-full bg-accent-500 transition-all duration-300"
               style={{ width: `${(currentTime / duration) * 100}%` }}
             />
           </div>

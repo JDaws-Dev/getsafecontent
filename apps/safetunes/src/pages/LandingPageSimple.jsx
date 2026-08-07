@@ -72,7 +72,7 @@ function LandingPageSimple() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
                 <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
                   <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
                 </svg>
@@ -83,23 +83,23 @@ function LandingPageSimple() {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <a
                 href="https://getsafefamily.com"
-                className="hidden sm:inline-flex text-gray-500 hover:text-purple-600 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors"
+                className="hidden sm:inline-flex text-gray-500 hover:text-accent-600 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors"
               >
                 Safe Family
               </a>
-              <Link to="/login" className="text-gray-700 hover:text-purple-700 font-medium text-xs sm:text-base whitespace-nowrap transition-colors">
+              <Link to="/login" className="text-gray-700 hover:text-accent-700 font-medium text-xs sm:text-base whitespace-nowrap transition-colors">
                 Parent Login
               </Link>
               <Link
                 to="/kids"
-                className="hidden sm:inline-flex items-center gap-0.5 text-gray-500 hover:text-purple-600 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors"
+                className="hidden sm:inline-flex items-center gap-0.5 text-gray-500 hover:text-accent-600 font-medium text-xs sm:text-sm whitespace-nowrap transition-colors"
                 title="Kid login"
               >
                 Kid Login
               </Link>
               <Link
                 to="/signup"
-                className="bg-purple-600 hover:bg-purple-700 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg font-semibold transition text-xs sm:text-base whitespace-nowrap"
+                className="bg-accent-600 hover:bg-accent-700 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg font-semibold transition text-xs sm:text-base whitespace-nowrap"
               >
                 Start Free Trial
               </Link>
@@ -109,14 +109,14 @@ function LandingPageSimple() {
       </header>
 
       {/* Hero - Dark gradient with two-column layout */}
-      <section className="py-10 sm:py-16 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+      <section className="py-10 sm:py-16 bg-brand-navy">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               {/* Left: Text Content */}
               <div className="text-center lg:text-left">
                 {/* Badge */}
-                <div className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-300 px-4 py-2 rounded-full text-sm font-semibold mb-6 border border-purple-500/30">
+                <div className="inline-flex items-center gap-2 bg-accent-500/20 text-accent-300 px-4 py-2 rounded-full text-sm font-semibold mb-6 border border-accent-500/30">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 88.994 96.651">
                     <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
                   </svg>
@@ -127,7 +127,7 @@ function LandingPageSimple() {
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-6xl font-bold text-white mb-6 leading-tight">
                   The Apple Music <br className="hidden sm:block" />
                   Parental Dashboard <br className="hidden sm:block" />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">That Actually Works</span>
+                  <span className="text-accent-400">That Actually Works</span>
                 </h1>
 
                 {/* Subhead */}
@@ -137,7 +137,7 @@ function LandingPageSimple() {
                 </p>
 
                 {/* Power benefit statement */}
-                <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-purple-200 mb-6">
+                <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-accent-200 mb-6">
                   <span>They play ONLY approved music</span>
                   <span>You see what they search for</span>
                   <span>Block inappropriate covers instantly</span>
@@ -147,7 +147,7 @@ function LandingPageSimple() {
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-4">
                   <Link
                     to="/signup"
-                    className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition shadow-lg shadow-purple-500/25"
+                    className="w-full sm:w-auto bg-accent-500 hover:bg-accent-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition shadow-lg shadow-accent-500/25"
                   >
                     Start Free Trial
                   </Link>
@@ -170,7 +170,7 @@ function LandingPageSimple() {
 
                 {/* Clarity line with kid access URL */}
                 <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-                  <span className="text-purple-300">Kids access at</span>
+                  <span className="text-accent-300">Kids access at</span>
                   <span className="text-white font-mono font-bold">getsafetunes.com/play</span>
                 </div>
                 <p className="mt-3 text-gray-400 text-sm">
@@ -277,9 +277,9 @@ function LandingPageSimple() {
 
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               {/* Parent Dashboard */}
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
+              <div className="bg-accent-50 rounded-2xl p-6 border-2 border-accent-200">
                 <div className="mb-4">
-                  <span className="inline-block bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold mb-3">
+                  <span className="inline-block bg-accent-600 text-white px-3 py-1 rounded-full text-sm font-bold mb-3">
                     PARENT DASHBOARD
                   </span>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">You Approve Albums</h3>
@@ -296,25 +296,25 @@ function LandingPageSimple() {
                 </div>
                 <ul className="mt-4 space-y-2 text-sm text-gray-700">
                   <li className="flex items-start gap-2">
-                    <svg className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-accent-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     <span>Search Apple Music catalog</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <svg className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-accent-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     <span>Approve albums with one tap</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <svg className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-accent-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     <span>Hide album artwork per-album</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <svg className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-accent-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                     <span>AI lyric reviews for quick decisions</span>
@@ -679,16 +679,16 @@ function LandingPageSimple() {
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Step 1 */}
             <div className="text-center p-6 bg-white rounded-2xl shadow-sm">
-              <div className="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <div className="w-16 h-16 bg-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
                 <span className="text-3xl font-bold text-white">1</span>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">You Search & Approve</h3>
               <p className="text-gray-600 mb-4">
                 Search "Taylor Swift" in your dashboard. See all 12 albums. Tap "Approve" on the ones you want. Done in seconds.
               </p>
-              <div className="bg-purple-50 rounded-lg p-3 text-left">
-                <p className="text-purple-800 text-sm font-medium">Example:</p>
-                <p className="text-purple-600 text-sm">"I approved 50 albums in 10 minutes on my first day."</p>
+              <div className="bg-accent-50 rounded-lg p-3 text-left">
+                <p className="text-accent-800 text-sm font-medium">Example:</p>
+                <p className="text-accent-600 text-sm">"I approved 50 albums in 10 minutes on my first day."</p>
               </div>
             </div>
 
@@ -769,7 +769,7 @@ function LandingPageSimple() {
       </section>
 
       {/* Testimonials - Social Proof */}
-      <section className="py-16 bg-purple-600">
+      <section className="py-16 bg-accent-600">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-2xl font-bold text-center text-white mb-8">What Parents Are Saying</h2>
@@ -787,7 +787,7 @@ function LandingPageSimple() {
                 <p className="text-white italic mb-4">
                   "I walked in on my 11-year-old listening to WAP. That same night I set up SafeTunes. Now she has 400+ songs she loves, and I finally have peace of mind."
                 </p>
-                <p className="text-purple-200 font-medium text-sm">— Jennifer M., Mom of 2</p>
+                <p className="text-accent-200 font-medium text-sm">— Jennifer M., Mom of 2</p>
               </div>
 
               {/* Testimonial 2 */}
@@ -802,7 +802,7 @@ function LandingPageSimple() {
                 <p className="text-white italic mb-4">
                   "My teen actually ASKED to use this instead of fighting me. He likes picking albums to request, and I like knowing exactly what he's listening to."
                 </p>
-                <p className="text-purple-200 font-medium text-sm">— David R., Dad of 1, Texas</p>
+                <p className="text-accent-200 font-medium text-sm">— David R., Dad of 1, Texas</p>
               </div>
 
               {/* Testimonial 3 */}
@@ -817,7 +817,7 @@ function LandingPageSimple() {
                 <p className="text-white italic mb-4">
                   "No more fighting over music. I approved 200 albums the first week. Now my 8-year-old just plays without me worrying. Total game-changer."
                 </p>
-                <p className="text-purple-200 font-medium text-sm">— Michelle K., Mom of 3, California</p>
+                <p className="text-accent-200 font-medium text-sm">— Michelle K., Mom of 3, California</p>
               </div>
             </div>
           </div>
@@ -834,9 +834,9 @@ function LandingPageSimple() {
 
             <div className="space-y-4">
               {/* #1 MOST IMPORTANT FAQ - The bypass question */}
-              <div className="bg-purple-50 rounded-xl p-5 shadow-sm border-2 border-purple-400">
-                <h3 className="font-bold text-purple-900 mb-2">Can't my kid just open regular Apple Music and bypass this?</h3>
-                <p className="text-purple-800">No! Your child uses SafeTunes at <span className="font-mono font-semibold">getsafetunes.com/play</span>—a completely separate player that only shows approved music. They don't need the Apple Music app installed. You can block the Apple Music app using Screen Time (we'll show you how). It's like giving them a "kid version" of Apple Music that you fully control.</p>
+              <div className="bg-accent-50 rounded-xl p-5 shadow-sm border-2 border-accent-400">
+                <h3 className="font-bold text-accent-900 mb-2">Can't my kid just open regular Apple Music and bypass this?</h3>
+                <p className="text-accent-800">No! Your child uses SafeTunes at <span className="font-mono font-semibold">getsafetunes.com/play</span>—a completely separate player that only shows approved music. They don't need the Apple Music app installed. You can block the Apple Music app using Screen Time (we'll show you how). It's like giving them a "kid version" of Apple Music that you fully control.</p>
               </div>
 
               <div className="bg-red-50 rounded-xl p-5 shadow-sm border-2 border-red-200">
@@ -854,9 +854,9 @@ function LandingPageSimple() {
                 <p className="text-gray-600">Any device with a browser—iPhone, iPad, Android, Chromebook, PC, Mac.</p>
               </div>
 
-              <div className="bg-purple-50 rounded-xl p-5 shadow-sm border-2 border-purple-200">
-                <h3 className="font-bold text-purple-900 mb-2">What if my child searches for inappropriate content?</h3>
-                <p className="text-purple-800">You get notified instantly. The search is blocked and they see encouragement instead of shame.</p>
+              <div className="bg-accent-50 rounded-xl p-5 shadow-sm border-2 border-accent-200">
+                <h3 className="font-bold text-accent-900 mb-2">What if my child searches for inappropriate content?</h3>
+                <p className="text-accent-800">You get notified instantly. The search is blocked and they see encouragement instead of shame.</p>
               </div>
 
               <div className="bg-white rounded-xl p-5 shadow-sm">
@@ -894,10 +894,10 @@ function LandingPageSimple() {
 
             {/* CTA Card */}
             <div className="max-w-md mx-auto">
-              <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-8 text-white shadow-xl">
+              <div className="bg-accent-500 rounded-2xl p-8 text-white shadow-xl">
                 <div className="text-center mb-6">
                   <div className="text-5xl font-bold mb-1">$4.99</div>
-                  <div className="text-purple-200">/month after trial</div>
+                  <div className="text-accent-200">/month after trial</div>
                 </div>
 
                 <ul className="space-y-3 mb-8">
@@ -913,7 +913,7 @@ function LandingPageSimple() {
 
                 <Link
                   to="/signup"
-                  className="block w-full bg-white text-purple-600 hover:bg-gray-100 text-center py-4 rounded-xl font-bold text-lg transition"
+                  className="block w-full bg-white text-accent-600 hover:bg-gray-100 text-center py-4 rounded-xl font-bold text-lg transition"
                 >
                   Start Free Trial
                 </Link>
@@ -940,7 +940,7 @@ function LandingPageSimple() {
             </p>
             <Link
               to="/signup"
-              className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-10 py-4 rounded-xl font-bold text-lg transition shadow-lg"
+              className="inline-block bg-accent-500 hover:bg-accent-600 text-white px-10 py-4 rounded-xl font-bold text-lg transition shadow-lg"
             >
               Start 7-Day Free Trial
             </Link>

@@ -135,12 +135,12 @@ function ChildLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400">
+    <div className="min-h-screen bg-accent-400">
       {/* Header */}
       <header className="container mx-auto px-6 py-6">
         <Link to="/" className="flex items-center space-x-2">
           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-            <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-6 h-6 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
             </svg>
           </div>
@@ -172,7 +172,7 @@ function ChildLoginPage() {
                         {getAvatarIcon(profile.avatar)}
                       </div>
                       <h3 className="text-2xl font-bold text-gray-900 mb-2">{profile.name}</h3>
-                      <div className="text-purple-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="text-accent-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                         Click to continue →
                       </div>
                     </button>
@@ -180,8 +180,8 @@ function ChildLoginPage() {
                 </div>
               ) : (
                 <div className="bg-white/90 rounded-2xl p-12 text-center shadow-2xl mb-8">
-                  <div className="w-24 h-24 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-                    <svg className="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-accent-100 rounded-full flex items-center justify-center">
+                    <svg className="w-12 h-12 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
@@ -230,7 +230,7 @@ function ChildLoginPage() {
                       pattern="\d{4}"
                       inputMode="numeric"
                       autoFocus
-                      className="w-full px-6 py-4 text-center text-3xl font-bold tracking-widest border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                      className="w-full px-6 py-4 text-center text-3xl font-bold tracking-widest border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent"
                       placeholder="••••"
                     />
                     <p className="text-sm text-gray-500 text-center mt-2">
@@ -250,7 +250,7 @@ function ChildLoginPage() {
                     <button
                       type="submit"
                       disabled={loading || pin.length !== 4}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                      className="flex-1 bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                     >
                       {loading ? 'Checking...' : 'Start Listening'}
                     </button>

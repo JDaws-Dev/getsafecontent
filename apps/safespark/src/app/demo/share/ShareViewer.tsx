@@ -27,13 +27,13 @@ export function ShareViewer() {
 
   if (error) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-        <section className="max-w-md rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <h1 className="text-2xl font-black text-slate-900">Project not found</h1>
-          <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-600">{error}</p>
+      <main className="flex min-h-screen items-center justify-center bg-brand-cream px-4">
+        <section className="max-w-md rounded-3xl border border-brand-cream-2 bg-white p-6 text-center shadow-sm">
+          <h1 className="font-display text-2xl font-bold text-brand-navy">Project not found</h1>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-brand-ink-soft">{error}</p>
           <Link
             href="/demo?code=BELLA-BUILD"
-            className="mt-5 inline-flex rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white"
+            className="mt-5 inline-flex rounded-2xl bg-accent-500 px-4 py-3 text-sm font-bold text-brand-navy"
           >
             Open Bella Maker
           </Link>
@@ -44,23 +44,23 @@ export function ShareViewer() {
 
   if (!payload) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100">
-        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+      <main className="flex min-h-screen items-center justify-center bg-brand-cream">
+        <Loader2 className="h-8 w-8 animate-spin text-accent-700" />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 text-slate-950">
-      <header className="border-b border-slate-200 bg-white px-4 py-3">
+    <main className="min-h-screen bg-brand-cream text-brand-navy">
+      <header className="border-b border-brand-cream-2 bg-white px-4 py-3">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-widest text-violet-500">Shared Bella project</p>
-            <h1 className="truncate text-xl font-black text-slate-900">{payload.title}</h1>
+            <p className="text-xs font-bold uppercase tracking-widest text-accent-700">Shared Bella project</p>
+            <h1 className="truncate font-display text-xl font-bold text-brand-navy">{payload.title}</h1>
           </div>
           <Link
             href="/demo?code=BELLA-BUILD"
-            className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-2 text-sm font-black text-white hover:bg-violet-700"
+            className="inline-flex items-center gap-2 rounded-2xl bg-accent-500 px-4 py-2 text-sm font-bold text-brand-navy hover:bg-accent-600"
           >
             <ExternalLink className="h-4 w-4" />
             Make your own
@@ -72,7 +72,7 @@ export function ShareViewer() {
           title={payload.title}
           srcDoc={payload.html}
           sandbox="allow-scripts"
-          className="h-[calc(100vh-112px)] min-h-[620px] w-full rounded-3xl border border-slate-200 bg-white shadow-sm"
+          className="h-[calc(100vh-112px)] min-h-[620px] w-full rounded-3xl border border-brand-cream-2 bg-white shadow-sm"
         />
       </div>
     </main>

@@ -1,7 +1,7 @@
 "use client";
 
 import { BookCard } from "./BookCard";
-import { BookOpen, Search, Sparkles } from "lucide-react";
+import { BookOpen, BookMarked, Library, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 interface ApprovedBook {
@@ -37,9 +37,9 @@ export function KidBookshelf({ books, progress, onBookClick }: KidBookshelfProps
             <BookOpen className="h-12 w-12 text-white" />
           </div>
           {/* Floating decorative books */}
-          <span className="absolute -left-6 -top-2 animate-float text-2xl opacity-60" style={{ animationDelay: "0.5s" }}>{"📖"}</span>
-          <span className="absolute -right-5 top-0 animate-float text-xl opacity-50" style={{ animationDelay: "1s" }}>{"📚"}</span>
-          <span className="absolute -bottom-2 -right-4 animate-float text-lg opacity-40" style={{ animationDelay: "1.5s" }}>{"✨"}</span>
+          <BookMarked className="absolute -left-6 -top-2 h-7 w-7 animate-float text-accent-400 opacity-60" style={{ animationDelay: "0.5s" }} />
+          <Library className="absolute -right-5 top-0 h-6 w-6 animate-float text-accent-400 opacity-50" style={{ animationDelay: "1s" }} />
+          <Sparkles className="absolute -bottom-2 -right-4 h-5 w-5 animate-float text-accent-300 opacity-40" style={{ animationDelay: "1.5s" }} />
         </div>
         <h3 className="mt-6 font-display text-xl font-bold text-brand-navy">
           Your bookshelf is waiting!
@@ -89,7 +89,7 @@ export function KidBookshelf({ books, progress, onBookClick }: KidBookshelfProps
       </div>
       {/* Bookshelf count */}
       <div className="mt-3 pb-2 text-center">
-        <span className="text-[10px] font-bold text-amber-700/60">
+        <span className="text-[10px] font-bold text-accent-700/60">
           {books.length} book{books.length !== 1 ? "s" : ""} on your shelf
         </span>
       </div>

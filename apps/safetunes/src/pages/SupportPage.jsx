@@ -7,7 +7,7 @@ function QRCode({ url, size = 120 }) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=7c3aed`;
 
   return (
-    <div className="bg-white p-2 rounded-lg shadow-sm border border-purple-200">
+    <div className="bg-white p-2 rounded-lg shadow-sm border border-accent-200">
       <img
         src={qrUrl}
         alt={`QR code for ${url}`}
@@ -77,12 +77,12 @@ function SupportPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="min-h-screen bg-brand-cream">
       {/* Header */}
       <header className="container mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-accent-500 rounded-xl flex items-center justify-center">
               <svg className="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
                 <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
               </svg>
@@ -107,7 +107,7 @@ function SupportPage() {
           <p className="text-xl text-gray-600 mb-4">
             Step-by-step instructions to set up SafeTunes on your child's devices
           </p>
-          <div className="flex items-center justify-center gap-2 text-purple-600">
+          <div className="flex items-center justify-center gap-2 text-accent-600">
             <Clock className="w-5 h-5" />
             <span className="font-medium">Setup takes about 5-10 minutes</span>
           </div>
@@ -117,7 +117,7 @@ function SupportPage() {
       {/* Quick Start */}
       <section className="container mx-auto px-4 sm:px-6 pb-8">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-8 text-white mb-8">
+          <div className="bg-accent-500 rounded-2xl p-8 text-white mb-8">
             <h2 className="text-2xl font-bold mb-6">Two Simple Steps</h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="flex gap-4">
@@ -126,7 +126,7 @@ function SupportPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg mb-1">Lock Down Their Device</h3>
-                  <p className="text-purple-100">Use parental controls to block all websites except SafeTunes</p>
+                  <p className="text-accent-100">Use parental controls to block all websites except SafeTunes</p>
                 </div>
               </div>
               <div className="flex gap-4">
@@ -135,7 +135,7 @@ function SupportPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg mb-1">Kids Log In & Listen</h3>
-                  <p className="text-purple-100">They go to getsafetunes.com/play, enter your Family Code, and enjoy!</p>
+                  <p className="text-accent-100">They go to getsafetunes.com/play, enter your Family Code, and enjoy!</p>
                 </div>
               </div>
             </div>
@@ -153,7 +153,7 @@ function SupportPage() {
                   </li>
                   <li className="flex gap-3">
                     <span className="font-bold text-green-600 flex-shrink-0">2.</span>
-                    <span>Go to: <code className="bg-white px-2 py-1 rounded font-mono font-bold text-purple-700">getsafetunes.com/play</code></span>
+                    <span>Go to: <code className="bg-white px-2 py-1 rounded font-mono font-bold text-accent-700">getsafetunes.com/play</code></span>
                   </li>
                   <li className="flex gap-3">
                     <span className="font-bold text-green-600 flex-shrink-0">3.</span>
@@ -170,14 +170,14 @@ function SupportPage() {
                 </ol>
 
                 {/* iPhone App Callout */}
-                <div className="mt-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+                <div className="mt-4 bg-accent-50 border border-accent-200 rounded-lg p-4">
                   <p className="text-sm text-gray-700">
                     📱 <strong>iPhone Users:</strong> Download the <strong>SafeTunes app</strong> from the App Store for the best experience!{' '}
                     <a
                       href="https://apps.apple.com/app/safetunes-kids-music-player/id6744387963"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-purple-600 underline hover:text-purple-700 inline-flex items-center gap-1"
+                      className="text-accent-600 underline hover:text-accent-700 inline-flex items-center gap-1"
                     >
                       Get it here <ExternalLink className="w-3 h-3" />
                     </a>
@@ -215,8 +215,8 @@ function SupportPage() {
                   onClick={() => setActiveGuide(device.id)}
                   className={`px-5 py-3 rounded-xl font-semibold transition flex flex-col items-center min-w-[100px] ${
                     activeGuide === device.id
-                      ? 'bg-purple-600 text-white shadow-lg'
-                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-purple-400'
+                      ? 'bg-accent-600 text-white shadow-lg'
+                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-accent-400'
                   }`}
                 >
                   <span className="text-2xl mb-1">{device.icon}</span>
@@ -235,7 +235,7 @@ function SupportPage() {
 
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Open Screen Time Settings</h3>
                     <p className="text-gray-600">Go to <strong>Settings</strong> → <strong>Screen Time</strong></p>
@@ -243,7 +243,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Turn On & Set Passcode</h3>
                     <p className="text-gray-600">Turn on Screen Time and set a passcode (don't share with your child)</p>
@@ -251,7 +251,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Enable Content Restrictions</h3>
                     <p className="text-gray-600">Tap <strong>Content & Privacy Restrictions</strong> → Turn it <strong>ON</strong></p>
@@ -259,7 +259,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Restrict Web Content</h3>
                     <p className="text-gray-600">Tap <strong>Content Restrictions</strong> → <strong>Web Content</strong></p>
@@ -267,7 +267,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Select "Allowed Websites Only"</h3>
                     <p className="text-gray-600">This blocks all websites except ones you approve</p>
@@ -275,7 +275,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">6</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">6</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Delete ALL Pre-Added Websites</h3>
                     <p className="text-gray-600">
@@ -285,13 +285,13 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">7</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">7</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
                     <p className="text-gray-600 mb-2">Tap <strong>"Add Website"</strong> and enter:</p>
-                    <div className="bg-purple-50 border-2 border-purple-300 rounded-lg p-4">
+                    <div className="bg-accent-50 border-2 border-accent-300 rounded-lg p-4">
                       <p><strong>Title:</strong> SafeTunes</p>
-                      <p><strong>URL:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-purple-700">getsafetunes.com</code></p>
+                      <p><strong>URL:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafetunes.com</code></p>
                     </div>
                   </div>
                 </div>
@@ -341,7 +341,7 @@ function SupportPage() {
 
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Open Family Link App</h3>
                     <p className="text-gray-600">Open the Family Link app on your phone</p>
@@ -349,7 +349,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Select Your Child</h3>
                     <p className="text-gray-600">Select your child's account</p>
@@ -357,7 +357,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Configure Chrome Restrictions</h3>
                     <p className="text-gray-600">Tap <strong>Controls</strong> → <strong>Content restrictions</strong> → <strong>Google Chrome</strong></p>
@@ -365,7 +365,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Select "Only allow certain sites"</h3>
                     <p className="text-gray-600">This blocks all sites except approved ones</p>
@@ -373,16 +373,16 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
                     <p className="text-gray-600">Tap <strong>Manage sites</strong> → <strong>Add a website</strong></p>
-                    <p className="text-gray-600 mt-1">Type: <code className="bg-purple-50 px-2 py-1 rounded font-mono">getsafetunes.com</code> and tap Add</p>
+                    <p className="text-gray-600 mt-1">Type: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code> and tap Add</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">6</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">6</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Remove Other Websites</h3>
                     <p className="text-gray-600">Remove any other websites from the "Approved" list</p>
@@ -419,7 +419,7 @@ function SupportPage() {
 
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Open Family Link App</h3>
                     <p className="text-gray-600">On your phone, open the Family Link app</p>
@@ -427,7 +427,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Select Your Child</h3>
                     <p className="text-gray-600">Select your child's account</p>
@@ -435,7 +435,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Configure Chrome</h3>
                     <p className="text-gray-600">Tap <strong>Controls</strong> → <strong>Content restrictions</strong> → <strong>Google Chrome</strong></p>
@@ -443,7 +443,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Select "Only allow certain sites"</h3>
                     <p className="text-gray-600">Under "Permissions," tap <strong>Manage sites</strong> and choose this option</p>
@@ -451,11 +451,11 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
                     <p className="text-gray-600">Under "Approved sites," tap <strong>Add a website</strong></p>
-                    <p className="text-gray-600 mt-1">Enter: <code className="bg-purple-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
+                    <p className="text-gray-600 mt-1">Enter: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
                   </div>
                 </div>
 
@@ -503,7 +503,7 @@ function SupportPage() {
 
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Go to Microsoft Family</h3>
                     <p className="text-gray-600">Go to <strong>family.microsoft.com</strong></p>
@@ -511,7 +511,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Select Your Child</h3>
                     <p className="text-gray-600">Sign in and select your child's account</p>
@@ -519,7 +519,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Configure Web Browsing</h3>
                     <p className="text-gray-600">Click <strong>Content Restrictions</strong> → <strong>Web Browsing</strong></p>
@@ -527,7 +527,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Enable Website Restrictions</h3>
                     <p className="text-gray-600">Turn on <strong>"Only allow these websites"</strong></p>
@@ -535,10 +535,10 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
-                    <p className="text-gray-600">Click <strong>Add a website</strong> and type: <code className="bg-purple-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
+                    <p className="text-gray-600">Click <strong>Add a website</strong> and type: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
                   </div>
                 </div>
 
@@ -566,7 +566,7 @@ function SupportPage() {
 
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Open Screen Time</h3>
                     <p className="text-gray-600">Open <strong>System Settings</strong> → <strong>Screen Time</strong></p>
@@ -574,7 +574,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Turn On & Set Passcode</h3>
                     <p className="text-gray-600">Turn on Screen Time and set a passcode</p>
@@ -582,7 +582,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Configure Content & Privacy</h3>
                     <p className="text-gray-600">Click <strong>Content & Privacy</strong> → <strong>Content</strong> tab</p>
@@ -590,7 +590,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Limit Web Content</h3>
                     <p className="text-gray-600">Under "Web Content", select <strong>"Limit Adult Websites"</strong></p>
@@ -598,7 +598,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Customize Allowed Sites</h3>
                     <p className="text-gray-600">Click <strong>Customize</strong></p>
@@ -606,18 +606,18 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">6</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">6</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Block Everything</h3>
-                    <p className="text-gray-600">In "Never Allow", add: <code className="bg-purple-50 px-2 py-1 rounded font-mono">*</code> (this blocks everything)</p>
+                    <p className="text-gray-600">In "Never Allow", add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">*</code> (this blocks everything)</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">7</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">7</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Allow SafeTunes</h3>
-                    <p className="text-gray-600">In "Always Allow", add: <code className="bg-purple-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
+                    <p className="text-gray-600">In "Always Allow", add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
                   </div>
                 </div>
 
@@ -645,7 +645,7 @@ function SupportPage() {
 
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Set Up Child Profile</h3>
                     <p className="text-gray-600">Swipe down from top → Settings → <strong>Profiles & Family Library</strong> → <strong>Add a Child Profile</strong></p>
@@ -653,7 +653,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Configure Parental Controls</h3>
                     <p className="text-gray-600">Go to Settings → <strong>Parental Controls</strong> → Turn ON → Create a password</p>
@@ -661,7 +661,7 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Block Websites</h3>
                     <p className="text-gray-600">Tap <strong>Web Browser</strong> → Select <strong>"Block websites"</strong></p>
@@ -669,10 +669,10 @@ function SupportPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
+                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Allow SafeTunes</h3>
-                    <p className="text-gray-600">Tap <strong>"Approved websites"</strong> → Enter: <code className="bg-purple-50 px-2 py-1 rounded font-mono">getsafetunes.com</code> → Tap Add</p>
+                    <p className="text-gray-600">Tap <strong>"Approved websites"</strong> → Enter: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code> → Tap Add</p>
                   </div>
                 </div>
 
@@ -702,7 +702,7 @@ function SupportPage() {
       {/* Guided Access Bonus Section */}
       <section className="container mx-auto px-4 sm:px-6 pb-12">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-6 sm:p-8 text-white">
+          <div className="bg-accent-500 rounded-2xl p-6 sm:p-8 text-white">
             <h3 className="text-xl font-bold mb-3">🔒 Bonus: iOS Guided Access (Extra Security)</h3>
             <p className="text-blue-100 mb-4">
               Lock your child into the SafeTunes app so they can't exit to other apps.
@@ -767,7 +767,7 @@ function SupportPage() {
             </p>
             <a
               href="mailto:jeremiah@getsafefamily.com"
-              className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition shadow-lg hover:shadow-xl"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />

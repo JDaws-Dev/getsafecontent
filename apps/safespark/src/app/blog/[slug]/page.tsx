@@ -62,7 +62,7 @@ export default async function BlogPostPage({ params }: Props) {
       />
       <article className="mx-auto max-w-3xl">
         <header className="mb-8 space-y-4">
-          <Link href="/blog" className="text-xs font-bold uppercase tracking-widest text-violet-500 hover:text-violet-700">
+          <Link href="/blog" className="text-xs font-bold uppercase tracking-widest text-accent-700 hover:text-accent-800">
             ← All posts
           </Link>
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
@@ -72,20 +72,20 @@ export default async function BlogPostPage({ params }: Props) {
           <p className="text-lg leading-relaxed text-slate-600">{post.description}</p>
           <div className="flex flex-wrap gap-2 pt-1">
             {post.tags.map((t) => (
-              <span key={t} className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-bold text-violet-700">
+              <span key={t} className="rounded-full bg-accent-50 px-2.5 py-1 text-[11px] font-bold text-accent-700">
                 {t}
               </span>
             ))}
           </div>
         </header>
         <Markdown body={post.body} />
-        <footer className="mt-12 rounded-2xl border border-violet-100 bg-violet-50/60 p-5 text-center">
+        <footer className="mt-12 rounded-2xl border border-brand-cream-2 bg-accent-50/60 p-5 text-center">
           <p className="text-sm font-semibold text-slate-700">
             Ready to let your kid build something today?
           </p>
           <Link
             href="/"
-            className="mt-3 inline-block rounded-2xl bg-violet-600 px-5 py-2.5 text-sm font-black text-white hover:bg-violet-700"
+            className="mt-3 inline-block rounded-2xl bg-accent-500 px-5 py-2.5 text-sm font-bold text-brand-navy hover:bg-accent-600"
           >
             Try SafeSpark free →
           </Link>
@@ -165,10 +165,10 @@ function inline(text: string): React.ReactNode {
   remaining = remaining.replace(/\n/g, ' ');
   // Process patterns left-to-right
   const patterns: [RegExp, (match: RegExpExecArray) => React.ReactNode][] = [
-    [/\[([^\]]+)\]\(([^)]+)\)/, (m) => <a key={keyCounter++} href={m[2]} className="font-bold text-violet-600 underline">{m[1]}</a>],
+    [/\[([^\]]+)\]\(([^)]+)\)/, (m) => <a key={keyCounter++} href={m[2]} className="font-bold text-accent-700 underline">{m[1]}</a>],
     [/\*\*([^*]+)\*\*/, (m) => <strong key={keyCounter++} className="font-black text-slate-900">{m[1]}</strong>],
     [/\*([^*]+)\*/, (m) => <em key={keyCounter++}>{m[1]}</em>],
-    [/`([^`]+)`/, (m) => <code key={keyCounter++} className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[0.875em] text-violet-700">{m[1]}</code>],
+    [/`([^`]+)`/, (m) => <code key={keyCounter++} className="rounded bg-slate-100 px-1 py-0.5 font-mono text-[0.875em] text-accent-700">{m[1]}</code>],
   ];
 
   while (remaining.length > 0) {

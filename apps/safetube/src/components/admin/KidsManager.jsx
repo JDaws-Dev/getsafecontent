@@ -390,7 +390,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
                           onClick={() => updateForm({ weekendLimitMinutes: preset.value })}
                           className={`px-2 py-1.5 rounded-lg text-xs font-medium transition ${
                             form.weekendLimitMinutes === preset.value
-                              ? 'bg-orange-500 text-white'
+                              ? 'bg-accent-500 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -484,7 +484,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
               disabled={saving || !form.name.trim()}
               className={`flex-1 py-2.5 rounded-lg font-medium transition ${
                 hasChanges
-                  ? 'bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white'
+                  ? 'bg-accent-500 hover:bg-accent-600 text-white'
                   : 'bg-gray-100 text-gray-500'
               }`}
             >
@@ -569,7 +569,7 @@ export default function KidsManager({ userId, kidProfiles }) {
         {!isCreating && (
           <button
             onClick={() => setIsCreating(true)}
-            className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium text-sm transition"
+            className="px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium text-sm transition"
           >
             + Add Kid
           </button>
@@ -615,7 +615,7 @@ export default function KidsManager({ userId, kidProfiles }) {
                 <button
                   onClick={handleCreate}
                   disabled={isLoading || !formData.name.trim()}
-                  className="flex-1 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 text-white px-4 py-2 rounded-lg font-medium transition"
+                  className="flex-1 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg font-medium transition"
                 >
                   {isLoading ? 'Creating...' : 'Create Profile'}
                 </button>
@@ -659,7 +659,7 @@ export default function KidsManager({ userId, kidProfiles }) {
               <p className="text-gray-500 text-sm mb-4">Add a profile for each child to get started</p>
               <button
                 onClick={() => setIsCreating(true)}
-                className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium text-sm transition"
+                className="px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium text-sm transition"
               >
                 Add Your First Kid
               </button>

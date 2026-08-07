@@ -163,7 +163,7 @@ export function VoiceButton({
       className={
         recording
           ? 'rounded-2xl bg-rose-500 text-white p-3 shadow-lg shadow-rose-200 animate-pulse'
-          : 'rounded-2xl bg-violet-100 text-violet-700 p-3 hover:bg-violet-200 transition shadow-sm disabled:opacity-50'
+          : 'rounded-2xl bg-accent-50 text-accent-700 p-3 hover:bg-accent-100 transition shadow-sm disabled:opacity-50'
       }
       title={recording ? 'Tap to stop' : 'Tap to talk'}
       aria-label={recording ? 'Stop voice input' : 'Start voice input'}

@@ -3,29 +3,33 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { ArrowLeft, Loader2, BookOpen } from "lucide-react";
+import {
+  ArrowLeft, Loader2, BookOpen,
+  Compass, PawPrint, Castle, FlaskConical, Landmark, Crown, Fingerprint,
+  Rocket, Leaf, Laugh, Trophy, Palette, Ghost, MessageSquare, Zap,
+} from "lucide-react";
 import { StylizedCover } from "./StylizedCover";
 import { useCoverFetcher } from "@/hooks/useCoverFetcher";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-// Genre definitions with emoji, gradient, and search key
+// Genre definitions with icon, gradient, and search key
 const GENRES = [
-  { key: "adventure", label: "Adventure", emoji: "\uD83C\uDFF4\u200D\u2620\uFE0F", gradient: "from-orange-400 to-red-500", bg: "bg-orange-50" },
-  { key: "animals", label: "Animals", emoji: "\uD83D\uDC3E", gradient: "from-amber-400 to-yellow-500", bg: "bg-amber-50" },
-  { key: "fantasy", label: "Fantasy", emoji: "\uD83D\uDC09", gradient: "from-purple-400 to-violet-600", bg: "bg-purple-50" },
-  { key: "science", label: "Science", emoji: "\uD83D\uDD2C", gradient: "from-cyan-400 to-blue-500", bg: "bg-cyan-50" },
-  { key: "history", label: "History", emoji: "\u2694\uFE0F", gradient: "from-stone-400 to-stone-600", bg: "bg-stone-50" },
-  { key: "fairy-tales", label: "Fairy Tales", emoji: "\uD83E\uDDDA", gradient: "from-pink-400 to-rose-500", bg: "bg-pink-50" },
-  { key: "mystery", label: "Mystery", emoji: "\uD83D\uDD0D", gradient: "from-indigo-400 to-blue-600", bg: "bg-indigo-50" },
-  { key: "space", label: "Space", emoji: "\uD83D\uDE80", gradient: "from-violet-500 to-indigo-700", bg: "bg-violet-50" },
-  { key: "nature", label: "Nature", emoji: "\uD83C\uDF3F", gradient: "from-emerald-400 to-green-600", bg: "bg-emerald-50" },
-  { key: "humor", label: "Humor", emoji: "\uD83D\uDE02", gradient: "from-yellow-400 to-orange-400", bg: "bg-yellow-50" },
-  { key: "sports", label: "Sports", emoji: "\u26BD", gradient: "from-green-400 to-teal-500", bg: "bg-green-50" },
-  { key: "art-music", label: "Art & Music", emoji: "\uD83C\uDFA8", gradient: "from-fuchsia-400 to-pink-600", bg: "bg-fuchsia-50" },
-  { key: "scary", label: "Scary Stories", emoji: "\uD83D\uDC7B", gradient: "from-gray-600 to-gray-900", bg: "bg-gray-100" },
-  { key: "comics", label: "Comics", emoji: "\uD83D\uDCAC", gradient: "from-sky-400 to-blue-500", bg: "bg-sky-50" },
-  { key: "action", label: "Action", emoji: "\uD83D\uDCA5", gradient: "from-red-500 to-rose-600", bg: "bg-red-50" },
+  { key: "adventure", label: "Adventure", Icon: Compass, gradient: "from-orange-400 to-red-500", bg: "bg-orange-50" },
+  { key: "animals", label: "Animals", Icon: PawPrint, gradient: "from-amber-400 to-yellow-500", bg: "bg-amber-50" },
+  { key: "fantasy", label: "Fantasy", Icon: Castle, gradient: "from-purple-400 to-violet-600", bg: "bg-purple-50" },
+  { key: "science", label: "Science", Icon: FlaskConical, gradient: "from-cyan-400 to-blue-500", bg: "bg-cyan-50" },
+  { key: "history", label: "History", Icon: Landmark, gradient: "from-stone-400 to-stone-600", bg: "bg-stone-50" },
+  { key: "fairy-tales", label: "Fairy Tales", Icon: Crown, gradient: "from-pink-400 to-rose-500", bg: "bg-pink-50" },
+  { key: "mystery", label: "Mystery", Icon: Fingerprint, gradient: "from-indigo-400 to-blue-600", bg: "bg-indigo-50" },
+  { key: "space", label: "Space", Icon: Rocket, gradient: "from-violet-500 to-indigo-700", bg: "bg-violet-50" },
+  { key: "nature", label: "Nature", Icon: Leaf, gradient: "from-emerald-400 to-green-600", bg: "bg-emerald-50" },
+  { key: "humor", label: "Humor", Icon: Laugh, gradient: "from-yellow-400 to-orange-400", bg: "bg-yellow-50" },
+  { key: "sports", label: "Sports", Icon: Trophy, gradient: "from-green-400 to-teal-500", bg: "bg-green-50" },
+  { key: "art-music", label: "Art & Music", Icon: Palette, gradient: "from-fuchsia-400 to-pink-600", bg: "bg-fuchsia-50" },
+  { key: "scary", label: "Scary Stories", Icon: Ghost, gradient: "from-gray-600 to-gray-900", bg: "bg-gray-100" },
+  { key: "comics", label: "Comics", Icon: MessageSquare, gradient: "from-sky-400 to-blue-500", bg: "bg-sky-50" },
+  { key: "action", label: "Action", Icon: Zap, gradient: "from-red-500 to-rose-600", bg: "bg-red-50" },
 ];
 
 interface GenreBrowserProps {
@@ -111,7 +115,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
                 style={{ animationDelay: `${index * 0.03}s` }}
               >
                 <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${genre.gradient} shadow-sm transition-transform duration-200 group-hover:scale-110 group-active:scale-95`}>
-                  <span className="text-2xl drop-shadow-sm">{genre.emoji}</span>
+                  <genre.Icon className="h-7 w-7 text-white drop-shadow-sm" strokeWidth={2.25} />
                 </div>
                 <span className="text-[11px] font-bold text-gray-700 transition-colors group-hover:text-accent-600">
                   {genre.label}
@@ -131,7 +135,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
               </button>
               {selectedGenreData && (
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">{selectedGenreData.emoji}</span>
+                  <selectedGenreData.Icon className="h-6 w-6 text-accent-600" strokeWidth={2.25} />
                   <h3 className="font-display text-lg font-bold text-brand-navy">
                     {selectedGenreData.label} Books
                   </h3>
@@ -233,7 +237,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
               : "bg-white text-gray-700 ring-1 ring-black/5 hover:shadow-md"
           }`}
         >
-          <span className="text-base">{genre.emoji}</span>
+          <genre.Icon className="h-4 w-4" strokeWidth={2.25} />
           {genre.label}
         </button>
       ))}

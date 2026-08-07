@@ -268,7 +268,7 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
   // Helper for color class
   const getColorClass = (colorId) => {
     const color = COLORS.find(c => c.id === colorId);
-    return color ? color.class : 'bg-purple-500';
+    return color ? color.class : 'bg-accent-500';
   };
 
   // Reset selection when modal opens - auto-select all kids for quick add
@@ -1942,7 +1942,7 @@ export default function AddMusic({ user }) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {kidProfiles.map((kid) => {
-                    const colorClass = COLORS.find(c => c.id === kid.color)?.class || 'bg-purple-500';
+                    const colorClass = COLORS.find(c => c.id === kid.color)?.class || 'bg-accent-500';
                     const isSelected = songSelectedKids.includes(kid._id);
                     return (
                       <button

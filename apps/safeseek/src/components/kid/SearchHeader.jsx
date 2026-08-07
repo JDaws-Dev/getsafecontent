@@ -1,7 +1,8 @@
 import {
   Search, Clock, Shield, Sun, Moon, Users, ArrowLeft, AlertCircle, LayoutGrid
 } from 'lucide-react';
-import { getColorClass, getAvatarIcon } from './utils';
+import { getColorClass } from './utils';
+import AvatarIcon from './AvatarIcon';
 import { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
 
 export default function SearchHeader({
@@ -64,7 +65,7 @@ export default function SearchHeader({
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center ${getColorClass(selectedProfile.color)}`}
             >
-              <span className="text-sm" aria-hidden="true">{getAvatarIcon(selectedProfile.color)}</span>
+              <AvatarIcon color={selectedProfile.color} className="w-4 h-4 text-white" />
             </div>
             <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{selectedProfile.name}</span>
             <button

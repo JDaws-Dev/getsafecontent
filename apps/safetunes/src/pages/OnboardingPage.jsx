@@ -190,31 +190,31 @@ function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="min-h-screen bg-brand-cream">
       {/* Info Modal */}
       {showInfoModal && currentUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 md:p-12 relative animate-fadeIn">
             <div className="text-center mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 bg-accent-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Important Information!</h2>
+              <h2 className="text-3xl font-display font-bold text-brand-navy mb-2">Important Information!</h2>
               <p className="text-gray-600">Save this information to share with your kids</p>
             </div>
 
             <div className="space-y-6">
               {/* Family Code Section */}
-              <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-6">
+              <div className="bg-accent-50 border-2 border-accent-200 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-purple-900 text-lg">Your Family Code</h3>
+                  <h3 className="font-display font-semibold text-accent-900 text-lg">Your Family Code</h3>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(currentUser.familyCode);
                     }}
-                    className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1"
+                    className="text-accent-600 hover:text-accent-700 text-sm font-medium flex items-center gap-1"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -223,11 +223,11 @@ function OnboardingPage() {
                   </button>
                 </div>
                 <div className="bg-white rounded-lg p-4 mb-3">
-                  <p className="text-4xl font-bold text-purple-600 text-center tracking-widest font-mono">
+                  <p className="text-4xl font-bold text-accent-600 text-center tracking-widest font-mono">
                     {currentUser.familyCode}
                   </p>
                 </div>
-                <p className="text-sm text-purple-800">
+                <p className="text-sm text-accent-800">
                   Your kids will need this code to log in to their music dashboard
                 </p>
               </div>
@@ -235,7 +235,7 @@ function OnboardingPage() {
               {/* Kid Login URL Section */}
               <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-blue-900 text-lg">Kid Login Website</h3>
+                  <h3 className="font-display font-semibold text-blue-900 text-lg">Kid Login Website</h3>
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText('https://getsafetunes.com/play');
@@ -260,7 +260,7 @@ function OnboardingPage() {
 
               {/* Instructions */}
               <div className="bg-green-50 border border-green-200 rounded-xl p-6">
-                <h3 className="font-semibold text-green-900 mb-3 flex items-center">
+                <h3 className="font-display font-semibold text-green-900 mb-3 flex items-center">
                   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
@@ -280,7 +280,7 @@ function OnboardingPage() {
                 setShowInfoModal(false);
                 navigate('/admin');
               }}
-              className="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-4 rounded-lg font-semibold text-lg transition shadow-lg"
+              className="w-full mt-6 bg-accent-500 hover:bg-accent-600 text-white py-4 rounded-lg font-semibold text-lg transition shadow-lg"
             >
               Go to Dashboard
             </button>
@@ -293,20 +293,20 @@ function OnboardingPage() {
           {/* Step 1: Welcome */}
           {step === 1 && (
             <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
                   <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
                 </svg>
               </div>
 
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to SafeTunes!</h1>
+              <h1 className="text-4xl font-display font-bold text-brand-navy mb-4">Welcome to SafeTunes!</h1>
               <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                 Let's get you set up. We'll connect your Apple Music account and create profiles for your kids.
               </p>
 
-              <div className="bg-purple-50 border border-purple-200 rounded-xl p-6 mb-8 text-left">
-                <h3 className="font-semibold text-purple-900 mb-3">What we'll do:</h3>
-                <ul className="space-y-2 text-purple-800">
+              <div className="bg-accent-50 border border-accent-200 rounded-xl p-6 mb-8 text-left">
+                <h3 className="font-display font-semibold text-accent-900 mb-3">What we'll do:</h3>
+                <ul className="space-y-2 text-accent-800">
                   <li className="flex items-start">
                     <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -330,7 +330,7 @@ function OnboardingPage() {
 
               <button
                 onClick={() => setStep(2)}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition shadow-lg"
+                className="bg-accent-600 hover:bg-accent-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition shadow-lg"
               >
                 Let's Get Started
               </button>
@@ -346,7 +346,7 @@ function OnboardingPage() {
                     <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
                   </svg>
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Connect Apple Music</h2>
+                <h2 className="text-3xl font-display font-bold text-brand-navy mb-2">Connect Apple Music</h2>
                 <p className="text-gray-600">
                   To play music, we need permission to access your Apple Music account.
                 </p>
@@ -393,7 +393,7 @@ function OnboardingPage() {
               {appleMusicAuthorized ? (
                 <button
                   onClick={handleContinueToKids}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition"
+                  className="w-full bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-semibold transition"
                 >
                   Continue
                 </button>
@@ -403,7 +403,7 @@ function OnboardingPage() {
                     <button
                       onClick={handleAppleMusicAuth}
                       disabled={loading}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="w-full bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       {loading ? (
                         <>
@@ -443,12 +443,12 @@ function OnboardingPage() {
           {step === 3 && (
             <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-accent-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-10 h-10 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Kid Profiles</h2>
+                <h2 className="text-3xl font-display font-bold text-brand-navy mb-2">Create Kid Profiles</h2>
                 <p className="text-gray-600">
                   Add your kids and set their daily listening limits
                 </p>
@@ -474,7 +474,7 @@ function OnboardingPage() {
                       </button>
                     )}
 
-                    <h3 className="font-semibold text-gray-900 mb-4">Kid #{index + 1}</h3>
+                    <h3 className="font-display font-semibold text-brand-navy mb-4">Kid #{index + 1}</h3>
 
                     {/* Name Field */}
                     <div className="mb-4">
@@ -486,7 +486,7 @@ function OnboardingPage() {
                         value={kid.name}
                         onChange={(e) => updateKid(index, 'name', e.target.value)}
                         placeholder="Enter name"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent"
                       />
                     </div>
 
@@ -523,7 +523,7 @@ function OnboardingPage() {
                         }}
                         maxLength={4}
                         placeholder="••••"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent"
                       />
                     </div>
 
@@ -539,8 +539,8 @@ function OnboardingPage() {
                             onClick={() => updateKid(index, 'dailyLimitMinutes', option.value)}
                             className={`px-3 py-2 rounded-lg border text-sm transition ${
                               kid.dailyLimitMinutes === option.value
-                                ? 'bg-purple-600 text-white border-purple-600'
-                                : 'bg-white text-gray-700 border-gray-300 hover:border-purple-600'
+                                ? 'bg-accent-600 text-white border-accent-600'
+                                : 'bg-white text-gray-700 border-gray-300 hover:border-accent-600'
                             }`}
                           >
                             {option.label}
@@ -573,7 +573,7 @@ function OnboardingPage() {
                 <button
                   onClick={handleCompleteOnboarding}
                   disabled={loading}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Saving...' : 'Complete Setup'}
                 </button>
@@ -590,14 +590,14 @@ function OnboardingPage() {
                 </svg>
               </div>
 
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">You're All Set!</h1>
+              <h1 className="text-4xl font-display font-bold text-brand-navy mb-4">You're All Set!</h1>
               <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                 SafeTunes is ready to use. Start searching for music and approve albums for your kids.
               </p>
 
-              <div className="bg-purple-50 border border-purple-200 rounded-xl p-6 mb-8 text-left max-w-md mx-auto">
-                <h3 className="font-semibold text-purple-900 mb-3">Next steps:</h3>
-                <ul className="space-y-2 text-purple-800">
+              <div className="bg-accent-50 border border-accent-200 rounded-xl p-6 mb-8 text-left max-w-md mx-auto">
+                <h3 className="font-display font-semibold text-accent-900 mb-3">Next steps:</h3>
+                <ul className="space-y-2 text-accent-800">
                   <li className="flex items-start">
                     <svg className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
@@ -624,7 +624,7 @@ function OnboardingPage() {
 
               <button
                 onClick={() => navigate('/admin')}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition shadow-lg"
+                className="bg-accent-600 hover:bg-accent-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition shadow-lg"
               >
                 Go to Dashboard
               </button>

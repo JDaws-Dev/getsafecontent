@@ -15,13 +15,13 @@ export default function BlogIndex() {
     <main className="min-h-screen px-4 py-12 sm:px-8">
       <div className="mx-auto max-w-3xl">
         <header className="mb-10 space-y-3">
-          <Link href="/" className="text-xs font-bold uppercase tracking-widest text-violet-500 hover:text-violet-700">
+          <Link href="/" className="text-xs font-bold uppercase tracking-widest text-accent-700 hover:text-accent-800">
             ← SafeSpark
           </Link>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">SafeSpark Blog</h1>
           <p className="text-base text-slate-600">
             Notes on safe AI for kids, from the team building{' '}
-            <Link href="/" className="font-bold text-violet-600 underline">
+            <Link href="/" className="font-bold text-accent-700 underline">
               SafeSpark
             </Link>
             .
@@ -31,17 +31,17 @@ export default function BlogIndex() {
         <ul className="space-y-6">
           {sorted.map((post) => (
             <li key={post.slug}>
-              <Link href={`/blog/${post.slug}`} className="group block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-violet-300 hover:shadow-md">
+              <Link href={`/blog/${post.slug}`} className="group block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-accent-300 hover:shadow-md">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                   {formatDate(post.publishedAt)} · {post.readingMinutes} min read
                 </p>
-                <h2 className="mt-1 text-2xl font-black text-slate-900 group-hover:text-violet-700">
+                <h2 className="mt-1 text-2xl font-black text-slate-900 group-hover:text-accent-700">
                   {post.title}
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">{post.description}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {post.tags.map((t) => (
-                    <span key={t} className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-bold text-violet-700">
+                    <span key={t} className="rounded-full bg-accent-50 px-2 py-0.5 text-[11px] font-bold text-accent-700">
                       {t}
                     </span>
                   ))}

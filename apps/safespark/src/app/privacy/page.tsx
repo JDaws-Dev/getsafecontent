@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     <main className="min-h-screen px-4 py-12 sm:px-8">
       <article className="mx-auto max-w-3xl space-y-6 text-slate-700">
         <header className="space-y-2">
-          <Link href="/" className="text-xs font-bold uppercase tracking-widest text-violet-500 hover:text-violet-700">
+          <Link href="/" className="text-xs font-bold uppercase tracking-widest text-accent-700 hover:text-accent-800">
             ← SafeSpark
           </Link>
           <h1 className="text-4xl font-black text-slate-900">Privacy Policy</h1>
@@ -111,7 +111,7 @@ export default function PrivacyPage() {
         </p>
         <p>
           To delete your entire account and all kid profiles, email{' '}
-          <a href="mailto:jeremiah@getsafefamily.com" className="font-bold text-violet-600 underline">
+          <a href="mailto:jeremiah@getsafefamily.com" className="font-bold text-accent-700 underline">
             jeremiah@getsafefamily.com
           </a>
           . We&apos;ll process within 7 days.
@@ -126,7 +126,7 @@ export default function PrivacyPage() {
         <h2 className="mt-6 text-2xl font-black text-slate-900">Contact</h2>
         <p>
           Email{' '}
-          <a href="mailto:jeremiah@getsafefamily.com" className="font-bold text-violet-600 underline">
+          <a href="mailto:jeremiah@getsafefamily.com" className="font-bold text-accent-700 underline">
             jeremiah@getsafefamily.com
           </a>{' '}
           with any privacy question. We&apos;re a small team and will respond.

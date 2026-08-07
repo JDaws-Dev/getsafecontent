@@ -256,7 +256,7 @@ function AlbumSearch({
         id: 'demo-1',
         name: 'Worship Songs for Kids',
         artist: 'Various Artists',
-        color: 'from-purple-400 to-pink-400',
+        color: 'from-accent-400 to-accent-600',
         year: '2023',
         trackCount: 12,
       },

@@ -104,7 +104,7 @@ function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="min-h-screen bg-brand-cream">
       {/* Child Login Helper Banner */}
       <div className="bg-blue-600 text-white py-2 text-center text-sm">
         <span>Setting up your child's device? </span>
@@ -119,7 +119,7 @@ function LandingPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-8">
               <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-accent-500 rounded-xl flex items-center justify-center">
                   <svg className="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
                     <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
                   </svg>
@@ -132,28 +132,28 @@ function LandingPage() {
                 <a
                   href="#how-it-works"
                   onClick={(e) => handleSmoothScroll(e, 'how-it-works')}
-                  className="text-gray-700 hover:text-purple-600 font-medium transition cursor-pointer"
+                  className="text-gray-700 hover:text-accent-600 font-medium transition cursor-pointer"
                 >
                   How It Works
                 </a>
                 <a
                   href="#pricing"
                   onClick={(e) => handleSmoothScroll(e, 'pricing')}
-                  className="text-gray-700 hover:text-purple-600 font-medium transition cursor-pointer"
+                  className="text-gray-700 hover:text-accent-600 font-medium transition cursor-pointer"
                 >
                   Pricing
                 </a>
                 <a
                   href="#faq"
                   onClick={(e) => handleSmoothScroll(e, 'faq')}
-                  className="text-gray-700 hover:text-purple-600 font-medium transition cursor-pointer"
+                  className="text-gray-700 hover:text-accent-600 font-medium transition cursor-pointer"
                 >
                   FAQ
                 </a>
                 <a
                   href="#why"
                   onClick={(e) => handleSmoothScroll(e, 'why')}
-                  className="text-gray-700 hover:text-purple-600 font-medium transition cursor-pointer"
+                  className="text-gray-700 hover:text-accent-600 font-medium transition cursor-pointer"
                 >
                   Why This Exists
                 </a>
@@ -204,28 +204,28 @@ function LandingPage() {
               <a
                 href="#how-it-works"
                 onClick={(e) => handleSmoothScroll(e, 'how-it-works')}
-                className="block text-center text-gray-700 hover:text-purple-600 font-medium py-3 min-h-[48px] cursor-pointer flex items-center justify-center"
+                className="block text-center text-gray-700 hover:text-accent-600 font-medium py-3 min-h-[48px] cursor-pointer flex items-center justify-center"
               >
                 How It Works
               </a>
               <a
                 href="#pricing"
                 onClick={(e) => handleSmoothScroll(e, 'pricing')}
-                className="block text-center text-gray-700 hover:text-purple-600 font-medium py-3 min-h-[48px] cursor-pointer flex items-center justify-center"
+                className="block text-center text-gray-700 hover:text-accent-600 font-medium py-3 min-h-[48px] cursor-pointer flex items-center justify-center"
               >
                 Pricing
               </a>
               <a
                 href="#faq"
                 onClick={(e) => handleSmoothScroll(e, 'faq')}
-                className="block text-center text-gray-700 hover:text-purple-600 font-medium py-3 min-h-[48px] cursor-pointer flex items-center justify-center"
+                className="block text-center text-gray-700 hover:text-accent-600 font-medium py-3 min-h-[48px] cursor-pointer flex items-center justify-center"
               >
                 FAQ
               </a>
               <a
                 href="#why"
                 onClick={(e) => handleSmoothScroll(e, 'why')}
-                className="block text-center text-gray-700 hover:text-purple-600 font-medium py-3 min-h-[48px] cursor-pointer flex items-center justify-center"
+                className="block text-center text-gray-700 hover:text-accent-600 font-medium py-3 min-h-[48px] cursor-pointer flex items-center justify-center"
               >
                 Why This Exists
               </a>
@@ -267,7 +267,7 @@ function LandingPage() {
       <ImprovedHero />
 
       {/* Quick Social Proof - Build trust immediately */}
-      <section className="bg-gradient-to-br from-purple-50 to-pink-50 py-8">
+      <section className="bg-accent-50 py-8">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-4xl mx-auto text-center">
             <div className="flex items-center justify-center gap-1 mb-3">
@@ -495,11 +495,11 @@ function LandingPage() {
 
           {/* Kid Side: Blocked Content with Bible Verses */}
           <div className="max-w-5xl mx-auto mb-12 px-4">
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-purple-500">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-4 border-accent-500">
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Content */}
-                <div className="p-6 sm:p-8 flex flex-col justify-center bg-gradient-to-br from-purple-50 to-indigo-50">
-                  <div className="inline-block bg-purple-600 text-white px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide mb-4 self-start">
+                <div className="p-6 sm:p-8 flex flex-col justify-center bg-accent-50">
+                  <div className="inline-block bg-accent-600 text-white px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide mb-4 self-start">
                     Positive Encouragement
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
@@ -510,19 +510,19 @@ function LandingPage() {
                   </p>
                   <ul className="space-y-3 text-sm sm:text-base text-gray-700">
                     <li className="flex items-start">
-                      <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-accent-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       <span><strong>Positive messages instead of shame</strong> — Encouragement to choose what's healthy</span>
                     </li>
                     <li className="flex items-start">
-                      <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-accent-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       <span><strong>Faith-based encouragement (optional setting)</strong> — Scripture for Christian families, universal wisdom for others</span>
                     </li>
                     <li className="flex items-start">
-                      <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-accent-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       <span><strong>Accountability without fear</strong> — They know you'll be notified, building honesty</span>
@@ -539,7 +539,7 @@ function LandingPage() {
                       className="w-full h-auto rounded-lg shadow-2xl border-4 border-gray-800"
                     />
                     {/* Device Frame Indicator */}
-                    <div className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                    <div className="absolute -top-2 -right-2 bg-accent-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                       📖 KID VIEW
                     </div>
                   </div>
@@ -553,7 +553,7 @@ function LandingPage() {
       {/* Massive CTA - Positioned after feature showcases */}
       <section className="container mx-auto px-4 sm:px-6 py-12">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-10 border-2 border-purple-200">
+          <div className="bg-white rounded-2xl shadow-xl p-8 sm:p-10 border-2 border-accent-200">
             <div className="text-center">
               <Link
                 to="/signup"
@@ -583,14 +583,14 @@ function LandingPage() {
       </section>
 
       {/* Social Proof - Enhanced testimonials */}
-      <section className="bg-gradient-to-br from-purple-50 to-pink-50 py-8 sm:py-12">
+      <section className="bg-accent-50 py-8 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8">
               What Parents Are Saying
             </h2>
 
-            <div className="bg-white rounded-2xl p-5 sm:p-6 border-2 border-purple-200 shadow-lg max-w-2xl mx-auto mb-6">
+            <div className="bg-white rounded-2xl p-5 sm:p-6 border-2 border-accent-200 shadow-lg max-w-2xl mx-auto mb-6">
               <div className="flex gap-1 mb-3">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -605,7 +605,7 @@ function LandingPage() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-6">
-              <div className="bg-white rounded-2xl p-5 sm:p-6 border-2 border-purple-200 shadow-lg">
+              <div className="bg-white rounded-2xl p-5 sm:p-6 border-2 border-accent-200 shadow-lg">
                 <div className="flex gap-1 mb-3">
                   {[...Array(5)].map((_, i) => (
                     <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -619,7 +619,7 @@ function LandingPage() {
                 <p className="font-semibold text-sm text-gray-900">— Rachel D., mom of 2, Greenville, SC</p>
               </div>
 
-              <div className="bg-white rounded-2xl p-5 sm:p-6 border-2 border-purple-200 shadow-lg">
+              <div className="bg-white rounded-2xl p-5 sm:p-6 border-2 border-accent-200 shadow-lg">
                 <div className="flex gap-1 mb-3">
                   {[...Array(5)].map((_, i) => (
                     <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -651,7 +651,7 @@ function LandingPage() {
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl border-2 border-purple-600 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-xl border-2 border-accent-600 overflow-hidden">
               <div className="p-6 sm:p-8">
                 <div className="text-center mb-6">
                   <p className="text-sm font-medium text-gray-600 mb-2">
@@ -733,11 +733,11 @@ function LandingPage() {
                 </p>
               </div>
 
-              <div className="bg-purple-50 rounded-lg p-4 border-2 border-purple-300">
-                <h3 className="font-semibold text-purple-900 mb-1">
+              <div className="bg-accent-50 rounded-lg p-4 border-2 border-accent-300">
+                <h3 className="font-semibold text-accent-900 mb-1">
                   Can I hide album artwork?
                 </h3>
-                <p className="text-purple-800 text-sm">
+                <p className="text-accent-800 text-sm">
                   YES! This is our most-loved feature. You have selective control—choose which albums show artwork and which don't. Perfect for albums with questionable covers while keeping kid-friendly artwork visible. Kids see a simple placeholder instead.
                 </p>
               </div>
@@ -783,13 +783,13 @@ function LandingPage() {
       </section>
 
       {/* Why I Created This - Condensed */}
-      <section id="why" className="bg-gradient-to-br from-purple-50 to-pink-50 py-10 sm:py-12">
+      <section id="why" className="bg-accent-50 py-10 sm:py-12">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-6">
               Why I Built SafeTunes
             </h2>
-            <div className="bg-white rounded-xl shadow-md p-6 sm:p-8 border-2 border-purple-200">
+            <div className="bg-white rounded-xl shadow-md p-6 sm:p-8 border-2 border-accent-200">
               <p className="text-base sm:text-lg text-gray-700 mb-5 leading-relaxed">
                 I'm a teacher, uncle, and soon-to-be stepdad who cares deeply about the kids in my life.
               </p>
@@ -818,7 +818,7 @@ function LandingPage() {
       <section className="bg-white py-8 sm:py-10 border-t border-gray-200">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-5 sm:p-6">
+            <div className="bg-accent-50 border-2 border-indigo-200 rounded-xl p-5 sm:p-6">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   <svg className="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">

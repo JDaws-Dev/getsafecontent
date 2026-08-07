@@ -103,9 +103,9 @@ function ComparisonTable() {
                 <th className="py-6 px-6 text-left text-gray-600 font-semibold">
                   Feature
                 </th>
-                <th className="py-6 px-6 text-center bg-gradient-to-br from-purple-600 to-pink-600">
+                <th className="py-6 px-6 text-center bg-accent-500">
                   <div className="text-white font-bold text-lg">SafeTunes</div>
-                  <div className="text-purple-100 text-sm font-normal mt-1">$4.99/mo</div>
+                  <div className="text-accent-100 text-sm font-normal mt-1">$4.99/mo</div>
                 </th>
                 <th className="py-6 px-6 text-center text-gray-600 font-semibold">
                   <div>Spotify Kids</div>
@@ -128,7 +128,7 @@ function ComparisonTable() {
                   <td className="py-5 px-6 font-medium text-gray-900">
                     {feature.name}
                   </td>
-                  <td className="py-5 px-6 text-center bg-purple-50">
+                  <td className="py-5 px-6 text-center bg-accent-50">
                     {feature.safeTunes ? (
                       <Check className="w-6 h-6 text-green-600 mx-auto" strokeWidth={3} />
                     ) : (
@@ -158,7 +158,7 @@ function ComparisonTable() {
         <div className="text-center mt-8">
           <a
             href="/signup"
-            className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition shadow-lg hover:shadow-xl"
+            className="inline-block bg-accent-500 hover:bg-accent-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition shadow-lg hover:shadow-xl"
           >
             Start Free Trial
           </a>

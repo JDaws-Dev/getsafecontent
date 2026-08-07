@@ -10,6 +10,7 @@ import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import {
   Bot,
+  Check,
   ChevronDown,
   Code2,
   Copy,
@@ -264,8 +265,8 @@ const STARTER_HTML = `<!doctype html>
     .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 4px; }
     .chip {
       padding: 8px 14px; border-radius: 999px; background: white;
-      border: 1px solid #ddd6fe; font-size: 13px; font-weight: 700; color: #6d28d9;
-      box-shadow: 0 4px 14px rgba(124,58,237,.06);
+      border: 1px solid #F9D68A; font-size: 13px; font-weight: 700; color: #B06E0C;
+      box-shadow: 0 4px 14px rgba(242,164,19,.10);
     }
     .arrow { font-size: 22px; margin-top: 26px; color: #94a3b8; }
   </style>
@@ -275,7 +276,7 @@ const STARTER_HTML = `<!doctype html>
     <!-- inline lucide Sparkles glyph so the empty state carries the
          real SafeSpark mark instead of the stray "S" letter the emoji
          purge accidentally left behind. White stroke against the
-         violet-pink-amber gradient .spark chip. -->
+         amber-to-peach .spark chip. -->
     <div class="spark" aria-label="SafeSpark">
       <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
@@ -321,11 +322,11 @@ const TEMPLATES: Template[] = [
 ];
 const STARTER_MESSAGE = "Ask me anything, or tell me what to build.";
 const ACTION_BUTTON_CLASS =
-  'inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-brand-cream';
+  'inline-flex items-center gap-2 rounded-xl border border-brand-cream-2 bg-white px-3 py-2 text-sm font-semibold text-brand-navy hover:bg-brand-cream';
 const PRIMARY_ACTION_BUTTON_CLASS =
   'inline-flex items-center gap-2 rounded-xl bg-accent-600 px-3 py-2 text-sm font-semibold text-brand-navy shadow-sm hover:bg-accent-700';
 const UTILITY_BUTTON_CLASS =
-  'inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-brand-cream';
+  'inline-flex items-center gap-2 rounded-xl border border-brand-cream-2 bg-white px-3 py-2 text-xs font-semibold text-brand-navy hover:bg-brand-cream';
 
 export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: string }) {
   const initialProjects = useMemo(() => loadDemoProjects(), []);
@@ -1597,13 +1598,13 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
   if (!hasIdentity) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-brand-cream px-4 py-10">
-        <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+        <section className="w-full max-w-md rounded-2xl border border-brand-cream-2 bg-white p-6 text-center shadow-sm">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-600 text-brand-navy">
             <Wand2 className="h-7 w-7" />
           </div>
-          <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-accent-500">SafeSpark</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Sign up to start building</h1>
-          <p className="mt-3 text-sm leading-relaxed text-slate-600">
+          <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-accent-700">SafeSpark</p>
+          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-brand-navy">Sign up to start building</h1>
+          <p className="mt-3 text-sm leading-relaxed text-brand-ink-soft">
             Your projects save under your account and you can come back any time, on any device.
           </p>
           <div className="mt-5 flex flex-col gap-2">
@@ -1615,22 +1616,22 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             </Link>
             <Link
               href="/login"
-              className="inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-brand-cream"
+              className="inline-flex w-full items-center justify-center rounded-xl border border-brand-cream-2 bg-white px-5 py-3 text-sm font-semibold text-brand-navy hover:bg-brand-cream"
             >
               I already have an account
             </Link>
           </div>
-          <p className="mt-4 text-xs font-semibold text-slate-500">
+          <p className="mt-4 text-xs font-semibold text-brand-ink-soft">
             Free during early access · No credit card
           </p>
-          <p className="mt-3 text-xs leading-relaxed text-slate-500">
+          <p className="mt-3 text-xs leading-relaxed text-brand-ink-soft">
             Kids on a shared device? Have the parent sign up first, then kids log in with the family code at{' '}
             <Link href="/start" className="font-semibold text-accent-700 underline">
               /start
             </Link>
             .
           </p>
-          <Link href="/" className="mt-5 inline-flex text-xs font-semibold text-slate-500 hover:text-slate-700">
+          <Link href="/" className="mt-5 inline-flex text-xs font-semibold text-brand-ink-soft hover:text-brand-navy">
             Back to home
           </Link>
         </section>
@@ -1671,7 +1672,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
   }
 
   return (
-    <main className="flex h-screen flex-col overflow-hidden overflow-x-hidden bg-brand-cream text-slate-900 pb-[72px] lg:pb-0">
+    <main className="flex h-screen flex-col overflow-hidden overflow-x-hidden bg-brand-cream text-brand-navy pb-[72px] lg:pb-0">
       {/* Use the shared KidHeader directly — was previously duplicating
         its markup which kept drifting (the "nav still jumps when you
         switch to /make" complaints). Now /make is guaranteed byte-
@@ -1745,14 +1746,14 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                       list, not the big card grid that used to invade
                       the preview area. */}
                   <div
-                    className="absolute left-0 top-full z-50 mt-2 hidden w-96 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg lg:block"
+                    className="absolute left-0 top-full z-50 mt-2 hidden w-96 overflow-hidden rounded-xl border border-brand-cream-2 bg-white shadow-lg lg:block"
                     role="menu"
                   >
-                    <div className="border-b border-slate-100 bg-brand-cream px-3 py-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-accent-500">
+                    <div className="border-b border-brand-cream-2 bg-brand-cream px-3 py-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-accent-700">
                         My projects
                       </p>
-                      <p className="text-xs font-semibold text-slate-500">
+                      <p className="text-xs font-semibold text-brand-ink-soft">
                         {sortedProjects.length === 0
                           ? 'Nothing here yet'
                           : `${sortedProjects.length} project${sortedProjects.length === 1 ? '' : 's'}`}
@@ -1764,7 +1765,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                         startNewProject();
                         setShowProjects(false);
                       }}
-                      className="flex w-full items-center gap-2 border-b border-slate-100 bg-accent-50/60 px-3 py-2.5 text-left text-sm font-semibold text-accent-700 hover:bg-accent-100"
+                      className="flex w-full items-center gap-2 border-b border-brand-cream-2 bg-accent-50/60 px-3 py-2.5 text-left text-sm font-semibold text-accent-700 hover:bg-accent-100"
                       role="menuitem"
                     >
                       <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-600 text-brand-navy">
@@ -1798,7 +1799,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                         onClick={() => {
                           setShowDeleted((v) => !v);
                         }}
-                        className="flex w-full items-center justify-between gap-2 border-t border-slate-100 bg-amber-50/60 px-3 py-2 text-left text-xs font-semibold text-amber-800 hover:bg-amber-100"
+                        className="flex w-full items-center justify-between gap-2 border-t border-brand-cream-2 bg-amber-50/60 px-3 py-2 text-left text-xs font-semibold text-amber-800 hover:bg-amber-100"
                         role="menuitem"
                       >
                         <span className="inline-flex items-center gap-1.5">
@@ -1833,7 +1834,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
 
             {/* Cluster separator — thin slate divider visually
                 groups primary build actions vs. auxiliary actions. */}
-            <span aria-hidden="true" className="hidden h-6 w-px bg-slate-200 lg:inline-block" />
+            <span aria-hidden="true" className="hidden h-6 w-px bg-brand-cream-2 lg:inline-block" />
 
             {/* Auxiliary cluster: read aloud + share (both outlined). */}
             <button
@@ -1861,7 +1862,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             </button>
 
             {/* Cluster separator before the account menu. */}
-            <span aria-hidden="true" className="hidden h-6 w-px bg-slate-200 lg:inline-block" />
+            <span aria-hidden="true" className="hidden h-6 w-px bg-brand-cream-2 lg:inline-block" />
 
             {/*
               * Account menu — single avatar-icon button that opens a
@@ -1879,7 +1880,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
               <button
                 type="button"
                 onClick={() => setShowAccountMenu((v) => !v)}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-brand-cream"
+                className="inline-flex items-center gap-1 rounded-xl border border-brand-cream-2 bg-white px-2 py-2 text-sm font-semibold text-brand-navy hover:bg-brand-cream"
                 title="Account menu"
                 aria-haspopup="menu"
                 aria-expanded={showAccountMenu}
@@ -1894,7 +1895,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
               {showAccountMenu && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-full z-50 mt-1 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
+                  className="absolute right-0 top-full z-50 mt-1 w-56 overflow-hidden rounded-xl border border-brand-cream-2 bg-white shadow-lg"
                 >
                   {kidSessionToken && (
                     <button
@@ -1906,7 +1907,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                         setKidSessionToken(null);
                         setShowAccountMenu(false);
                       }}
-                      className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
+                      className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-brand-navy hover:bg-brand-cream"
                       role="menuitem"
                     >
                       <UserRound className="h-4 w-4 text-slate-400" />
@@ -1918,7 +1919,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                       <Link
                         href="/parent"
                         onClick={() => setShowAccountMenu(false)}
-                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-brand-navy hover:bg-brand-cream"
                         role="menuitem"
                         title="Parent admin"
                       >
@@ -1929,7 +1930,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                       <Link
                         href="/login"
                         onClick={() => setShowAccountMenu(false)}
-                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-brand-navy hover:bg-brand-cream"
                         role="menuitem"
                       >
                         <UserRound className="h-4 w-4 text-slate-400" />
@@ -1951,8 +1952,8 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
         Single bottom bar = ~70px reclaimed vs the prior double-stack.
         lg:hidden — desktop has the panels side-by-side, no switching
         needed. */}
-      <div className="flex-none border-b border-slate-200 bg-white px-3 py-2 lg:hidden">
-        <div className="mx-auto inline-flex w-full max-w-md gap-1 rounded-xl bg-slate-100 p-1">
+      <div className="flex-none border-b border-brand-cream-2 bg-white px-3 py-2 lg:hidden">
+        <div className="mx-auto inline-flex w-full max-w-md gap-1 rounded-xl bg-brand-cream-2 p-1">
           <SegmentedTab
             label="Chat"
             active={mobileTab === 'chat'}
@@ -1974,13 +1975,20 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
 
       {isSignedIn && (migrating || migrateResult) && (
         <div className="flex-none border-b border-emerald-200 bg-emerald-50 px-4 py-2 text-center text-xs font-semibold text-emerald-900">
-          {migrating ? `Auto-saving ${localGuestProjects.length} guest project${localGuestProjects.length === 1 ? '' : 's'} to your account…` : `✓ ${migrateResult}`}
+          {migrating ? (
+            `Auto-saving ${localGuestProjects.length} guest project${localGuestProjects.length === 1 ? '' : 's'} to your account…`
+          ) : (
+            <span className="inline-flex items-center justify-center gap-1.5">
+              <Check className="h-3.5 w-3.5" aria-hidden="true" />
+              {migrateResult}
+            </span>
+          )}
         </div>
       )}
 
       {pendingDeletion && (
         <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 transform">
-          <div className="flex items-center gap-3 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-lg">
+          <div className="flex items-center gap-3 rounded-xl bg-brand-navy px-4 py-3 text-sm font-semibold text-white shadow-lg">
             <Trash2 className="h-4 w-4 text-rose-300" />
             <span>
               Deleted &quot;{pendingDeletion.project.title}&quot;.
@@ -1988,7 +1996,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             <button
               type="button"
               onClick={undoDelete}
-              className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-slate-900 hover:bg-slate-100"
+              className="rounded-lg bg-white px-3 py-1 text-xs font-semibold text-brand-navy hover:bg-brand-cream-2"
             >
               Undo
             </button>
@@ -2001,20 +2009,20 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
         <section className="flex-1 overflow-y-auto px-3 pt-3 pb-20 lg:hidden">
           <div className="mx-auto max-w-md space-y-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-accent-500">My projects</p>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+              <p className="text-xs font-semibold uppercase tracking-widest text-accent-700">My projects</p>
+              <h2 className="font-display text-2xl font-bold tracking-tight text-brand-navy">
                 {sortedProjects.length === 0
                   ? 'Tap + New to start'
                   : `${sortedProjects.length} project${sortedProjects.length === 1 ? '' : 's'}`}
               </h2>
             </div>
             {sortedProjects.length === 0 ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center">
+              <div className="rounded-2xl border border-brand-cream-2 bg-white p-6 text-center">
                 <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-600 text-brand-navy">
                   <Plus className="h-6 w-6" />
                 </div>
-                <p className="text-sm font-semibold text-slate-700">Nothing here yet.</p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="text-sm font-semibold text-brand-navy">Nothing here yet.</p>
+                <p className="mt-1 text-xs text-brand-ink-soft">
                   Tap <span className="font-semibold text-accent-700">New</span> at the bottom to make your first project.
                 </p>
               </div>
@@ -2058,12 +2066,12 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
         }`}
       >
         <aside
-          className={`h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:flex ${
+          className={`h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-brand-cream-2 bg-white shadow-sm lg:flex ${
             mobileTab === 'chat' ? 'flex lg:flex' : 'hidden lg:flex'
           }`}
         >
-          <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-            <h2 className="text-base font-bold tracking-tight text-slate-900">Ask Spark anything</h2>
+          <div className="flex items-center justify-between gap-3 border-b border-brand-cream-2 px-4 py-3">
+            <h2 className="font-display text-base font-bold tracking-tight text-brand-navy">Ask Spark anything</h2>
             {inflightCount > 0 && (
               <span
                 className="inline-flex items-center gap-1.5 rounded-full bg-accent-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent-700"
@@ -2088,10 +2096,10 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                   <div
                     className={
                       isUser
-                        ? 'max-w-[82%] rounded-2xl bg-slate-900 px-3 py-2 text-sm font-semibold leading-relaxed text-white'
+                        ? 'max-w-[82%] rounded-2xl bg-brand-navy px-3 py-2 text-sm font-semibold leading-relaxed text-white'
                         : message.status === 'working'
                         ? 'max-w-[82%] rounded-2xl border border-accent-200 bg-accent-50 px-3 py-2 text-sm font-semibold leading-relaxed text-accent-700'
-                        : 'max-w-[82%] rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold leading-relaxed text-slate-700'
+                        : 'max-w-[82%] rounded-2xl border border-brand-cream-2 bg-white px-3 py-2 text-sm font-semibold leading-relaxed text-brand-navy'
                     }
                   >
                     {message.status === 'working' ? (
@@ -2121,7 +2129,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                             </span>
                             <span>{label}</span>
                             {message.startedAt ? (
-                              <span className="font-mono text-[11px] tabular-nums text-accent-500/80">
+                              <span className="font-mono text-[11px] tabular-nums text-accent-700/80">
                                 {timeStr}
                               </span>
                             ) : null}
@@ -2148,8 +2156,9 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                           Want to build something about <span className="font-bold">&ldquo;{blockedRefusal.phrase}&rdquo;</span>?
                         </p>
                         {requestStatus === 'sent' ? (
-                          <p className="mt-1.5 text-xs font-semibold text-emerald-700">
-                            ✓ Sent! Your parent will see it on their dashboard.
+                          <p className="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+                            <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                            Sent! Your parent will see it on their dashboard.
                           </p>
                         ) : (
                           <button
@@ -2170,7 +2179,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                                 setRequestStatus('error');
                               }
                             }}
-                            className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-amber-600 disabled:opacity-60"
+                            className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-amber-700 disabled:opacity-60"
                           >
                             {requestStatus === 'sending' ? 'Asking…' : 'Ask my parent to allow it'}
                           </button>
@@ -2184,7 +2193,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                     )}
                     {!isUser && message.diffStats && (
                       <div
-                        className="mt-2 inline-flex items-center gap-2 rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-600"
+                        className="mt-2 inline-flex items-center gap-2 rounded-full bg-brand-cream-2 px-2.5 py-0.5 text-[10px] font-semibold text-brand-ink-soft"
                         title={`${message.diffStats.total} total lines in the project after this change`}
                       >
                         <span className="text-emerald-700">+{message.diffStats.added}</span>
@@ -2256,7 +2265,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                                   setError(`Couldn't undo: ${text}`);
                                 }
                               }}
-                              className="inline-flex h-7 items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 text-[11px] font-semibold text-slate-600 hover:border-amber-200 hover:text-amber-700"
+                              className="inline-flex h-7 items-center gap-1 rounded-full border border-brand-cream-2 bg-white px-2.5 text-[11px] font-semibold text-brand-ink-soft hover:border-amber-200 hover:text-amber-700"
                               title="Go back to the version before this change"
                             >
                               Undo last change
@@ -2266,7 +2275,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                     )}
                   </div>
                   {isUser && (
-                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-700 shadow-sm">
+                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-navy shadow-sm">
                       <UserRound className="h-4 w-4" />
                     </div>
                   )}
@@ -2281,14 +2290,14 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 can still tap "View code" on the right panel header. */}
           </div>
 
-          <div className="border-t border-slate-200 bg-white p-3 pt-4">
+          <div className="border-t border-brand-cream-2 bg-white p-3 pt-4">
             {showQuickPrompts && (
               <div className="mb-3 space-y-3">
                 <div className="rounded-xl border border-accent-200 bg-accent-50 p-3 text-center">
                   <p className="text-xs font-semibold text-accent-700">
                     Typing is hard — just talk!
                   </p>
-                  <p className="mt-0.5 text-[11px] font-medium text-accent-600">
+                  <p className="mt-0.5 text-[11px] font-medium text-accent-700">
                     Tap the mic below and tell Spark what to make. Tap again when you&apos;re done.
                   </p>
                 </div>
@@ -2301,7 +2310,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                         type="button"
                         onClick={() => sendPrompt(t.prompt)}
                         disabled={busy}
-                        className="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-3 text-center text-[11px] font-semibold text-slate-700 transition hover:border-accent-300 hover:bg-accent-50 hover:text-accent-700 disabled:opacity-50"
+                        className="flex flex-col items-center gap-1 rounded-xl border border-brand-cream-2 bg-white px-2 py-3 text-center text-[11px] font-semibold text-brand-navy transition hover:border-accent-300 hover:bg-accent-50 hover:text-accent-700 disabled:opacity-50"
                       >
                         {t.label}
                       </button>
@@ -2470,7 +2479,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                   }
                 }}
                 rows={2}
-                className="min-h-16 flex-1 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-accent-400"
+                className="min-h-16 flex-1 resize-none rounded-2xl border border-brand-cream-2 bg-white px-4 py-3 text-sm font-medium text-brand-navy outline-none transition focus:border-accent-400"
                 placeholder="What do you want to make?"
               />
               {/* Auxiliary actions: smaller (h-10 w-10) to give the
@@ -2537,18 +2546,18 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
           )}
 
           {showHistory && (
-            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <section className="rounded-2xl border border-brand-cream-2 bg-white p-4 shadow-sm">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-accent-500">Design log</p>
-                  <h2 className="text-base font-bold tracking-tight text-slate-900">Every version of this project</h2>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-accent-700">Design log</p>
+                  <h2 className="font-display text-base font-bold tracking-tight text-brand-navy">Every version of this project</h2>
                 </div>
-                <button type="button" onClick={() => setShowHistory(false)} className="text-sm font-semibold text-slate-500 hover:text-slate-900">
+                <button type="button" onClick={() => setShowHistory(false)} className="text-sm font-semibold text-brand-ink-soft hover:text-brand-navy">
                   Hide
                 </button>
               </div>
               {!cloudVersions || cloudVersions.length === 0 ? (
-                <p className="rounded-xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-500">
+                <p className="rounded-xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-brand-ink-soft">
                   No versions yet. Your next build becomes v1.
                 </p>
               ) : (
@@ -2558,17 +2567,17 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                       <span className="absolute -left-[27px] top-2 flex h-4 w-4 items-center justify-center rounded-full bg-accent-600 text-[9px] font-semibold text-brand-navy shadow-sm">
                         {cloudVersions.length - index}
                       </span>
-                      <div className="rounded-xl border border-slate-200 bg-brand-cream p-3">
+                      <div className="rounded-xl border border-brand-cream-2 bg-brand-cream p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="text-sm font-bold tracking-tight text-slate-900">{version.label}</p>
-                            <p className="mt-0.5 text-xs font-mono text-slate-500">{formatDate(version.createdAt)}</p>
+                            <p className="text-sm font-bold tracking-tight text-brand-navy">{version.label}</p>
+                            <p className="mt-0.5 text-xs font-mono text-brand-ink-soft">{formatDate(version.createdAt)}</p>
                             {version.summary && (
-                              <p className="mt-2 text-xs leading-relaxed text-slate-700">{version.summary}</p>
+                              <p className="mt-2 text-xs leading-relaxed text-brand-navy">{version.summary}</p>
                             )}
                             {version.prompt && (
-                              <p className="mt-2 rounded-lg bg-white px-3 py-2 text-xs leading-relaxed text-slate-600">
-                                <span className="font-semibold text-accent-600">Ask: </span>
+                              <p className="mt-2 rounded-lg bg-white px-3 py-2 text-xs leading-relaxed text-brand-ink-soft">
+                                <span className="font-semibold text-accent-700">Ask: </span>
                                 {version.prompt}
                               </p>
                             )}
@@ -2632,7 +2641,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                   <p className="text-xs font-semibold uppercase tracking-widest text-amber-700">
                     Recently deleted · kept for 30 days
                   </p>
-                  <h2 className="text-lg font-bold tracking-tight text-amber-900">
+                  <h2 className="font-display text-lg font-bold tracking-tight text-amber-900">
                     {deletedProjects.length} project{deletedProjects.length === 1 ? '' : 's'}
                   </h2>
                 </div>
@@ -2651,10 +2660,10 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                   return (
                     <div
                       key={d.id}
-                      className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2"
+                      className="flex items-center gap-3 rounded-lg border border-brand-cream-2 bg-white px-3 py-2"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="line-clamp-1 text-sm font-semibold text-slate-800">{d.title}</p>
+                        <p className="line-clamp-1 text-sm font-semibold text-brand-navy">{d.title}</p>
                         <p className="mt-0.5 text-[11px] font-semibold text-amber-700">
                           Deleted {formatDate(d.deletedAt)} · {daysLeft} day{daysLeft === 1 ? '' : 's'} left
                         </p>
@@ -2684,7 +2693,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                             setError(`Couldn't delete: ${text}`);
                           }
                         }}
-                        className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-400 hover:border-rose-300 hover:text-rose-600"
+                        className="rounded-lg border border-brand-cream-2 bg-white px-2 py-1.5 text-xs font-semibold text-slate-400 hover:border-rose-300 hover:text-rose-600"
                         aria-label={`Delete ${d.title} forever`}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -2696,11 +2705,11 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             </section>
           )}
 
-          <section className="flex min-h-[480px] flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-none flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
+          <section className="flex min-h-[480px] flex-1 flex-col overflow-hidden rounded-2xl border border-brand-cream-2 bg-white shadow-sm">
+            <div className="flex flex-none flex-wrap items-center justify-between gap-3 border-b border-brand-cream-2 bg-white px-4 py-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Result</p>
-                <h2 className="text-lg font-bold tracking-tight text-slate-900">Play the project</h2>
+                <h2 className="font-display text-lg font-bold tracking-tight text-brand-navy">Play the project</h2>
               </div>
               <div className="flex flex-wrap gap-2">
                 {!imageResultUrl && (
@@ -2736,7 +2745,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                       {showResultOverflow && (
                         <div
                           role="menu"
-                          className="absolute right-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
+                          className="absolute right-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-xl border border-brand-cream-2 bg-white shadow-lg"
                         >
                           <button
                             type="button"
@@ -2744,7 +2753,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                               downloadHtml();
                               setShowResultOverflow(false);
                             }}
-                            className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
+                            className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-brand-navy hover:bg-brand-cream"
                             role="menuitem"
                           >
                             <Download className="h-4 w-4 text-slate-400" />
@@ -2756,7 +2765,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                               printProject();
                               setShowResultOverflow(false);
                             }}
-                            className="flex w-full items-center gap-2.5 border-t border-slate-100 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
+                            className="flex w-full items-center gap-2.5 border-t border-brand-cream-2 px-3.5 py-2.5 text-left text-sm font-semibold text-brand-navy hover:bg-brand-cream"
                             role="menuitem"
                             title="Print or save as PDF"
                           >
@@ -2770,7 +2779,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 )}
               </div>
             </div>
-            <div className="relative flex-1 bg-slate-100 p-3">
+            <div className="relative flex-1 bg-brand-cream-2 p-3">
               {imageResultUrl ? (
                 <ImageResult
                   imageUrl={imageResultUrl}
@@ -2787,12 +2796,12 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 />
               )}
               {busy && (
-                <div className="pointer-events-none absolute inset-3 flex items-center justify-center rounded-xl bg-slate-900/30 backdrop-blur-sm">
-                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 px-5 py-3 shadow-lg backdrop-blur">
-                    <Loader2 className="h-5 w-5 animate-spin text-accent-600" />
-                    <span className="text-sm font-semibold text-slate-900">
+                <div className="pointer-events-none absolute inset-3 flex items-center justify-center rounded-xl bg-brand-navy/30 backdrop-blur-sm">
+                  <div className="flex items-center gap-3 rounded-2xl border border-brand-cream-2 bg-white/95 px-5 py-3 shadow-lg backdrop-blur">
+                    <Loader2 className="h-5 w-5 animate-spin text-accent-700" />
+                    <span className="text-sm font-semibold text-brand-navy">
                       Spark is thinking…{' '}
-                      <span className="font-mono tabular-nums text-slate-500">
+                      <span className="font-mono tabular-nums text-brand-ink-soft">
                         {Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, '0')}
                       </span>
                     </span>
@@ -3027,7 +3036,7 @@ function formatDate(value: number): string {
 /**
  * Apple-Music-style segmented control. Used at the top of /make on
  * mobile to switch between Chat / Play / Projects panels. Active tab
- * gets a white "lifted" pill on the slate-100 track. Single bottom
+ * gets a white "lifted" pill on the cream track. Single bottom
  * KidMobileNav (Home/Make/Learn/Apps) is the page-level nav.
  */
 function SegmentedTab({
@@ -3047,13 +3056,13 @@ function SegmentedTab({
       onClick={onClick}
       className={
         active
-          ? 'relative flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 shadow-sm'
-          : 'relative flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800'
+          ? 'relative flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy shadow-sm'
+          : 'relative flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-brand-ink-soft hover:text-brand-navy'
       }
     >
       {label}
       {badge !== undefined && badge > 0 && (
-        <span className={`inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold ${active ? 'bg-accent-600 text-brand-navy' : 'bg-slate-300 text-slate-700'}`}>
+        <span className={`inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold ${active ? 'bg-accent-600 text-brand-navy' : 'bg-brand-cream-2 text-brand-navy'}`}>
           {badge}
         </span>
       )}
@@ -3079,7 +3088,7 @@ function MobileNavButton({
       type="button"
       onClick={onClick}
       className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider ${
-        active ? 'bg-accent-50 text-accent-700' : 'text-slate-500 hover:text-slate-800'
+        active ? 'bg-accent-50 text-accent-700' : 'text-brand-ink-soft hover:text-brand-navy'
       }`}
     >
       {icon}
@@ -3113,8 +3122,8 @@ function ProjectRow({
     <div
       className={
         isActive
-          ? 'group flex items-center gap-2.5 border-b border-slate-100 bg-accent-50 px-2.5 py-2 last:border-b-0'
-          : 'group flex items-center gap-2.5 border-b border-slate-100 px-2.5 py-2 last:border-b-0 hover:bg-brand-cream'
+          ? 'group flex items-center gap-2.5 border-b border-brand-cream-2 bg-accent-50 px-2.5 py-2 last:border-b-0'
+          : 'group flex items-center gap-2.5 border-b border-brand-cream-2 px-2.5 py-2 last:border-b-0 hover:bg-brand-cream'
       }
     >
       <button
@@ -3126,8 +3135,8 @@ function ProjectRow({
         <div
           className={
             isActive
-              ? 'relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border-2 border-emerald-500 bg-gradient-to-br from-slate-50 to-slate-100 shadow'
-              : 'relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100'
+              ? 'relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border-2 border-emerald-500 bg-brand-cream-2 shadow'
+              : 'relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border border-brand-cream-2 bg-brand-cream-2'
           }
           title={isActive ? 'Currently open' : project.title}
         >
@@ -3146,7 +3155,7 @@ function ProjectRow({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-1 text-sm font-semibold text-slate-900">{project.title}</p>
+          <p className="line-clamp-1 text-sm font-semibold text-brand-navy">{project.title}</p>
           <p className="text-[10px] font-medium text-slate-400">{formatDate(project.updatedAt)}</p>
         </div>
       </button>
@@ -3184,7 +3193,7 @@ function ProjectCard({
       className={
         isActive
           ? 'group overflow-hidden rounded-2xl border-2 border-accent-400 bg-white shadow-sm'
-          : 'group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-accent-300 hover:shadow-sm'
+          : 'group overflow-hidden rounded-2xl border border-brand-cream-2 bg-white transition hover:border-accent-300 hover:shadow-sm'
       }
     >
       <button
@@ -3193,7 +3202,7 @@ function ProjectCard({
         className="block w-full text-left"
         aria-label={`Open ${project.title}`}
       >
-        <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="relative aspect-[4/3] overflow-hidden bg-brand-cream-2">
           <iframe
             srcDoc={project.html}
             sandbox=""
@@ -3212,16 +3221,16 @@ function ProjectCard({
             </span>
           )}
         </div>
-        <div className="border-t border-slate-100 px-3 py-2.5">
-          <p className="line-clamp-1 text-sm font-semibold text-slate-900">{project.title}</p>
+        <div className="border-t border-brand-cream-2 px-3 py-2.5">
+          <p className="line-clamp-1 text-sm font-semibold text-brand-navy">{project.title}</p>
           <p className="mt-0.5 text-[11px] font-medium text-slate-400">{formatDate(project.updatedAt)}</p>
         </div>
       </button>
-      <div className="flex gap-1 border-t border-slate-100 bg-brand-cream px-2 py-1.5">
+      <div className="flex gap-1 border-t border-brand-cream-2 bg-brand-cream px-2 py-1.5">
         <button
           type="button"
           onClick={onShare}
-          className="flex-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-white hover:text-accent-700"
+          className="flex-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-brand-ink-soft hover:bg-white hover:text-accent-700"
         >
           <Copy className="mr-1 inline h-3 w-3" />
           Share

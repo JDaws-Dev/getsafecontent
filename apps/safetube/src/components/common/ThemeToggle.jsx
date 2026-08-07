@@ -94,8 +94,8 @@ export function ThemeSelector() {
           onClick={() => setTheme(option.value)}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
             theme === option.value
-              ? 'bg-red-100 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-300'
-              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-red-300 dark:hover:border-red-600'
+              ? 'bg-accent-50 dark:bg-accent-900/30 border-accent-500 text-accent-700 dark:text-accent-300'
+              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-accent-300 dark:hover:border-accent-600'
           }`}
         >
           {option.icon}

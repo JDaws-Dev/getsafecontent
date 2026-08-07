@@ -12,7 +12,7 @@ function KidPlayerPreview() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white py-4 px-4">
+      <div className="bg-accent-500 text-white py-4 px-4">
         <div className="max-w-lg mx-auto">
           <h1 className="text-lg font-bold">UI Preview Mode</h1>
           <p className="text-sm text-white/80">Review the new Kid Player design</p>

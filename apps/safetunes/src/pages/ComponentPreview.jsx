@@ -13,11 +13,11 @@ function ComponentPreview() {
         <div className="container mx-auto">
           <h1 className="text-xl font-bold mb-2">New Landing Page Components Preview</h1>
           <div className="flex gap-4 text-sm">
-            <a href="#hero" className="hover:text-purple-300">Hero</a>
-            <a href="#how-it-works" className="hover:text-purple-300">How It Works</a>
-            <a href="#comparison" className="hover:text-purple-300">Comparison</a>
-            <a href="#installation" className="hover:text-purple-300">Installation</a>
-            <a href="#sticky" className="hover:text-purple-300">Sticky CTA</a>
+            <a href="#hero" className="hover:text-accent-300">Hero</a>
+            <a href="#how-it-works" className="hover:text-accent-300">How It Works</a>
+            <a href="#comparison" className="hover:text-accent-300">Comparison</a>
+            <a href="#installation" className="hover:text-accent-300">Installation</a>
+            <a href="#sticky" className="hover:text-accent-300">Sticky CTA</a>
           </div>
         </div>
       </div>

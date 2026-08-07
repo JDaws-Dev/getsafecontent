@@ -38,10 +38,10 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex flex-col">
+      <div className="min-h-screen bg-brand-cream flex flex-col">
         <header className="px-6 py-4">
           <Link to="/" className="flex items-center gap-2 w-fit">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
               <Search className="w-5 h-5 text-white" />
             </div>
             <span className="font-semibold text-gray-900">SafeStudy</span>
@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Mail className="w-8 h-8 text-green-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Check Your Email</h1>
+            <h1 className="font-display text-2xl font-bold text-brand-navy mb-2">Check Your Email</h1>
             <p className="text-gray-600 mb-6">
               We sent a 6-digit reset code to <strong>{email}</strong>.
               The code expires in 1 hour.
@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
             </Link>
             <button
               onClick={() => setSent(false)}
-              className="w-full text-blue-600 hover:text-blue-700 text-sm mt-4"
+              className="w-full text-accent-600 hover:text-accent-700 text-sm mt-4"
             >
               Didn't receive it? Try again
             </button>
@@ -77,10 +77,10 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex flex-col">
+    <div className="min-h-screen bg-brand-cream flex flex-col">
       <header className="px-6 py-4">
         <Link to="/" className="flex items-center gap-2 w-fit">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
             <Search className="w-5 h-5 text-white" />
           </div>
           <span className="font-semibold text-gray-900">SafeStudy</span>
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
 
       <main className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <h1 className="text-2xl font-bold text-gray-900 text-center mb-2">Forgot Password</h1>
+          <h1 className="font-display text-2xl font-bold text-brand-navy text-center mb-2">Forgot Password</h1>
           <p className="text-gray-500 text-center mb-8">
             Enter your email and we'll send you a reset code.
           </p>
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full min-h-[44px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full min-h-[44px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 placeholder="you@example.com"
                 required
               />

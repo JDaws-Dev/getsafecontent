@@ -225,7 +225,7 @@ export default function Settings({ userData, onLogout }) {
         <div className="space-y-6">
           {/* Kids Management Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-accent-500 to-accent-600">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-accent-500">
               <div>
                 <h2 className="text-lg font-semibold text-white">Kid Profiles</h2>
                 <p className="text-sm text-white/80">Manage access and time limits for each child</p>
@@ -243,8 +243,8 @@ export default function Settings({ userData, onLogout }) {
 
             {!kidProfiles || kidProfiles.length === 0 ? (
               <div className="p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
-                  <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 mx-auto mb-4 bg-accent-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
@@ -252,7 +252,7 @@ export default function Settings({ userData, onLogout }) {
                 <p className="text-gray-500 text-sm mb-4">Add a profile for each child to get started</p>
                 <button
                   onClick={() => setShowAddKid(true)}
-                  className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
+                  className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
                 >
                   Add Your First Kid
                 </button>
@@ -279,8 +279,8 @@ export default function Settings({ userData, onLogout }) {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-                  <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 bg-accent-100 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
@@ -291,7 +291,7 @@ export default function Settings({ userData, onLogout }) {
               </div>
               <button
                 onClick={() => setShowSetupGuide(true)}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-4 py-2.5 rounded-xl font-medium transition"
+                className="w-full flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 text-white px-4 py-2.5 rounded-xl font-medium transition"
               >
                 View Setup Guide
               </button>
@@ -305,7 +305,7 @@ export default function Settings({ userData, onLogout }) {
         <div className="space-y-6">
           {/* Account Information */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-accent-500 to-accent-600 flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-gray-100 bg-accent-500 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -395,7 +395,7 @@ export default function Settings({ userData, onLogout }) {
                     <button
                       type="submit"
                       disabled={editNameLoading}
-                      className="px-6 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-6 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {editNameLoading ? 'Saving...' : 'Save Changes'}
                     </button>
@@ -432,7 +432,7 @@ export default function Settings({ userData, onLogout }) {
               </p>
               <button
                 onClick={handlePasswordChange}
-                className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium transition"
+                className="px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition"
               >
                 Change Password
               </button>
@@ -441,7 +441,7 @@ export default function Settings({ userData, onLogout }) {
 
           {/* Safe Family Account */}
           <div className="bg-accent-50 rounded-2xl shadow-sm border border-accent-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-accent-100 bg-gradient-to-r from-accent-500 to-accent-600 flex items-center gap-3">
+            <div className="px-6 py-4 border-b border-accent-100 bg-accent-500 flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -467,7 +467,7 @@ export default function Settings({ userData, onLogout }) {
                 href="https://getsafefamily.com/account"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium transition shadow-md"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition shadow-md"
               >
                 <span>Manage Safe Family Account</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -587,7 +587,7 @@ export default function Settings({ userData, onLogout }) {
         <div className="space-y-6">
           {/* Theme Selection Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-accent-500 to-accent-600">
+            <div className="px-6 py-4 border-b border-gray-100 bg-accent-500">
               <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
@@ -1107,7 +1107,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                           onClick={() => updateForm({ weekendLimitMinutes: preset.value })}
                           className={`px-2 py-1.5 rounded-lg text-xs font-medium transition ${
                             form.weekendLimitMinutes === preset.value
-                              ? 'bg-orange-500 text-white'
+                              ? 'bg-accent-500 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                           }`}
                         >
@@ -1201,7 +1201,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
               disabled={saving || !form.name.trim()}
               className={`flex-1 py-2.5 rounded-lg font-medium transition ${
                 hasChanges
-                  ? 'bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white'
+                  ? 'bg-accent-500 hover:bg-accent-600 text-white'
                   : 'bg-gray-100 text-gray-500'
               }`}
             >
@@ -1307,7 +1307,7 @@ function AddKidModal({ userId, onClose }) {
             <button
               type="submit"
               disabled={!name.trim() || isSubmitting}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium transition disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition disabled:opacity-50"
             >
               {isSubmitting ? 'Adding...' : 'Add Kid'}
             </button>
@@ -1475,7 +1475,7 @@ function SubscriptionCard({ userData }) {
             <button
               onClick={handleSubscribe}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-4 py-3 rounded-xl font-medium transition shadow-md disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 text-white px-4 py-3 rounded-xl font-medium transition shadow-md disabled:opacity-50"
             >
               {isLoading ? (
                 <>

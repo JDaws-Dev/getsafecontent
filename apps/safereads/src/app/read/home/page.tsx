@@ -9,7 +9,7 @@ import { BookCard } from "@/components/kid/BookCard";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
 import { StylizedCover } from "@/components/kid/StylizedCover";
 import { ReadingStreaks } from "@/components/kid/ReadingStreaks";
-import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star, Clock, Headphones, Wand2 } from "lucide-react";
+import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star, Clock, Headphones, Wand2, Hourglass } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { SafeFamilyHeaderSwitcher } from "@/components/SafeFamilySwitcher";
@@ -708,18 +708,18 @@ export default function KidHomePage() {
       <section className="animate-fade-up mt-5" style={{ animationDelay: "0.12s" }}>
         <button
           onClick={() => router.push("/read/bible")}
-          className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 p-4 shadow-md ring-1 ring-amber-200/60 transition-all hover:shadow-lg active:scale-[0.98]"
+          className="kid-touch flex w-full items-center gap-4 rounded-2xl bg-accent-50 p-4 shadow-md ring-1 ring-accent-200/60 transition-all hover:shadow-lg active:scale-[0.98]"
         >
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-2xl shadow-lg shadow-amber-200">
+          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-accent-500 text-2xl shadow-lg shadow-accent-200">
             <BookOpen className="h-7 w-7 text-white" />
           </div>
           <div className="min-w-0 flex-1 text-left">
-            <p className="text-base font-bold text-amber-900">Read the Bible</p>
-            <p className="mt-0.5 text-xs text-amber-700/70">
+            <p className="text-base font-bold text-accent-900">Read the Bible</p>
+            <p className="mt-0.5 text-xs text-accent-700/70">
               ESV, NIV, NLT, NKJV, KJV and more
             </p>
           </div>
-          <div className="flex-shrink-0 text-amber-400">
+          <div className="flex-shrink-0 text-accent-400">
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -836,7 +836,7 @@ export default function KidHomePage() {
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.2s" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-yellow-500" />
+            <Star className="h-4 w-4 text-accent-500" />
             <h2 className="font-display text-lg font-bold text-brand-navy">
               Discover More Books
             </h2>
@@ -895,7 +895,7 @@ export default function KidHomePage() {
                       )}
                       {/* Classic badge for well-known titles */}
                       {book.isClassic && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-700/80 to-transparent px-2 pb-1.5 pt-4 text-center">
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-accent-700/80 to-transparent px-2 pb-1.5 pt-4 text-center">
                           <span className="text-[9px] font-bold uppercase tracking-wider text-white">Classic</span>
                         </div>
                       )}
@@ -1041,15 +1041,15 @@ export default function KidHomePage() {
         <section className="animate-fade-up mt-4" style={{ animationDelay: "0.3s" }}>
           <button
             onClick={() => router.push("/read/bible/saved")}
-            className={`kid-touch w-full rounded-2xl border-l-4 border-l-amber-400 bg-amber-50 p-4 text-left shadow-sm ring-1 ring-amber-200/60 transition-all hover:shadow-md active:scale-[0.98]`}
+            className={`kid-touch w-full rounded-2xl border-l-4 border-l-accent-400 bg-accent-50 p-4 text-left shadow-sm ring-1 ring-accent-200/60 transition-all hover:shadow-md active:scale-[0.98]`}
           >
-            <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-accent-600">
               My Latest Saved Verse
             </p>
             <p className="mt-1.5 font-serif text-sm leading-relaxed text-gray-800 italic">
               &ldquo;{(savedVerses as Array<{ verseText: string }>)[0].verseText.slice(0, 120)}{(savedVerses as Array<{ verseText: string }>)[0].verseText.length > 120 ? "..." : ""}&rdquo;
             </p>
-            <p className="mt-1.5 text-xs font-medium text-amber-700">
+            <p className="mt-1.5 text-xs font-medium text-accent-700">
               {(savedVerses as Array<{ bookName: string; chapter: number; verse: number; translation: string }>)[0].bookName}{" "}
               {(savedVerses as Array<{ chapter: number }>)[0].chapter}:{(savedVerses as Array<{ verse: number }>)[0].verse}{" "}
               ({(savedVerses as Array<{ translation: string }>)[0].translation})
@@ -1073,7 +1073,7 @@ export default function KidHomePage() {
             </p>
           </div>
           <div className="flex-shrink-0">
-            <span className="animate-pulse text-lg">{"⏳"}</span>
+            <Hourglass className="h-5 w-5 animate-pulse text-amber-500" />
           </div>
         </div>
       )}

@@ -834,7 +834,7 @@ function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfir
               {kidProfiles?.map((kid) => {
                 const isSelected = selectedKids.includes(kid._id);
                 const colors = {
-                  purple: 'bg-purple-500',
+                  purple: 'bg-accent-500',
                   blue: 'bg-blue-500',
                   green: 'bg-green-500',
                   pink: 'bg-pink-500',

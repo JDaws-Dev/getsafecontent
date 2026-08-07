@@ -4,33 +4,38 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { BookOpen, ChevronRight, Check, ArrowLeft } from "lucide-react";
+import {
+  BookOpen, ChevronRight, Check, ArrowLeft,
+  Compass, PawPrint, Castle, FlaskConical, Landmark, Crown, Fingerprint,
+  Rocket, Leaf, Laugh, Trophy, Palette, Ghost, MessageSquare, Zap,
+  Bug, BookCopy, Medal,
+} from "lucide-react";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
 // Same genre list as GenreBrowser.tsx
 const GENRES = [
-  { key: "Adventure", emoji: "\uD83C\uDFF4\u200D\u2620\uFE0F", gradient: "from-orange-400 to-red-500", ring: "ring-orange-300" },
-  { key: "Animals", emoji: "\uD83D\uDC3E", gradient: "from-amber-400 to-yellow-500", ring: "ring-amber-300" },
-  { key: "Fantasy", emoji: "\uD83D\uDC09", gradient: "from-purple-400 to-violet-600", ring: "ring-purple-300" },
-  { key: "Science", emoji: "\uD83D\uDD2C", gradient: "from-cyan-400 to-blue-500", ring: "ring-cyan-300" },
-  { key: "History", emoji: "\u2694\uFE0F", gradient: "from-stone-400 to-stone-600", ring: "ring-stone-300" },
-  { key: "Fairy Tales", emoji: "\uD83E\uDDDA", gradient: "from-pink-400 to-rose-500", ring: "ring-pink-300" },
-  { key: "Mystery", emoji: "\uD83D\uDD0D", gradient: "from-indigo-400 to-blue-600", ring: "ring-indigo-300" },
-  { key: "Space", emoji: "\uD83D\uDE80", gradient: "from-violet-500 to-indigo-700", ring: "ring-violet-300" },
-  { key: "Nature", emoji: "\uD83C\uDF3F", gradient: "from-emerald-400 to-green-600", ring: "ring-emerald-300" },
-  { key: "Humor", emoji: "\uD83D\uDE02", gradient: "from-yellow-400 to-orange-400", ring: "ring-yellow-300" },
-  { key: "Sports", emoji: "\u26BD", gradient: "from-green-400 to-teal-500", ring: "ring-green-300" },
-  { key: "Art & Music", emoji: "\uD83C\uDFA8", gradient: "from-fuchsia-400 to-pink-600", ring: "ring-fuchsia-300" },
-  { key: "Scary Stories", emoji: "\uD83D\uDC7B", gradient: "from-gray-600 to-gray-900", ring: "ring-gray-400" },
-  { key: "Comics", emoji: "\uD83D\uDCAC", gradient: "from-sky-400 to-blue-500", ring: "ring-sky-300" },
-  { key: "Action", emoji: "\uD83D\uDCA5", gradient: "from-red-500 to-rose-600", ring: "ring-red-300" },
+  { key: "Adventure", Icon: Compass, gradient: "from-orange-400 to-red-500", ring: "ring-orange-300" },
+  { key: "Animals", Icon: PawPrint, gradient: "from-amber-400 to-yellow-500", ring: "ring-amber-300" },
+  { key: "Fantasy", Icon: Castle, gradient: "from-purple-400 to-violet-600", ring: "ring-purple-300" },
+  { key: "Science", Icon: FlaskConical, gradient: "from-cyan-400 to-blue-500", ring: "ring-cyan-300" },
+  { key: "History", Icon: Landmark, gradient: "from-stone-400 to-stone-600", ring: "ring-stone-300" },
+  { key: "Fairy Tales", Icon: Crown, gradient: "from-pink-400 to-rose-500", ring: "ring-pink-300" },
+  { key: "Mystery", Icon: Fingerprint, gradient: "from-indigo-400 to-blue-600", ring: "ring-indigo-300" },
+  { key: "Space", Icon: Rocket, gradient: "from-violet-500 to-indigo-700", ring: "ring-violet-300" },
+  { key: "Nature", Icon: Leaf, gradient: "from-emerald-400 to-green-600", ring: "ring-emerald-300" },
+  { key: "Humor", Icon: Laugh, gradient: "from-yellow-400 to-orange-400", ring: "ring-yellow-300" },
+  { key: "Sports", Icon: Trophy, gradient: "from-green-400 to-teal-500", ring: "ring-green-300" },
+  { key: "Art & Music", Icon: Palette, gradient: "from-fuchsia-400 to-pink-600", ring: "ring-fuchsia-300" },
+  { key: "Scary Stories", Icon: Ghost, gradient: "from-gray-600 to-gray-900", ring: "ring-gray-400" },
+  { key: "Comics", Icon: MessageSquare, gradient: "from-sky-400 to-blue-500", ring: "ring-sky-300" },
+  { key: "Action", Icon: Zap, gradient: "from-red-500 to-rose-600", ring: "ring-red-300" },
 ];
 
 const READING_GOALS = [
-  { minutes: 15, label: "Bookworm", emoji: "\uD83D\uDC1B", description: "A great way to start" },
-  { minutes: 30, label: "Page Turner", emoji: "\uD83D\uDCDA", description: "The sweet spot" },
-  { minutes: 45, label: "Story Explorer", emoji: "\uD83E\uDDED", description: "For serious readers" },
-  { minutes: 60, label: "Reading Champion", emoji: "\uD83C\uDFC6", description: "Go for the gold!" },
+  { minutes: 15, label: "Bookworm", Icon: Bug, description: "A great way to start" },
+  { minutes: 30, label: "Page Turner", Icon: BookCopy, description: "The sweet spot" },
+  { minutes: 45, label: "Story Explorer", Icon: Compass, description: "For serious readers" },
+  { minutes: 60, label: "Reading Champion", Icon: Medal, description: "Go for the gold!" },
 ];
 
 interface KidProfile {
@@ -167,7 +172,7 @@ export default function KidOnboardingPage() {
                   <div
                     className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${genre.gradient} shadow-sm transition-transform duration-200 group-hover:scale-105 sm:h-14 sm:w-14`}
                   >
-                    <span className="text-2xl sm:text-3xl drop-shadow-sm">{genre.emoji}</span>
+                    <genre.Icon className="h-6 w-6 text-white drop-shadow-sm sm:h-7 sm:w-7" strokeWidth={2.25} />
                   </div>
                   <span className="text-center text-xs font-semibold text-gray-700 leading-tight sm:text-sm">
                     {genre.key}
@@ -228,9 +233,12 @@ export default function KidOnboardingPage() {
                       : "border-gray-100 bg-white shadow-sm hover:border-accent-200 hover:shadow-md"
                   }`}
                 >
-                  <span className="text-4xl transition-transform duration-200 group-hover:scale-110">
-                    {goal.emoji}
-                  </span>
+                  <goal.Icon
+                    className={`h-9 w-9 transition-transform duration-200 group-hover:scale-110 ${
+                      isSelected ? "text-accent-600" : "text-accent-400"
+                    }`}
+                    strokeWidth={2}
+                  />
                   <div className="text-center">
                     <p className="text-2xl font-bold text-gray-900">
                       {goal.minutes}<span className="text-base font-semibold text-gray-400"> min</span>
@@ -302,7 +310,7 @@ export default function KidOnboardingPage() {
                       key={genre}
                       className="inline-flex items-center gap-1 rounded-full bg-accent-50 px-3 py-1 text-sm font-medium text-accent-700"
                     >
-                      <span className="text-sm">{genreData?.emoji}</span>
+                      {genreData && <genreData.Icon className="h-3.5 w-3.5" strokeWidth={2.25} />}
                       {genre}
                     </span>
                   );
@@ -316,9 +324,10 @@ export default function KidOnboardingPage() {
                 Daily Goal
               </p>
               <div className="mt-2 flex items-center gap-3">
-                <span className="text-3xl">
-                  {READING_GOALS.find((g) => g.minutes === selectedGoal)?.emoji}
-                </span>
+                {(() => {
+                  const GoalIcon = READING_GOALS.find((g) => g.minutes === selectedGoal)?.Icon;
+                  return GoalIcon ? <GoalIcon className="h-8 w-8 text-accent-500" strokeWidth={2} /> : null;
+                })()}
                 <div>
                   <p className="text-lg font-bold text-gray-900">
                     {selectedGoal} minutes per day

@@ -288,7 +288,7 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onInput={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
               autoComplete="off"
               autoCapitalize="off"
               autoCorrect="off"
@@ -300,7 +300,7 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
               <select
                 value={selectedKidFilter}
                 onChange={(e) => setSelectedKidFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
               >
                 <option value="all">All Kids</option>
                 {kidProfiles.map(kid => (
@@ -309,7 +309,7 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
               </select>
               <button
                 onClick={() => setShowImport(true)}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition font-medium"
+                className="px-4 py-2 bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition font-medium"
               >
                 Import Playlist
               </button>
@@ -352,7 +352,7 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             <div className="flex items-center gap-3 flex-1">
-              <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-10 h-10 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <div className="text-left">
@@ -384,8 +384,8 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
                     ) : album.artworkUrl ? (
                       <img src={album.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={album.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="w-full h-full bg-accent-100 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                         </svg>
                       </div>
@@ -441,7 +441,7 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
                     onClick={() => openSongModal('playlist', playlist)}
                     className="w-full p-4 hover:bg-gray-50 transition flex items-center gap-4 text-left"
                   >
-                    <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white">
+                    <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-accent-400 flex items-center justify-center text-white">
                       <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                       </svg>
@@ -546,8 +546,8 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
                         ) : album.artworkUrl ? (
                           <img src={album.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={album.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                            <svg className="w-8 h-8 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                          <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                            <svg className="w-8 h-8 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                             </svg>
                           </div>
@@ -656,8 +656,8 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
                         ) : album.artworkUrl ? (
                           <img src={album.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={album.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                            <svg className="w-8 h-8 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                          <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                            <svg className="w-8 h-8 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                             </svg>
                           </div>
@@ -727,8 +727,8 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
                         ) : album.artworkUrl ? (
                           <img src={album.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={album.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                            <svg className="w-8 h-8 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                          <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                            <svg className="w-8 h-8 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                             </svg>
                           </div>
@@ -782,8 +782,8 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
                         className="w-32 h-32 rounded-lg object-cover shadow-lg"
                       />
                     ) : (
-                      <div className="w-32 h-32 rounded-lg bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                        <svg className="w-16 h-16 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="w-32 h-32 rounded-lg bg-accent-100 flex items-center justify-center">
+                        <svg className="w-16 h-16 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                         </svg>
                       </div>
@@ -862,7 +862,7 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
                 <div className="space-y-2">
                   {loadingTracks ? (
                     <div className="text-center py-12 text-gray-500">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-600 mx-auto mb-4"></div>
                       <p>Loading tracks...</p>
                     </div>
                   ) : albumTracks.length > 0 ? (
@@ -950,7 +950,7 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
                                 console.error('Error toggling song approval:', error);
                               }
                             }}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 flex-shrink-0 ${
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 flex-shrink-0 ${
                               isApproved ? 'bg-green-600' : 'bg-gray-300'
                             }`}
                             title={isApproved ? 'Approved - Click to remove' : 'Not approved - Click to approve'}

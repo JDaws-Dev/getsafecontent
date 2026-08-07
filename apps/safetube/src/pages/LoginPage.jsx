@@ -146,10 +146,10 @@ export default function LoginPage() {
   // Show password reset prompt for migrated users
   if (showPasswordResetPrompt) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex flex-col">
+      <div className="min-h-screen bg-brand-cream flex flex-col">
         <header className="px-6 py-4">
           <Link to="/" className="flex items-center gap-2 w-fit">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -187,7 +187,7 @@ export default function LoginPage() {
                 <button
                   onClick={handleSendResetEmail}
                   disabled={sendingResetEmail}
-                  className="w-full min-h-[48px] bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed mb-3"
+                  className="w-full min-h-[48px] bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed mb-3"
                 >
                   {sendingResetEmail ? 'Sending...' : 'Send Password Reset Email'}
                 </button>
@@ -227,14 +227,14 @@ export default function LoginPage() {
 
                 <Link
                   to="/reset-password"
-                  className="block w-full min-h-[48px] bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold text-center transition mb-3"
+                  className="block w-full min-h-[48px] bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-lg font-semibold text-center transition mb-3"
                 >
                   Enter Reset Code
                 </Link>
 
                 <button
                   onClick={() => setResetEmailSent(false)}
-                  className="w-full text-red-600 hover:text-red-700 text-sm"
+                  className="w-full text-accent-600 hover:text-accent-700 text-sm"
                 >
                   Didn't receive it? Try again
                 </button>
@@ -260,11 +260,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex flex-col">
+    <div className="min-h-screen bg-brand-cream flex flex-col">
       {/* Header */}
       <header className="px-6 py-4">
         <Link to="/" className="flex items-center gap-2 w-fit">
-          <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -336,7 +336,7 @@ export default function LoginPage() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 aria-invalid={error ? 'true' : undefined}
                 aria-describedby={error ? 'form-error' : undefined}
-                className="w-full min-h-[44px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full min-h-[44px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 placeholder="you@example.com"
                 required
               />
@@ -349,7 +349,7 @@ export default function LoginPage() {
                 </label>
                 <Link
                 to="/forgot-password"
-                className="text-sm text-red-600 hover:text-red-700"
+                className="text-sm text-accent-600 hover:text-accent-700"
               >
                 Forgot password?
               </Link>
@@ -363,7 +363,7 @@ export default function LoginPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 aria-invalid={error ? 'true' : undefined}
                 aria-describedby={error ? 'form-error' : undefined}
-                className="w-full min-h-[44px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full min-h-[44px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 placeholder="••••••••"
                 required
               />
@@ -380,7 +380,7 @@ export default function LoginPage() {
 
           <p className="text-center text-gray-500 mt-6">
             Don&apos;t have an account?{' '}
-            <Link to="/signup" className="text-red-600 hover:text-red-700 font-medium">
+            <Link to="/signup" className="text-accent-600 hover:text-accent-700 font-medium">
               Start free trial
             </Link>
           </p>
@@ -388,7 +388,7 @@ export default function LoginPage() {
           <div className="mt-8 pt-8 border-t border-gray-200">
             <p className="text-center text-gray-500 text-sm">
               Are you a kid?{' '}
-              <Link to="/play" className="text-red-600 hover:text-red-700">
+              <Link to="/play" className="text-accent-600 hover:text-accent-700">
                 Go to player →
               </Link>
             </p>

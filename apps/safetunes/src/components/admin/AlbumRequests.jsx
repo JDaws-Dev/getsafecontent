@@ -1162,7 +1162,7 @@ function AlbumRequests({ user }) {
             onClick={() => { setActiveRequestTab('albums'); clearSelections(); }}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
               activeRequestTab === 'albums'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-accent-600 text-white'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -1172,7 +1172,7 @@ function AlbumRequests({ user }) {
             onClick={() => { setActiveRequestTab('songs'); clearSelections(); }}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
               activeRequestTab === 'songs'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-accent-600 text-white'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -1206,7 +1206,7 @@ function AlbumRequests({ user }) {
               <select
                 value={filterByKid}
                 onChange={(e) => { setFilterByKid(e.target.value); clearSelections(); }}
-                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-accent-500 focus:border-accent-500"
               >
                 <option value="all">All kids</option>
                 {kidProfiles.map(kid => (
@@ -1257,7 +1257,7 @@ function AlbumRequests({ user }) {
                     : selectedSongIds.size === pendingSongRequests.length && pendingSongRequests.length > 0
                 }
                 onChange={activeRequestTab === 'albums' ? selectAllAlbums : selectAllSongs}
-                className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                className="w-5 h-5 rounded border-gray-300 text-accent-600 focus:ring-accent-500"
               />
               <span className="text-sm font-medium text-gray-700">
                 Select All ({activeRequestTab === 'albums' ? pendingAlbumRequests.length : pendingSongRequests.length})
@@ -1487,8 +1487,8 @@ function AlbumRequests({ user }) {
         {/* Empty state for songs tab */}
         {activeRequestTab === 'songs' && allRequests.filter(r => r.requestType === 'song').length === 0 && (
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-16 h-16 mx-auto mb-4 bg-accent-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
               </svg>
             </div>
@@ -1514,7 +1514,7 @@ function AlbumRequests({ user }) {
             className={`bg-white rounded-xl shadow-sm border p-4 sm:p-6 hover:shadow-md transition-all ${
               (request.requestType === 'album' && selectedAlbumIds.has(request._id)) ||
               (request.requestType === 'song' && selectedSongIds.has(request._id))
-                ? 'border-purple-400 ring-2 ring-purple-100'
+                ? 'border-accent-400 ring-2 ring-accent-100'
                 : 'border-gray-200'
             }`}
           >
@@ -1533,7 +1533,7 @@ function AlbumRequests({ user }) {
                       ? toggleAlbumSelection(request._id)
                       : toggleSongSelection(request._id);
                   }}
-                  className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                  className="w-5 h-5 rounded border-gray-300 text-accent-600 focus:ring-accent-500 cursor-pointer"
                 />
               </div>
 
@@ -1606,7 +1606,7 @@ function AlbumRequests({ user }) {
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                       request.requestType === 'album'
                         ? 'bg-blue-100 text-blue-700'
-                        : 'bg-purple-100 text-purple-700'
+                        : 'bg-accent-100 text-accent-700'
                     }`}>
                       {request.requestType === 'album' ? 'Album' : 'Song'}
                     </span>
@@ -1637,14 +1637,14 @@ function AlbumRequests({ user }) {
 
                 {/* Kid's Note */}
                 {request.kidNote && (
-                  <div className="mb-3 bg-purple-50 border border-purple-100 rounded-lg p-3">
+                  <div className="mb-3 bg-accent-50 border border-accent-100 rounded-lg p-3">
                     <div className="flex items-start gap-2">
-                      <svg className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-accent-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" />
                       </svg>
                       <div>
-                        <p className="text-xs font-medium text-purple-700 mb-0.5">Why they want this:</p>
-                        <p className="text-sm text-purple-900">&ldquo;{request.kidNote}&rdquo;</p>
+                        <p className="text-xs font-medium text-accent-700 mb-0.5">Why they want this:</p>
+                        <p className="text-sm text-accent-900">&ldquo;{request.kidNote}&rdquo;</p>
                       </div>
                     </div>
                   </div>
@@ -1876,7 +1876,7 @@ function AlbumRequests({ user }) {
 
                 {loadingTracks[request.appleAlbumId] ? (
                   <div className="flex items-center justify-center py-8">
-                    <svg className="w-8 h-8 animate-spin text-purple-600" fill="none" viewBox="0 0 24 24">
+                    <svg className="w-8 h-8 animate-spin text-accent-600" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -1912,7 +1912,7 @@ function AlbumRequests({ user }) {
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <button
                               onClick={() => handlePlayTrack(albumTracks[request.appleAlbumId], index)}
-                              className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition"
+                              className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-accent-700 bg-accent-50 hover:bg-accent-100 rounded-lg transition"
                             >
                               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
@@ -1943,7 +1943,7 @@ function AlbumRequests({ user }) {
                                 });
                                 setReviewModalOpen(true);
                               }}
-                              className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition"
+                              className="flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-accent-700 bg-accent-50 hover:bg-accent-100 rounded-lg transition"
                             >
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -2067,8 +2067,8 @@ function AlbumRequests({ user }) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                 </svg>
               </div>
@@ -2085,7 +2085,7 @@ function AlbumRequests({ user }) {
                 </button>
                 <button
                   onClick={handleAuthRequired}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium transition"
+                  className="flex-1 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition"
                 >
                   Sign In
                 </button>
@@ -2142,7 +2142,7 @@ function AlbumRequests({ user }) {
                       onClick={() => setDenialReason(reason)}
                       className={`px-3 py-1.5 text-sm rounded-full border transition ${
                         denialReason === reason
-                          ? 'bg-purple-100 border-purple-300 text-purple-700'
+                          ? 'bg-accent-100 border-accent-300 text-accent-700'
                           : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                       }`}
                     >
@@ -2159,7 +2159,7 @@ function AlbumRequests({ user }) {
                 value={denialReason}
                 onChange={(e) => setDenialReason(e.target.value)}
                 placeholder="e.g., This music has lyrics that don't match our family values..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
                 rows={3}
                 autoFocus
               />

@@ -124,17 +124,17 @@ export default function LoginPage() {
   // === Entitlement gate screen ===
   if (showUpgradePrompt && centralUser) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-violet-50 px-4">
-        <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl border border-amber-100">
+      <main className="min-h-screen flex items-center justify-center bg-brand-cream px-4">
+        <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl border border-brand-cream-2">
           <div className="flex items-center justify-center mb-5">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-violet-500 flex items-center justify-center shadow-md">
-              <Lock className="h-7 w-7 text-white" />
+            <div className="w-14 h-14 rounded-2xl bg-accent-500 flex items-center justify-center shadow-md">
+              <Lock className="h-7 w-7 text-brand-navy" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-center text-slate-900 mb-2">
+          <h1 className="font-display text-2xl font-bold text-center text-brand-navy mb-2">
             SafeSpark requires a Safe Family subscription
           </h1>
-          <p className="text-center text-slate-600 mb-6">
+          <p className="text-center text-brand-ink-soft mb-6">
             Hi {centralUser.name || centralUser.email.split("@")[0]} — your
             Safe Family account doesn&apos;t include SafeSpark right now.
             Upgrade to the unified $14.99/mo plan to unlock the AI training
@@ -142,7 +142,7 @@ export default function LoginPage() {
           </p>
           <a
             href="https://getsafefamily.com/account"
-            className="block w-full text-center py-3 rounded-xl bg-gradient-to-r from-amber-500 to-violet-600 text-white font-semibold shadow-sm hover:opacity-90 transition"
+            className="block w-full text-center py-3 rounded-xl bg-accent-500 text-brand-navy font-semibold shadow-sm hover:bg-accent-600 transition"
           >
             Upgrade now
           </a>
@@ -153,7 +153,7 @@ export default function LoginPage() {
               setCentralUser(null);
               setFormData({ email: "", password: "" });
             }}
-            className="mt-3 block w-full text-center text-sm text-slate-500 hover:text-slate-700 transition"
+            className="mt-3 block w-full text-center text-sm text-brand-ink-soft hover:text-brand-navy transition"
           >
             Sign in with a different account
           </button>
@@ -165,18 +165,18 @@ export default function LoginPage() {
   // === Password reset confirmation screen ===
   if (resetEmailSent) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-violet-50 px-4">
-        <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl border border-amber-100 text-center">
-          <h1 className="text-2xl font-bold text-slate-900 mb-3">
+      <main className="min-h-screen flex items-center justify-center bg-brand-cream px-4">
+        <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl border border-brand-cream-2 text-center">
+          <h1 className="font-display text-2xl font-bold text-brand-navy mb-3">
             Check your email
           </h1>
-          <p className="text-slate-600 mb-6">
+          <p className="text-brand-ink-soft mb-6">
             If <strong>{formData.email}</strong> has a Safe Family account,
             we&apos;ve sent a 6-digit reset code. Enter it on the reset page.
           </p>
           <Link
             href={`/reset-password?email=${encodeURIComponent(formData.email)}`}
-            className="inline-block w-full text-center py-3 rounded-xl bg-gradient-to-r from-amber-500 to-violet-600 text-white font-semibold shadow-sm hover:opacity-90 transition"
+            className="inline-block w-full text-center py-3 rounded-xl bg-accent-500 text-brand-navy font-semibold shadow-sm hover:bg-accent-600 transition"
           >
             Enter reset code
           </Link>
@@ -186,7 +186,7 @@ export default function LoginPage() {
               setResetEmailSent(false);
               setShowResetPrompt(false);
             }}
-            className="mt-3 block w-full text-center text-sm text-slate-500 hover:text-slate-700 transition"
+            className="mt-3 block w-full text-center text-sm text-brand-ink-soft hover:text-brand-navy transition"
           >
             Back to sign in
           </button>
@@ -197,26 +197,26 @@ export default function LoginPage() {
 
   // === Main login form ===
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-violet-50 px-4 py-10">
+    <main className="min-h-screen flex items-center justify-center bg-brand-cream px-4 py-10">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-violet-500 flex items-center justify-center shadow-md">
-            <Sparkles className="h-5 w-5 text-white" />
+          <div className="w-11 h-11 rounded-2xl bg-accent-500 flex items-center justify-center shadow-md">
+            <Sparkles className="h-5 w-5 text-brand-navy" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">SafeSpark</h1>
+          <h1 className="font-display text-2xl font-bold text-brand-navy">SafeSpark</h1>
         </div>
 
-        <div className="rounded-3xl bg-white p-8 shadow-xl border border-amber-100">
-          <h2 className="text-xl font-bold text-slate-900 mb-1">
+        <div className="rounded-3xl bg-white p-8 shadow-xl border border-brand-cream-2">
+          <h2 className="font-display text-xl font-bold text-brand-navy mb-1">
             Sign in
           </h2>
-          <p className="text-sm text-slate-500 mb-6">
+          <p className="text-sm text-brand-ink-soft mb-6">
             Use your Safe Family email and password.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-brand-navy mb-1">
                 Email
               </label>
               <input
@@ -227,21 +227,21 @@ export default function LoginPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition"
+                className="w-full px-4 py-2.5 rounded-xl border border-brand-cream-2 focus:border-accent-400 focus:ring-2 focus:ring-accent-100 outline-none transition"
                 placeholder="parent@example.com"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="password" className="block text-sm font-medium text-brand-navy">
                   Password
                 </label>
                 <button
                   type="button"
                   onClick={handlePasswordReset}
                   disabled={sendingResetEmail}
-                  className="text-xs text-amber-700 hover:text-amber-900 transition disabled:opacity-50"
+                  className="text-xs text-accent-700 hover:text-accent-800 transition disabled:opacity-50"
                 >
                   {sendingResetEmail ? "Sending…" : "Forgot password?"}
                 </button>
@@ -254,7 +254,7 @@ export default function LoginPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition"
+                className="w-full px-4 py-2.5 rounded-xl border border-brand-cream-2 focus:border-accent-400 focus:ring-2 focus:ring-accent-100 outline-none transition"
               />
             </div>
 
@@ -272,17 +272,17 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-violet-600 text-white font-semibold shadow-sm hover:opacity-90 transition disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-accent-500 text-brand-navy font-semibold shadow-sm hover:bg-accent-600 transition disabled:opacity-50"
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>
 
-          <p className="mt-5 text-center text-sm text-slate-500">
+          <p className="mt-5 text-center text-sm text-brand-ink-soft">
             Don&apos;t have an account?{" "}
             <a
               href="https://getsafefamily.com/signup?plan=unified"
-              className="text-amber-700 hover:text-amber-900 font-medium"
+              className="text-accent-700 hover:text-accent-800 font-medium"
             >
               Start free trial
             </a>
@@ -292,7 +292,7 @@ export default function LoginPage() {
         {/* Legacy Clerk login fallback during migration window */}
         <p className="mt-4 text-center text-xs text-slate-400">
           Signed up with the old Clerk login?{" "}
-          <Link href="/sign-in" className="underline hover:text-slate-600">
+          <Link href="/sign-in" className="underline hover:text-brand-ink-soft">
             Use the legacy sign-in
           </Link>
         </p>

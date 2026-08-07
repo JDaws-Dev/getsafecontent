@@ -36,7 +36,7 @@ export default function GettingStarted({ userData, onNavigate }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl p-6 sm:p-8 text-white">
+      <div className="bg-accent-500 rounded-xl p-6 sm:p-8 text-white">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">Getting Started with SafeTube</h1>
         <p className="text-accent-100 text-sm sm:text-base">
           Two simple steps to give your kids access to safe YouTube videos.
@@ -58,7 +58,7 @@ export default function GettingStarted({ userData, onNavigate }) {
               </div>
               <button
                 onClick={copyFamilyCode}
-                className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium transition shadow-md"
+                className="px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition shadow-md"
               >
                 {copiedCode ? 'Copied!' : 'Copy Code'}
               </button>
@@ -266,14 +266,14 @@ export default function GettingStarted({ userData, onNavigate }) {
       </div>
 
       {/* What's Next */}
-      <div className="bg-orange-50 border border-orange-200 rounded-xl p-6">
-        <h3 className="text-lg font-bold text-orange-900 mb-4">What's Next?</h3>
+      <div className="bg-accent-50 border border-accent-200 rounded-xl p-6">
+        <h3 className="text-lg font-display font-bold text-accent-900 mb-4">What's Next?</h3>
         <div className="space-y-3">
           <button
             onClick={() => onNavigate?.('account')}
-            className="w-full flex items-center gap-3 p-3 bg-white hover:bg-orange-100 rounded-lg border border-orange-200 transition text-left"
+            className="w-full flex items-center gap-3 p-3 bg-white hover:bg-accent-100 rounded-lg border border-accent-200 transition text-left"
           >
-            <span className="w-8 h-8 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</span>
+            <span className="w-8 h-8 bg-accent-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</span>
             <div>
               <p className="font-semibold text-gray-900">Add Kid Profiles</p>
               <p className="text-sm text-gray-600">Create a profile for each child</p>
@@ -282,9 +282,9 @@ export default function GettingStarted({ userData, onNavigate }) {
 
           <button
             onClick={() => onNavigate?.('content')}
-            className="w-full flex items-center gap-3 p-3 bg-white hover:bg-orange-100 rounded-lg border border-orange-200 transition text-left"
+            className="w-full flex items-center gap-3 p-3 bg-white hover:bg-accent-100 rounded-lg border border-accent-200 transition text-left"
           >
-            <span className="w-8 h-8 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">2</span>
+            <span className="w-8 h-8 bg-accent-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">2</span>
             <div>
               <p className="font-semibold text-gray-900">Add YouTube Channels</p>
               <p className="text-sm text-gray-600">Search and approve safe channels</p>

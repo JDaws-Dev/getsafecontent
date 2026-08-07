@@ -5,7 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { StylizedCover } from "@/components/kid/StylizedCover";
-import { Search, Headphones, Loader2, BookOpen, ArrowUpDown, Library, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import {
+  Search, Headphones, Loader2, BookOpen, ArrowUpDown, Library, CheckCircle2, Clock, AlertTriangle,
+  Compass, PawPrint, Castle, FlaskConical, Landmark, Crown, Fingerprint,
+  Rocket, Leaf, Laugh, Trophy, Palette, Ghost, MessageSquare, Zap,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -57,21 +61,21 @@ interface FreeBook {
 // ============================================================================
 
 const GENRES = [
-  { key: "adventure", label: "Adventure", emoji: "\uD83C\uDFF4\u200D\u2620\uFE0F", gradient: "from-orange-400 to-red-500", ring: "ring-orange-200", activeBg: "bg-orange-500", activeText: "text-white" },
-  { key: "animals", label: "Animals", emoji: "\uD83D\uDC3E", gradient: "from-amber-400 to-yellow-500", ring: "ring-amber-200", activeBg: "bg-amber-500", activeText: "text-white" },
-  { key: "fantasy", label: "Fantasy", emoji: "\uD83D\uDC09", gradient: "from-purple-400 to-violet-600", ring: "ring-purple-200", activeBg: "bg-purple-500", activeText: "text-white" },
-  { key: "science", label: "Science", emoji: "\uD83D\uDD2C", gradient: "from-cyan-400 to-blue-500", ring: "ring-cyan-200", activeBg: "bg-cyan-500", activeText: "text-white" },
-  { key: "history", label: "History", emoji: "\u2694\uFE0F", gradient: "from-stone-400 to-stone-600", ring: "ring-stone-200", activeBg: "bg-stone-500", activeText: "text-white" },
-  { key: "fairy-tales", label: "Fairy Tales", emoji: "\uD83E\uDDDA", gradient: "from-pink-400 to-rose-500", ring: "ring-pink-200", activeBg: "bg-pink-500", activeText: "text-white" },
-  { key: "mystery", label: "Mystery", emoji: "\uD83D\uDD0D", gradient: "from-indigo-400 to-blue-600", ring: "ring-indigo-200", activeBg: "bg-indigo-500", activeText: "text-white" },
-  { key: "space", label: "Space", emoji: "\uD83D\uDE80", gradient: "from-violet-500 to-indigo-700", ring: "ring-violet-200", activeBg: "bg-violet-600", activeText: "text-white" },
-  { key: "nature", label: "Nature", emoji: "\uD83C\uDF3F", gradient: "from-emerald-400 to-green-600", ring: "ring-emerald-200", activeBg: "bg-emerald-500", activeText: "text-white" },
-  { key: "humor", label: "Humor", emoji: "\uD83D\uDE02", gradient: "from-yellow-400 to-orange-400", ring: "ring-yellow-200", activeBg: "bg-yellow-500", activeText: "text-white" },
-  { key: "sports", label: "Sports", emoji: "\u26BD", gradient: "from-green-400 to-teal-500", ring: "ring-green-200", activeBg: "bg-green-500", activeText: "text-white" },
-  { key: "art-music", label: "Art & Music", emoji: "\uD83C\uDFA8", gradient: "from-fuchsia-400 to-pink-600", ring: "ring-fuchsia-200", activeBg: "bg-fuchsia-500", activeText: "text-white" },
-  { key: "scary", label: "Scary Stories", emoji: "\uD83D\uDC7B", gradient: "from-gray-600 to-gray-900", ring: "ring-gray-300", activeBg: "bg-gray-700", activeText: "text-white" },
-  { key: "comics", label: "Comics", emoji: "\uD83D\uDCAC", gradient: "from-sky-400 to-blue-500", ring: "ring-sky-200", activeBg: "bg-sky-500", activeText: "text-white" },
-  { key: "action", label: "Action", emoji: "\uD83D\uDCA5", gradient: "from-red-500 to-rose-600", ring: "ring-red-200", activeBg: "bg-red-500", activeText: "text-white" },
+  { key: "adventure", label: "Adventure", Icon: Compass, gradient: "from-orange-400 to-red-500", ring: "ring-orange-200", activeBg: "bg-orange-500", activeText: "text-white" },
+  { key: "animals", label: "Animals", Icon: PawPrint, gradient: "from-amber-400 to-yellow-500", ring: "ring-amber-200", activeBg: "bg-amber-500", activeText: "text-white" },
+  { key: "fantasy", label: "Fantasy", Icon: Castle, gradient: "from-purple-400 to-violet-600", ring: "ring-purple-200", activeBg: "bg-purple-500", activeText: "text-white" },
+  { key: "science", label: "Science", Icon: FlaskConical, gradient: "from-cyan-400 to-blue-500", ring: "ring-cyan-200", activeBg: "bg-cyan-500", activeText: "text-white" },
+  { key: "history", label: "History", Icon: Landmark, gradient: "from-stone-400 to-stone-600", ring: "ring-stone-200", activeBg: "bg-stone-500", activeText: "text-white" },
+  { key: "fairy-tales", label: "Fairy Tales", Icon: Crown, gradient: "from-pink-400 to-rose-500", ring: "ring-pink-200", activeBg: "bg-pink-500", activeText: "text-white" },
+  { key: "mystery", label: "Mystery", Icon: Fingerprint, gradient: "from-indigo-400 to-blue-600", ring: "ring-indigo-200", activeBg: "bg-indigo-500", activeText: "text-white" },
+  { key: "space", label: "Space", Icon: Rocket, gradient: "from-violet-500 to-indigo-700", ring: "ring-violet-200", activeBg: "bg-violet-600", activeText: "text-white" },
+  { key: "nature", label: "Nature", Icon: Leaf, gradient: "from-emerald-400 to-green-600", ring: "ring-emerald-200", activeBg: "bg-emerald-500", activeText: "text-white" },
+  { key: "humor", label: "Humor", Icon: Laugh, gradient: "from-yellow-400 to-orange-400", ring: "ring-yellow-200", activeBg: "bg-yellow-500", activeText: "text-white" },
+  { key: "sports", label: "Sports", Icon: Trophy, gradient: "from-green-400 to-teal-500", ring: "ring-green-200", activeBg: "bg-green-500", activeText: "text-white" },
+  { key: "art-music", label: "Art & Music", Icon: Palette, gradient: "from-fuchsia-400 to-pink-600", ring: "ring-fuchsia-200", activeBg: "bg-fuchsia-500", activeText: "text-white" },
+  { key: "scary", label: "Scary Stories", Icon: Ghost, gradient: "from-gray-600 to-gray-900", ring: "ring-gray-300", activeBg: "bg-gray-700", activeText: "text-white" },
+  { key: "comics", label: "Comics", Icon: MessageSquare, gradient: "from-sky-400 to-blue-500", ring: "ring-sky-200", activeBg: "bg-sky-500", activeText: "text-white" },
+  { key: "action", label: "Action", Icon: Zap, gradient: "from-red-500 to-rose-600", ring: "ring-red-200", activeBg: "bg-red-500", activeText: "text-white" },
 ];
 
 // ============================================================================
@@ -524,7 +528,7 @@ export default function LibraryPage() {
                   : `bg-white text-gray-600 ring-1 ${genre.ring}`
               }`}
             >
-              <span className="text-sm">{genre.emoji}</span>
+              <genre.Icon className="h-3.5 w-3.5" strokeWidth={2.25} />
               {genre.label}
             </button>
           ))}
@@ -629,7 +633,7 @@ export default function LibraryPage() {
                   )}
                   {/* Pre-approved "Classic" badge */}
                   {book.source === "preApproved" && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-700/80 to-transparent px-1.5 pb-1 pt-3 text-center">
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-accent-700/80 to-transparent px-1.5 pb-1 pt-3 text-center">
                       <span className="text-[8px] font-bold uppercase tracking-wider text-white">
                         Classic
                       </span>

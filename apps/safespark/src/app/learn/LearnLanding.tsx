@@ -32,10 +32,23 @@ import {
 } from './lessons';
 
 /**
- * Per-track surface tokens for the lesson library. Mirrors the palette
- * the viewer uses, kept lighter here since cards are quieter than the
- * hero block on /learn/[slug].
+ * Per-track surface tokens for the lesson library. Mirrors the viewer.
+ *
+ * The three tracks used to be violet / sky / amber. SafeSpark has ONE accent
+ * under the Safe Family glow-up, so all three now share the accent language
+ * and are told apart by icon + track number. Keeping the per-track record
+ * means a track can be re-tinted later without touching call sites.
  */
+const ACCENT_TRACK_THEME = {
+  cardTint: 'bg-accent-50/40',
+  cardBorderHover: 'hover:border-accent-300',
+  iconChip: 'bg-accent-50 text-accent-700',
+  accentText: 'text-accent-700',
+  sectionStripe: 'bg-accent-500',
+  sectionSurface: 'bg-accent-50',
+  sectionIconChip: 'bg-accent-500 text-brand-navy',
+} as const;
+
 const TRACK_THEMES: Record<
   LessonTrack,
   {
@@ -44,37 +57,13 @@ const TRACK_THEMES: Record<
     iconChip: string;
     accentText: string;
     sectionStripe: string;
-    sectionGradient: string;
+    sectionSurface: string;
     sectionIconChip: string;
   }
 > = {
-  talk: {
-    cardTint: 'bg-accent-50/40',
-    cardBorderHover: 'hover:border-accent-300',
-    iconChip: 'bg-accent-100 text-accent-700',
-    accentText: 'text-accent-700',
-    sectionStripe: 'bg-accent-500',
-    sectionGradient: 'bg-gradient-to-r from-accent-100 via-accent-50 to-transparent',
-    sectionIconChip: 'bg-accent-600 text-brand-navy',
-  },
-  think: {
-    cardTint: 'bg-sky-50/40',
-    cardBorderHover: 'hover:border-sky-300',
-    iconChip: 'bg-sky-100 text-sky-700',
-    accentText: 'text-sky-700',
-    sectionStripe: 'bg-sky-500',
-    sectionGradient: 'bg-gradient-to-r from-sky-100 via-sky-50 to-transparent',
-    sectionIconChip: 'bg-sky-600 text-white',
-  },
-  smart: {
-    cardTint: 'bg-amber-50/40',
-    cardBorderHover: 'hover:border-amber-300',
-    iconChip: 'bg-amber-100 text-amber-700',
-    accentText: 'text-amber-700',
-    sectionStripe: 'bg-amber-500',
-    sectionGradient: 'bg-gradient-to-r from-amber-100 via-amber-50 to-transparent',
-    sectionIconChip: 'bg-amber-600 text-white',
-  },
+  talk: { ...ACCENT_TRACK_THEME },
+  think: { ...ACCENT_TRACK_THEME },
+  smart: { ...ACCENT_TRACK_THEME },
 };
 
 const TRACK_ORDER: LessonTrack[] = ['talk', 'think', 'smart'];
@@ -128,13 +117,13 @@ export function LearnLanding() {
   });
 
   return (
-    <main className="min-h-screen bg-brand-cream text-slate-900">
+    <main className="min-h-screen bg-brand-cream text-brand-navy">
       <KidHeader
         familyCode={familyCode}
         rightSlot={
           <Link
             href="/make"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-brand-cream lg:hidden"
+            className="inline-flex items-center gap-2 rounded-xl border border-brand-cream-2 bg-white px-3 py-1.5 text-sm font-semibold text-brand-navy hover:bg-brand-cream lg:hidden"
           >
             Skip to building
             <ArrowRight className="h-4 w-4" />
@@ -145,13 +134,13 @@ export function LearnLanding() {
       <div className="mx-auto max-w-3xl space-y-10 px-6 py-10 pb-28 lg:pb-10">
         {/* Hero */}
         <section className="text-center">
-          <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-600 text-brand-navy shadow-sm ring-4 ring-accent-100">
+          <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-500 text-brand-navy shadow-sm ring-4 ring-accent-100">
             <GraduationCap className="h-7 w-7" />
           </div>
-          <h1 className="mt-5 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h1 className="mt-5 font-display text-3xl font-bold tracking-tight text-brand-navy sm:text-4xl">
             Get really good at building with AI.
           </h1>
-          <p className="mx-auto mt-3 max-w-xl text-base text-slate-600">
+          <p className="mx-auto mt-3 max-w-xl text-base text-brand-ink-soft">
             Short lessons — about a minute each — that teach you how to talk to Spark, when to undo, and how to spot when a build is going off-rails. The kids who go through this ship games people actually want to play.
           </p>
           <p className="mx-auto mt-4 text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">
@@ -166,11 +155,11 @@ export function LearnLanding() {
           const entries = lessonsByTrack[track];
           return (
             <section key={track}>
-              {/* Track header — a soft gradient bar with the track ordinal,
+              {/* Track header — a soft accent bar with the track ordinal,
                   title, and tagline. Anchors the cards beneath it visually
                   and explains what unit the kid is about to start. */}
               <div
-                className={`mb-4 flex items-start gap-3 overflow-hidden rounded-2xl border border-slate-200 px-4 py-3.5 ${theme.sectionGradient}`}
+                className={`mb-4 flex items-start gap-3 overflow-hidden rounded-2xl border border-brand-cream-2 px-4 py-3.5 ${theme.sectionSurface}`}
               >
                 <span
                   className={`mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm ${theme.sectionIconChip}`}
@@ -184,10 +173,10 @@ export function LearnLanding() {
                   >
                     {meta.ordinal} · {entries.length} lessons
                   </p>
-                  <h2 className="text-base font-bold tracking-tight text-slate-900 sm:text-lg">
+                  <h2 className="font-display text-base font-bold tracking-tight text-brand-navy sm:text-lg">
                     {meta.title}
                   </h2>
-                  <p className="mt-0.5 text-sm text-slate-600">{meta.tagline}</p>
+                  <p className="mt-0.5 text-sm text-brand-ink-soft">{meta.tagline}</p>
                 </div>
               </div>
 
@@ -212,11 +201,11 @@ export function LearnLanding() {
         })}
 
         {/* Start building */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <h3 className="text-base font-bold tracking-tight text-slate-900">
+        <section className="rounded-2xl border border-brand-cream-2 bg-white p-6 text-center shadow-sm">
+          <h3 className="font-display text-base font-bold tracking-tight text-brand-navy">
             Best way to learn is to ship something.
           </h3>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-brand-ink-soft">
             Read a lesson, then open the maker and try what you just learned on a real project.
           </p>
           <Link
@@ -270,7 +259,7 @@ function LessonCard({
   return (
     <Link
       href={`/learn/${lesson.slug}`}
-      className={`group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md ${theme.cardBorderHover}`}
+      className={`group flex items-center gap-4 rounded-2xl border border-brand-cream-2 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md ${theme.cardBorderHover}`}
     >
       {/* Position number — the "you are here in sequence" anchor */}
       <span
@@ -282,15 +271,15 @@ function LessonCard({
       {/* Title + description */}
       <div className="min-w-0 flex-1">
         <p
-          className={`text-[15px] font-bold tracking-tight text-slate-900 transition group-hover:${theme.accentText}`}
+          className={`font-display text-[15px] font-bold tracking-tight text-brand-navy transition group-hover:${theme.accentText}`}
         >
           {lesson.title}
         </p>
-        <p className="mt-0.5 line-clamp-2 text-sm leading-snug text-slate-600">{lesson.description}</p>
+        <p className="mt-0.5 line-clamp-2 text-sm leading-snug text-brand-ink-soft">{lesson.description}</p>
       </div>
       {/* Topic icon (subtle, visual texture only — secondary to the number) */}
       <span
-        className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-400 sm:inline-flex"
+        className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-cream-2 text-brand-ink-soft sm:inline-flex"
         aria-hidden
       >
         <Icon className="h-4 w-4" />

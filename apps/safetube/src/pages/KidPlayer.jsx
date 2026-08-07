@@ -215,7 +215,7 @@ export default function KidPlayer() {
     return (
       <div className="min-h-screen bg-brand-cream flex flex-col items-center justify-center p-6">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -246,7 +246,7 @@ export default function KidPlayer() {
           )}
           <button
             type="submit"
-            className="w-full mt-4 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white py-3 rounded-xl font-semibold transition shadow-md active:scale-[0.98]"
+            className="w-full mt-4 bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-xl font-semibold transition shadow-md active:scale-[0.98]"
           >
             Let's Go! →
           </button>
@@ -285,7 +285,7 @@ export default function KidPlayer() {
           </p>
           <button
             onClick={() => setFamilyCode('')}
-            className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-6 py-3 rounded-xl font-semibold transition shadow-md"
+            className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-xl font-semibold transition shadow-md"
           >
             Try Different Code
           </button>
@@ -379,7 +379,7 @@ export default function KidPlayer() {
             )}
             <button
               onClick={() => setShowTimeLimitModal(false)}
-              className="w-full bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white py-3 rounded-xl font-semibold transition"
+              className="w-full bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-xl font-semibold transition"
             >
               OK
             </button>

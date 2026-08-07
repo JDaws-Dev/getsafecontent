@@ -272,7 +272,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
             className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition active:scale-[0.98] ${
               saved
                 ? 'bg-green-500 text-white'
-                : 'bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white'
+                : 'bg-accent-500 hover:bg-accent-600 text-white'
             } disabled:opacity-50`}
           >
             <Save className="w-4 h-4" />

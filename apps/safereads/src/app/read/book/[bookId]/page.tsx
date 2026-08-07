@@ -583,7 +583,7 @@ export default function KidReadPage() {
                 href={`https://www.amazon.com/s?k=${encodeURIComponent(effectiveBook.title + " " + effectiveBook.author)}&i=digital-text`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-95"
+                className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-white px-6 py-3 text-sm font-bold text-accent-700 shadow-sm ring-1 ring-accent-200 transition-all hover:bg-accent-50 hover:shadow-md active:scale-95"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 Find on Kindle
@@ -592,7 +592,7 @@ export default function KidReadPage() {
                 href={`https://www.worldcat.org/search?q=${encodeURIComponent(effectiveBook.title)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-blue-400 to-accent-500 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-95"
+                className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-white px-6 py-3 text-sm font-bold text-accent-700 shadow-sm ring-1 ring-accent-200 transition-all hover:bg-accent-50 hover:shadow-md active:scale-95"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 Find at Library
@@ -602,7 +602,7 @@ export default function KidReadPage() {
                 <button
                   onClick={handleListenClick}
                   disabled={audioLoading}
-                  className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-accent-400 to-accent-500 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-95"
+                  className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-accent-500 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-accent-600 hover:shadow-lg active:scale-95"
                 >
                   {audioLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />

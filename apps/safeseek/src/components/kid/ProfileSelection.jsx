@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Search, Sun, Moon, ArrowLeft, Lock } from 'lucide-react';
-import { getColorClass, getAvatarIcon } from './utils';
+import { getColorClass } from './utils';
+import AvatarIcon from './AvatarIcon';
 
 export default function ProfileSelection({
   familyCode,
@@ -51,7 +52,7 @@ export default function ProfileSelection({
           /* PIN Entry Screen */
           <div className="text-center">
             <div className={`w-24 h-24 mx-auto mb-4 rounded-full ${getColorClass(pinProfile.color)} flex items-center justify-center shadow-lg`}>
-              <span className="text-4xl drop-shadow-sm" aria-hidden="true">{getAvatarIcon(pinProfile.color)}</span>
+              <AvatarIcon color={pinProfile.color} className="w-11 h-11 text-white drop-shadow-sm" />
             </div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{pinProfile.name}</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Enter your 4-digit PIN</p>
@@ -105,7 +106,7 @@ export default function ProfileSelection({
                     <div
                       className={`w-20 h-20 rounded-full shadow-md flex items-center justify-center ${getColorClass(profile.color)}`}
                     >
-                      <span className="text-3xl drop-shadow-sm" aria-hidden="true">{getAvatarIcon(profile.color)}</span>
+                      <AvatarIcon color={profile.color} className="w-9 h-9 text-white drop-shadow-sm" />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-gray-900 dark:text-white font-semibold text-lg">{profile.name}</span>

@@ -46,18 +46,18 @@ export default async function SharePage({ params }: Props) {
   const share = await fetchShare(id);
   if (!share) notFound();
   return (
-    <main className="flex h-screen flex-col overflow-hidden bg-slate-900 text-white">
-      <header className="flex flex-none items-center justify-between gap-3 border-b border-white/10 bg-slate-950 px-4 py-3">
+    <main className="flex h-screen flex-col overflow-hidden bg-brand-navy text-white">
+      <header className="flex flex-none items-center justify-between gap-3 border-b border-white/10 bg-brand-navy px-4 py-3">
         <div className="min-w-0">
-          <Link href="/" className="text-[10px] font-bold uppercase tracking-widest text-violet-300 hover:text-violet-200">
+          <Link href="/" className="text-[10px] font-bold uppercase tracking-widest text-accent-300 hover:text-accent-200">
             SafeSpark
           </Link>
-          <h1 className="truncate text-base font-black text-white">{share.title}</h1>
+          <h1 className="truncate font-display text-base font-bold text-white">{share.title}</h1>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href="/make"
-            className="rounded-full bg-violet-500 px-4 py-1.5 text-xs font-black text-white hover:bg-violet-600"
+            className="rounded-full bg-accent-500 px-4 py-1.5 text-xs font-bold text-brand-navy hover:bg-accent-600"
           >
             Make your own →
           </Link>

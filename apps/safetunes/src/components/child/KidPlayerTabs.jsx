@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Plus,
   ChevronRight,
+  Home,
+  Search,
+  ListMusic,
   Music,
   Sparkles,
   Moon,
@@ -56,7 +59,7 @@ function formatRelativeTime(timestamp) {
 function SectionHeader({ title, actionLabel, onAction }) {
   return (
     <div className="flex items-center justify-between mb-3">
-      <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+      <h2 className="text-lg font-display font-bold text-brand-navy">{title}</h2>
       {actionLabel && onAction && (
         <button
           onClick={onAction}
@@ -263,7 +266,7 @@ export function HomeTab({
           <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
             <Music className="w-10 h-10 text-accent-400" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Your music awaits</h3>
+          <h3 className="text-lg font-display font-semibold text-brand-navy mb-1">Your music awaits</h3>
           <p className="text-gray-500 text-sm max-w-xs">
             Start listening to build your personalized home screen
           </p>
@@ -313,7 +316,7 @@ const MOOD_CARDS = [
     id: 'pop',
     title: 'Pop Hits',
     icon: TrendingUp,
-    gradient: 'from-pink-400 to-accent-500',
+    gradient: 'from-accent-400 to-accent-600',
     keywords: ['pop', 'hits', 'top', 'chart', 'radio', 'mainstream']
   },
   {
@@ -353,7 +356,7 @@ function MoodCard({ mood, onClick }) {
     >
       <div className="relative z-10">
         <Icon className="w-8 h-8 text-white/90 mb-2" />
-        <h3 className="text-white font-bold text-base text-left leading-tight">{mood.title}</h3>
+        <h3 className="text-white font-display font-bold text-base text-left leading-tight">{mood.title}</h3>
       </div>
       {/* Decorative circles */}
       <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-white/10 rounded-full" />
@@ -506,7 +509,7 @@ function MoodResultsGrid({ albums, onPlayAlbum, shouldHideArtwork, mood, onBack 
           <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${mood.gradient} flex items-center justify-center mb-4 opacity-50`}>
             <mood.icon className="w-10 h-10 text-white" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">No {mood.title} music yet</h3>
+          <h3 className="text-lg font-display font-semibold text-brand-navy mb-1">No {mood.title} music yet</h3>
           <p className="text-gray-500 text-sm max-w-xs">
             Ask your parent to approve some {mood.title.toLowerCase()} albums!
           </p>
@@ -611,7 +614,7 @@ function PlaylistGridCard({ playlist, onPlay, onClick, hideArtwork = false }) {
 
       {/* Text overlay */}
       <div className="absolute bottom-0 left-0 right-0 p-3">
-        <h3 className="text-white font-bold text-sm truncate">{playlist.name}</h3>
+        <h3 className="text-white font-display font-bold text-sm truncate">{playlist.name}</h3>
         <p className="text-white/70 text-xs">{songCount} songs</p>
       </div>
     </button>
@@ -662,7 +665,7 @@ export function PlaylistsTab({
             <div className="w-16 h-16 rounded-full bg-accent-100 flex items-center justify-center mb-3">
               <Music className="w-8 h-8 text-accent-400" />
             </div>
-            <h3 className="text-base font-semibold text-gray-900 mb-1">No playlists yet</h3>
+            <h3 className="text-base font-display font-semibold text-brand-navy mb-1">No playlists yet</h3>
             <p className="text-gray-500 text-sm mb-4">
               Create your first playlist to organize your music
             </p>
@@ -773,9 +776,9 @@ export function KidPlayerTabsDemo() {
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 safe-area-inset-bottom">
         <div className="flex justify-around py-2">
           {[
-            { id: 'home', label: 'Home', icon: '🏠' },
-            { id: 'discover', label: 'Discover', icon: '🔍' },
-            { id: 'playlists', label: 'Playlists', icon: '🎵' },
+            { id: 'home', label: 'Home', Icon: Home },
+            { id: 'discover', label: 'Discover', Icon: Search },
+            { id: 'playlists', label: 'Playlists', Icon: ListMusic },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -786,7 +789,7 @@ export function KidPlayerTabsDemo() {
                   : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              <span className="text-xl mb-0.5">{tab.icon}</span>
+              <tab.Icon className="w-6 h-6 mb-0.5" />
               <span className={`text-xs font-medium ${
                 activeTab === tab.id ? 'text-accent-600' : 'text-gray-500'
               }`}>

@@ -46,7 +46,7 @@ function VideoPreviewModal({ video, onClose, onAdd, isAdded, isAdding, canAdd })
               <button
                 onClick={() => onAdd(video)}
                 disabled={isAdding}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-400 disabled:to-gray-500 text-white py-3 rounded-lg font-medium transition"
+                className="flex-1 flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-400 text-white py-3 rounded-lg font-medium transition"
               >
                 {isAdding ? (
                   <>
@@ -453,7 +453,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
                 onClick={() => onSelectKid(profile._id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition border ${
                   selectedKidId === profile._id
-                    ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-transparent shadow-md'
+                    ? 'bg-accent-500 text-white border-transparent shadow-md'
                     : 'bg-white text-gray-700 border-gray-200 hover:border-accent-300 hover:shadow-sm'
                 }`}
               >
@@ -478,7 +478,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
           onClick={() => setSearchType('channels')}
           className={`px-4 py-2 rounded-lg font-medium transition ${
             searchType === 'channels'
-              ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
+              ? 'bg-accent-500 text-white shadow-md'
               : 'bg-white text-gray-700 border border-gray-200 hover:border-accent-300'
           }`}
         >
@@ -488,7 +488,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
           onClick={() => setSearchType('videos')}
           className={`px-4 py-2 rounded-lg font-medium transition ${
             searchType === 'videos'
-              ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
+              ? 'bg-accent-500 text-white shadow-md'
               : 'bg-white text-gray-700 border border-gray-200 hover:border-accent-300'
           }`}
         >
@@ -549,7 +549,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
         <button
           onClick={() => handleSearch()}
           disabled={isSearching || !searchQuery.trim()}
-          className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 text-white px-6 py-3 rounded-lg font-medium transition shadow-md"
+          className="bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white px-6 py-3 rounded-lg font-medium transition shadow-md"
         >
           {isSearching ? 'Searching...' : 'Search'}
         </button>
@@ -599,14 +599,14 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
                           e.target.nextSibling.style.display = 'flex';
                         }}
                       />
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 items-center justify-center shadow-sm hidden">
+                      <div className="w-16 h-16 rounded-full bg-accent-500 items-center justify-center shadow-sm hidden">
                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                         </svg>
                       </div>
                     </>
                   ) : (
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center shadow-sm">
+                    <div className="w-16 h-16 rounded-full bg-accent-500 flex items-center justify-center shadow-sm">
                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
@@ -644,7 +644,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
                       <button
                         onClick={() => handleAddChannel(channel)}
                         disabled={addingId === channel.channelId || !selectedKidId}
-                        className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 text-white px-4 py-2 rounded-lg font-medium transition whitespace-nowrap shadow-sm"
+                        className="bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg font-medium transition whitespace-nowrap shadow-sm"
                       >
                         {addingId === channel.channelId ? 'Adding...' : '+ Add All'}
                       </button>
@@ -674,7 +674,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="w-full sm:w-80 aspect-video bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
+                      <div className="w-full sm:w-80 aspect-video bg-accent-500 flex items-center justify-center">
                         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -773,7 +773,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
                         className={`self-start px-4 py-2 rounded-lg font-medium transition text-sm ${
                           video.ageRestricted
                             ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                            : 'bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 text-white'
+                            : 'bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white'
                         }`}
                       >
                         {addingId === video.videoId ? 'Adding...' : video.ageRestricted ? '+ Add (Login Required)' : '+ Add Video'}
@@ -880,7 +880,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
                     setPreviewChannel(null);
                   }}
                   disabled={!selectedKidId || addedIds.has(previewChannel.channelId) || existingChannelIds.has(previewChannel.channelId)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-lg font-medium transition shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white rounded-lg font-medium transition shadow-sm"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

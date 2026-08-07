@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 
 function TermsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+    <div className="min-h-screen bg-brand-cream">
       {/* Header */}
       <header className="container mx-auto px-6 py-6">
         <Link to="/" className="flex items-center space-x-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
             <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
               <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
             </svg>
@@ -145,7 +145,7 @@ function TermsPage() {
             <section className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Privacy</h2>
               <p className="text-gray-700 mb-4">
-                Your use of the Service is subject to our <Link to="/privacy" className="text-purple-600 hover:text-purple-700 font-medium">Privacy Policy</Link>, which is incorporated into these Terms by reference.
+                Your use of the Service is subject to our <Link to="/privacy" className="text-accent-600 hover:text-accent-700 font-medium">Privacy Policy</Link>, which is incorporated into these Terms by reference.
               </p>
             </section>
 
@@ -331,7 +331,7 @@ function TermsPage() {
 
               <h3 className="text-xl font-semibold text-gray-900 mb-3">17.1 Informal Dispute Resolution</h3>
               <p className="text-gray-700 mb-4">
-                Before filing a claim, you agree to contact us at <a href="mailto:jeremiah@getsafefamily.com" className="text-purple-600 hover:text-purple-700 font-medium">jeremiah@getsafefamily.com</a> to attempt to resolve the dispute informally. We will attempt to resolve any disputes within 60 days of receiving notice.
+                Before filing a claim, you agree to contact us at <a href="mailto:jeremiah@getsafefamily.com" className="text-accent-600 hover:text-accent-700 font-medium">jeremiah@getsafefamily.com</a> to attempt to resolve the dispute informally. We will attempt to resolve any disputes within 60 days of receiving notice.
               </p>
 
               <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">17.2 Binding Arbitration</h3>
@@ -362,7 +362,7 @@ function TermsPage() {
 
               <h3 className="text-xl font-semibold text-gray-900 mb-3 mt-6">17.5 Opt-Out Right</h3>
               <p className="text-gray-700 mb-4">
-                You may opt out of this arbitration agreement by sending written notice to <a href="mailto:jeremiah@getsafefamily.com" className="text-purple-600 hover:text-purple-700 font-medium">jeremiah@getsafefamily.com</a> within 30 days of first accepting these Terms. Your notice must include your name, email address, and a clear statement that you wish to opt out of this arbitration agreement. Opting out does not affect any other terms.
+                You may opt out of this arbitration agreement by sending written notice to <a href="mailto:jeremiah@getsafefamily.com" className="text-accent-600 hover:text-accent-700 font-medium">jeremiah@getsafefamily.com</a> within 30 days of first accepting these Terms. Your notice must include your name, email address, and a clear statement that you wish to opt out of this arbitration agreement. Opting out does not affect any other terms.
               </p>
             </section>
 
@@ -435,7 +435,7 @@ function TermsPage() {
               </p>
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-gray-700 mb-2">
-                  <strong>Email:</strong> <a href="mailto:jeremiah@getsafefamily.com" className="text-purple-600 hover:text-purple-700 font-medium">jeremiah@getsafefamily.com</a>
+                  <strong>Email:</strong> <a href="mailto:jeremiah@getsafefamily.com" className="text-accent-600 hover:text-accent-700 font-medium">jeremiah@getsafefamily.com</a>
                 </p>
                 <p className="text-gray-700 mb-2">
                   <strong>Legal Notices:</strong> For formal legal notices, use "Legal Notice" in the subject line
@@ -448,7 +448,7 @@ function TermsPage() {
           </div>
 
           <div className="mt-12 pt-8 border-t border-gray-200">
-            <Link to="/" className="text-purple-600 hover:text-purple-700 font-medium">
+            <Link to="/" className="text-accent-600 hover:text-accent-700 font-medium">
               ← Back to Home
             </Link>
           </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import Link from 'next/link';
+import { X } from 'lucide-react';
 import { api } from '../../../../convex/_generated/api';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 
@@ -39,8 +40,8 @@ export default function ParentSetupPage() {
     return (
       <main className="flex-1 flex items-center justify-center p-6 text-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-700">Parent setup is for parents.</h1>
-          <Link href="/" className="inline-block mt-4 text-accent-600 hover:text-accent-800">
+          <h1 className="text-2xl font-bold text-brand-navy">Parent setup is for parents.</h1>
+          <Link href="/" className="inline-block mt-4 text-accent-700 hover:text-accent-800">
             ← back
           </Link>
         </div>
@@ -52,17 +53,17 @@ export default function ParentSetupPage() {
     return (
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-md w-full space-y-6 text-center">
-          <h1 className="text-3xl font-bold text-slate-800">Profile created</h1>
-          <p className="text-slate-600">
+          <h1 className="text-3xl font-bold text-brand-navy">Profile created</h1>
+          <p className="text-brand-ink-soft">
             This is your <strong>family code</strong>. Everyone in your family uses the same one
             to sign in on any device.
           </p>
-          <div className="rounded-3xl bg-gradient-to-br from-accent-400 via-accent-500 to-brand-peach-start text-brand-navy p-8 shadow-xl">
+          <div className="rounded-3xl bg-accent-500 text-brand-navy p-8 shadow-xl">
             <p className="text-sm opacity-80 uppercase tracking-widest mb-2">Family code</p>
             <p className="text-6xl font-bold font-mono tracking-widest">{createdJoinCode}</p>
           </div>
-          <p className="text-sm text-slate-500">
-            On {displayName}&apos;s device, go to <span className="font-mono text-accent-600">/start</span> →
+          <p className="text-sm text-brand-ink-soft">
+            On {displayName}&apos;s device, go to <span className="font-mono text-accent-700">/start</span> →
             enter the code → tap their tile → they&apos;re in.
           </p>
 
@@ -75,7 +76,7 @@ export default function ParentSetupPage() {
                 setInterests([]);
                 setCustomNote('');
               }}
-              className="px-5 py-2 rounded-2xl bg-white text-accent-600 border border-accent-200 font-medium hover:bg-accent-50"
+              className="px-5 py-2 rounded-2xl bg-white text-accent-700 border border-accent-200 font-medium hover:bg-accent-50"
             >
               Add another profile
             </button>
@@ -119,11 +120,11 @@ export default function ParentSetupPage() {
     <main className="flex-1 overflow-y-auto px-4 sm:px-8 py-8">
       <div className="max-w-2xl mx-auto space-y-6">
         <header>
-          <p className="text-xs font-semibold uppercase tracking-widest text-accent-500">
+          <p className="text-xs font-semibold uppercase tracking-widest text-accent-700">
             Parent setup
           </p>
-          <h1 className="text-3xl font-bold text-slate-800">Tell me about this profile</h1>
-          <p className="text-slate-500 mt-1">
+          <h1 className="text-3xl font-bold text-brand-navy">Tell me about this profile</h1>
+          <p className="text-brand-ink-soft mt-1">
             Whether this is for you or a kid, SafeSpark tunes itself to who&apos;s using it.
             The more you share, the better Spark&apos;s suggestions land. None of this leaves the app.
           </p>
@@ -160,7 +161,7 @@ export default function ParentSetupPage() {
                   className={
                     sex === 'girl'
                       ? 'flex-1 px-4 py-3 rounded-xl border-2 border-accent-500 bg-accent-50 text-accent-700 font-semibold'
-                      : 'flex-1 px-4 py-3 rounded-xl border border-accent-200 text-slate-600 hover:bg-accent-50'
+                      : 'flex-1 px-4 py-3 rounded-xl border border-accent-200 text-brand-ink-soft hover:bg-accent-50'
                   }
                 >
                   Girl
@@ -171,7 +172,7 @@ export default function ParentSetupPage() {
                   className={
                     sex === 'boy'
                       ? 'flex-1 px-4 py-3 rounded-xl border-2 border-accent-500 bg-accent-50 text-accent-700 font-semibold'
-                      : 'flex-1 px-4 py-3 rounded-xl border border-accent-200 text-slate-600 hover:bg-accent-50'
+                      : 'flex-1 px-4 py-3 rounded-xl border border-accent-200 text-brand-ink-soft hover:bg-accent-50'
                   }
                 >
                   Boy
@@ -187,9 +188,10 @@ export default function ParentSetupPage() {
                 <button
                   key={i}
                   onClick={() => setInterests(interests.filter((x) => x !== i))}
-                  className="px-3 py-1 rounded-full bg-accent-500 text-brand-navy text-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-500 text-brand-navy text-sm"
                 >
-                  {i} ✕
+                  {i}
+                  <X className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               ))}
             </div>
@@ -225,9 +227,10 @@ export default function ParentSetupPage() {
                 <button
                   key={a}
                   onClick={() => setAvoidTopics(avoidTopics.filter((x) => x !== a))}
-                  className="px-3 py-1 rounded-full bg-rose-500 text-white text-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500 text-white text-sm"
                 >
-                  {a} ✕
+                  {a}
+                  <X className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               ))}
             </div>
@@ -258,7 +261,7 @@ export default function ParentSetupPage() {
         <div className="flex gap-3 pt-4">
           <Link
             href="/parent"
-            className="px-5 py-3 rounded-2xl bg-white text-slate-500 border border-slate-200 hover:bg-brand-cream"
+            className="px-5 py-3 rounded-2xl bg-white text-brand-ink-soft border border-brand-cream-2 hover:bg-brand-cream"
           >
             Cancel
           </Link>
@@ -278,7 +281,7 @@ export default function ParentSetupPage() {
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+      <label className="block text-sm font-semibold text-brand-navy mb-1.5">
         {label}{required && <span className="text-rose-500"> *</span>}
       </label>
       {children}

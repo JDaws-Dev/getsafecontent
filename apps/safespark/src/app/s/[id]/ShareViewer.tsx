@@ -44,7 +44,7 @@ export default function ShareViewer({ title, srcDoc }: Props) {
           the page (user-scalable=no) handles the actual pinch-zoom
           disable; these CSS props handle the scroll/refresh class. */}
       <div
-        className="relative flex-1 bg-slate-200 p-3"
+        className="relative flex-1 bg-brand-cream-2 p-3"
         style={{ touchAction: 'none', overscrollBehavior: 'none' }}
       >
         <iframe
@@ -58,7 +58,7 @@ export default function ShareViewer({ title, srcDoc }: Props) {
         <button
           type="button"
           onClick={() => setFullscreen(true)}
-          className="absolute right-5 top-5 z-10 inline-flex items-center gap-1.5 rounded-full bg-slate-900/85 px-3 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur transition hover:bg-slate-900"
+          className="absolute right-5 top-5 z-10 inline-flex items-center gap-1.5 rounded-full bg-brand-navy/85 px-3 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur transition hover:bg-brand-navy"
           aria-label="Play fullscreen"
         >
           <Maximize2 className="h-3.5 w-3.5" />
@@ -82,7 +82,7 @@ export default function ShareViewer({ title, srcDoc }: Props) {
           <button
             type="button"
             onClick={() => setFullscreen(false)}
-            className="absolute right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-slate-900 shadow-lg hover:bg-white"
+            className="absolute right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-brand-navy shadow-lg hover:bg-white"
             aria-label="Exit fullscreen"
           >
             <X className="h-3.5 w-3.5" />

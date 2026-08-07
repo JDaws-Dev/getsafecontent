@@ -85,7 +85,9 @@ export const SpeechRecognition = typeof window !== 'undefined'
   ? (window.SpeechRecognition || window.webkitSpeechRecognition)
   : null;
 
-// Get Tailwind color class
+// Get Tailwind color class. These are the colors a parent picks per kid, so they
+// are deliberately NOT collapsed onto the brand accent — the swatch a kid chose
+// has to be the swatch they see. "blue" maps to the cobalt accent by design.
 export function getColorClass(color) {
   const colors = {
     red: 'bg-red-500',
@@ -93,41 +95,23 @@ export function getColorClass(color) {
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
     blue: 'bg-accent-500',
-    purple: 'bg-accent-500',
-    pink: 'bg-accent-500',
+    purple: 'bg-purple-500',
+    pink: 'bg-pink-500',
     gray: 'bg-gray-500',
-    cyan: 'bg-accent-500',
+    cyan: 'bg-cyan-500',
     teal: 'bg-teal-500',
   };
   return colors[color] || 'bg-accent-500';
 }
 
-// Personality emoji per profile color — matches SafeReads so a kid's avatar feels
-// consistent across Safe Family apps.
-export const AVATAR_ICONS = {
-  red: '\uD83D\uDC32',     // dragon
-  orange: '\uD83E\uDD81',  // lion
-  yellow: '\u26A1',         // lightning
-  green: '\uD83E\uDD89',   // owl
-  blue: '\uD83D\uDE80',    // rocket
-  purple: '\u2B50',         // star
-  pink: '\uD83E\uDD84',    // unicorn
-  gray: '\uD83D\uDC3E',    // paw prints
-  cyan: '\uD83D\uDC2C',    // dolphin
-  teal: '\uD83C\uDF3F',    // herb
-};
-
-export function getAvatarIcon(color) {
-  return AVATAR_ICONS[color] || AVATAR_ICONS.blue;
-}
-
-// Left-border color mapping for section cards
+// Left-border color mapping for section cards. Decorative only, so it stays in
+// one language — depth of the accent varies, never the hue.
 export function getBorderColorClass(index) {
   const borders = [
-    'border-l-violet-500',
     'border-l-accent-500',
-    'border-l-teal-500',
-    'border-l-orange-500',
+    'border-l-accent-400',
+    'border-l-accent-600',
+    'border-l-accent-300',
     'border-l-accent-500',
   ];
   return borders[index % borders.length];

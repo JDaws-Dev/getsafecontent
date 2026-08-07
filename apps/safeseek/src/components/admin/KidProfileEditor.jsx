@@ -9,7 +9,7 @@ const COLORS = [
   { name: 'orange', class: 'bg-orange-500' },
   { name: 'yellow', class: 'bg-yellow-500' },
   { name: 'green', class: 'bg-green-500' },
-  { name: 'blue', class: 'bg-blue-500' },
+  { name: 'blue', class: 'bg-accent-500' },
   { name: 'cyan', class: 'bg-cyan-500' },
   { name: 'purple', class: 'bg-purple-500' },
   { name: 'pink', class: 'bg-pink-500' },
@@ -441,7 +441,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 disabled:from-gray-300 disabled:to-gray-400 text-white py-3 rounded-xl font-medium transition active:scale-[0.98]"
+              className="flex-1 flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white py-3 rounded-xl font-medium transition active:scale-[0.98]"
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : profile ? 'Save' : 'Add Kid'}

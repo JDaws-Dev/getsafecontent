@@ -248,20 +248,20 @@ function ChildLoginPage() {
   // Show error if family code is invalid
   if (savedFamilyCode && familyData === null && step === 'select-profile') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-accent-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Invalid Family Code</h2>
+          <h2 className="text-2xl font-display font-bold text-brand-navy mb-3">Invalid Family Code</h2>
           <p className="text-gray-600 mb-6">
             The family code "{savedFamilyCode}" doesn't exist. Ask your parent for the correct code.
           </p>
           <button
             onClick={handleChangeFamilyCode}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition"
+            className="w-full bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-semibold transition"
           >
             Enter Different Code
           </button>
@@ -271,23 +271,23 @@ function ChildLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <div className="min-h-screen bg-accent-100">
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
               <path d="M44.516,0v47.835c-.628.592-1.894-.232-2.774-.408-10.205-2.043-21.424,7.753-16.888,18.082,5.228,11.906,24.562,7.626,26.602-4.966.158-12.344.543-24.817.231-37.18-.01-.404-.181-.761-.194-1.16.138-.314.351-.336.66-.321.458.023,2.31.729,2.842.955,4.05,1.723,9.412,6.762,9.412,11.473v4.972c0,.135-.441.687-.1.894,1.809-2.076,3.087-4.729,3.459-7.48,1.916-14.144-14.809-18.642-16.24-30.063-.068-.546-.203-1.066.494-.894,11.509,2.848,22.868,6.412,34.333,9.432,1.504.879,2.371,2.06,2.527,3.837-.747,15.337,2.184,31.696-3.436,46.306-5.899,15.337-19.374,26.415-34.03,33-1.43.642-4.278,1.969-5.692,2.264-2.548.531-7.594-1.962-10.028-3.123C16.659,84.376,1.212,67.91.153,45.855c-.49-10.206.391-20.798,0-31.045.116-1.814,1.557-3.391,3.234-3.926L43.071.047l1.445-.047Z"/>
             </svg>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">SafeTunes</h1>
+          <h1 className="text-4xl font-display font-bold text-brand-navy mb-2">SafeTunes</h1>
           <p className="text-gray-600">Your Music, Your Way</p>
         </div>
 
         {/* Step 1: Enter Family Code */}
         {step === 'family-code' && (
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Enter Family Code</h2>
+            <h2 className="text-2xl font-display font-bold text-brand-navy mb-2 text-center">Enter Family Code</h2>
             <p className="text-gray-600 mb-6 text-center">Ask your parent for your family's 6-character code</p>
 
             {error && (
@@ -303,12 +303,12 @@ function ChildLoginPage() {
                 onChange={(e) => setFamilyCode(e.target.value.toUpperCase())}
                 placeholder="ABC123"
                 maxLength={6}
-                className="w-full px-4 py-4 text-center text-2xl font-bold tracking-widest border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent uppercase mb-4"
+                className="w-full px-4 py-4 text-center text-2xl font-bold tracking-widest border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent uppercase mb-4"
                 autoFocus
               />
               <button
                 type="submit"
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-lg font-semibold text-lg transition shadow-lg"
+                className="w-full bg-accent-600 hover:bg-accent-700 text-white py-4 rounded-lg font-semibold text-lg transition shadow-lg"
               >
                 Continue
               </button>
@@ -318,7 +318,7 @@ function ChildLoginPage() {
               <p className="text-sm text-gray-600 mb-2">Don't have a family code?</p>
               <button
                 onClick={() => navigate('/app?skip=1')}
-                className="text-purple-600 hover:text-purple-700 font-medium text-sm"
+                className="text-accent-600 hover:text-accent-700 font-medium text-sm"
               >
                 Back to login options
               </button>
@@ -334,11 +334,11 @@ function ChildLoginPage() {
         {step === 'select-profile' && familyData && familyData.profiles && (
           <div className="w-full max-w-4xl">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Who's Listening?</h2>
+              <h2 className="text-3xl font-display font-bold text-brand-navy mb-2">Who's Listening?</h2>
               <p className="text-gray-600">{familyData.familyName}'s Family</p>
               <button
                 onClick={handleChangeFamilyCode}
-                className="mt-2 text-sm text-purple-600 hover:text-purple-700"
+                className="mt-2 text-sm text-accent-600 hover:text-accent-700"
               >
                 Change family code
               </button>
@@ -358,7 +358,7 @@ function ChildLoginPage() {
                   >
                     <div className={`w-24 h-24 ${getColorClass(profile.color)} rounded-full flex items-center justify-center mx-auto mb-4`}>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900">{profile.name}</h3>
+                    <h3 className="text-xl font-display font-bold text-brand-navy">{profile.name}</h3>
                   </button>
                 ))}
               </div>
@@ -371,7 +371,7 @@ function ChildLoginPage() {
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
             <button
               onClick={() => setStep('select-profile')}
-              className="mb-4 text-purple-600 hover:text-purple-700 flex items-center"
+              className="mb-4 text-accent-600 hover:text-accent-700 flex items-center"
             >
               <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -382,7 +382,7 @@ function ChildLoginPage() {
             <div className="text-center mb-8">
               <div className={`w-20 h-20 ${getColorClass(selectedProfile.color)} rounded-full flex items-center justify-center mx-auto mb-4`}>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedProfile.name}</h2>
+              <h2 className="text-2xl font-display font-bold text-brand-navy mb-2">{selectedProfile.name}</h2>
               <p className="text-gray-600">Enter your 4-digit PIN</p>
             </div>
 
@@ -399,7 +399,7 @@ function ChildLoginPage() {
                   key={i}
                   className={`w-4 h-4 rounded-full border-2 transition-all ${
                     pin.length > i
-                      ? 'bg-purple-600 border-purple-600 scale-110'
+                      ? 'bg-accent-600 border-accent-600 scale-110'
                       : 'bg-white border-gray-300'
                   }`}
                 />

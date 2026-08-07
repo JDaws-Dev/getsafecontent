@@ -53,21 +53,36 @@ const ICON_MAP: Record<LessonIcon, React.ComponentType<{ className?: string }>> 
 
 /**
  * Track theme tokens. Full Tailwind classNames so the JIT picks them up
- * statically. Three palettes, all within the VC-polish vocabulary:
+ * statically.
  *
- *   talk  → violet (the brand color — "talking to AI well" is core)
- *   think → sky/blue (a cooler, "how it works" register)
- *   smart → amber (judgment / safety / warmth)
+ * The three tracks (talk / think / smart) used to be violet / sky / amber —
+ * a rainbow. Under the Safe Family glow-up SafeSpark has ONE accent (amber
+ * #F2A413), so all three tracks now share the same accent language and are
+ * told apart by their ICON and their track number, not by hue. This also
+ * removes a real hazard: the old "smart" track was amber-500, one shade off
+ * the amber we reserve for warnings.
  *
- * Each entry covers the surfaces the renderer touches: hero gradient,
- * the big icon chip, the decorative bleed-icon tint, hover accents on
- * the bottom nav cards, the side stripe on headings, list bullets, and
- * the CTA pill inside example cards.
+ * Kept as a per-track record (rather than a single flat object) so a track
+ * can be re-tinted later without touching every call site.
  */
+const ACCENT_TRACK_THEME = {
+  heroSurface: 'bg-accent-50',
+  heroIconChip: 'bg-accent-500 text-brand-navy ring-4 ring-accent-100',
+  bleedIcon: 'text-accent-300',
+  accentText: 'text-accent-700',
+  accentRing: 'ring-accent-200',
+  accentBorderHover: 'hover:border-accent-300',
+  accentSideStripe: 'bg-accent-500',
+  listBullet: 'bg-accent-500',
+  ctaBg: 'bg-accent-500',
+  ctaBgHover: 'hover:bg-accent-600',
+  progressBar: 'bg-accent-500',
+} as const;
+
 const TRACK_THEMES: Record<
   LessonTrack,
   {
-    heroGradient: string;
+    heroSurface: string;
     heroIconChip: string;
     bleedIcon: string;
     accentText: string;
@@ -80,45 +95,9 @@ const TRACK_THEMES: Record<
     progressBar: string;
   }
 > = {
-  talk: {
-    heroGradient: 'bg-gradient-to-br from-accent-100 via-accent-50 to-white',
-    heroIconChip: 'bg-accent-600 text-brand-navy ring-4 ring-accent-100',
-    bleedIcon: 'text-accent-300',
-    accentText: 'text-accent-700',
-    accentRing: 'ring-accent-200',
-    accentBorderHover: 'hover:border-accent-300',
-    accentSideStripe: 'bg-accent-500',
-    listBullet: 'bg-accent-500',
-    ctaBg: 'bg-accent-600',
-    ctaBgHover: 'hover:bg-accent-700',
-    progressBar: 'bg-accent-500',
-  },
-  think: {
-    heroGradient: 'bg-gradient-to-br from-sky-100 via-sky-50 to-white',
-    heroIconChip: 'bg-sky-600 text-white ring-4 ring-sky-100',
-    bleedIcon: 'text-sky-300',
-    accentText: 'text-sky-700',
-    accentRing: 'ring-sky-200',
-    accentBorderHover: 'hover:border-sky-300',
-    accentSideStripe: 'bg-sky-500',
-    listBullet: 'bg-sky-500',
-    ctaBg: 'bg-sky-600',
-    ctaBgHover: 'hover:bg-sky-700',
-    progressBar: 'bg-sky-500',
-  },
-  smart: {
-    heroGradient: 'bg-gradient-to-br from-amber-100 via-amber-50 to-white',
-    heroIconChip: 'bg-amber-600 text-white ring-4 ring-amber-100',
-    bleedIcon: 'text-amber-300',
-    accentText: 'text-amber-700',
-    accentRing: 'ring-amber-200',
-    accentBorderHover: 'hover:border-amber-300',
-    accentSideStripe: 'bg-amber-500',
-    listBullet: 'bg-amber-500',
-    ctaBg: 'bg-amber-600',
-    ctaBgHover: 'hover:bg-amber-700',
-    progressBar: 'bg-amber-500',
-  },
+  talk: { ...ACCENT_TRACK_THEME },
+  think: { ...ACCENT_TRACK_THEME },
+  smart: { ...ACCENT_TRACK_THEME },
 };
 
 /**
@@ -160,7 +139,7 @@ export function LessonView({ slug }: { slug: string }) {
   if (!lesson) {
     return (
       <main className="min-h-screen bg-brand-cream px-6 py-16 text-center">
-        <p className="text-sm text-slate-500">Lesson not found.</p>
+        <p className="text-sm text-brand-ink-soft">Lesson not found.</p>
         <Link href="/learn" className="mt-4 inline-block text-sm font-semibold text-accent-700">
           ← Back to lessons
         </Link>
@@ -180,13 +159,13 @@ export function LessonView({ slug }: { slug: string }) {
   const progressPct = (lessonNumber / totalLessons) * 100;
 
   return (
-    <main className="min-h-screen bg-brand-cream text-slate-900">
+    <main className="min-h-screen bg-brand-cream text-brand-navy">
       <KidHeader
         familyCode={familyCode}
         rightSlot={
           <Link
             href="/make"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-brand-cream lg:hidden"
+            className="inline-flex items-center gap-2 rounded-xl border border-brand-cream-2 bg-white px-3 py-1.5 text-sm font-semibold text-brand-navy hover:bg-brand-cream lg:hidden"
           >
             Skip to building
             <ArrowRight className="h-4 w-4" />
@@ -197,7 +176,7 @@ export function LessonView({ slug }: { slug: string }) {
       {/* Sequence progress strip — slim, sits right under the global header.
           Track-tinted so the page feels color-coded the moment it loads. */}
       <div
-        className="h-1 w-full bg-slate-200"
+        className="h-1 w-full bg-brand-cream-2"
         role="progressbar"
         aria-valuenow={lessonNumber}
         aria-valuemin={1}
@@ -214,17 +193,17 @@ export function LessonView({ slug }: { slug: string }) {
         {/* Breadcrumb back to lesson list */}
         <Link
           href="/learn"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-ink-soft hover:text-brand-navy"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           All lessons
         </Link>
 
-        {/* Hero — gradient block tinted to the lesson's track, with the
+        {/* Hero — flat accent-tinted block, with the
             lesson icon bleeding off the top-right corner at large size.
             This is the "this is a real thing" moment for the kid. */}
         <header
-          className={`relative mt-4 overflow-hidden rounded-3xl border border-slate-200 ${theme.heroGradient} px-6 py-8 sm:px-8 sm:py-10`}
+          className={`relative mt-4 overflow-hidden rounded-3xl border border-brand-cream-2 ${theme.heroSurface} px-6 py-8 sm:px-8 sm:py-10`}
         >
           {/* Decorative oversized icon, clipped by the hero. opacity kept
               low so it reads as background texture, not noise. */}
@@ -246,11 +225,11 @@ export function LessonView({ slug }: { slug: string }) {
               {trackMeta.ordinal} · Lesson {lessonNumber} of {totalLessons} · {lesson.minutes} min
             </p>
 
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-brand-navy sm:text-4xl">
               {lesson.title}
             </h1>
 
-            <p className="mt-3 max-w-xl text-base leading-relaxed text-slate-700">
+            <p className="mt-3 max-w-xl text-base leading-relaxed text-brand-navy">
               {lesson.description}
             </p>
           </div>
@@ -264,7 +243,7 @@ export function LessonView({ slug }: { slug: string }) {
         </div>
 
         {/* Bottom nav: prev / next as visually weighted cards. */}
-        <nav className="mt-10 grid grid-cols-1 gap-3 border-t border-slate-200 pt-6 sm:grid-cols-2">
+        <nav className="mt-10 grid grid-cols-1 gap-3 border-t border-brand-cream-2 pt-6 sm:grid-cols-2">
           <PrevNextCard direction="previous" lesson={previous} theme={theme} />
           <NextOrFinishCard next={next} theme={theme} />
         </nav>
@@ -289,18 +268,18 @@ function SectionRenderer({
       return (
         <div className="flex items-center gap-3 pt-2">
           <span className={`h-7 w-1 rounded-full ${theme.accentSideStripe}`} aria-hidden />
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">{section.text}</h2>
+          <h2 className="font-display text-xl font-bold tracking-tight text-brand-navy">{section.text}</h2>
         </div>
       );
     case 'paragraph':
       return (
-        <p className="text-base leading-relaxed text-slate-700">{section.text}</p>
+        <p className="text-base leading-relaxed text-brand-navy">{section.text}</p>
       );
     case 'list':
       return (
         <ul className="ml-1 space-y-2">
           {section.items.map((item, i) => (
-            <li key={i} className="flex gap-3 text-base leading-relaxed text-slate-700">
+            <li key={i} className="flex gap-3 text-base leading-relaxed text-brand-navy">
               <span
                 className={`mt-[0.55rem] inline-block h-2 w-2 shrink-0 rounded-full ${theme.listBullet}`}
                 aria-hidden
@@ -313,10 +292,10 @@ function SectionRenderer({
     case 'example':
       // Designed as a fake Spark chat screenshot — kid prompt on the
       // right in a dark bubble, Spark's outcome on the left in a white
-      // bubble with a soft violet border. Below: a real CTA button.
+      // bubble with a soft accent hairline. Below: a real CTA button.
       return (
         <div
-          className={`rounded-3xl border border-slate-200 bg-white p-5 shadow-sm ring-1 ${theme.accentRing}`}
+          className={`rounded-3xl border border-brand-cream-2 bg-white p-5 shadow-sm ring-1 ${theme.accentRing}`}
         >
           {section.label && (
             <p
@@ -326,9 +305,9 @@ function SectionRenderer({
             </p>
           )}
 
-          {/* Kid bubble — right-aligned, slate-900 like a dark iMessage. */}
+          {/* Kid bubble — right-aligned, brand navy like a dark iMessage. */}
           <div className="flex justify-end">
-            <div className="max-w-[88%] rounded-2xl rounded-br-md bg-slate-900 px-4 py-2.5 text-[14px] leading-relaxed text-white shadow-sm">
+            <div className="max-w-[88%] rounded-2xl rounded-br-md bg-brand-navy px-4 py-2.5 text-[14px] leading-relaxed text-white shadow-sm">
               <p className="whitespace-pre-wrap">{section.prompt}</p>
             </div>
           </div>
@@ -337,13 +316,13 @@ function SectionRenderer({
           {section.outcome && (
             <div className="mt-3 flex items-start gap-2">
               <span
-                className={`mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${theme.ctaBg} text-white shadow-sm`}
+                className={`mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${theme.ctaBg} text-brand-navy shadow-sm`}
                 aria-hidden
               >
                 <Sparkles className="h-4 w-4" />
               </span>
               <div
-                className={`max-w-[88%] rounded-2xl rounded-tl-md border bg-white px-4 py-2.5 text-[14px] leading-relaxed text-slate-700 shadow-sm ring-1 ${theme.accentRing} border-slate-200`}
+                className={`max-w-[88%] rounded-2xl rounded-tl-md border bg-white px-4 py-2.5 text-[14px] leading-relaxed text-brand-navy shadow-sm ring-1 ${theme.accentRing} border-brand-cream-2`}
               >
                 <p>{section.outcome}</p>
               </div>
@@ -354,15 +333,15 @@ function SectionRenderer({
               "Try this in Spark" read as redundant — the kid is already
               in Spark reading a Spark lesson. Renamed to direct action
               language. */}
-          <div className="mt-5 border-t border-slate-100 pt-4">
+          <div className="mt-5 border-t border-brand-cream-2 pt-4">
             <Link
               href={`/make?new=true&prompt=${encodeURIComponent(section.prompt)}`}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition ${theme.ctaBg} ${theme.ctaBgHover}`}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-brand-navy shadow-sm transition ${theme.ctaBg} ${theme.ctaBgHover}`}
             >
               Send this to the maker
               <ArrowUpRight className="h-4 w-4" />
             </Link>
-            <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+            <p className="mt-2 text-[11px] leading-relaxed text-brand-ink-soft">
               Opens the maker with this prompt ready to send.
             </p>
           </div>
@@ -372,19 +351,22 @@ function SectionRenderer({
       const isWarning = section.tone === 'warning';
       const IconCmp = isWarning ? AlertTriangle : Lightbulb;
 
-      // Callouts are independent of the track theme — tip is always
-      // violet (lightbulb energy), warning is always amber (caution).
-      // The left edge gets a thick colored stripe so callouts stand out
-      // even when scanning.
-      const stripeCls = isWarning ? 'bg-amber-500' : 'bg-accent-500';
+      // AMBER COLLISION NOTE. SafeSpark's brand accent is amber, and amber is
+      // also the universal "caution" colour — so a tip and a warning styled
+      // the same way would be indistinguishable. They are separated by
+      // SURFACE, not just by hue:
+      //   tip     → neutral cream card, accent stripe/chip  (brand voice)
+      //   warning → amber-TINTED card, darker amber stripe/chip (caution)
+      // An amber-tinted fill on this screen therefore always means "caution".
+      const stripeCls = isWarning ? 'bg-amber-600' : 'bg-accent-500';
       const bgCls = isWarning
-        ? 'bg-amber-50 border-amber-200'
-        : 'bg-accent-50 border-accent-200';
+        ? 'bg-amber-50 border-amber-300'
+        : 'bg-brand-cream-2 border-brand-cream-2';
       const iconChipCls = isWarning
-        ? 'bg-amber-500 text-white'
+        ? 'bg-amber-600 text-white'
         : 'bg-accent-500 text-brand-navy';
-      const textCls = isWarning ? 'text-amber-900' : 'text-accent-900';
-      const labelCls = isWarning ? 'text-amber-700' : 'text-accent-700';
+      const textCls = isWarning ? 'text-amber-900' : 'text-brand-navy';
+      const labelCls = isWarning ? 'text-amber-800' : 'text-accent-700';
       const label = isWarning ? 'Heads up' : 'Tip';
 
       return (
@@ -442,23 +424,23 @@ function PrevNextCard({
   return (
     <Link
       href={`/learn/${lesson.slug}`}
-      className={`group rounded-2xl border border-slate-200 bg-white p-4 transition hover:shadow-md ${theme.accentBorderHover}`}
+      className={`group rounded-2xl border border-brand-cream-2 bg-white p-4 transition hover:shadow-md ${theme.accentBorderHover}`}
     >
       <p
-        className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 group-hover:${theme.accentText}`}
+        className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-brand-ink-soft group-hover:${theme.accentText}`}
       >
         <ArrowLeft className="h-3 w-3" />
         Previous lesson
       </p>
       <div className="mt-2 flex items-start gap-3">
-        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-cream-2 text-brand-ink-soft">
           <Icon className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold tracking-tight text-slate-900 group-hover:text-slate-700">
+          <p className="font-display text-sm font-bold tracking-tight text-brand-navy group-hover:text-brand-navy">
             {lesson.title}
           </p>
-          <p className="mt-0.5 text-[11px] text-slate-500">{lesson.minutes} min read</p>
+          <p className="mt-0.5 text-[11px] text-brand-ink-soft">{lesson.minutes} min read</p>
         </div>
       </div>
     </Link>
@@ -478,7 +460,7 @@ function NextOrFinishCard({
     return (
       <Link
         href={`/learn/${next.slug}`}
-        className={`group rounded-2xl border border-slate-200 bg-white p-4 transition hover:shadow-md ${nextTheme.accentBorderHover} sm:col-start-2`}
+        className={`group rounded-2xl border border-brand-cream-2 bg-white p-4 transition hover:shadow-md ${nextTheme.accentBorderHover} sm:col-start-2`}
       >
         <p
           className={`flex items-center justify-end gap-1 text-[10px] font-bold uppercase tracking-[0.15em] ${nextTheme.accentText}`}
@@ -489,14 +471,14 @@ function NextOrFinishCard({
         <div className="mt-2 flex items-start gap-3">
           <div className="min-w-0 flex-1 text-right">
             <p
-              className={`text-sm font-bold tracking-tight text-slate-900 group-hover:${nextTheme.accentText}`}
+              className={`font-display text-sm font-bold tracking-tight text-brand-navy group-hover:${nextTheme.accentText}`}
             >
               {next.title}
             </p>
-            <p className="mt-0.5 text-[11px] text-slate-500">{next.minutes} min read</p>
+            <p className="mt-0.5 text-[11px] text-brand-ink-soft">{next.minutes} min read</p>
           </div>
           <span
-            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ${nextTheme.ctaBg}`}
+            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-brand-navy shadow-sm ${nextTheme.ctaBg}`}
           >
             <Icon className="h-5 w-5" />
           </span>
@@ -510,7 +492,7 @@ function NextOrFinishCard({
   return (
     <Link
       href="/learn"
-      className={`group rounded-2xl border border-slate-200 bg-white p-4 transition hover:shadow-md ${theme.accentBorderHover} sm:col-start-2`}
+      className={`group rounded-2xl border border-brand-cream-2 bg-white p-4 transition hover:shadow-md ${theme.accentBorderHover} sm:col-start-2`}
     >
       <p
         className={`flex items-center justify-end gap-1 text-[10px] font-bold uppercase tracking-[0.15em] ${theme.accentText}`}
@@ -521,14 +503,14 @@ function NextOrFinishCard({
       <div className="mt-2 flex items-start gap-3">
         <div className="min-w-0 flex-1 text-right">
           <p
-            className={`text-sm font-bold tracking-tight text-slate-900 group-hover:${theme.accentText}`}
+            className={`font-display text-sm font-bold tracking-tight text-brand-navy group-hover:${theme.accentText}`}
           >
             Back to all lessons
           </p>
-          <p className="mt-0.5 text-[11px] text-slate-500">Reread anything you want</p>
+          <p className="mt-0.5 text-[11px] text-brand-ink-soft">Reread anything you want</p>
         </div>
         <span
-          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ${theme.ctaBg}`}
+          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-brand-navy shadow-sm ${theme.ctaBg}`}
         >
           <GraduationCap className="h-5 w-5" />
         </span>

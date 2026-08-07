@@ -25,6 +25,8 @@ import SafeFamilySwitcher from '../SafeFamilySwitcher';
  *     /start bookmarks keep working unchanged.
  */
 
+// Per-kid avatar hues — kid IDENTITY data (`avatarColor` on the profile row),
+// NOT brand colour. Keys must keep matching what Convex writes.
 const COLOR_CLASSES: Record<string, string> = {
   violet: 'bg-violet-500',
   pink: 'bg-pink-500',
@@ -169,11 +171,11 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
       <main className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="max-w-md w-full text-center space-y-8">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-widest text-accent-500">SafeSpark</p>
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mt-2">
+            <p className="text-sm font-semibold uppercase tracking-widest text-accent-700">SafeSpark</p>
+            <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight text-brand-navy mt-2">
               Welcome back!
             </h1>
-            <p className="text-base text-slate-600 mt-3">
+            <p className="text-base text-brand-ink-soft mt-3">
               Type your family code to see your projects.
             </p>
           </div>
@@ -194,7 +196,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
           <p className="text-xs text-slate-400">
             Ask your parent for the family code if you don&apos;t remember it.
           </p>
-          <div className="pt-6 mt-6 border-t border-slate-200">
+          <div className="pt-6 mt-6 border-t border-brand-cream-2">
             <SafeFamilySwitcher current="safespark" familyCode={code} />
           </div>
         </div>
@@ -216,8 +218,8 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
           >
             {pinProfile.displayName.charAt(0).toUpperCase()}
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">{pinProfile.displayName}</h1>
-          <p className="text-slate-500">Enter your 4-digit PIN</p>
+          <h1 className="font-display text-2xl font-bold text-brand-navy">{pinProfile.displayName}</h1>
+          <p className="text-brand-ink-soft">Enter your 4-digit PIN</p>
           <PinInput value={pin} onChange={setPin} onComplete={(p) => enterAs(pinProfile._id, p)} />
           {error && <p className="text-sm text-rose-600">{error}</p>}
           <button
@@ -226,7 +228,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
               setPin('');
               setError(null);
             }}
-            className="text-sm text-slate-500 hover:text-slate-700"
+            className="text-sm text-brand-ink-soft hover:text-brand-navy"
           >
             ← back to family
           </button>
@@ -240,8 +242,8 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
     <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-2xl w-full text-center space-y-8">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-widest text-accent-500">Who&apos;s this?</p>
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 mt-2">
+          <p className="text-sm font-semibold uppercase tracking-widest text-accent-700">Who&apos;s this?</p>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mt-2">
             Tap your tile.
           </h1>
         </div>
@@ -257,7 +259,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
               >
                 {p.displayName.charAt(0).toUpperCase()}
               </div>
-              <p className="mt-3 font-bold text-slate-800">{p.displayName}</p>
+              <p className="mt-3 font-display font-bold text-brand-navy">{p.displayName}</p>
               {p.hasPin && (
                 <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5 inline-flex items-center gap-1">
                   <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -271,7 +273,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
           ))}
         </div>
         {family.profiles.length === 0 && (
-          <p className="text-slate-500 text-sm">
+          <p className="text-brand-ink-soft text-sm">
             No profiles in this family yet. Ask your parent to add one.
           </p>
         )}
@@ -280,7 +282,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
             setSubmitted('');
             setCode('');
           }}
-          className="text-sm text-slate-500 hover:text-slate-700"
+          className="text-sm text-brand-ink-soft hover:text-brand-navy"
         >
           ← different family
         </button>

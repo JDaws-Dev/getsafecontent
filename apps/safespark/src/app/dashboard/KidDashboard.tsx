@@ -26,17 +26,18 @@ import { KidMobileNav, KidHeader, OtherAppsStrip } from '@/components/kid/SafeFa
  * the maker" flow which dropped kids into a blank chat box with no
  * sense of what they'd built before or where to begin again.
  *
- * Design notes (the "VC-backed tech company" pass): off-white slate
- * background (slate-50), white cards with subtle borders (border-
- * slate-200/60) and tiny shadows, tight headings (font-bold +
- * tracking-tight, not heavy font-black), restrained palette (violet-
- * 600 primary + slate neutrals + small amber accent for streaks),
+ * Design notes (the Safe Family "glow-up" pass): cream page ground
+ * (brand-cream), white cards with subtle borders and tiny shadows,
+ * Fredoka headings in brand navy, restrained palette (ONE amber accent
+ * + brand neutrals; amber fills stay reserved for caution states),
  * rounded-2xl cards / rounded-xl buttons (no candy box-shadows). Less
  * "playful elementary school", more "tool you'd see on a Stripe
  * dashboard." Copy stays warm — that's the kid-friendliness — but the
  * chrome is grown-up.
  */
 
+// Per-kid avatar hues — kid IDENTITY data (`avatarColor` on the profile row),
+// NOT brand colour. Keys must keep matching what Convex writes.
 const COLOR_CLASSES: Record<string, string> = {
   violet: 'bg-violet-500',
   pink: 'bg-pink-500',
@@ -107,8 +108,8 @@ export function KidDashboard() {
     return (
       <main className="min-h-screen bg-brand-cream">
         <div className="mx-auto max-w-5xl px-6 py-10">
-          <div className="h-8 w-48 animate-pulse rounded-lg bg-slate-200" />
-          <div className="mt-3 h-4 w-72 animate-pulse rounded bg-slate-200" />
+          <div className="h-8 w-48 animate-pulse rounded-lg bg-brand-cream-2" />
+          <div className="mt-3 h-4 w-72 animate-pulse rounded bg-brand-cream-2" />
         </div>
       </main>
     );
@@ -118,10 +119,10 @@ export function KidDashboard() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-brand-cream px-6 text-center">
         <div className="max-w-sm space-y-4">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-brand-navy">
             Looks like you got signed out
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-ink-soft">
             Enter your family code again to pick your profile.
           </p>
           <Link
@@ -152,7 +153,7 @@ export function KidDashboard() {
       <button
         type="button"
         onClick={() => setShowAccountMenu((v) => !v)}
-        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-slate-700 hover:bg-brand-cream"
+        className="inline-flex items-center gap-2 rounded-xl border border-brand-cream-2 bg-white px-2.5 py-1.5 text-sm font-semibold text-brand-navy hover:bg-brand-cream"
         aria-haspopup="menu"
         aria-expanded={showAccountMenu}
       >
@@ -163,11 +164,11 @@ export function KidDashboard() {
         <ChevronDown className="h-4 w-4 text-slate-400" />
       </button>
       {showAccountMenu && (
-        <div className="absolute right-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+        <div className="absolute right-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-xl border border-brand-cream-2 bg-white shadow-lg">
           <button
             type="button"
             onClick={switchProfile}
-            className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
+            className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-brand-navy hover:bg-brand-cream"
           >
             <UserRound className="h-4 w-4 text-slate-400" />
             Switch profile
@@ -175,7 +176,7 @@ export function KidDashboard() {
           <button
             type="button"
             onClick={switchProfile}
-            className="flex w-full items-center gap-2.5 border-t border-slate-100 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
+            className="flex w-full items-center gap-2.5 border-t border-brand-cream-2 px-3.5 py-2.5 text-left text-sm font-semibold text-brand-navy hover:bg-brand-cream"
           >
             <LogOut className="h-4 w-4 text-slate-400" />
             Sign out
@@ -186,15 +187,15 @@ export function KidDashboard() {
   );
 
   return (
-    <main className="min-h-screen bg-brand-cream text-slate-900">
+    <main className="min-h-screen bg-brand-cream text-brand-navy">
       <KidHeader familyCode={familyCode} rightSlot={accountMenuSlot} />
 
       <div className="mx-auto max-w-5xl space-y-8 px-6 py-10 pb-28 lg:pb-10">
         {/* Hero — greeting + name + quick verb */}
         <section className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="text-sm font-semibold text-slate-500">{greeting}, {profile.displayName}.</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            <p className="text-sm font-semibold text-brand-ink-soft">{greeting}, {profile.displayName}.</p>
+            <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-brand-navy sm:text-4xl">
               What do you want to build today?
             </h1>
           </div>
@@ -213,19 +214,19 @@ export function KidDashboard() {
             label="Total projects"
             value={stats.totalProjects}
             icon={<Hammer className="h-4 w-4" />}
-            tone="slate"
+            tone="neutral"
           />
           <Stat
             label="Built this week"
             value={stats.buildsThisWeek}
             icon={<TrendingUp className="h-4 w-4" />}
-            tone="violet"
+            tone="accent"
           />
           <Stat
             label="Built today"
             value={stats.buildsToday}
             icon={<Clock className="h-4 w-4" />}
-            tone={stats.buildsToday > 0 ? 'amber' : 'slate'}
+            tone={stats.buildsToday > 0 ? 'accent' : 'neutral'}
           />
         </section>
 
@@ -233,20 +234,20 @@ export function KidDashboard() {
         {mostRecent && (
           <section>
             <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-brand-ink-soft">
                 Pick up where you left off
               </h2>
             </div>
             <Link
               href={`/make?project=${mostRecent.id}`}
-              className="group flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-accent-300 hover:shadow-sm"
+              className="group flex items-center justify-between gap-4 rounded-2xl border border-brand-cream-2 bg-white p-5 transition hover:border-accent-300 hover:shadow-sm"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-bold tracking-tight text-slate-900">
+                <p className="truncate font-display text-base font-bold tracking-tight text-brand-navy">
                   {mostRecent.title}
                 </p>
                 {mostRecent.lastPrompt && (
-                  <p className="mt-1 line-clamp-1 text-sm text-slate-500">
+                  <p className="mt-1 line-clamp-1 text-sm text-brand-ink-soft">
                     Last asked: &ldquo;{mostRecent.lastPrompt}&rdquo;
                   </p>
                 )}
@@ -265,10 +266,10 @@ export function KidDashboard() {
         {recentProjects.length > 0 && (
           <section>
             <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-brand-ink-soft">
                 Your projects
               </h2>
-              <Link href="/make" className="text-xs font-semibold text-accent-600 hover:text-accent-700">
+              <Link href="/make" className="text-xs font-semibold text-accent-700 hover:text-accent-800">
                 See all in the maker →
               </Link>
             </div>
@@ -277,7 +278,7 @@ export function KidDashboard() {
                 <Link
                   key={p.id}
                   href={`/make?project=${p.id}`}
-                  className="group relative block overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 transition hover:border-accent-400 hover:shadow-md"
+                  className="group relative block overflow-hidden rounded-2xl border border-brand-cream-2 bg-brand-navy transition hover:border-accent-400 hover:shadow-md"
                   title={p.title}
                 >
                   {/*
@@ -289,7 +290,7 @@ export function KidDashboard() {
                     with a subtle scale-up so it feels like a tappable
                     tile, not a static thumbnail.
                   */}
-                  <div className="relative aspect-video w-full overflow-hidden bg-slate-900">
+                  <div className="relative aspect-video w-full overflow-hidden bg-brand-navy">
                     <div
                       className="origin-top-left scale-[0.4] transition duration-300 group-hover:scale-[0.42]"
                       style={{ width: '250%', height: '250%' }}
@@ -316,14 +317,14 @@ export function KidDashboard() {
                           </p>
                         </div>
                         {p.isCommunication && (
-                          <span className="pointer-events-none inline-flex shrink-0 items-center rounded-full bg-amber-400/95 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-950 shadow">
+                          <span className="pointer-events-none inline-flex shrink-0 items-center rounded-full bg-accent-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-brand-navy shadow">
                             chat
                           </span>
                         )}
                       </div>
                     </div>
                     {/* Hover affordance — small play-style arrow, top-right */}
-                    <span className="pointer-events-none absolute right-3 top-3 inline-flex h-8 w-8 scale-0 items-center justify-center rounded-full bg-white/95 text-slate-900 shadow-lg transition duration-200 group-hover:scale-100">
+                    <span className="pointer-events-none absolute right-3 top-3 inline-flex h-8 w-8 scale-0 items-center justify-center rounded-full bg-white/95 text-brand-navy shadow-lg transition duration-200 group-hover:scale-100">
                       <ArrowRight className="h-4 w-4" />
                     </span>
                   </div>
@@ -335,14 +336,14 @@ export function KidDashboard() {
 
         {/* Empty state — pretty card with starter prompts */}
         {recentProjects.length === 0 && (
-          <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+          <section className="rounded-2xl border border-dashed border-brand-cream-2 bg-white p-10 text-center">
             <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-50 text-accent-700">
               <Sparkles className="h-6 w-6" />
             </div>
-            <h3 className="mt-4 text-lg font-bold tracking-tight text-slate-900">
+            <h3 className="mt-4 font-display text-lg font-bold tracking-tight text-brand-navy">
               Your first build is one prompt away
             </h3>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-brand-ink-soft">
               Tell Spark what you want to make — a game, a quiz, a flashcard set, a poster, a tracker. It builds the whole thing.
             </p>
             <Link
@@ -360,23 +361,23 @@ export function KidDashboard() {
             dashboard surfaces "you can also learn" prominently. */}
         <section>
           <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-brand-ink-soft">
               Learn
             </h2>
           </div>
           <Link
             href="/learn"
-            className="group block rounded-2xl border border-slate-200 bg-gradient-to-br from-accent-50 to-white p-6 transition hover:border-accent-300 hover:shadow-sm"
+            className="group block rounded-2xl border border-brand-cream-2 bg-accent-50 p-6 transition hover:border-accent-300 hover:shadow-sm"
           >
             <div className="flex items-start gap-4">
               <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-brand-navy">
                 <GraduationCap className="h-5 w-5" />
               </span>
               <div className="flex-1">
-                <h3 className="text-base font-bold tracking-tight text-slate-900">
+                <h3 className="font-display text-base font-bold tracking-tight text-brand-navy">
                   Get better at building with AI
                 </h3>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-brand-ink-soft">
                   Short lessons on how to talk to Spark, when to undo, and how to spot when a build is going off-rails. Designed to make every project of yours better.
                 </p>
                 <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-accent-700 group-hover:gap-2 transition-all">
@@ -410,22 +411,25 @@ function Stat({
   label: string;
   value: number;
   icon: React.ReactNode;
-  tone: 'slate' | 'violet' | 'amber';
+  // One accent, one neutral. The old 'violet' / 'amber' pair predates the
+  // glow-up: SafeSpark's accent IS amber now, so two amber-ish highlight
+  // tones would have been indistinguishable — and amber is reserved for
+  // caution elsewhere in the app.
+  tone: 'neutral' | 'accent';
 }) {
   const toneClasses = {
-    slate: 'text-slate-500 bg-slate-100',
-    violet: 'text-accent-700 bg-accent-100',
-    amber: 'text-amber-700 bg-amber-100',
+    neutral: 'text-brand-ink-soft bg-brand-cream-2',
+    accent: 'bg-accent-50 text-accent-700',
   }[tone];
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+    <div className="rounded-2xl border border-brand-cream-2 bg-white p-4">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">{label}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-ink-soft">{label}</p>
         <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${toneClasses}`}>
           {icon}
         </span>
       </div>
-      <p className="mt-2 text-2xl font-bold tracking-tight tabular-nums text-slate-900">{value}</p>
+      <p className="mt-2 text-2xl font-bold tracking-tight tabular-nums text-brand-navy">{value}</p>
     </div>
   );
 }

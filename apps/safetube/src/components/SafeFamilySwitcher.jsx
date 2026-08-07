@@ -197,7 +197,7 @@ export default function SafeFamilySwitcher({ current, familyCode }) {
                 width: 44,
                 height: 44,
                 borderRadius: 12,
-                background: `linear-gradient(135deg, ${a.from}, ${a.to})`,
+                background: a.accent,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

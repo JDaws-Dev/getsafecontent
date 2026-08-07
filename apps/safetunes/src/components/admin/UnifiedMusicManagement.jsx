@@ -617,7 +617,7 @@ function UnifiedMusicManagement({ user }) {
               }}
               className={`flex-1 px-4 py-3 rounded-lg font-medium transition ${
                 context === 'library'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                  ? 'bg-accent-500 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -658,7 +658,7 @@ function UnifiedMusicManagement({ user }) {
               onClick={() => setSearchType('albums')}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 searchType === 'albums'
-                  ? context === 'discover' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'
+                  ? context === 'discover' ? 'bg-blue-600 text-white' : 'bg-accent-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -669,7 +669,7 @@ function UnifiedMusicManagement({ user }) {
               onClick={() => setSearchType('songs')}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 searchType === 'songs'
-                  ? context === 'discover' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'
+                  ? context === 'discover' ? 'bg-blue-600 text-white' : 'bg-accent-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -685,7 +685,7 @@ function UnifiedMusicManagement({ user }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={`Search Apple Music ${searchType}...`}
-                className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
               />
               {searchQuery && (
                 <button
@@ -705,7 +705,7 @@ function UnifiedMusicManagement({ user }) {
             <button
               type="submit"
               disabled={isSearching}
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:bg-gray-400 flex items-center gap-2"
+              className="px-6 py-3 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition disabled:bg-gray-400 flex items-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -721,7 +721,7 @@ function UnifiedMusicManagement({ user }) {
               <select
                 value={selectedKidFilter}
                 onChange={(e) => setSelectedKidFilter(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500"
               >
                 <option value="all">All Kids</option>
                 {kidProfiles.map(kid => (
@@ -730,7 +730,7 @@ function UnifiedMusicManagement({ user }) {
               </select>
               <button
                 onClick={() => setShowImport(true)}
-                className="ml-auto px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium text-sm"
+                className="ml-auto px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition font-medium text-sm"
               >
                 Import Playlist
               </button>
@@ -907,7 +907,7 @@ function UnifiedMusicManagement({ user }) {
                 <button
                   onClick={() => handleSearch(null, true)}
                   disabled={isLoadingMore}
-                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition disabled:bg-gray-400 flex items-center gap-2"
+                  className="px-6 py-3 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition disabled:bg-gray-400 flex items-center gap-2"
                 >
                   {isLoadingMore ? (
                     <>
@@ -934,7 +934,7 @@ function UnifiedMusicManagement({ user }) {
             {/* Stats Card */}
             <div className={`rounded-2xl shadow-lg p-6 text-white ${
               context === 'library'
-                ? 'bg-gradient-to-br from-purple-600 to-pink-600'
+                ? 'bg-accent-500'
                 : 'bg-gradient-to-br from-blue-500 to-cyan-600'
             }`}>
               <h2 className="text-2xl font-bold mb-4">
@@ -1096,8 +1096,8 @@ function UnifiedMusicManagement({ user }) {
                           ) : album.artworkUrl ? (
                             <img src={album.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={album.name} className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                              <svg className="w-6 h-6 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                            <div className="w-full h-full bg-accent-100 flex items-center justify-center">
+                              <svg className="w-6 h-6 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                               </svg>
                             </div>

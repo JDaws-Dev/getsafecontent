@@ -123,18 +123,18 @@ export default function ParentDashboard() {
   const totalBlockedToday = (kidStats ?? []).reduce((sum, s) => sum + s.blockedToday, 0);
 
   if (!isLoaded) {
-    return <main className="flex min-h-screen items-center justify-center text-slate-500">Loading…</main>;
+    return <main className="flex min-h-screen items-center justify-center text-brand-ink-soft">Loading…</main>;
   }
   if (!isSignedIn) {
     return (
       <main className="flex min-h-screen items-center justify-center px-6 text-center">
         <div className="space-y-3">
-          <h1 className="text-2xl font-black text-slate-800">Sign in to open your dashboard</h1>
+          <h1 className="font-display text-2xl font-bold text-brand-navy">Sign in to open your dashboard</h1>
           <Link href="/login" className="inline-block rounded-2xl bg-accent-600 px-5 py-2 text-sm font-black text-brand-navy hover:bg-accent-700">
             Sign in with Safe Family
           </Link>
           <div>
-            <Link href="/" className="text-sm font-bold text-accent-600 hover:text-accent-800">Back to home</Link>
+            <Link href="/" className="text-sm font-bold text-accent-700 hover:text-accent-800">Back to home</Link>
           </div>
         </div>
       </main>
@@ -148,11 +148,11 @@ export default function ParentDashboard() {
       <div className="mx-auto max-w-6xl space-y-6">
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <Link href="/" className="text-xs font-bold uppercase tracking-widest text-accent-500 hover:text-accent-700">
+            <Link href="/" className="text-xs font-bold uppercase tracking-widest text-accent-700 hover:text-accent-800">
               SafeSpark
             </Link>
-            <h1 className="text-2xl font-black text-slate-900">Parent dashboard</h1>
-            <p className="text-sm text-slate-600">Signed in as {displayEmail}</p>
+            <h1 className="font-display text-2xl font-bold text-brand-navy">Parent dashboard</h1>
+            <p className="text-sm text-brand-ink-soft">Signed in as {displayEmail}</p>
           </div>
           {/* Cross-app Safe Family switcher — parent side. Carries the family
               code + Marketing JWT so a parent hops to a sibling app's admin
@@ -181,7 +181,7 @@ export default function ParentDashboard() {
                 marketing.logout();
                 window.location.href = '/login';
               }}
-              className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-brand-cream"
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-brand-cream-2 bg-white px-3 py-2 text-xs font-bold text-brand-navy hover:bg-brand-cream"
             >
               <LogOut className="h-3.5 w-3.5" /> Sign out
             </button>
@@ -200,15 +200,15 @@ export default function ParentDashboard() {
         </div>
 
         {usage && (
-          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section className="rounded-3xl border border-brand-cream-2 bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-accent-500">
+                <p className="text-xs font-bold uppercase tracking-widest text-accent-700">
                   This month · {usage.yearMonth}
                 </p>
-                <h2 className="text-lg font-black text-slate-900">Family usage</h2>
+                <h2 className="font-display text-lg font-bold text-brand-navy">Family usage</h2>
               </div>
-              <p className="text-xs font-bold text-slate-500">Resets on the 1st</p>
+              <p className="text-xs font-bold text-brand-ink-soft">Resets on the 1st</p>
             </div>
             <div className="mt-4 space-y-4">
               <CapMeter
@@ -226,14 +226,14 @@ export default function ParentDashboard() {
             </div>
             {usage.perMember.length > 0 && (
               <details className="mt-4">
-                <summary className="cursor-pointer text-xs font-bold text-slate-500 hover:text-slate-700">
+                <summary className="cursor-pointer text-xs font-bold text-brand-ink-soft hover:text-brand-navy">
                   Per-profile breakdown ({usage.perMember.length})
                 </summary>
                 <div className="mt-2 space-y-1.5">
                   {usage.perMember.map((m) => (
                     <div key={m.clerkUserId} className="flex items-center justify-between rounded-xl bg-brand-cream px-3 py-2 text-xs">
-                      <span className="font-bold text-slate-700">{m.email || m.clerkUserId}</span>
-                      <span className="font-mono font-black text-slate-500">
+                      <span className="font-bold text-brand-navy">{m.email || m.clerkUserId}</span>
+                      <span className="font-mono font-black text-brand-ink-soft">
                         {m.turns} turns · {m.images} images
                       </span>
                     </div>
@@ -248,8 +248,8 @@ export default function ParentDashboard() {
           <div className="rounded-[22px] bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-accent-500">Family code</p>
-                <h2 className="text-lg font-black text-slate-900">Share this with your kids to let them in</h2>
+                <p className="text-xs font-bold uppercase tracking-widest text-accent-700">Family code</p>
+                <h2 className="font-display text-lg font-bold text-brand-navy">Share this with your kids to let them in</h2>
               </div>
               {!code ? (
                 <button
@@ -265,7 +265,7 @@ export default function ParentDashboard() {
                 </button>
               ) : (
                 <div className="flex items-center gap-2">
-                  <span className="rounded-2xl bg-slate-900 px-4 py-2.5 font-mono text-2xl font-black tracking-[0.3em] text-emerald-300">
+                  <span className="rounded-2xl bg-brand-navy px-4 py-2.5 font-mono text-2xl font-black tracking-[0.3em] text-emerald-300">
                     {code}
                   </span>
                   <button
@@ -279,7 +279,7 @@ export default function ParentDashboard() {
                         /* ignore */
                       }
                     }}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-brand-cream"
+                    className="rounded-xl border border-brand-cream-2 bg-white px-3 py-2 text-xs font-bold text-brand-navy hover:bg-brand-cream"
                   >
                     <Copy className="mr-1 inline h-3.5 w-3.5" />
                     {codeCopied ? 'Copied!' : 'Copy'}
@@ -289,15 +289,15 @@ export default function ParentDashboard() {
             </div>
             {code && (
               <>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                <p className="mt-3 text-sm leading-relaxed text-brand-ink-soft">
                   On your kid&apos;s device, open{' '}
                   <span className="font-bold text-slate-900">getsafespark.com</span>{' '}
-                  and enter <span className="font-mono font-black text-slate-900">{code}</span>.
+                  and enter <span className="font-mono font-bold text-brand-navy">{code}</span>.
                   They pick their profile and start building.
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
                   Want to try it yourself?{' '}
-                  <Link href="/make" className="font-bold text-accent-500 underline underline-offset-2 hover:text-accent-700">
+                  <Link href="/make" className="font-bold text-accent-700 underline underline-offset-2 hover:text-accent-700">
                     Open the maker as a parent →
                   </Link>
                 </p>
@@ -338,7 +338,7 @@ export default function ParentDashboard() {
                         <p className="text-sm font-black text-rose-900">
                           {alert.kidName} asked Spark to build:
                         </p>
-                        <blockquote className="mt-1 rounded-xl border-l-4 border-rose-400 bg-rose-50 px-3 py-2 text-sm font-semibold text-slate-800">
+                        <blockquote className="mt-1 rounded-xl border-l-4 border-rose-400 bg-rose-50 px-3 py-2 text-sm font-semibold text-brand-navy">
                           &ldquo;{alert.query}&rdquo;
                         </blockquote>
                         <p className="mt-2 text-xs italic text-rose-700">{alert.rationale}</p>
@@ -425,13 +425,13 @@ export default function ParentDashboard() {
                   className="flex flex-wrap items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-black text-slate-900">
+                    <p className="text-sm font-bold text-brand-navy">
                       <span className="text-rose-700">{req.kidName}</span> wants to share{' '}
                       <span className="rounded-md bg-rose-100 px-1.5 py-0.5 font-black text-rose-900">
                         {req.projectTitle}
                       </span>
                     </p>
-                    <p className="mt-1 text-xs font-semibold text-slate-600">
+                    <p className="mt-1 text-xs font-semibold text-brand-ink-soft">
                       Open the project on{' '}
                       <Link
                         href={`/parent/profile/${req.kidProfileId}`}
@@ -473,7 +473,7 @@ export default function ParentDashboard() {
                           console.error('deny share failed', err);
                         }
                       }}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-brand-cream"
+                      className="rounded-xl border border-brand-cream-2 bg-white px-3 py-1.5 text-xs font-black text-brand-ink-soft hover:bg-brand-cream"
                     >
                       Not yet
                     </button>
@@ -508,13 +508,13 @@ export default function ParentDashboard() {
                   className="flex flex-wrap items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-black text-slate-900">
+                    <p className="text-sm font-bold text-brand-navy">
                       <span className="text-amber-700">{req.kidName}</span> wants to build something about{' '}
                       <span className="rounded-md bg-amber-100 px-1.5 py-0.5 font-black text-amber-900">
                         {req.matchedPhrase}
                       </span>
                     </p>
-                    <p className="mt-1 line-clamp-2 text-xs font-semibold text-slate-600">
+                    <p className="mt-1 line-clamp-2 text-xs font-semibold text-brand-ink-soft">
                       They asked: &ldquo;{req.originalPrompt}&rdquo;
                     </p>
                   </div>
@@ -549,7 +549,7 @@ export default function ParentDashboard() {
                           console.error('deny failed', err);
                         }
                       }}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-brand-cream"
+                      className="rounded-xl border border-brand-cream-2 bg-white px-3 py-1.5 text-xs font-black text-brand-ink-soft hover:bg-brand-cream"
                     >
                       Not yet
                     </button>
@@ -564,14 +564,14 @@ export default function ParentDashboard() {
             Each row shows the kid (colored dot), event type (prompt vs
             blocked), and what they asked. Empty state explains what'll
             show up here once kids start building. */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-3xl border border-brand-cream-2 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-accent-100 text-accent-600">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-accent-100 text-accent-700">
               <ActivityIcon className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold uppercase tracking-widest text-accent-500">Recent activity</p>
-              <h2 className="text-lg font-black text-slate-900">
+              <p className="text-xs font-bold uppercase tracking-widest text-accent-700">Recent activity</p>
+              <h2 className="font-display text-lg font-bold text-brand-navy">
                 {activity?.events.length
                   ? `${activity.events.length} recent ${activity.events.length === 1 ? 'event' : 'events'}`
                   : 'Activity feed'}
@@ -583,11 +583,11 @@ export default function ParentDashboard() {
               Loading activity…
             </p>
           ) : activity.events.length === 0 ? (
-            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-500">
+            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-brand-ink-soft">
               Nothing yet. When your kids build something with Spark, it&apos;ll show up here.
             </p>
           ) : (
-            <ol className="divide-y divide-slate-100">
+            <ol className="divide-y divide-brand-cream-2">
               {activity.events.slice(0, 12).map((event, idx) => (
                 <ActivityRow key={`${event.kidProfileId}-${event.createdAt}-${idx}`} event={event} />
               ))}
@@ -595,17 +595,17 @@ export default function ParentDashboard() {
           )}
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-3xl border border-brand-cream-2 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-accent-500">Profiles in your family</p>
-              <h2 className="text-lg font-black text-slate-900">
+              <p className="text-xs font-bold uppercase tracking-widest text-accent-700">Profiles in your family</p>
+              <h2 className="font-display text-lg font-bold text-brand-navy">
                 {family?.kids.length ?? 0} profile{family?.kids.length === 1 ? '' : 's'}
               </h2>
             </div>
             <Link
               href="/parent/setup"
-              className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-brand-cream"
+              className="inline-flex items-center gap-1 rounded-2xl border border-brand-cream-2 bg-white px-3 py-2 text-sm font-bold text-brand-navy hover:bg-brand-cream"
             >
               <Users className="h-4 w-4" />
               Add a profile
@@ -613,7 +613,7 @@ export default function ParentDashboard() {
           </div>
 
           {!family?.kids.length ? (
-            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-500">
+            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-brand-ink-soft">
               No profiles yet. Add yourself or a kid in setup, then everyone in the family signs in with the code above.
             </p>
           ) : (
@@ -675,19 +675,20 @@ function KidRow({ kid, stats }: { kid: Kid; stats?: KidStats }) {
 
   const colorClass =
     {
-      violet: 'from-violet-500 to-pink-500',
-      pink: 'from-pink-500 to-rose-400',
-      emerald: 'from-emerald-500 to-teal-400',
-      amber: 'from-amber-500 to-orange-400',
-      sky: 'from-sky-500 to-cyan-400',
-    }[kid.avatarColor ?? 'violet'] ?? 'from-violet-500 to-pink-500';
+      violet: 'bg-violet-500',
+      pink: 'bg-pink-500',
+      emerald: 'bg-emerald-500',
+      amber: 'bg-amber-500',
+      sky: 'bg-sky-500',
+      rose: 'bg-rose-500',
+    }[kid.avatarColor ?? 'violet'] ?? 'bg-violet-500';
 
   return (
     <div
       className={
         effectivePaused
           ? 'rounded-2xl border-2 border-amber-300 bg-amber-50 p-4'
-          : 'rounded-2xl border border-slate-200 bg-brand-cream p-4'
+          : 'rounded-2xl border border-brand-cream-2 bg-brand-cream p-4'
       }
     >
       <div className="flex items-center gap-3">
@@ -695,12 +696,12 @@ function KidRow({ kid, stats }: { kid: Kid; stats?: KidStats }) {
           href={`/parent/profile/${kid.id}`}
           className="flex min-w-0 flex-1 items-center gap-3 rounded-xl -m-1 p-1 hover:bg-white/60"
         >
-          <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${colorClass} text-lg font-black text-white shadow`}>
+          <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${colorClass} font-display text-lg font-bold text-white shadow`}>
             {kid.displayName.slice(0, 1).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-black text-slate-900">{kid.displayName}</h3>
-            <p className="text-xs font-bold text-slate-500">
+            <h3 className="font-bold text-brand-navy">{kid.displayName}</h3>
+            <p className="text-xs font-bold text-brand-ink-soft">
               {kid.age != null ? `Age ${kid.age} · ` : ''}{kid.projects.length} project{kid.projects.length === 1 ? '' : 's'} · View all →
             </p>
           </div>
@@ -731,7 +732,7 @@ function KidRow({ kid, stats }: { kid: Kid; stats?: KidStats }) {
         <button
           type="button"
           onClick={() => setSettingsOpen((open) => !open)}
-          className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100"
+          className="inline-flex items-center gap-1 rounded-xl border border-brand-cream-2 bg-white px-2.5 py-1.5 text-xs font-bold text-brand-ink-soft hover:bg-brand-cream-2"
           aria-expanded={settingsOpen}
         >
           <Settings2 className="h-3.5 w-3.5" />
@@ -815,7 +816,7 @@ function KidMetric({
   tone: 'slate' | 'rose' | 'emerald';
 }) {
   const palette = {
-    slate: 'bg-white border-slate-200 text-slate-700',
+    slate: 'bg-white border-brand-cream-2 text-brand-navy',
     rose: 'bg-rose-50 border-rose-200 text-rose-700',
     emerald: 'bg-emerald-50 border-emerald-200 text-emerald-700',
   }[tone];
@@ -846,21 +847,22 @@ function ActivityRow({
 }) {
   const colorClass =
     {
-      violet: 'from-violet-500 to-pink-500',
-      pink: 'from-pink-500 to-rose-400',
-      emerald: 'from-emerald-500 to-teal-400',
-      amber: 'from-amber-500 to-orange-400',
-      sky: 'from-sky-500 to-cyan-400',
-    }[event.avatarColor] ?? 'from-violet-500 to-pink-500';
+      violet: 'bg-violet-500',
+      pink: 'bg-pink-500',
+      emerald: 'bg-emerald-500',
+      amber: 'bg-amber-500',
+      sky: 'bg-sky-500',
+      rose: 'bg-rose-500',
+    }[event.avatarColor] ?? 'bg-violet-500';
   const isBlocked = event.kind === 'blocked';
   return (
     <li className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${colorClass} text-xs font-black text-white shadow`}>
+      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${colorClass} text-xs font-bold text-white shadow`}>
         {event.kidName.slice(0, 1).toUpperCase()}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-black text-slate-900">{event.kidName}</span>
+          <span className="text-sm font-bold text-brand-navy">{event.kidName}</span>
           {isBlocked ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-rose-700">
               <ShieldAlert className="h-3 w-3" />
@@ -878,7 +880,7 @@ function ActivityRow({
             </span>
           )}
         </div>
-        <p className={`mt-0.5 line-clamp-2 text-sm ${isBlocked ? 'text-rose-700' : 'text-slate-600'}`}>
+        <p className={`mt-0.5 line-clamp-2 text-sm ${isBlocked ? 'text-rose-700' : 'text-brand-ink-soft'}`}>
           {event.content}
         </p>
       </div>
@@ -965,7 +967,7 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
   return (
     <div className="mt-3 space-y-4 rounded-2xl border border-accent-100 bg-white p-4">
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-widest text-accent-500">Allowed for this profile</p>
+        <p className="text-[11px] font-bold uppercase tracking-widest text-accent-700">Allowed for this profile</p>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           <ToggleRow
             label="AI image restyle"
@@ -994,10 +996,10 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
           Custom values still work via setKidDailyBudget (clamped to
           [1, 500] server-side). "No cap" sets it to undefined. */}
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-widest text-accent-500">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-accent-700">
           Daily prompt budget
         </p>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-brand-ink-soft">
           Cap how many builds {`{kid}`.replace('{kid}', 'this profile')} can ask for per day. Server enforces it &mdash; once they hit the cap, Spark refuses politely until midnight UTC.
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1020,7 +1022,7 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
                 className={
                   isActive
                     ? 'rounded-xl bg-accent-600 px-3 py-1.5 text-xs font-black text-brand-navy shadow'
-                    : 'rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-brand-cream'
+                    : 'rounded-xl border border-brand-cream-2 bg-white px-3 py-1.5 text-xs font-bold text-brand-navy hover:bg-brand-cream'
                 }
               >
                 {opt.label}
@@ -1030,8 +1032,8 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
         </div>
       </div>
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-widest text-accent-500">Topics Spark won&apos;t build</p>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-accent-700">Topics Spark won&apos;t build</p>
+        <p className="mt-1 text-xs text-brand-ink-soft">
           Add words or phrases. Spark refuses to build projects whose prompt contains any of these.
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1068,7 +1070,7 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
               }
             }}
             placeholder="e.g. guns, dating, gambling"
-            className="flex-1 rounded-xl border border-slate-200 bg-brand-cream px-3 py-2 text-sm text-slate-800 focus:border-accent-400 focus:bg-white focus:outline-none"
+            className="flex-1 rounded-xl border border-brand-cream-2 bg-brand-cream px-3 py-2 text-sm text-brand-navy focus:border-accent-400 focus:bg-white focus:outline-none"
             maxLength={80}
           />
           <button
@@ -1096,7 +1098,7 @@ function ToggleRow({
 }) {
   return (
     <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-brand-cream px-3 py-2">
-      <span className="text-sm font-bold text-slate-700">{label}</span>
+      <span className="text-sm font-bold text-brand-navy">{label}</span>
       <button
         type="button"
         role="switch"
@@ -1122,8 +1124,8 @@ function ProjectThumb({
   project: { id: Id<'safesparkProjects'>; title: string; html: string; updatedAt: number; lastPrompt?: string };
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+    <div className="overflow-hidden rounded-xl border border-brand-cream-2 bg-white shadow-sm">
+      <div className="relative aspect-[4/3] overflow-hidden bg-brand-cream-2">
         <iframe
           srcDoc={project.html}
           sandbox=""
@@ -1134,8 +1136,8 @@ function ProjectThumb({
         />
       </div>
       <div className="px-3 py-2">
-        <p className="line-clamp-1 text-xs font-black text-slate-900">{project.title}</p>
-        <p className="text-[10px] font-bold text-slate-500">{formatDate(project.updatedAt)}</p>
+        <p className="line-clamp-1 text-xs font-bold text-brand-navy">{project.title}</p>
+        <p className="text-[10px] font-bold text-brand-ink-soft">{formatDate(project.updatedAt)}</p>
       </div>
     </div>
   );
@@ -1147,11 +1149,11 @@ function CapMeter({ label, used, cap, pct }: { label: string; used: number; cap:
       ? { bar: 'bg-rose-500', text: 'text-rose-700', track: 'bg-rose-100', note: `Cap reached soon — Spark will pause until next month.` }
       : pct >= 80
         ? { bar: 'bg-amber-500', text: 'text-amber-700', track: 'bg-amber-100', note: `Approaching this month's cap.` }
-        : { bar: 'bg-emerald-500', text: 'text-emerald-700', track: 'bg-slate-100', note: null };
+        : { bar: 'bg-emerald-500', text: 'text-emerald-700', track: 'bg-brand-cream-2', note: null };
   return (
     <div>
       <div className="flex items-end justify-between gap-2">
-        <p className="text-sm font-bold text-slate-700">{label}</p>
+        <p className="text-sm font-bold text-brand-navy">{label}</p>
         <p className={`font-mono text-xs font-black ${tone.text}`}>
           {used.toLocaleString()} <span className="text-slate-400">/ {cap.toLocaleString()}</span>
         </p>

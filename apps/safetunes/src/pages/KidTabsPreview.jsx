@@ -20,7 +20,7 @@ function KidTabsPreview() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 sticky top-0 z-50">
+      <div className="bg-accent-500 text-white py-3 px-4 sticky top-0 z-50">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-sm font-bold">UI Preview: Kid Tabs</h1>

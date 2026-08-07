@@ -13,7 +13,7 @@ const COLORS = [
   { name: 'orange', bg: 'bg-orange-500', ring: 'ring-orange-400' },
   { name: 'yellow', bg: 'bg-yellow-500', ring: 'ring-yellow-400' },
   { name: 'green', bg: 'bg-green-500', ring: 'ring-green-400' },
-  { name: 'blue', bg: 'bg-blue-500', ring: 'ring-blue-400' },
+  { name: 'blue', bg: 'bg-accent-500', ring: 'ring-accent-400' },
   { name: 'cyan', bg: 'bg-cyan-500', ring: 'ring-cyan-400' },
   { name: 'purple', bg: 'bg-purple-500', ring: 'ring-purple-400' },
   { name: 'pink', bg: 'bg-pink-500', ring: 'ring-pink-400' },
@@ -81,7 +81,7 @@ function StepDots({ current, total }) {
           key={i}
           className={`rounded-full transition-all duration-300 ${
             i === current
-              ? 'w-8 h-2.5 bg-gradient-to-r from-accent-500 to-accent-500'
+              ? 'w-8 h-2.5 bg-accent-500'
               : i < current
                 ? 'w-2.5 h-2.5 bg-accent-400'
                 : 'w-2.5 h-2.5 bg-gray-300'
@@ -110,7 +110,7 @@ function NavButtons({ onBack, onNext, nextLabel = 'Next', nextDisabled = false, 
         type="button"
         onClick={onNext}
         disabled={nextDisabled || loading}
-        className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 disabled:from-gray-300 disabled:to-gray-400 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-accent-200 transition-all active:scale-[0.97]"
+        className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-accent-200 transition-all active:scale-[0.97]"
       >
         {loading ? 'Saving...' : nextLabel}
         {!loading && <ArrowRight className="w-5 h-5" />}
@@ -123,7 +123,7 @@ function NavButtons({ onBack, onNext, nextLabel = 'Next', nextDisabled = false, 
 function WelcomeStep({ onNext }) {
   return (
     <div className="flex flex-col items-center text-center px-6 py-8 animate-fadeIn">
-      <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-accent-500 to-accent-500 flex items-center justify-center shadow-lg shadow-accent-200 mb-8">
+      <div className="w-24 h-24 rounded-3xl bg-accent-500 flex items-center justify-center shadow-lg shadow-accent-200 mb-8">
         <Search className="w-12 h-12 text-white" />
       </div>
 
@@ -139,7 +139,7 @@ function WelcomeStep({ onNext }) {
 
       <button
         onClick={onNext}
-        className="flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-accent-200 transition-all active:scale-[0.97]"
+        className="flex items-center gap-3 px-10 py-4 bg-accent-500 hover:bg-accent-600 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-accent-200 transition-all active:scale-[0.97]"
       >
         Get Started
         <ArrowRight className="w-5 h-5" />
@@ -499,7 +499,7 @@ function AccessibilityStep({ data, onChange, onNext, onBack }) {
         <button
           type="button"
           onClick={onNext}
-          className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-accent-200 transition-all active:scale-[0.97]"
+          className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-accent-500 hover:bg-accent-600 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-accent-200 transition-all active:scale-[0.97]"
         >
           {accessibilityNeeds.length === 0 ? 'Skip' : 'Next'}
           <ArrowRight className="w-5 h-5" />
@@ -541,7 +541,7 @@ function FamilyCodeStep({ data, familyCode, onNext, onBack, saving, error }) {
       )}
 
       {/* Family Code Display */}
-      <div className="bg-gradient-to-br from-accent-50 to-accent-50 border-2 border-accent-200 rounded-2xl p-6 sm:p-8 mb-6">
+      <div className="bg-accent-50 border-2 border-accent-200 rounded-2xl p-6 sm:p-8 mb-6">
         <div className="flex flex-col items-center gap-4">
           <div className="text-4xl sm:text-5xl font-bold text-accent-600 tracking-[0.25em] font-mono">
             {familyCode || '------'}
@@ -609,7 +609,7 @@ function AllSetStep({ onComplete, onAddAnother, onTrySearch }) {
       <div className="w-full max-w-sm space-y-3">
         <button
           onClick={onComplete}
-          className="w-full flex items-center gap-4 px-5 py-4 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white rounded-2xl font-medium transition active:scale-[0.97] shadow-lg shadow-accent-200"
+          className="w-full flex items-center gap-4 px-5 py-4 bg-accent-500 hover:bg-accent-600 text-white rounded-2xl font-medium transition active:scale-[0.97] shadow-lg shadow-accent-200"
         >
           <LayoutDashboard className="w-6 h-6" />
           <span className="text-left flex-1">

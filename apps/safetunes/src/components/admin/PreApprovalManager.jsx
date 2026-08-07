@@ -352,7 +352,7 @@ function PreApprovalManager({ user }) {
       {ToastContainer}
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 text-white">
+        <div className="bg-accent-500 rounded-xl p-6 text-white">
           <h2 className="text-2xl font-bold mb-2">Discovery & Pre-Approval</h2>
           <p className="text-white/90">
             Pre-approve artists so kids can discover music automatically. Use AI to find safe, appropriate music.
@@ -367,7 +367,7 @@ function PreApprovalManager({ user }) {
         <select
           value={selectedKidProfile || ''}
           onChange={(e) => setSelectedKidProfile(e.target.value || null)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
         >
           <option value="">All Kids</option>
           {kidProfiles.map((kid) => (
@@ -529,18 +529,18 @@ function PreApprovalManager({ user }) {
             </div>
 
             {/* Top artist */}
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+            <div className="bg-accent-50 rounded-lg p-4 border border-accent-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-700 font-medium">Top Artist</p>
-                  <p className="text-lg font-bold text-purple-900 mt-1 truncate">
+                  <p className="text-sm text-accent-700 font-medium">Top Artist</p>
+                  <p className="text-lg font-bold text-accent-900 mt-1 truncate">
                     {discoveryStats.topArtists[0]?.name || 'N/A'}
                   </p>
-                  <p className="text-xs text-purple-600 mt-1">
+                  <p className="text-xs text-accent-600 mt-1">
                     {discoveryStats.topArtists[0]?.count || 0} albums
                   </p>
                 </div>
-                <svg className="w-12 h-12 text-purple-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-12 h-12 text-accent-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
@@ -577,7 +577,7 @@ function PreApprovalManager({ user }) {
               onClick={() => setActiveTab('artists')}
               className={`${
                 activeTab === 'artists'
-                  ? 'border-b-2 border-purple-600 text-purple-600'
+                  ? 'border-b-2 border-accent-600 text-accent-600'
                   : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
               } py-4 px-6 font-medium text-sm transition flex items-center gap-2`}
             >
@@ -590,7 +590,7 @@ function PreApprovalManager({ user }) {
               onClick={() => setActiveTab('discover-genre')}
               className={`${
                 activeTab === 'discover-genre'
-                  ? 'border-b-2 border-purple-600 text-purple-600'
+                  ? 'border-b-2 border-accent-600 text-accent-600'
                   : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
               } py-4 px-6 font-medium text-sm transition flex items-center gap-2`}
             >
@@ -603,7 +603,7 @@ function PreApprovalManager({ user }) {
               onClick={() => setActiveTab('ai-recommendations')}
               className={`${
                 activeTab === 'ai-recommendations'
-                  ? 'border-b-2 border-purple-600 text-purple-600'
+                  ? 'border-b-2 border-accent-600 text-accent-600'
                   : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
               } py-4 px-6 font-medium text-sm transition flex items-center gap-2`}
             >
@@ -633,7 +633,7 @@ function PreApprovalManager({ user }) {
                       value={artistName}
                       onChange={(e) => setArtistName(e.target.value)}
                       placeholder="e.g., VeggieTales, Disney, Taylor Swift"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -644,7 +644,7 @@ function PreApprovalManager({ user }) {
                         type="checkbox"
                         checked={autoAdd}
                         onChange={(e) => setAutoAdd(e.target.checked)}
-                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                        className="w-4 h-4 text-accent-600 rounded focus:ring-accent-500"
                       />
                       <span className="text-sm text-gray-700">Auto-add to library</span>
                     </label>
@@ -653,7 +653,7 @@ function PreApprovalManager({ user }) {
                         type="checkbox"
                         checked={hideArtwork}
                         onChange={(e) => setHideArtwork(e.target.checked)}
-                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                        className="w-4 h-4 text-accent-600 rounded focus:ring-accent-500"
                       />
                       <span className="text-sm text-gray-700">Hide artwork</span>
                     </label>
@@ -668,21 +668,21 @@ function PreApprovalManager({ user }) {
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder="Why is this artist safe for kids?"
                       rows={2}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                     />
                   </div>
 
                   <div className="flex gap-3">
                     <button
                       type="submit"
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-md"
+                      className="flex-1 bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-lg font-semibold transition shadow-md"
                     >
                       Pre-Approve Artist
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowBulkImport(!showBulkImport)}
-                      className="px-6 py-3 border-2 border-purple-600 text-purple-600 hover:bg-purple-50 rounded-lg font-semibold transition flex items-center gap-2"
+                      className="px-6 py-3 border-2 border-accent-600 text-accent-600 hover:bg-accent-50 rounded-lg font-semibold transition flex items-center gap-2"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -850,7 +850,7 @@ function PreApprovalManager({ user }) {
                     value={genreSearch}
                     onChange={(e) => setGenreSearch(e.target.value)}
                     placeholder="e.g., Christian, Classical, Kids Music, Jazz"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                     required
                   />
                 </div>
@@ -858,7 +858,7 @@ function PreApprovalManager({ user }) {
                 <button
                   type="submit"
                   disabled={genreLoading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-lg font-semibold transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {genreLoading ? (
                     <>
@@ -905,7 +905,7 @@ function PreApprovalManager({ user }) {
                         {rec.genres && rec.genres.length > 0 && (
                           <div className="flex gap-2 flex-wrap mt-2">
                             {rec.genres.map((genre, i) => (
-                              <span key={i} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                              <span key={i} className="text-xs bg-accent-100 text-accent-700 px-2 py-1 rounded">
                                 {genre}
                               </span>
                             ))}
@@ -913,7 +913,7 @@ function PreApprovalManager({ user }) {
                         )}
                         <button
                           onClick={() => handlePreApproveFromRecommendation(rec)}
-                          className="mt-3 w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition text-sm"
+                          className="mt-3 w-full bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-lg font-medium transition text-sm"
                         >
                           Pre-Approve This Artist
                         </button>
@@ -954,7 +954,7 @@ function PreApprovalManager({ user }) {
                     placeholder="8"
                     min="1"
                     max="17"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   />
                 </div>
 
@@ -967,7 +967,7 @@ function PreApprovalManager({ user }) {
                     onChange={(e) => setAiPreferences(e.target.value)}
                     placeholder="e.g., Likes Disney music, VeggieTales, and upbeat pop songs"
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                     required
                   />
                 </div>
@@ -981,7 +981,7 @@ function PreApprovalManager({ user }) {
                     value={aiGenres}
                     onChange={(e) => setAiGenres(e.target.value)}
                     placeholder="e.g., Pop, Soundtrack, Christian"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   />
                 </div>
 
@@ -994,14 +994,14 @@ function PreApprovalManager({ user }) {
                     value={aiRestrictions}
                     onChange={(e) => setAiRestrictions(e.target.value)}
                     placeholder="e.g., No romance, no scary themes"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={aiLoading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-lg font-semibold transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {aiLoading ? (
                     <>
@@ -1048,7 +1048,7 @@ function PreApprovalManager({ user }) {
                         {rec.genres && rec.genres.length > 0 && (
                           <div className="flex gap-2 flex-wrap mt-2">
                             {rec.genres.map((genre, i) => (
-                              <span key={i} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                              <span key={i} className="text-xs bg-accent-100 text-accent-700 px-2 py-1 rounded">
                                 {genre}
                               </span>
                             ))}
@@ -1056,7 +1056,7 @@ function PreApprovalManager({ user }) {
                         )}
                         <button
                           onClick={() => handlePreApproveFromRecommendation(rec)}
-                          className="mt-3 w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition text-sm"
+                          className="mt-3 w-full bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-lg font-medium transition text-sm"
                         >
                           Pre-Approve This Artist
                         </button>

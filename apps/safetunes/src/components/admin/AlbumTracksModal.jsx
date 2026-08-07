@@ -120,8 +120,8 @@ function AlbumTracksModal({ album, user, onClose, onAuthRequired }) {
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg shadow-md flex-shrink-0"
             />
           ) : (
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center flex-shrink-0">
-              <svg className="w-10 h-10 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-accent-200 flex items-center justify-center flex-shrink-0">
+              <svg className="w-10 h-10 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
               </svg>
             </div>
@@ -148,7 +148,7 @@ function AlbumTracksModal({ album, user, onClose, onAuthRequired }) {
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="flex flex-col items-center gap-3">
-                <svg className="w-12 h-12 animate-spin text-purple-600" fill="none" viewBox="0 0 24 24">
+                <svg className="w-12 h-12 animate-spin text-accent-600" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -179,38 +179,38 @@ function AlbumTracksModal({ album, user, onClose, onAuthRequired }) {
                     key={track.id}
                     className={`flex items-center gap-3 p-3 rounded-lg transition ${
                       isCurrentTrack
-                        ? 'bg-purple-50'
+                        ? 'bg-accent-50'
                         : 'bg-gray-50'
                     }`}
                   >
                     {/* Track Number */}
                     <div className="w-8 flex-shrink-0 text-center">
-                      <span className={`text-sm ${isCurrentTrack ? 'text-purple-700 font-semibold' : 'text-gray-500'}`}>
+                      <span className={`text-sm ${isCurrentTrack ? 'text-accent-700 font-semibold' : 'text-gray-500'}`}>
                         {index + 1}
                       </span>
                     </div>
 
                     {/* Track Info */}
                     <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-medium truncate ${isCurrentTrack ? 'text-purple-900' : 'text-gray-900'}`}>
+                      <div className={`text-sm font-medium truncate ${isCurrentTrack ? 'text-accent-900' : 'text-gray-900'}`}>
                         {track.attributes?.name}
                       </div>
                       {track.attributes?.artistName && (
-                        <div className={`text-xs truncate ${isCurrentTrack ? 'text-purple-700' : 'text-gray-600'}`}>
+                        <div className={`text-xs truncate ${isCurrentTrack ? 'text-accent-700' : 'text-gray-600'}`}>
                           {track.attributes.artistName}
                         </div>
                       )}
                     </div>
 
                     {/* Duration */}
-                    <div className={`text-xs flex-shrink-0 ${isCurrentTrack ? 'text-purple-700' : 'text-gray-500'}`}>
+                    <div className={`text-xs flex-shrink-0 ${isCurrentTrack ? 'text-accent-700' : 'text-gray-500'}`}>
                       {formatDuration(track.attributes?.durationInMillis)}
                     </div>
 
                     {/* Play Button */}
                     <button
                       onClick={() => handlePlayTrack(index)}
-                      className="flex-shrink-0 p-2 hover:bg-purple-100 text-purple-600 rounded-full transition"
+                      className="flex-shrink-0 p-2 hover:bg-accent-100 text-accent-600 rounded-full transition"
                       title="Play this track"
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

@@ -46,26 +46,26 @@ function ResetPasswordInner() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-violet-50 px-4 py-10">
+    <main className="min-h-screen flex items-center justify-center bg-brand-cream px-4 py-10">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400 to-violet-500 flex items-center justify-center shadow-md">
-            <Sparkles className="h-5 w-5 text-white" />
+          <div className="w-11 h-11 rounded-2xl bg-accent-500 flex items-center justify-center shadow-md">
+            <Sparkles className="h-5 w-5 text-brand-navy" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">SafeSpark</h1>
+          <h1 className="font-display text-2xl font-bold text-brand-navy">SafeSpark</h1>
         </div>
 
-        <div className="rounded-3xl bg-white p-8 shadow-xl border border-amber-100">
-          <h2 className="text-xl font-bold text-slate-900 mb-2">
+        <div className="rounded-3xl bg-white p-8 shadow-xl border border-brand-cream-2">
+          <h2 className="font-display text-xl font-bold text-brand-navy mb-2">
             Set a new password
           </h2>
-          <p className="text-sm text-slate-500 mb-6">
+          <p className="text-sm text-brand-ink-soft mb-6">
             Enter the 6-digit code we sent to your email.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-brand-navy mb-1">
                 Email
               </label>
               <input
@@ -75,12 +75,12 @@ function ResetPasswordInner() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition"
+                className="w-full px-4 py-2.5 rounded-xl border border-brand-cream-2 focus:border-accent-400 focus:ring-2 focus:ring-accent-100 outline-none transition"
               />
             </div>
 
             <div>
-              <label htmlFor="code" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="code" className="block text-sm font-medium text-brand-navy mb-1">
                 Reset code
               </label>
               <input
@@ -93,13 +93,13 @@ function ResetPasswordInner() {
                 required
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition tracking-widest text-center font-mono text-lg"
+                className="w-full px-4 py-2.5 rounded-xl border border-brand-cream-2 focus:border-accent-400 focus:ring-2 focus:ring-accent-100 outline-none transition tracking-widest text-center font-mono text-lg"
                 placeholder="000000"
               />
             </div>
 
             <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="newPassword" className="block text-sm font-medium text-brand-navy mb-1">
                 New password
               </label>
               <input
@@ -110,12 +110,12 @@ function ResetPasswordInner() {
                 minLength={8}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition"
+                className="w-full px-4 py-2.5 rounded-xl border border-brand-cream-2 focus:border-accent-400 focus:ring-2 focus:ring-accent-100 outline-none transition"
               />
             </div>
 
             <div>
-              <label htmlFor="confirm" className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="confirm" className="block text-sm font-medium text-brand-navy mb-1">
                 Confirm new password
               </label>
               <input
@@ -125,7 +125,7 @@ function ResetPasswordInner() {
                 required
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition"
+                className="w-full px-4 py-2.5 rounded-xl border border-brand-cream-2 focus:border-accent-400 focus:ring-2 focus:ring-accent-100 outline-none transition"
               />
             </div>
 
@@ -141,14 +141,14 @@ function ResetPasswordInner() {
             <button
               type="submit"
               disabled={submitting || !email || code.length !== 6 || !newPassword}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-violet-600 text-white font-semibold shadow-sm hover:opacity-90 transition disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-accent-500 text-brand-navy font-semibold shadow-sm hover:bg-accent-600 transition disabled:opacity-50"
             >
               {submitting ? "Resetting…" : "Reset password"}
             </button>
           </form>
 
-          <p className="mt-5 text-center text-sm text-slate-500">
-            <Link href="/login" className="text-amber-700 hover:text-amber-900 font-medium">
+          <p className="mt-5 text-center text-sm text-brand-ink-soft">
+            <Link href="/login" className="text-accent-700 hover:text-accent-800 font-medium">
               Back to sign in
             </Link>
           </p>
@@ -163,7 +163,7 @@ export default function ResetPasswordPage() {
     <Suspense
       fallback={
         <main className="min-h-screen flex items-center justify-center">
-          <div className="text-slate-500">Loading…</div>
+          <div className="text-brand-ink-soft">Loading…</div>
         </main>
       }
     >

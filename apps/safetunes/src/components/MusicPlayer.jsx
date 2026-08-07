@@ -258,7 +258,7 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
     <>
       {/* Full Screen View - Mobile fullscreen vertical, Desktop horizontal */}
       {isFullScreen && (
-        <div ref={expandedPlayerRef} className="fixed inset-0 bg-gradient-to-b from-purple-600 to-pink-600 z-[60] overflow-y-auto md:relative md:inset-auto md:z-auto md:bg-gradient-to-r md:rounded-xl md:shadow-2xl md:max-w-4xl md:mx-auto md:overflow-visible md:my-4">
+        <div ref={expandedPlayerRef} className="fixed inset-0 bg-accent-500 z-[60] overflow-y-auto md:relative md:inset-auto md:z-auto md:bg-gradient-to-r md:rounded-xl md:shadow-2xl md:max-w-4xl md:mx-auto md:overflow-visible md:my-4">
           {/* Mobile: Vertical Layout */}
           <div className="md:hidden flex flex-col h-full">
             {/* Header */}
@@ -299,7 +299,7 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
               {/* Track Info */}
               <div className="text-center text-white mb-8 w-full">
                 <h1 className="text-2xl font-bold mb-2">{getTrackName(currentTrack)}</h1>
-                <p className="text-lg text-purple-100">{getArtistName(currentTrack)}</p>
+                <p className="text-lg text-accent-100">{getArtistName(currentTrack)}</p>
               </div>
 
               {/* Progress Bar */}
@@ -334,11 +334,11 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
                   className="p-5 bg-white hover:bg-gray-100 rounded-full transition shadow-xl"
                 >
                   {isPlaying ? (
-                    <svg className="w-10 h-10 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-10 h-10 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
                   ) : (
-                    <svg className="w-10 h-10 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-10 h-10 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                     </svg>
                   )}
@@ -415,7 +415,7 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
                 {/* Track Info */}
                 <div className="text-white">
                   <h1 className="text-base font-bold truncate">{getTrackName(currentTrack)}</h1>
-                  <p className="text-sm text-purple-100 truncate">{getArtistName(currentTrack)}</p>
+                  <p className="text-sm text-accent-100 truncate">{getArtistName(currentTrack)}</p>
                 </div>
 
                 {/* Progress Bar */}
@@ -450,11 +450,11 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
                     className="p-2 bg-white hover:bg-gray-100 rounded-full transition shadow-lg"
                   >
                     {isPlaying ? (
-                      <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-6 h-6 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
                     ) : (
-                      <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-6 h-6 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                       </svg>
                     )}
@@ -497,7 +497,7 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
         {/* Minimized gradient bar - show on desktop when minimized OR when sticky (scrolled away) */}
         {(isMinimized || showStickyPlayer) ? (
         <div
-          className="hidden md:flex items-center justify-between p-2 bg-gradient-to-r from-purple-600 to-pink-600 cursor-pointer"
+          className="hidden md:flex items-center justify-between p-2 bg-accent-500 cursor-pointer"
           onClick={() => {
             userOpenedFullScreen.current = true;
             setIsFullScreen(true);
@@ -523,13 +523,13 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
             ) : null}
             <div className="min-w-0 flex-1">
               <p className="text-white font-medium text-sm truncate">{getTrackName(currentTrack)}</p>
-              <p className="text-purple-100 text-xs truncate">{getArtistName(currentTrack)}</p>
+              <p className="text-accent-100 text-xs truncate">{getArtistName(currentTrack)}</p>
             </div>
           </div>
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={togglePlayPause}
-              className="text-white hover:text-purple-100 p-2"
+              className="text-white hover:text-accent-100 p-2"
             >
               {isPlaying ? (
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -543,7 +543,7 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
             </button>
             <button
               onClick={() => setIsMinimized(false)}
-              className="text-white hover:text-purple-100 p-2"
+              className="text-white hover:text-accent-100 p-2"
               title="Expand player"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -552,7 +552,7 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
             </button>
             <button
               onClick={handleClose}
-              className="text-white hover:text-purple-100 p-2"
+              className="text-white hover:text-accent-100 p-2"
               title="Close player"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -575,7 +575,7 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
               }}
             >
               {shouldHideArtwork() ? (
-                <div className="w-12 h-12 flex-shrink-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-md flex items-center justify-center">
+                <div className="w-12 h-12 flex-shrink-0 bg-accent-500 rounded-lg shadow-md flex items-center justify-center">
                   <svg className="w-6 h-6 text-white/70" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                   </svg>
@@ -615,7 +615,7 @@ function MusicPlayer({ approvedAlbums = [], approvedSongs = [], onTrackChange })
                   e.stopPropagation();
                   togglePlayPause();
                 }}
-                className="p-2 bg-purple-600 hover:bg-purple-700 rounded-full transition text-white"
+                className="p-2 bg-accent-600 hover:bg-accent-700 rounded-full transition text-white"
                 title={isPlaying ? 'Pause' : 'Play'}
               >
                 {isPlaying ? (

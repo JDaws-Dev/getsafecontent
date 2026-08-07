@@ -4,8 +4,8 @@
   "description": "Create whitelists of approved YouTube channels and videos for your kids",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ef4444",
+  "background_color": "#FBF6EF",
+  "theme_color": "#F0603A",
   "orientation": "portrait-primary",
   "icons": [
     {

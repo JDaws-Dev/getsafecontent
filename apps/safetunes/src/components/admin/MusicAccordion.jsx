@@ -83,7 +83,7 @@ function KidToggleMatrix({ kidProfiles, accessibleKidIds = [], onToggle, isLoadi
               disabled={isLoading}
               className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${
                 hasAccess
-                  ? 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200'
+                  ? 'bg-accent-50 border border-accent-200'
                   : 'bg-gray-50 border border-gray-200 hover:border-gray-300'
               } ${isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
             >
@@ -96,7 +96,7 @@ function KidToggleMatrix({ kidProfiles, accessibleKidIds = [], onToggle, isLoadi
               {/* Toggle Switch */}
               <div
                 className={`relative w-11 h-6 rounded-full transition-colors ${
-                  hasAccess ? 'bg-purple-500' : 'bg-gray-300'
+                  hasAccess ? 'bg-accent-500' : 'bg-gray-300'
                 }`}
               >
                 <div
@@ -181,7 +181,7 @@ function AudioPreviewPlayer({ songId, songName, artworkUrl, onClose }) {
             className="w-14 h-14 rounded-lg object-cover shadow-md"
           />
         ) : (
-          <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+          <div className="w-14 h-14 bg-accent-500 rounded-lg flex items-center justify-center">
             <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
             </svg>
@@ -198,7 +198,7 @@ function AudioPreviewPlayer({ songId, songName, artworkUrl, onClose }) {
             className="mt-2 h-1.5 bg-white/20 rounded-full cursor-pointer overflow-hidden group"
           >
             <div
-              className="h-full bg-purple-400 rounded-full relative"
+              className="h-full bg-accent-400 rounded-full relative"
               style={{ width: `${progress}%` }}
             >
               <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 shadow-md transition" />
@@ -219,16 +219,16 @@ function AudioPreviewPlayer({ songId, songName, artworkUrl, onClose }) {
           className="w-12 h-12 rounded-full bg-white flex items-center justify-center hover:scale-105 transition-transform shadow-lg disabled:opacity-50"
         >
           {isLoading ? (
-            <svg className="w-5 h-5 text-purple-600 animate-spin" fill="none" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-accent-600 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           ) : isPlaying ? (
-            <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-5 h-5 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           ) : (
-            <svg className="w-5 h-5 text-purple-600 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-5 h-5 text-accent-600 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
             </svg>
           )}
@@ -273,7 +273,7 @@ export function SmartRow({
       onClick={onClick}
       className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${
         isExpanded
-          ? 'bg-purple-50 border-l-4 border-purple-500'
+          ? 'bg-accent-50 border-l-4 border-accent-500'
           : 'hover:bg-gray-50 border-l-4 border-transparent'
       }`}
       style={{ minHeight: '60px', maxHeight: '60px' }}
@@ -281,7 +281,7 @@ export function SmartRow({
       {/* Artwork (40px) */}
       <div className="flex-shrink-0">
         {hideArtwork ? (
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-accent-400 rounded-lg flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
             </svg>
@@ -375,13 +375,13 @@ export function ControlPanel({
   };
 
   return (
-    <div className="bg-gray-50 border-l-4 border-purple-500 px-4 py-4 space-y-4">
+    <div className="bg-gray-50 border-l-4 border-accent-500 px-4 py-4 space-y-4">
       {/* Top Section: Larger artwork + Preview */}
       <div className="flex items-start gap-4">
         {/* Larger Artwork (100px) */}
         <div className="flex-shrink-0">
           {localHideArtwork ? (
-            <div className="w-24 h-24 bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-24 h-24 bg-accent-400 rounded-xl flex items-center justify-center shadow-lg">
               <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
               </svg>
@@ -413,7 +413,7 @@ export function ControlPanel({
           {item?.genres && item.genres.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {item.genres.filter(g => g !== 'Music').slice(0, 2).map(genre => (
-                <span key={genre} className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">
+                <span key={genre} className="px-2 py-0.5 bg-accent-100 text-accent-700 rounded-full text-xs">
                   {genre}
                 </span>
               ))}
@@ -424,7 +424,7 @@ export function ControlPanel({
           {showPreview && type === 'song' && (
             <button
               onClick={() => setShowPreviewPlayer(!showPreviewPlayer)}
-              className="mt-3 flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium text-sm transition-colors shadow-sm"
+              className="mt-3 flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium text-sm transition-colors shadow-sm"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />

@@ -100,7 +100,7 @@ function PlayerInterface() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+              <h1 className="text-xl sm:text-3xl font-display font-bold text-brand-navy">
                 SafeTunes
               </h1>
               <p className="text-sm sm:text-base text-gray-600 mt-1 hidden sm:block">Your approved music library</p>
@@ -109,7 +109,7 @@ function PlayerInterface() {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => setShowRequestModal(true)}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition flex items-center gap-2"
+                  className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition flex items-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -137,7 +137,7 @@ function PlayerInterface() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {!approvedAlbums ? (
           <div className="text-center py-16">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-accent-600 mx-auto"></div>
             <p className="text-gray-600 mt-4">Loading your music...</p>
           </div>
         ) : approvedAlbums.length === 0 ? (
@@ -161,7 +161,7 @@ function PlayerInterface() {
           <div className="mb-4">
             <button
               onClick={() => setSelectedAlbum(null)}
-              className="text-purple-600 hover:text-purple-700 font-medium flex items-center"
+              className="text-accent-600 hover:text-accent-700 font-medium flex items-center"
             >
               <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -212,13 +212,13 @@ function PlayerInterface() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for albums..."
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   required
                 />
                 <button
                   type="submit"
                   disabled={isSearching}
-                  className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-3 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -245,7 +245,7 @@ function PlayerInterface() {
                       </div>
                       <button
                         onClick={() => handleRequestAlbum(album)}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition flex-shrink-0"
+                        className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-medium transition flex-shrink-0"
                       >
                         Request
                       </button>

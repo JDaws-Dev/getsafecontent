@@ -73,7 +73,7 @@ export default function AdminSparkPage() {
             This dashboard is for the SafeSpark operator only.<br />
             <span className="text-xs">Auth resolved your account but your email doesn&apos;t match PARENT_EMAIL.</span>
           </p>
-          <Link href="/" className="text-sm font-bold text-accent-600 hover:text-accent-800">Back to home</Link>
+          <Link href="/" className="text-sm font-bold text-accent-700 hover:text-accent-800">Back to home</Link>
         </div>
       </main>
     );
@@ -89,7 +89,7 @@ export default function AdminSparkPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-accent-500">SafeSpark · Operator</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-accent-700">SafeSpark · Operator</p>
             <h1 className="text-2xl font-black text-slate-900">Review feed</h1>
             <p className="text-sm text-slate-600">
               All kid-Spark interactions across every family. Click any row to inspect the full thread.
@@ -242,7 +242,7 @@ function PromptTable({
                   <button
                     type="button"
                     onClick={() => onOpen(r.projectId!)}
-                    className="rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-600 hover:bg-accent-50"
+                    className="rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-700 hover:bg-accent-50"
                   >
                     Thread
                   </button>
@@ -360,7 +360,7 @@ function ProjectThreadModal({
       <div className="m-auto flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
         <header className="flex items-center justify-between border-b border-slate-200 bg-brand-cream px-5 py-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-accent-500">Project thread</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-accent-700">Project thread</p>
             <h2 className="text-lg font-black text-slate-900">
               {thread === undefined ? 'Loading…' : thread === null ? 'Not found' : thread.title}
             </h2>

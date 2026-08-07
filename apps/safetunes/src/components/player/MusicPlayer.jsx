@@ -132,7 +132,7 @@ function MusicPlayer({ album }) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-6 text-center">
         <div className="mb-4">
-          <svg className="w-16 h-16 mx-auto text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-16 h-16 mx-auto text-accent-600" fill="currentColor" viewBox="0 0 20 20">
             <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
           </svg>
         </div>
@@ -144,7 +144,7 @@ function MusicPlayer({ album }) {
         </p>
         <button
           onClick={handleAuthorize}
-          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+          className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
         >
           Sign in with Apple Music
         </button>
@@ -156,7 +156,7 @@ function MusicPlayer({ album }) {
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       {/* Now Playing Info */}
       {nowPlaying && (
-        <div className="flex items-center p-3 sm:p-4 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="flex items-center p-3 sm:p-4 bg-accent-50">
           {nowPlaying.artwork && (
             <img
               src={nowPlaying.artwork.url.replace('{w}', '60').replace('{h}', '60')}
@@ -188,7 +188,7 @@ function MusicPlayer({ album }) {
           </div>
           <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-purple-600 to-pink-600 transition-all duration-300"
+              className="h-full bg-accent-500 transition-all duration-300"
               style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
             />
           </div>
@@ -209,7 +209,7 @@ function MusicPlayer({ album }) {
           {!nowPlaying ? (
             <button
               onClick={handlePlayAlbum}
-              className="p-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full text-white shadow-lg transition"
+              className="p-4 bg-accent-500 hover:bg-accent-600 rounded-full text-white shadow-lg transition"
             >
               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -218,7 +218,7 @@ function MusicPlayer({ album }) {
           ) : (
             <button
               onClick={handlePlayPause}
-              className="p-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full text-white shadow-lg transition"
+              className="p-4 bg-accent-500 hover:bg-accent-600 rounded-full text-white shadow-lg transition"
             >
               {isPlaying ? (
                 <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">

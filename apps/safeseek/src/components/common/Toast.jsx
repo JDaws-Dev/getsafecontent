@@ -16,9 +16,9 @@ const VARIANTS = {
   },
   info: {
     icon: Info,
-    bg: 'bg-blue-50 border-blue-200',
-    text: 'text-blue-800',
-    iconColor: 'text-blue-500',
+    bg: 'bg-accent-50 border-accent-200',
+    text: 'text-accent-800',
+    iconColor: 'text-accent-500',
   },
 };
 

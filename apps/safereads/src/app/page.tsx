@@ -522,7 +522,7 @@ export default function Home() {
               description="Over Free classic books from Project Gutenberg and other sources. Tap any word to see its definition."
             />
             <Feature
-              icon={<BookMarked className="h-6 w-6 text-amber-600" />}
+              icon={<BookMarked className="h-6 w-6 text-accent-600" />}
               title="Bible Reading"
               description="6 translations (ESV, NIV, NLT, NKJV, NASB, KJV) with AI study notes, verse highlighting, saved verses, and full-text search."
             />

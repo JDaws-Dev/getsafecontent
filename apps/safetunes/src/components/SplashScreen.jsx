@@ -45,16 +45,16 @@ export function SplashScreen({ onComplete, minDuration = 2500 }) {
       <div
         className="absolute inset-0 animate-gradient-shift"
         style={{
-          background: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 25%, #c026d3 50%, #ec4899 75%, #9333ea 100%)',
+          background: 'linear-gradient(135deg, #5730A6 0%, #6A3CCB 25%, #7C4DE0 50%, #986FE8 75%, #6A3CCB 100%)',
           backgroundSize: '400% 400%',
         }}
       />
 
       {/* Floating orbs for depth */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[10%] left-[10%] w-64 h-64 bg-pink-400/20 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute top-[60%] right-[10%] w-80 h-80 bg-purple-400/20 rounded-full blur-3xl animate-float-medium" />
-        <div className="absolute bottom-[20%] left-[20%] w-48 h-48 bg-fuchsia-400/15 rounded-full blur-3xl animate-float-fast" />
+        <div className="absolute top-[10%] left-[10%] w-64 h-64 bg-accent-300/20 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute top-[60%] right-[10%] w-80 h-80 bg-accent-400/20 rounded-full blur-3xl animate-float-medium" />
+        <div className="absolute bottom-[20%] left-[20%] w-48 h-48 bg-accent-200/15 rounded-full blur-3xl animate-float-fast" />
       </div>
 
       {/* Subtle radial glow behind logo */}

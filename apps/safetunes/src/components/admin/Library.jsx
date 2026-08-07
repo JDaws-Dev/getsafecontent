@@ -327,7 +327,7 @@ function Library() {
             </button>
             <button
               onClick={() => setShowImport(!showImport)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition"
+              className="flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -363,7 +363,7 @@ function Library() {
               onClick={() => setSelectedKidFilter('all')}
               className={`px-4 py-2 rounded-lg font-medium text-sm transition ${
                 selectedKidFilter === 'all'
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-accent-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -375,7 +375,7 @@ function Library() {
                 onClick={() => setSelectedKidFilter(kid._id)}
                 className={`px-4 py-2 rounded-lg font-medium text-sm transition flex items-center gap-2 ${
                   selectedKidFilter === kid._id
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-accent-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -403,7 +403,7 @@ function Library() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search library..."
-            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
           />
           <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -443,7 +443,7 @@ function Library() {
                   value={newPlaylistName}
                   onChange={(e) => setNewPlaylistName(e.target.value)}
                   placeholder="My Awesome Playlist"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -458,7 +458,7 @@ function Library() {
                   onChange={(e) => setNewPlaylistDescription(e.target.value)}
                   placeholder="A collection of great songs..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
                 />
               </div>
 
@@ -473,7 +473,7 @@ function Library() {
                       key={kid._id}
                       className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition ${
                         selectedKidsForPlaylist.includes(kid._id)
-                          ? 'border-purple-500 bg-purple-50'
+                          ? 'border-accent-500 bg-accent-50'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -482,7 +482,7 @@ function Library() {
                         value={kid._id}
                         checked={selectedKidsForPlaylist.includes(kid._id)}
                         onChange={() => toggleKidSelection(kid._id)}
-                        className="w-4 h-4 text-purple-600 rounded"
+                        className="w-4 h-4 text-accent-600 rounded"
                       />
                       <div className={`w-8 h-8 rounded-full ${getColorClass(kid.color)} flex items-center justify-center text-white p-1.5`}>
                         {getAvatarIcon(kid.avatar)}
@@ -510,7 +510,7 @@ function Library() {
                 <button
                   type="submit"
                   disabled={!newPlaylistName.trim() || selectedKidsForPlaylist.length === 0}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   Create Playlist{selectedKidsForPlaylist.length > 1 ? 's' : ''}
                 </button>
@@ -568,7 +568,7 @@ function Library() {
                         key={playlist._id}
                         className={`flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition ${
                           selectedPlaylistsForAdd.includes(playlist._id)
-                            ? 'border-purple-500 bg-purple-50'
+                            ? 'border-accent-500 bg-accent-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
@@ -577,7 +577,7 @@ function Library() {
                           value={playlist._id}
                           checked={selectedPlaylistsForAdd.includes(playlist._id)}
                           onChange={() => togglePlaylistSelection(playlist._id)}
-                          className="w-4 h-4 text-purple-600 rounded"
+                          className="w-4 h-4 text-accent-600 rounded"
                         />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 truncate">{playlist.name}</p>
@@ -616,7 +616,7 @@ function Library() {
                 type="button"
                 onClick={handleAddToPlaylist}
                 disabled={selectedPlaylistsForAdd.length === 0}
-                className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 Add to {selectedPlaylistsForAdd.length} Playlist{selectedPlaylistsForAdd.length !== 1 ? 's' : ''}
               </button>
@@ -696,8 +696,8 @@ function Library() {
                           ) : song.artworkUrl ? (
                             <img src={song.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={song.songName} className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                              <svg className="w-6 h-6 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                            <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                              <svg className="w-6 h-6 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                               </svg>
                             </div>
@@ -805,7 +805,7 @@ function Library() {
             <div className="p-6 border-t border-gray-200">
               <button
                 onClick={() => setSelectedPlaylistForView(null)}
-                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                className="w-full px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition"
               >
                 Close
               </button>
@@ -821,7 +821,7 @@ function Library() {
             onClick={() => setActiveView('albums')}
             className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition ${
               activeView === 'albums'
-                ? 'bg-purple-100 text-purple-700'
+                ? 'bg-accent-100 text-accent-700'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -831,7 +831,7 @@ function Library() {
             onClick={() => setActiveView('songs')}
             className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition ${
               activeView === 'songs'
-                ? 'bg-purple-100 text-purple-700'
+                ? 'bg-accent-100 text-accent-700'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -841,7 +841,7 @@ function Library() {
             onClick={() => setActiveView('playlists')}
             className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition ${
               activeView === 'playlists'
-                ? 'bg-purple-100 text-purple-700'
+                ? 'bg-accent-100 text-accent-700'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -873,8 +873,8 @@ function Library() {
                     ) : album.artworkUrl ? (
                       <img src={album.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={album.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                        <svg className="w-8 h-8 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                        <svg className="w-8 h-8 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                         </svg>
                       </div>
@@ -895,7 +895,7 @@ function Library() {
                     {/* Add to Playlist Button */}
                     <button
                       onClick={() => setShowAddToPlaylist({ type: 'album', item: album })}
-                      className="p-2 text-purple-600 hover:bg-purple-50 rounded-full transition"
+                      className="p-2 text-accent-600 hover:bg-accent-50 rounded-full transition"
                       title="Add album to playlist"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -963,8 +963,8 @@ function Library() {
                     ) : song.artworkUrl ? (
                       <img src={song.artworkUrl.replace('{w}', '300').replace('{h}', '300')} alt={song.songName} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100">
-                        <svg className="w-6 h-6 text-purple-300" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="w-full h-full flex items-center justify-center bg-accent-100">
+                        <svg className="w-6 h-6 text-accent-300" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                         </svg>
                       </div>
@@ -992,7 +992,7 @@ function Library() {
                     {/* Add to Playlist Button */}
                     <button
                       onClick={() => setShowAddToPlaylist({ type: 'song', item: song })}
-                      className="p-2 text-purple-600 hover:bg-purple-50 rounded-full transition"
+                      className="p-2 text-accent-600 hover:bg-accent-50 rounded-full transition"
                       title="Add to playlist"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1046,7 +1046,7 @@ function Library() {
             <div className="p-4 border-b border-gray-100">
               <button
                 onClick={() => setShowCreatePlaylist(true)}
-                className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-purple-400 hover:text-purple-600 transition flex items-center justify-center gap-2"
+                className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-accent-400 hover:text-accent-600 transition flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -1069,7 +1069,7 @@ function Library() {
                     <div key={playlist._id} className="p-4 hover:bg-gray-50 transition">
                       <div className="flex items-start gap-4 cursor-pointer" onClick={() => setSelectedPlaylistForView(playlist)}>
                         {/* Playlist Icon */}
-                        <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white">
+                        <div className="w-16 h-16 flex-shrink-0 rounded-lg bg-accent-400 flex items-center justify-center text-white">
                           <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                           </svg>

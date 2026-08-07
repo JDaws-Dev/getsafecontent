@@ -188,14 +188,14 @@ const secondaryFeatures = features.slice(4);
 
 function FaqItem({ faq, isOpen, onToggle }) {
   return (
-    <div className="border border-gray-200 rounded-2xl overflow-hidden transition-all hover:border-blue-200">
+    <div className="border border-gray-200 rounded-2xl overflow-hidden transition-all hover:border-accent-200">
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between p-5 sm:p-6 text-left bg-white hover:bg-gray-50 transition"
       >
         <span className="font-semibold text-brand-navy pr-4">{faq.question}</span>
         {isOpen ? (
-          <ChevronUp className="w-5 h-5 text-blue-500 flex-shrink-0" />
+          <ChevronUp className="w-5 h-5 text-accent-500 flex-shrink-0" />
         ) : (
           <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
         )}
@@ -259,21 +259,21 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#FDF8F3]">
+    <div className="min-h-screen bg-brand-cream">
       {/* Sticky Header */}
-      <header className="bg-[#FDF8F3]/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
+      <header className="bg-brand-cream/95 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex justify-between items-center">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-md">
+              <div className="w-9 h-9 bg-accent-500 rounded-xl flex items-center justify-center shadow-md">
                 <Search className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-[#1a1a2e]">SafeStudy</span>
+              <span className="text-xl font-display font-bold text-brand-navy">SafeStudy</span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">
               <a
                 href="https://getsafefamily.com"
-                className="hidden sm:block text-gray-600 hover:text-blue-600 font-medium text-sm transition-colors"
+                className="hidden sm:block text-gray-600 hover:text-accent-600 font-medium text-sm transition-colors"
               >
                 Safe Family
               </a>
@@ -301,14 +301,14 @@ export default function LandingPage() {
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
             {/* Left: Text */}
             <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-blue-100">
+              <div className="inline-flex items-center gap-2 bg-accent-50 text-accent-700 px-4 py-1.5 rounded-full text-sm font-medium mb-6 border border-accent-100">
                 <Sparkles className="w-4 h-4" />
                 Safe search + built-in tutor + research tool
               </div>
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#1a1a2e] leading-tight mb-6">
+              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-brand-navy leading-tight mb-6">
                 The search engine{' '}
-                <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                <span className="text-accent-600">
                   with a tutor inside
                 </span>{' '}
                 — made for kids
@@ -347,7 +347,7 @@ export default function LandingPage() {
                 </Link>
                 <a
                   href="#demo"
-                  className="w-full sm:w-auto border-2 border-gray-200 hover:border-blue-300 text-[#1a1a2e] font-semibold px-8 py-4 rounded-xl text-lg transition-all inline-flex items-center justify-center gap-2 bg-white"
+                  className="w-full sm:w-auto border-2 border-gray-200 hover:border-accent-300 text-brand-navy font-semibold px-8 py-4 rounded-xl text-lg transition-all inline-flex items-center justify-center gap-2 bg-white"
                 >
                   <Search className="w-5 h-5" />
                   See It in Action
@@ -377,12 +377,12 @@ export default function LandingPage() {
                 </div>
                 {/* Floating badge - tutor */}
                 <div className="absolute -bottom-4 -left-4 sm:left-4 bg-white rounded-2xl shadow-xl border border-gray-100 px-4 py-3 flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                    <MessageSquare className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 bg-accent-100 rounded-xl flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-accent-600" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Built-in Tutor</p>
-                    <p className="text-sm font-bold text-[#1a1a2e]">Homework help 24/7</p>
+                    <p className="text-sm font-bold text-brand-navy">Homework help 24/7</p>
                   </div>
                 </div>
                 {/* Floating badge - safe */}
@@ -392,7 +392,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Every search</p>
-                    <p className="text-sm font-bold text-[#1a1a2e]">Parent-approved content</p>
+                    <p className="text-sm font-bold text-brand-navy">Parent-approved content</p>
                   </div>
                 </div>
               </div>
@@ -405,11 +405,11 @@ export default function LandingPage() {
       <section className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <div className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 px-4 py-1.5 rounded-full text-sm font-medium mb-4 border border-purple-100">
+            <div className="inline-flex items-center gap-2 bg-accent-50 text-accent-700 px-4 py-1.5 rounded-full text-sm font-medium mb-4 border border-accent-100">
               <Sparkles className="w-4 h-4" />
               Three powerful modes
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">
               More than a search engine
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
@@ -419,55 +419,55 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
             {/* Search Mode */}
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 sm:p-8 border border-blue-100">
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 border border-accent-100">
+              <div className="w-14 h-14 bg-accent-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
                 <Search className="w-7 h-7 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-[#1a1a2e] mb-2">Search Mode</h3>
+              <h3 className="font-display text-xl font-bold text-brand-navy mb-2">Search Mode</h3>
               <p className="text-gray-600 leading-relaxed mb-4">
                 Type or speak any question. Get a direct, age-appropriate answer with no links, no ads, and no danger. Tap any section to deep dive further.
               </p>
               <ul className="space-y-2 text-sm text-gray-500">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" /> Voice search & read aloud</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" /> Google Images with SafeSearch</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" /> Clickable deep dives</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent-500 flex-shrink-0" /> Voice search & read aloud</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent-500 flex-shrink-0" /> Google Images with SafeSearch</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent-500 flex-shrink-0" /> Clickable deep dives</li>
               </ul>
             </div>
 
             {/* Tutor Mode */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 sm:p-8 border border-purple-200 relative overflow-hidden">
+            <div className="bg-accent-50 rounded-2xl p-6 sm:p-8 border border-accent-200 relative overflow-hidden">
               <div className="absolute top-3 right-3">
-                <span className="bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+                <span className="bg-accent-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
                   NEW
                 </span>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
+              <div className="w-14 h-14 bg-accent-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
                 <MessageSquare className="w-7 h-7 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-[#1a1a2e] mb-2">Tutor Mode</h3>
+              <h3 className="font-display text-xl font-bold text-brand-navy mb-2">Tutor Mode</h3>
               <p className="text-gray-600 leading-relaxed mb-4">
                 A patient built-in tutor that uses the Socratic method. Real back-and-forth conversations that teach your child to think — not just memorize answers.
               </p>
               <ul className="space-y-2 text-sm text-gray-500">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-purple-500 flex-shrink-0" /> Homework help in every subject</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-purple-500 flex-shrink-0" /> Guides, doesn't just give answers</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-purple-500 flex-shrink-0" /> Sessions saved for parents</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent-500 flex-shrink-0" /> Homework help in every subject</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent-500 flex-shrink-0" /> Guides, doesn't just give answers</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent-500 flex-shrink-0" /> Sessions saved for parents</li>
               </ul>
             </div>
 
             {/* Research Mode */}
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 sm:p-8 border border-emerald-100">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 border border-accent-100">
+              <div className="w-14 h-14 bg-accent-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
                 <Library className="w-7 h-7 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-[#1a1a2e] mb-2">Research Mode</h3>
+              <h3 className="font-display text-xl font-bold text-brand-navy mb-2">Research Mode</h3>
               <p className="text-gray-600 leading-relaxed mb-4">
                 Pulls real articles from NASA, National Geographic, Britannica, PBS, and more. Rewrites them at your child's reading level. Branded source cards.
               </p>
               <ul className="space-y-2 text-sm text-gray-500">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" /> 25+ trusted educational sources</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" /> Rewritten for their grade level</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" /> No external links ever</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent-500 flex-shrink-0" /> 25+ trusted educational sources</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent-500 flex-shrink-0" /> Rewritten for their grade level</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent-500 flex-shrink-0" /> No external links ever</li>
               </ul>
             </div>
           </div>
@@ -475,14 +475,14 @@ export default function LandingPage() {
       </section>
 
       {/* ========== PROBLEM SECTION ========== */}
-      <section className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">
+      <section className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-brand-cream">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-1.5 rounded-full text-sm font-medium mb-4 border border-red-100">
               <AlertTriangle className="w-4 h-4" />
               Sound familiar?
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">
               The internet wasn't built for kids
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
@@ -501,7 +501,7 @@ export default function LandingPage() {
                   <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4">
                     <Icon className="w-6 h-6 text-red-500" />
                   </div>
-                  <h3 className="text-lg font-bold text-[#1a1a2e] mb-2">{problem.title}</h3>
+                  <h3 className="font-display text-lg font-bold text-brand-navy mb-2">{problem.title}</h3>
                   <p className="text-gray-600 leading-relaxed text-sm">{problem.description}</p>
                 </div>
               );
@@ -509,14 +509,14 @@ export default function LandingPage() {
           </div>
 
           {/* Solution callout */}
-          <div className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl p-6 sm:p-8 text-center">
+          <div className="bg-accent-500 rounded-2xl p-6 sm:p-8 text-center">
             <div className="flex items-center justify-center gap-3 mb-2">
               <Search className="w-6 h-6 text-white" />
-              <h3 className="text-xl sm:text-2xl font-bold text-white">
+              <h3 className="font-display text-xl sm:text-2xl font-bold text-white">
                 What if they had a safe search engine, personal tutor, and research library — all in one?
               </h3>
             </div>
-            <p className="text-blue-100 text-sm sm:text-base max-w-xl mx-auto">
+            <p className="text-accent-100 text-sm sm:text-base max-w-xl mx-auto">
               That's SafeStudy. No external links. No ads. No unfiltered AI. Just safe answers, guided learning, and real research — within the boundaries you set.
             </p>
           </div>
@@ -524,10 +524,10 @@ export default function LandingPage() {
       </section>
 
       {/* ========== HOW IT WORKS ========== */}
-      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">
+      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-brand-cream">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">Up and running before bedtime</h2>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">Up and running before bedtime</h2>
             <p className="text-gray-600 text-lg max-w-xl mx-auto">
               No technical setup. No router changes. No IT degree required. Three steps and your kids are searching safely.
             </p>
@@ -538,14 +538,14 @@ export default function LandingPage() {
               return (
                 <div key={step.number} className="text-center">
                   <div className="relative mx-auto mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                    <div className="w-16 h-16 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
                       <Icon className="w-7 h-7 text-white" />
                     </div>
                     <div className="absolute -top-2 -right-2 w-7 h-7 bg-gradient-to-r from-[#F5A962] to-[#E88B6A] rounded-full flex items-center justify-center text-white text-xs font-bold shadow">
                       {step.number}
                     </div>
                   </div>
-                  <h3 className="text-lg font-bold text-[#1a1a2e] mb-2">{step.title}</h3>
+                  <h3 className="font-display text-lg font-bold text-brand-navy mb-2">{step.title}</h3>
                   <p className="text-gray-600 leading-relaxed">{step.description}</p>
                 </div>
               );
@@ -558,11 +558,11 @@ export default function LandingPage() {
       <section className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-white">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 sm:mb-12">
-            <div className="inline-flex items-center gap-2 bg-purple-50 text-purple-700 px-4 py-1.5 rounded-full text-sm font-medium mb-4 border border-purple-100">
+            <div className="inline-flex items-center gap-2 bg-accent-50 text-accent-700 px-4 py-1.5 rounded-full text-sm font-medium mb-4 border border-accent-100">
               <MessageSquare className="w-4 h-4" />
               How Tutor Mode works
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">
               Like having a patient teacher in the room
             </h2>
             <p className="text-gray-600 text-lg max-w-xl mx-auto">
@@ -571,9 +571,9 @@ export default function LandingPage() {
           </div>
 
           {/* Tutor conversation demo */}
-          <div className="bg-[#FDF8F3] rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="bg-brand-cream rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-5 sm:px-6 py-4 flex items-center gap-3">
+            <div className="bg-accent-500 px-5 sm:px-6 py-4 flex items-center gap-3">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 bg-white/30 rounded-full" />
                 <div className="w-3 h-3 bg-white/30 rounded-full" />
@@ -588,7 +588,7 @@ export default function LandingPage() {
             <div className="p-5 sm:p-8 space-y-4">
               {/* Kid message */}
               <div className="flex justify-end">
-                <div className="bg-blue-500 text-white px-4 py-3 rounded-2xl rounded-br-md max-w-sm shadow-sm">
+                <div className="bg-accent-500 text-white px-4 py-3 rounded-2xl rounded-br-md max-w-sm shadow-sm">
                   <p className="text-sm">I don't understand fractions. What does 3/4 mean?</p>
                 </div>
               </div>
@@ -607,7 +607,7 @@ export default function LandingPage() {
 
               {/* Kid tries */}
               <div className="flex justify-end">
-                <div className="bg-blue-500 text-white px-4 py-3 rounded-2xl rounded-br-md max-w-sm shadow-sm">
+                <div className="bg-accent-500 text-white px-4 py-3 rounded-2xl rounded-br-md max-w-sm shadow-sm">
                   <p className="text-sm">5/8?</p>
                 </div>
               </div>
@@ -629,7 +629,7 @@ export default function LandingPage() {
                     <Mic className="w-4 h-4 text-gray-300" />
                   </div>
                 </div>
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-sm">
+                <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center shadow-sm">
                   <Send className="w-4 h-4 text-white" />
                 </div>
               </div>
@@ -637,16 +637,16 @@ export default function LandingPage() {
           </div>
 
           <div className="grid sm:grid-cols-3 gap-4 mt-8">
-            <div className="bg-purple-50 rounded-xl p-4 text-center border border-purple-100">
-              <p className="font-bold text-purple-700 text-sm">Teaches, then asks</p>
+            <div className="bg-accent-50 rounded-xl p-4 text-center border border-accent-100">
+              <p className="font-bold text-accent-700 text-sm">Teaches, then asks</p>
               <p className="text-xs text-gray-500 mt-1">70% teaching, 30% questions. Real learning in every message.</p>
             </div>
-            <div className="bg-purple-50 rounded-xl p-4 text-center border border-purple-100">
-              <p className="font-bold text-purple-700 text-sm">Adapts to their level</p>
+            <div className="bg-accent-50 rounded-xl p-4 text-center border border-accent-100">
+              <p className="font-bold text-accent-700 text-sm">Adapts to their level</p>
               <p className="text-xs text-gray-500 mt-1">Uses grade-level vocabulary. Adjusts for accessibility needs.</p>
             </div>
-            <div className="bg-purple-50 rounded-xl p-4 text-center border border-purple-100">
-              <p className="font-bold text-purple-700 text-sm">Every subject</p>
+            <div className="bg-accent-50 rounded-xl p-4 text-center border border-accent-100">
+              <p className="font-bold text-accent-700 text-sm">Every subject</p>
               <p className="text-xs text-gray-500 mt-1">Math, science, history, writing, reading — any school subject.</p>
             </div>
           </div>
@@ -654,10 +654,10 @@ export default function LandingPage() {
       </section>
 
       {/* ========== FEATURES GRID ========== */}
-      <section id="features" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">
+      <section id="features" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-brand-cream">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">
               You set the boundaries. They explore with freedom.
             </h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
@@ -671,12 +671,12 @@ export default function LandingPage() {
               return (
                 <div
                   key={feature.title}
-                  className="bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all group"
+                  className="bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-lg hover:border-accent-200 transition-all group"
                 >
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
+                  <div className="w-14 h-14 bg-accent-500 rounded-2xl flex items-center justify-center mb-5 shadow-md">
                     <Icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-[#1a1a2e] mb-3">{feature.title}</h3>
+                  <h3 className="font-display text-xl font-bold text-brand-navy mb-3">{feature.title}</h3>
                   <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </div>
               );
@@ -690,12 +690,12 @@ export default function LandingPage() {
               return (
                 <div
                   key={feature.title}
-                  className="bg-white rounded-xl p-4 border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all group"
+                  className="bg-white rounded-xl p-4 border border-gray-100 hover:shadow-md hover:border-accent-100 transition-all group"
                 >
-                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-100 transition">
-                    <Icon className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 bg-accent-50 rounded-lg flex items-center justify-center mb-3 group-hover:bg-accent-100 transition">
+                    <Icon className="w-5 h-5 text-accent-600" />
                   </div>
-                  <h3 className="text-sm font-bold text-[#1a1a2e] mb-1">{feature.title}</h3>
+                  <h3 className="font-display text-sm font-bold text-brand-navy mb-1">{feature.title}</h3>
                   <p className="text-gray-500 leading-relaxed text-xs">{feature.description}</p>
                 </div>
               );
@@ -708,15 +708,15 @@ export default function LandingPage() {
       <section id="demo" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-white">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 sm:mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">See Search Mode in action</h2>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">See Search Mode in action</h2>
             <p className="text-gray-600 text-lg max-w-xl mx-auto">
               Here's what happens when your kid types or asks "How do volcanoes erupt?" — with clickable sections and read aloud.
             </p>
           </div>
 
-          <div className="bg-[#FDF8F3] rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="bg-brand-cream rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
             {/* Browser chrome */}
-            <div className="bg-gradient-to-r from-blue-500 to-cyan-500 px-5 sm:px-6 py-4 flex items-center gap-3">
+            <div className="bg-accent-500 px-5 sm:px-6 py-4 flex items-center gap-3">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 bg-white/30 rounded-full" />
                 <div className="w-3 h-3 bg-white/30 rounded-full" />
@@ -735,15 +735,15 @@ export default function LandingPage() {
                 <div className="w-full bg-white border border-gray-200 rounded-xl pl-12 pr-12 py-4 text-gray-700 text-lg font-medium">
                   How do volcanoes erupt?
                 </div>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center" title="Voice search">
-                  <Mic className="w-4 h-4 text-blue-600" />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-accent-100 rounded-full flex items-center justify-center" title="Voice search">
+                  <Mic className="w-4 h-4 text-accent-600" />
                 </div>
               </div>
 
               {/* Answer card — matches current mature design */}
-              <div className="bg-white border-l-4 border-l-blue-500 rounded-xl p-5 mb-4 shadow-sm">
+              <div className="bg-white border-l-4 border-l-accent-500 rounded-xl p-5 mb-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="w-4 h-4 text-blue-500" />
+                  <Sparkles className="w-4 h-4 text-accent-500" />
                   <p className="text-sm font-semibold text-gray-800">Quick Answer</p>
                 </div>
                 <p className="text-sm text-gray-700 leading-relaxed">
@@ -755,15 +755,15 @@ export default function LandingPage() {
 
               {/* Clickable sections */}
               <div className="flex flex-wrap gap-2 mb-4">
-                <div className="inline-flex items-center gap-1.5 bg-white text-gray-600 px-3 py-2 rounded-lg text-xs font-medium border border-gray-200 cursor-pointer hover:border-blue-300 hover:text-blue-600 transition">
+                <div className="inline-flex items-center gap-1.5 bg-white text-gray-600 px-3 py-2 rounded-lg text-xs font-medium border border-gray-200 cursor-pointer hover:border-accent-300 hover:text-accent-600 transition">
                   <MousePointerClick className="w-3.5 h-3.5" />
                   What is magma made of?
                 </div>
-                <div className="inline-flex items-center gap-1.5 bg-white text-gray-600 px-3 py-2 rounded-lg text-xs font-medium border border-gray-200 cursor-pointer hover:border-blue-300 hover:text-blue-600 transition">
+                <div className="inline-flex items-center gap-1.5 bg-white text-gray-600 px-3 py-2 rounded-lg text-xs font-medium border border-gray-200 cursor-pointer hover:border-accent-300 hover:text-accent-600 transition">
                   <MousePointerClick className="w-3.5 h-3.5" />
                   Types of volcanoes
                 </div>
-                <div className="inline-flex items-center gap-1.5 bg-white text-gray-600 px-3 py-2 rounded-lg text-xs font-medium border border-gray-200 cursor-pointer hover:border-blue-300 hover:text-blue-600 transition">
+                <div className="inline-flex items-center gap-1.5 bg-white text-gray-600 px-3 py-2 rounded-lg text-xs font-medium border border-gray-200 cursor-pointer hover:border-accent-300 hover:text-accent-600 transition">
                   <MousePointerClick className="w-3.5 h-3.5" />
                   Famous eruptions
                 </div>
@@ -771,7 +771,7 @@ export default function LandingPage() {
 
               {/* Answer controls */}
               <div className="flex flex-wrap items-center gap-2 mb-4">
-                <div className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:bg-blue-200 transition">
+                <div className="inline-flex items-center gap-1.5 bg-accent-100 text-accent-700 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:bg-accent-200 transition">
                   <Volume2 className="w-3.5 h-3.5" />
                   Read Aloud
                 </div>
@@ -781,7 +781,7 @@ export default function LandingPage() {
                 <div className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-medium">
                   More details
                 </div>
-                <div className="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:bg-purple-200 transition">
+                <div className="inline-flex items-center gap-1.5 bg-accent-100 text-accent-700 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer hover:bg-accent-200 transition">
                   <MessageSquare className="w-3.5 h-3.5" />
                   Ask Tutor
                 </div>
@@ -808,7 +808,7 @@ export default function LandingPage() {
                   { title: 'Why Do Volcanoes Erupt?', source: 'Britannica Kids' },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0" />
+                    <div className="w-2 h-2 bg-accent-400 rounded-full flex-shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-gray-700">{item.title}</p>
                       <p className="text-xs text-gray-400">{item.source}</p>
@@ -832,10 +832,10 @@ export default function LandingPage() {
       </section>
 
       {/* ========== COMPARISON TABLE ========== */}
-      <section id="compare" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">
+      <section id="compare" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-brand-cream">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10 sm:mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">
               How SafeStudy compares
             </h2>
             <p className="text-gray-600 text-lg max-w-xl mx-auto">
@@ -847,13 +847,13 @@ export default function LandingPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-white">
-                  <th className="px-4 py-4 text-left font-semibold text-[#1a1a2e] min-w-[180px]">Feature</th>
+                  <th className="px-4 py-4 text-left font-semibold text-brand-navy min-w-[180px]">Feature</th>
                   <th className="px-4 py-4 text-center min-w-[100px]">
                     <div className="flex flex-col items-center gap-1">
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center">
                         <Search className="w-4 h-4 text-white" />
                       </div>
-                      <span className="font-bold text-[#1a1a2e]">SafeStudy</span>
+                      <span className="font-bold text-brand-navy">SafeStudy</span>
                     </div>
                   </th>
                   <th className="px-4 py-4 text-center min-w-[100px]">
@@ -877,7 +877,7 @@ export default function LandingPage() {
               <tbody className="divide-y divide-gray-100">
                 {comparisonRows.map((row, i) => (
                   <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
-                    <td className="px-4 py-3 font-medium text-[#1a1a2e]">{row.feature}</td>
+                    <td className="px-4 py-3 font-medium text-brand-navy">{row.feature}</td>
                     <ComparisonCell value={row.safestudy} />
                     <ComparisonCell value={row.google} />
                     <ComparisonCell value={row.googleKids} />
@@ -893,28 +893,28 @@ export default function LandingPage() {
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10 sm:mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">Less than a coffee per month</h2>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">Less than a coffee per month</h2>
             <p className="text-gray-600 text-lg">$4.99 for a search engine, built-in tutor, and research tool. Cancel in 2 clicks, anytime.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Individual Plan */}
-            <div className="bg-[#FDF8F3] rounded-3xl p-6 sm:p-8 border-2 border-blue-200 shadow-lg relative">
+            <div className="bg-brand-cream rounded-3xl p-6 sm:p-8 border-2 border-accent-200 shadow-lg relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow">
+                <span className="bg-accent-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow">
                   MOST POPULAR
                 </span>
               </div>
               <div className="text-center mb-6 pt-2">
-                <h3 className="text-lg font-bold text-[#1a1a2e] mb-1">SafeStudy</h3>
+                <h3 className="font-display text-lg font-bold text-brand-navy mb-1">SafeStudy</h3>
                 <p className="text-gray-500 text-sm mb-4">Search + Tutor + Research — all in one</p>
                 <div>
-                  <span className="text-5xl font-extrabold text-[#1a1a2e]">$4.99</span>
+                  <span className="text-5xl font-extrabold text-brand-navy">$4.99</span>
                   <span className="text-gray-500 text-lg">/month</span>
                 </div>
               </div>
 
-              <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold mb-5 w-full justify-center">
+              <div className="inline-flex items-center gap-1.5 bg-accent-50 text-accent-700 px-3 py-1 rounded-full text-xs font-semibold mb-5 w-full justify-center">
                 <Zap className="w-3.5 h-3.5" />
                 7-DAY FREE TRIAL - NO CREDIT CARD
               </div>
@@ -951,12 +951,12 @@ export default function LandingPage() {
             </div>
 
             {/* Bundle Plan */}
-            <div className="bg-[#FDF8F3] rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
+            <div className="bg-brand-cream rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
               <div className="text-center mb-6">
-                <h3 className="text-lg font-bold text-[#1a1a2e] mb-1">Safe Family Bundle</h3>
+                <h3 className="font-display text-lg font-bold text-brand-navy mb-1">Safe Family Bundle</h3>
                 <p className="text-gray-500 text-sm mb-4">All 4 apps, one price</p>
                 <div>
-                  <span className="text-5xl font-extrabold text-[#1a1a2e]">$9.99</span>
+                  <span className="text-5xl font-extrabold text-brand-navy">$9.99</span>
                   <span className="text-gray-500 text-lg">/month</span>
                 </div>
                 <p className="text-green-600 text-xs font-semibold mt-1">Save 50% vs. buying separately</p>
@@ -980,7 +980,7 @@ export default function LandingPage() {
 
               <a
                 href="https://getsafefamily.com/pricing"
-                className="block w-full bg-[#1a1a2e] hover:bg-[#2a2a3e] text-white font-bold py-3.5 rounded-xl text-center shadow-md hover:shadow-lg transition-all"
+                className="block w-full bg-brand-navy hover:bg-[#2a2a3e] text-white font-bold py-3.5 rounded-xl text-center shadow-md hover:shadow-lg transition-all"
               >
                 View Bundle
               </a>
@@ -989,7 +989,7 @@ export default function LandingPage() {
               <div className="mt-5 pt-5 border-t border-gray-200 text-center">
                 <a
                   href="https://getsafespark.com"
-                  className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-[#1a1a2e] transition-colors"
+                  className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-brand-navy transition-colors"
                 >
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
                     New
@@ -1006,10 +1006,10 @@ export default function LandingPage() {
       </section>
 
       {/* ========== FAQ ========== */}
-      <section id="faq" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-[#FDF8F3]">
+      <section id="faq" className="px-4 sm:px-6 py-16 sm:py-20 lg:py-24 bg-brand-cream">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10 sm:mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">
               Common questions
             </h2>
             <p className="text-gray-600 text-lg">
@@ -1041,7 +1041,7 @@ export default function LandingPage() {
           <div className="text-center mt-8">
             <p className="text-gray-500 text-sm">
               Still have questions?{' '}
-              <a href="mailto:jeremiah@getsafefamily.com" className="text-blue-600 hover:text-blue-700 font-medium">
+              <a href="mailto:jeremiah@getsafefamily.com" className="text-accent-600 hover:text-accent-700 font-medium">
                 Email us anytime
               </a>
             </p>
@@ -1050,28 +1050,28 @@ export default function LandingPage() {
       </section>
 
       {/* ========== FINAL CTA BANNER ========== */}
-      <section className="px-4 sm:px-6 py-16 sm:py-20 bg-gradient-to-r from-blue-600 to-cyan-500">
+      <section className="px-4 sm:px-6 py-16 sm:py-20 bg-accent-500">
         <div className="max-w-3xl mx-auto text-center">
           <Lock className="w-10 h-10 text-white/80 mx-auto mb-4" />
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">
+          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">
             They're going to search the internet whether you like it or not.
           </h2>
-          <p className="text-blue-100 text-xl mb-3 max-w-xl mx-auto font-medium">
+          <p className="text-accent-100 text-xl mb-3 max-w-xl mx-auto font-medium">
             The question is: will they do it safely — and will they have help when they need it?
           </p>
-          <p className="text-blue-200 text-base mb-8 max-w-lg mx-auto">
+          <p className="text-accent-200 text-base mb-8 max-w-lg mx-auto">
             You can't stand behind them forever. But you can give them a search engine, built-in tutor, and research library that was built — from the ground up — to protect them and help them learn. Built by a parent who needed this for his own kids.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               to="/signup"
-              className="inline-flex items-center gap-2 bg-white text-blue-600 font-bold px-8 py-4 rounded-xl hover:bg-blue-50 transition shadow-lg text-lg"
+              className="inline-flex items-center gap-2 bg-white text-accent-600 font-bold px-8 py-4 rounded-xl hover:bg-accent-50 transition shadow-lg text-lg"
             >
               Start 7-Day Free Trial
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
-          <p className="text-blue-200 text-sm mt-4">$4.99/mo after trial. No credit card to start. Cancel in 2 clicks.</p>
+          <p className="text-accent-200 text-sm mt-4">$4.99/mo after trial. No credit card to start. Cancel in 2 clicks.</p>
 
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-white/80 mt-6">
             <span className="flex items-center gap-1.5">
@@ -1091,15 +1091,15 @@ export default function LandingPage() {
       </section>
 
       {/* ========== FOOTER ========== */}
-      <footer className="px-4 sm:px-6 py-12 bg-[#1a1a2e] text-white/70">
+      <footer className="px-4 sm:px-6 py-12 bg-brand-navy text-white/70">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center">
                 <Search className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-white">SafeStudy</span>
+              <span className="font-display font-bold text-white">SafeStudy</span>
               <span className="text-white/40 text-sm ml-2">by Safe Family</span>
             </div>
 

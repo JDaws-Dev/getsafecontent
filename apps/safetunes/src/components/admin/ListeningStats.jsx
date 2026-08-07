@@ -21,7 +21,7 @@ function ListeningStats({ user }) {
 
   const getColorClass = (colorId) => {
     const color = COLORS.find(c => c.id === colorId);
-    return color ? color.class : 'bg-purple-500';
+    return color ? color.class : 'bg-accent-500';
   };
 
   const getColorHex = (colorId) => {
@@ -43,7 +43,7 @@ function ListeningStats({ user }) {
   if (!allKidsStats) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-600"></div>
       </div>
     );
   }
@@ -51,8 +51,8 @@ function ListeningStats({ user }) {
   if (allKidsStats.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-        <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>
         </div>
@@ -127,7 +127,7 @@ function ListeningStats({ user }) {
                 {/* Quick Stats */}
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   <div className="bg-gray-50 rounded-lg p-3 text-center">
-                    <div className="text-xl font-bold text-purple-600">{kidStats.totalPlays}</div>
+                    <div className="text-xl font-bold text-accent-600">{kidStats.totalPlays}</div>
                     <div className="text-xs text-gray-500">Plays</div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -146,7 +146,7 @@ function ListeningStats({ user }) {
                     {kidStats.dailyBreakdown.map((day, i) => (
                       <div key={i} className="flex-1 flex flex-col items-center">
                         <div
-                          className="w-full bg-purple-200 rounded-t transition-all"
+                          className="w-full bg-accent-200 rounded-t transition-all"
                           style={{
                             height: `${Math.max((day.minutes / maxMinutes) * 100, 4)}%`,
                             backgroundColor: day.minutes > 0 ? avatarColor : '#E5E7EB',
@@ -199,7 +199,7 @@ function ListeningStats({ user }) {
 
                 {/* View Details Link */}
                 <div className="mt-4 pt-3 border-t border-gray-100 text-center">
-                  <span className="text-sm text-purple-600 font-medium">View Details →</span>
+                  <span className="text-sm text-accent-600 font-medium">View Details →</span>
                 </div>
               </div>
             );
@@ -213,7 +213,7 @@ function ListeningStats({ user }) {
   if (!detailedStats) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-600"></div>
       </div>
     );
   }
@@ -255,7 +255,7 @@ function ListeningStats({ user }) {
             onClick={() => setDetailDays(days)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
               detailDays === days
-                ? 'bg-purple-600 text-white'
+                ? 'bg-accent-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -267,7 +267,7 @@ function ListeningStats({ user }) {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <div className="text-3xl font-bold text-purple-600">{detailedStats.summary.totalPlays}</div>
+          <div className="text-3xl font-bold text-accent-600">{detailedStats.summary.totalPlays}</div>
           <div className="text-sm text-gray-500">Total Plays</div>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">

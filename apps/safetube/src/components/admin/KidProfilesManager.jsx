@@ -148,7 +148,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
         {!isCreating && !editingId && (
           <button
             onClick={startCreate}
-            className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-md"
+            className="bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-md"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -244,7 +244,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
               <button
                 onClick={editingId ? handleUpdate : handleCreate}
                 disabled={isLoading || !formData.name.trim()}
-                className="flex-1 sm:flex-none bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg font-medium transition shadow-md"
+                className="flex-1 sm:flex-none bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg font-medium transition shadow-md"
               >
                 {isLoading ? 'Saving...' : editingId ? 'Save Changes' : 'Create Profile'}
               </button>
@@ -302,7 +302,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
         </div>
       ) : !isCreating ? (
         <div className="bg-white rounded-xl p-8 sm:p-12 text-center shadow-sm border border-gray-100">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center shadow-lg">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-accent-500 rounded-full flex items-center justify-center shadow-lg">
             <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
             </svg>
@@ -313,7 +313,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
           </p>
           <button
             onClick={startCreate}
-            className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-6 py-3 rounded-lg font-medium transition shadow-md"
+            className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-lg font-medium transition shadow-md"
           >
             Create First Profile
           </button>

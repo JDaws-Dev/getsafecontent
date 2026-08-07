@@ -24,7 +24,7 @@ function KidProfileManager() {
   const avatarOptions = ['👦', '👧', '🧒', '👶', '🎨', '🎵', '⭐', '🌈', '🦄', '🐶', '🐱', '🐻'];
   const colorOptions = [
     { name: 'blue', class: 'bg-blue-500' },
-    { name: 'purple', class: 'bg-purple-500' },
+    { name: 'purple', class: 'bg-accent-500' },
     { name: 'pink', class: 'bg-pink-500' },
     { name: 'green', class: 'bg-green-500' },
     { name: 'orange', class: 'bg-orange-500' },

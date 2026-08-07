@@ -31,8 +31,8 @@ import { SafeTunesLogo } from '../shared/SafeTunesLogo';
 // ============================================
 // BRAND COLORS & CONSTANTS
 // ============================================
-// Brand: Purple (#9333ea) to Pink (#ec4899) gradient
-// Tailwind: from-accent-600 to-pink-500
+// Safe Family brand: cream ground (#FBF6EF), navy ink (#221D2E)
+// SafeTunes accent: grape — accent-500 (#7C4DE0). Solid, never gradient.
 
 // ============================================
 // MARQUEE TEXT COMPONENT (for long titles)
@@ -187,7 +187,7 @@ export function RequestRow({
 
         {/* Track Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 text-[15px] truncate leading-tight">
+          <h3 className="font-display font-semibold text-brand-navy text-[15px] truncate leading-tight">
             {String(itemName || 'Unknown')}
           </h3>
           <p className="text-sm text-gray-500 font-medium truncate mt-0.5">
@@ -756,7 +756,7 @@ export function FullScreenPlayer({
                   onClick={() => setShowSleepTimerModal(true)}
                   className={`player-button px-3 py-2 rounded-full transition flex items-center gap-1.5 ${
                     sleepTimer
-                      ? 'bg-indigo-500/30 text-indigo-200'
+                      ? 'bg-accent-500/30 text-accent-100'
                       : 'text-white/50 hover:text-white'
                   }`}
                 >
@@ -778,7 +778,7 @@ export function FullScreenPlayer({
               {/* Header */}
               <div className="px-5 pt-4 pb-3 border-b border-gray-100 flex items-start justify-between">
                 <div className="flex-1 min-w-0 pr-4">
-                  <h3 className="text-lg font-bold text-gray-900">
+                  <h3 className="text-lg font-display font-bold text-brand-navy">
                     {activeTab === 'lyrics' ? 'Lyrics' : 'Up Next'}
                   </h3>
                   <p className="text-sm text-gray-500 truncate">
@@ -967,7 +967,7 @@ export function AlbumGrid({
                 </button>
               )}
             </div>
-            <h3 className="font-semibold text-sm text-gray-900 truncate">
+            <h3 className="font-display font-semibold text-sm text-brand-navy truncate">
               {album.albumName}
             </h3>
             <p className="text-xs text-gray-500 truncate">
@@ -1017,7 +1017,7 @@ export function ArtistList({
 
           {/* Artist Name */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate">{artist.name}</h3>
+            <h3 className="font-display font-semibold text-brand-navy truncate">{artist.name}</h3>
             <p className="text-sm text-gray-500">
               {artist.count} {artist.count === 1 ? 'album' : 'albums'}
             </p>
@@ -1091,7 +1091,7 @@ export function SongList({
 
               {/* Track Info */}
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-[15px] text-gray-900 truncate">
+                <h3 className="font-display font-semibold text-[15px] text-brand-navy truncate">
                   {song.songName || song.name}
                 </h3>
                 <p className="text-sm text-gray-500 truncate">
@@ -1147,7 +1147,7 @@ export function GenreList({
 
   // Genre color palette
   const genreColors = [
-    'from-accent-500 to-pink-500',
+    'from-accent-400 to-accent-600',
     'from-blue-500 to-accent-500',
     'from-green-500 to-teal-500',
     'from-orange-500 to-red-500',
@@ -1166,7 +1166,7 @@ export function GenreList({
           className={`relative overflow-hidden rounded-xl p-4 cursor-pointer active:scale-[0.98] transition-transform bg-gradient-to-br ${genreColors[index % genreColors.length]}`}
           style={{ minHeight: '80px' }}
         >
-          <h3 className="font-bold text-white text-lg truncate">{genre.name}</h3>
+          <h3 className="font-display font-bold text-white text-lg truncate">{genre.name}</h3>
           <p className="text-white/80 text-sm">
             {genre.count} {genre.count === 1 ? 'album' : 'albums'}
           </p>
@@ -1226,7 +1226,7 @@ export function PlaylistList({
 
             {/* Playlist Info */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">{playlist.name}</h3>
+              <h3 className="font-display font-semibold text-brand-navy truncate">{playlist.name}</h3>
               <p className="text-sm text-gray-500">
                 {playlist.songs?.length || 0} songs
               </p>
@@ -1351,7 +1351,7 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
       {renderIllustration()}
-      <h3 className="text-lg font-semibold text-gray-900 mb-1 mt-4">{title}</h3>
+      <h3 className="text-lg font-display font-semibold text-brand-navy mb-1 mt-4">{title}</h3>
       <p className="text-gray-500 text-sm mb-4 max-w-xs">{description}</p>
       {action && actionLabel && (
         <button
@@ -1397,7 +1397,7 @@ export function LyricsModal({
         <div className="px-6 pb-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Lyrics</h2>
+              <h2 className="text-lg font-display font-bold text-brand-navy">Lyrics</h2>
               {track && (
                 <p className="text-sm text-gray-500">
                   {track.title || track.name} • {track.artistName}
@@ -1485,7 +1485,7 @@ export function QueueModal({
         {/* Header */}
         <div className="px-6 pb-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">Up Next</h2>
+            <h2 className="text-lg font-display font-bold text-brand-navy">Up Next</h2>
             <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
@@ -1714,7 +1714,7 @@ export function SongActionsModal({
               />
             )}
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-gray-900 truncate text-lg">
+              <h3 className="font-display font-bold text-brand-navy truncate text-lg">
                 {track?.title || track?.name || 'Unknown Track'}
               </h3>
               <p className="text-gray-500 truncate">
@@ -1831,11 +1831,11 @@ export function SleepTimerModal({
         {/* Header */}
         <div className="px-6 pb-4 lg:pt-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-accent-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-accent-500 flex items-center justify-center">
               <Moon className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 text-lg">Sleep Timer</h3>
+              <h3 className="font-display font-bold text-brand-navy text-lg">Sleep Timer</h3>
               <p className="text-gray-500 text-sm">
                 {activeTimer ? `${remainingMinutes} min remaining` : 'Stop playing after...'}
               </p>
@@ -1848,12 +1848,12 @@ export function SleepTimerModal({
           {activeTimer ? (
             // Show active timer with cancel option
             <div className="px-6 py-4">
-              <div className="bg-indigo-50 rounded-xl p-4 mb-4">
+              <div className="bg-accent-50 rounded-xl p-4 mb-4">
                 <div className="flex items-center gap-3">
-                  <Timer className="w-5 h-5 text-indigo-600" />
+                  <Timer className="w-5 h-5 text-accent-600" />
                   <div className="flex-1">
-                    <p className="text-indigo-900 font-semibold">Timer Active</p>
-                    <p className="text-indigo-600 text-sm">
+                    <p className="text-accent-900 font-semibold">Timer Active</p>
+                    <p className="text-accent-600 text-sm">
                       Music will stop in {remainingMinutes} {remainingMinutes === 1 ? 'minute' : 'minutes'}
                     </p>
                   </div>

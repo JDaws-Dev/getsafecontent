@@ -32,7 +32,7 @@ const COLOR_MAP = {
   orange: { bg: 'bg-orange-500', light: 'bg-orange-50', text: 'text-orange-600' },
   yellow: { bg: 'bg-yellow-500', light: 'bg-yellow-50', text: 'text-yellow-600' },
   green: { bg: 'bg-green-500', light: 'bg-green-50', text: 'text-green-600' },
-  blue: { bg: 'bg-blue-500', light: 'bg-blue-50', text: 'text-blue-600' },
+  blue: { bg: 'bg-accent-500', light: 'bg-accent-50', text: 'text-accent-600' },
   cyan: { bg: 'bg-cyan-500', light: 'bg-cyan-50', text: 'text-cyan-600' },
   purple: { bg: 'bg-purple-500', light: 'bg-purple-50', text: 'text-purple-600' },
   pink: { bg: 'bg-pink-500', light: 'bg-pink-50', text: 'text-pink-600' },
@@ -157,7 +157,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
 
       {/* Family Code Card */}
       {userData?.familyCode && (
-        <div className="bg-gradient-to-r from-accent-500 to-accent-500 rounded-2xl p-5 text-white shadow-sm">
+        <div className="bg-accent-500 rounded-2xl p-5 text-white shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
@@ -304,7 +304,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
               </div>
               <button
                 onClick={() => onNavigate('profiles')}
-                className="mt-5 inline-flex items-center gap-2 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm"
+                className="mt-5 inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 Create First Profile
@@ -695,7 +695,7 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
             setEditingProfile(null);
             setShowEditor(true);
           }}
-          className="flex items-center gap-2 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm"
+          className="flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm"
         >
           <Plus className="w-4 h-4" />
           Add Profile
@@ -714,7 +714,7 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
               setEditingProfile(null);
               setShowEditor(true);
             }}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-accent-500 to-accent-500 text-white px-6 py-2.5 rounded-xl font-medium shadow-sm"
+            className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-2.5 rounded-xl font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Create First Profile
@@ -973,7 +973,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
               href={`/play/${userData.familyCode}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm text-white bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 font-medium px-3 py-2 rounded-lg transition shadow-sm"
+              className="flex items-center gap-1.5 text-sm text-white bg-accent-500 hover:bg-accent-600 font-medium px-3 py-2 rounded-lg transition shadow-sm"
               title="Open the kid portal in a new tab"
             >
               <ExternalLink className="w-4 h-4" />
@@ -1295,7 +1295,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-accent-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
+          <div className="w-14 h-14 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
             <Search className="w-7 h-7 text-white" />
           </div>
           <p className="text-gray-500">Loading...</p>
@@ -1308,7 +1308,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-accent-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-14 h-14 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Search className="w-7 h-7 text-white" />
           </div>
           <p className="text-gray-500">Redirecting to login...</p>
@@ -1321,7 +1321,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-accent-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
+          <div className="w-14 h-14 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
             <Search className="w-7 h-7 text-white" />
           </div>
           <p className="text-gray-500">Loading...</p>
@@ -1359,7 +1359,7 @@ export default function AdminDashboard() {
           {/* Top Bar */}
           <div className="flex items-center justify-between py-3.5">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-accent-500 to-accent-500 rounded-xl flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 bg-accent-500 rounded-xl flex items-center justify-center shadow-sm">
                 <Search className="w-4 h-4 text-white" />
               </div>
               <div>
@@ -1378,7 +1378,7 @@ export default function AdminDashboard() {
               {userData?.familyCode && (
                 <button
                   onClick={copyFamilyCode}
-                  className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white px-3.5 py-2 rounded-lg text-sm transition group"
+                  className="hidden sm:flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white px-3.5 py-2 rounded-lg text-sm transition group"
                   title="Click to copy"
                 >
                   <Shield className="w-3.5 h-3.5 text-white/70" />

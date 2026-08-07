@@ -151,7 +151,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -183,7 +183,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -228,7 +228,7 @@ export default function AdminDashboard() {
           {/* Top Bar */}
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-md">
+              <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center shadow-md">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -247,7 +247,7 @@ export default function AdminDashboard() {
               {/* Family Code Badge - Clickable to copy */}
               <button
                 onClick={copyFamilyCode}
-                className="hidden sm:flex items-center bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 px-4 py-2 rounded-lg transition group"
+                className="hidden sm:flex items-center bg-accent-500 hover:bg-accent-600 px-4 py-2 rounded-lg transition group"
                 title="Click to copy"
               >
                 <span className="text-white/80 text-xs mr-2">Family Code:</span>
@@ -499,7 +499,7 @@ export default function AdminDashboard() {
                 onClick={() => setContentSubTab('add')}
                 className={`px-4 py-2 rounded-lg font-medium transition ${
                   contentSubTab === 'add'
-                    ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
+                    ? 'bg-accent-500 text-white shadow-md'
                     : 'bg-white text-gray-700 border border-gray-200 hover:border-accent-300'
                 }`}
               >
@@ -514,7 +514,7 @@ export default function AdminDashboard() {
                 onClick={() => setContentSubTab('library')}
                 className={`px-4 py-2 rounded-lg font-medium transition ${
                   contentSubTab === 'library'
-                    ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
+                    ? 'bg-accent-500 text-white shadow-md'
                     : 'bg-white text-gray-700 border border-gray-200 hover:border-accent-300'
                 }`}
               >
@@ -606,7 +606,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
         <div className="text-right">
           <button
             onClick={onCopyCode}
-            className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-md"
+            className="bg-accent-500 hover:bg-accent-600 px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-md"
           >
             <span className="text-lg font-mono font-bold text-white tracking-wider">
               {userData.familyCode}
@@ -645,8 +645,8 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
 
         {!kidProfiles || kidProfiles.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 mx-auto mb-4 bg-accent-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
@@ -654,7 +654,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
             <p className="text-gray-500 text-sm mb-4">Add a profile for each child to get started</p>
             <button
               onClick={() => onNavigate('account')}
-              className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
+              className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
             >
               Add Kids in Settings
             </button>
@@ -773,8 +773,8 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
           onClick={() => onNavigate('requests')}
           className="bg-white hover:bg-gray-50 rounded-xl p-4 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-accent-200"
         >
-          <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
-            <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 bg-accent-100 rounded-lg flex items-center justify-center mb-2">
+            <svg className="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
           </div>
@@ -805,19 +805,19 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
           <div className="px-6 pb-6">
             <ol className="space-y-3 text-gray-600 text-sm">
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-accent-500 to-accent-600 rounded-full flex items-center justify-center text-white text-xs font-medium">1</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-medium">1</span>
                 <span>Go to <button onClick={() => onNavigate('account')} className="text-accent-600 hover:underline font-medium">Settings</button> and add a profile for each kid</span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-accent-500 to-accent-600 rounded-full flex items-center justify-center text-white text-xs font-medium">2</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-medium">2</span>
                 <span>Go to Content tab and search for YouTube channels/videos to approve</span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-accent-500 to-accent-600 rounded-full flex items-center justify-center text-white text-xs font-medium">3</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-medium">3</span>
                 <span>Share your family code <strong className="font-mono text-accent-600">{userData.familyCode}</strong> with your kids</span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-accent-500 to-accent-600 rounded-full flex items-center justify-center text-white text-xs font-medium">4</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-medium">4</span>
                 <span>Kids visit <Link to="/play" className="text-accent-600 hover:underline font-medium">getsafetube.com/play</Link> and enter the code</span>
               </li>
             </ol>
@@ -924,7 +924,7 @@ function TrialExpiredScreen({ userData, onLogout }) {
         <div className="space-y-3">
           <a
             href="mailto:jeremiah@getsafefamily.com?subject=SafeTube%20Subscription"
-            className="w-full bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white py-3 rounded-xl font-semibold transition shadow-md flex items-center justify-center gap-2"
+            className="w-full bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-xl font-semibold transition shadow-md flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -966,7 +966,7 @@ function TrialExpiredScreen({ userData, onLogout }) {
                 <button
                   onClick={handleApplyPromo}
                   disabled={isApplying || !promoCode.trim()}
-                  className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-lg font-medium transition"
+                  className="px-4 py-2 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white rounded-lg font-medium transition"
                 >
                   {isApplying ? '...' : 'Apply'}
                 </button>
