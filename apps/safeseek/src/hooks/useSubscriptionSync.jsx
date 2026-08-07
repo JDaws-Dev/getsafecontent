@@ -6,27 +6,25 @@ import { useAuth } from '../contexts/AuthContext';
 // How often to recheck subscription status (1 hour in ms)
 const SYNC_INTERVAL_MS = 60 * 60 * 1000;
 
+// Re-sync on tab focus only if the last sync is older than this
+const STALE_AFTER_MS = 5 * 60 * 1000;
+
 /**
- * Hook to sync subscription status with central Safe Family service.
+ * Hook to sync subscription status with the central Safe Family service.
  *
- * This ensures the local app's subscription status stays in sync with
- * the central service. If a user's subscription expires or is cancelled,
- * this will detect it within the sync interval.
+ * SafeStudy stores its own copy of subscriptionStatus (every AI call gates on it
+ * via users.checkSubscriptionActive), so it has to PULL central's authoritative
+ * answer or it never learns about a comp, a new subscription, or a cancellation.
  *
  * Features:
- * - Syncs on mount (when user is authenticated)
+ * - Syncs on mount (when the parent is authenticated)
  * - Syncs periodically (hourly)
- * - Syncs when tab becomes visible (if stale)
+ * - Syncs when the tab becomes visible (if stale)
  *
- * @returns {{
- *   isSyncing: boolean,
- *   lastSyncAt: number | null,
- *   syncNow: () => Promise<void>,
- *   error: string | null
- * }}
+ * @returns {{ syncNow: () => Promise<void> }}
  */
 export function useSubscriptionSync() {
-  const { user: currentUser, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { user: currentUser, token, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const verifyCentralAccess = useAction(api.userSync.verifyCentralAccess);
 
   // Track sync state
@@ -44,7 +42,12 @@ export function useSubscriptionSync() {
     isSyncingRef.current = true;
 
     try {
-      const result = await verifyCentralAccess({ email: currentUser.email });
+      // The token lets the server verify WHICH account is being synced instead
+      // of trusting the email we pass (convex/identity.ts).
+      const result = await verifyCentralAccess({
+        email: currentUser.email,
+        userToken: token || undefined,
+      });
       lastSyncRef.current = Date.now();
 
       if (!result.cached) {
@@ -59,7 +62,7 @@ export function useSubscriptionSync() {
     } finally {
       isSyncingRef.current = false;
     }
-  }, [isAuthenticated, currentUser, verifyCentralAccess]);
+  }, [isAuthenticated, currentUser, token, verifyCentralAccess]);
 
   // Sync on mount and when auth state changes
   useEffect(() => {
@@ -81,13 +84,12 @@ export function useSubscriptionSync() {
     };
   }, [isAuthLoading, isAuthenticated, currentUser, syncNow]);
 
-  // Sync when tab becomes visible (if it's been a while)
+  // Sync when the tab becomes visible (if it's been a while)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         const timeSinceLastSync = Date.now() - (lastSyncRef.current || 0);
-        // Re-sync if it's been more than 5 minutes since last sync
-        if (timeSinceLastSync > 5 * 60 * 1000) {
+        if (timeSinceLastSync > STALE_AFTER_MS) {
           console.log('[useSubscriptionSync] Tab became visible, re-syncing...');
           syncNow();
         }
@@ -102,22 +104,25 @@ export function useSubscriptionSync() {
 
   return {
     syncNow,
-    // Note: These are refs so they won't trigger re-renders on change
-    // That's intentional - the sync happens in the background
+    // Note: the sync bookkeeping lives in refs so it won't trigger re-renders.
+    // That's intentional — the sync happens in the background.
   };
 }
 
 /**
  * Mountable wrapper for useSubscriptionSync.
  *
- * Renders nothing. This used to be called only from AdminDashboard, so a
- * subscription change made centrally (a comp, a Stripe update) only reached
- * this app if the parent happened to open the dashboard — a customer who
- * couldn't get that far stayed locked out while central insisted they had
- * access. Mounting at the root syncs on any authenticated page.
+ * Renders nothing — it exists so the sync can live at the app ROOT rather than
+ * being hand-wired into individual pages. Page-level mounting is what fails in
+ * practice: a parent who lands straight on /admin (or never visits whichever
+ * page owns the hook) never triggers a sync, so a central comp never reaches
+ * SafeStudy and the customer stays locked out. At the root it runs for every
+ * authenticated session, on every route.
  *
- * Must be rendered inside AuthProvider. The hook no-ops unless there's an
- * authenticated user with an email.
+ * Must be rendered inside AuthProvider (it reads useAuth) and inside
+ * ConvexProvider (it calls useAction). Safe to mount above the router: the hook
+ * no-ops unless there's an authenticated parent with an email, so kid sessions
+ * on /search never trigger it.
  */
 export function SubscriptionSync() {
   useSubscriptionSync();

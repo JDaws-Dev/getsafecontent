@@ -105,3 +105,20 @@ export function useSubscriptionSync() {
     // That's intentional - the sync happens in the background
   };
 }
+
+/**
+ * Mountable wrapper for useSubscriptionSync.
+ *
+ * Renders nothing — it exists so the sync can live at the app root instead of
+ * being hand-wired into individual pages. It previously wasn't mounted ANYWHERE
+ * in SafeReads, so a subscription change made centrally (a comp, a Stripe
+ * update) never reached this app's users table and the customer stayed locked
+ * out while central insisted they had access.
+ *
+ * Must be rendered inside AuthProvider. The hook no-ops unless there's an
+ * authenticated user with an email.
+ */
+export function SubscriptionSync() {
+  useSubscriptionSync();
+  return null;
+}
