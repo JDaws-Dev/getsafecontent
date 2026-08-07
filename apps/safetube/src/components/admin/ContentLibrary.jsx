@@ -22,7 +22,7 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel }) {
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition"
+            className="flex-1 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition"
           >
             Remove
           </button>
@@ -141,13 +141,13 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
                 onClick={() => onSelectKid(profile._id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition border ${
                   selectedKidId === profile._id
-                    ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white border-transparent shadow-md'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-red-300 hover:shadow-sm'
+                    ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white border-transparent shadow-md'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-accent-300 hover:shadow-sm'
                 }`}
               >
                 <span
                   className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                  style={{ backgroundColor: profile.color || '#ef4444' }}
+                  style={{ backgroundColor: profile.color || '#F0603A' }}
                 >
                   {profile.name.charAt(0).toUpperCase()}
                 </span>
@@ -182,8 +182,8 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
               onClick={() => setViewMode('channels')}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 viewMode === 'channels'
-                  ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:border-red-300'
+                  ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 border border-gray-200 hover:border-accent-300'
               }`}
             >
               Full Channels ({channels?.length || 0})
@@ -192,7 +192,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
               onClick={() => setViewMode('partial')}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 viewMode === 'partial'
-                  ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-yellow-500 to-accent-600 text-white shadow-md'
                   : 'bg-white text-gray-700 border border-gray-200 hover:border-yellow-300'
               }`}
             >
@@ -202,8 +202,8 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
               onClick={() => setViewMode('videos')}
               className={`px-4 py-2 rounded-lg font-medium transition ${
                 viewMode === 'videos'
-                  ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:border-red-300'
+                  ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 border border-gray-200 hover:border-accent-300'
               }`}
             >
               All Videos ({videos?.length || 0})
@@ -243,7 +243,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
                             }}
                           />
                         ) : null}
-                        <div className={`w-14 h-14 rounded-full bg-gradient-to-br from-red-500 to-orange-500 items-center justify-center shadow-sm ${channel.thumbnailUrl ? 'hidden' : 'flex'}`}>
+                        <div className={`w-14 h-14 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 items-center justify-center shadow-sm ${channel.thumbnailUrl ? 'hidden' : 'flex'}`}>
                           <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                           </svg>
@@ -259,7 +259,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
                             e.stopPropagation();
                             handleRemoveChannel(channel.channelId, channel.channelTitle);
                           }}
-                          className="text-gray-400 hover:text-red-500 transition p-2"
+                          className="text-gray-400 hover:text-accent-500 transition p-2"
                           title="Remove channel"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,7 +285,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
                                     }}
                                   />
                                 ) : null}
-                                <div className={`w-full aspect-video bg-gradient-to-br from-red-500 to-orange-500 items-center justify-center ${video.thumbnailUrl ? 'hidden' : 'flex'}`}>
+                                <div className={`w-full aspect-video bg-gradient-to-br from-accent-500 to-accent-600 items-center justify-center ${video.thumbnailUrl ? 'hidden' : 'flex'}`}>
                                   <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -368,7 +368,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
                                     }}
                                   />
                                 ) : null}
-                                <div className={`w-full aspect-video bg-gradient-to-br from-red-500 to-orange-500 items-center justify-center ${video.thumbnailUrl ? 'hidden' : 'flex'}`}>
+                                <div className={`w-full aspect-video bg-gradient-to-br from-accent-500 to-accent-600 items-center justify-center ${video.thumbnailUrl ? 'hidden' : 'flex'}`}>
                                   <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -382,7 +382,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
                                     e.stopPropagation();
                                     handleRemoveVideo(video.videoId, video.title);
                                   }}
-                                  className="absolute top-1 right-1 bg-black/60 hover:bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition"
+                                  className="absolute top-1 right-1 bg-black/60 hover:bg-accent-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -432,7 +432,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
                             }}
                           />
                         ) : null}
-                        <div className={`w-full aspect-video bg-gradient-to-br from-red-500 to-orange-500 items-center justify-center ${video.thumbnailUrl ? 'hidden' : 'flex'}`}>
+                        <div className={`w-full aspect-video bg-gradient-to-br from-accent-500 to-accent-600 items-center justify-center ${video.thumbnailUrl ? 'hidden' : 'flex'}`}>
                           <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -443,7 +443,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
                         </div>
                         <button
                           onClick={() => handleRemoveVideo(video.videoId, video.title)}
-                          className="absolute top-2 right-2 bg-black/60 hover:bg-red-500 text-white p-1.5 rounded opacity-0 group-hover:opacity-100 transition"
+                          className="absolute top-2 right-2 bg-black/60 hover:bg-accent-500 text-white p-1.5 rounded opacity-0 group-hover:opacity-100 transition"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

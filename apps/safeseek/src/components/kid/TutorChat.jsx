@@ -22,8 +22,8 @@ export default function TutorChat({
           >
             {/* Tutor avatar */}
             {msg.role === 'tutor' && (
-              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
-                <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <div className="w-8 h-8 rounded-full bg-accent-100 dark:bg-accent-900/40 flex items-center justify-center flex-shrink-0">
+                <GraduationCap className="w-4 h-4 text-accent-600 dark:text-accent-400" />
               </div>
             )}
 
@@ -31,7 +31,7 @@ export default function TutorChat({
               <div
                 className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                   msg.role === 'kid'
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-gray-900 dark:text-gray-100 rounded-br-md'
+                    ? 'bg-accent-100 dark:bg-accent-900/30 text-gray-900 dark:text-gray-100 rounded-br-md'
                     : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-md'
                 }`}
               >
@@ -47,8 +47,8 @@ export default function TutorChat({
         {/* Typing indicator */}
         {tutorLoading && (
           <div className="flex items-end gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
-              <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div className="w-8 h-8 rounded-full bg-accent-100 dark:bg-accent-900/40 flex items-center justify-center flex-shrink-0">
+              <GraduationCap className="w-4 h-4 text-accent-600 dark:text-accent-400" />
             </div>
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 rounded-2xl rounded-bl-md">
               <div className="flex items-center gap-1.5">
@@ -98,7 +98,7 @@ export default function TutorChat({
             disabled={!tutorInput.trim() || tutorLoading}
             className={`p-1.5 rounded-full transition-all ${
               tutorInput.trim() && !tutorLoading
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                ? 'bg-accent-600 text-white hover:bg-accent-700'
                 : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
             }`}
           >

@@ -167,8 +167,12 @@ export async function POST(req: Request) {
     // Store apps for error context
     errorContextApps = finalApps;
 
-    // DUPLICATE SUBSCRIPTION PROTECTION
-    // Check if this email already has an active/trialing subscription
+    // DUPLICATE SUBSCRIPTION PROTECTION + returning-customer detection.
+    // hasHadSubscription gates the fresh 7-day trial below: a returning or
+    // expired-trial customer must NOT be re-trialed, otherwise checkout charges
+    // $0 and leaves them stuck in "trial" — the "subscribed but no money charged"
+    // bug Michael Kramer hit. (SafeTunes-direct already guards this way.)
+    let hasHadSubscription = false;
     if (email) {
       const existingCustomers = await getStripe().customers.list({
         email: email,
@@ -187,6 +191,14 @@ export async function POST(req: Request) {
           status: "trialing",
           limit: 1,
         });
+        // Any subscription ever (active/trialing/canceled/expired) ⇒ returning
+        // customer ⇒ charge immediately, no new trial.
+        const anySubscriptions = await getStripe().subscriptions.list({
+          customer: customerId,
+          status: "all",
+          limit: 1,
+        });
+        hasHadSubscription = anySubscriptions.data.length > 0;
 
         if (activeSubscriptions.data.length > 0 || trialingSubscriptions.data.length > 0) {
           console.log(`[Checkout] BLOCKED duplicate subscription for ${email} - already has active/trialing subscription`);
@@ -221,8 +233,10 @@ export async function POST(req: Request) {
         ...(isUnifiedPlan ? { plan: "unified" } : {}),
       },
       subscription_data: {
-        // 7-day free trial for monthly plans, no trial for yearly (charges immediately)
-        ...(isYearly ? {} : { trial_period_days: 7 }),
+        // 7-day free trial for NEW monthly customers only. Yearly always charges
+        // immediately, and returning customers (hasHadSubscription) are never
+        // re-trialed — they pay now instead of getting another $0 trial.
+        ...(!isYearly && !hasHadSubscription ? { trial_period_days: 7 } : {}),
         metadata: {
           bundle: isBundle ? "true" : "false",
           apps: appsMetadata,

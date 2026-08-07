@@ -20,8 +20,8 @@ import { SafeTunesLogo } from '../shared/SafeTunesLogo';
 // ============================================
 // DESIGN SYSTEM CONSTANTS
 // ============================================
-const BRAND_GRADIENT = 'bg-gradient-to-r from-purple-600 to-pink-500';
-const BRAND_GRADIENT_SUBTLE = 'bg-gradient-to-br from-purple-50 to-pink-50';
+const BRAND_GRADIENT = 'bg-accent-500';
+const BRAND_GRADIENT_SUBTLE = 'bg-accent-50';
 
 // ============================================
 // UTILITY: Get time-based greeting
@@ -60,7 +60,7 @@ function SectionHeader({ title, actionLabel, onAction }) {
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="text-sm font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1"
+          className="text-sm font-semibold text-accent-600 hover:text-accent-700 flex items-center gap-1"
         >
           {actionLabel}
           <ChevronRight className="w-4 h-4" />
@@ -84,8 +84,8 @@ function SmallAlbumCard({ item, onPlay, hideArtwork = false }) {
     >
       <div className="relative w-[100px] h-[100px] mb-2">
         {hideArtwork || !artworkUrl ? (
-          <div className="w-full h-full rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center shadow-md">
-            <SafeTunesLogo className="w-8 h-8 text-white/70" />
+          <div className="w-full h-full rounded-xl bg-brand-cream-2 flex items-center justify-center shadow-md">
+            <SafeTunesLogo className="w-8 h-8 text-accent-400" />
           </div>
         ) : (
           <img
@@ -119,8 +119,8 @@ function LargeAlbumCard({ item, onPlay, hideArtwork = false, badge }) {
     >
       <div className="relative w-[160px] h-[160px] mb-2">
         {hideArtwork || !artworkUrl ? (
-          <div className="w-full h-full rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center shadow-lg">
-            <SafeTunesLogo className="w-12 h-12 text-white/70" />
+          <div className="w-full h-full rounded-xl bg-brand-cream-2 flex items-center justify-center shadow-lg">
+            <SafeTunesLogo className="w-12 h-12 text-accent-400" />
           </div>
         ) : (
           <img
@@ -131,7 +131,7 @@ function LargeAlbumCard({ item, onPlay, hideArtwork = false, badge }) {
         )}
         {/* Badge (e.g., "NEW") */}
         {badge && (
-          <div className="absolute top-2 left-2 px-2 py-0.5 bg-gradient-to-r from-purple-600 to-pink-500 rounded-full">
+          <div className="absolute top-2 left-2 px-2 py-0.5 bg-accent-500 rounded-full">
             <span className="text-[10px] font-bold text-white uppercase tracking-wide">{badge}</span>
           </div>
         )}
@@ -178,7 +178,7 @@ export function HomeTab({
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-display font-bold text-brand-navy">
           {greeting}, {userName}
         </h1>
       </div>
@@ -260,8 +260,8 @@ export function HomeTab({
       {/* Empty State */}
       {recentlyPlayed.length === 0 && freshlyApproved.length === 0 && onRepeat.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-4">
-            <Music className="w-10 h-10 text-purple-400" />
+          <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
+            <Music className="w-10 h-10 text-accent-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-1">Your music awaits</h3>
           <p className="text-gray-500 text-sm max-w-xs">
@@ -292,7 +292,7 @@ const MOOD_CARDS = [
     id: 'disney',
     title: 'Disney & Kids',
     icon: Sparkles,
-    gradient: 'from-blue-400 to-purple-500',
+    gradient: 'from-blue-400 to-accent-500',
     keywords: ['disney', 'pixar', 'frozen', 'moana', 'encanto', 'soundtrack', 'animation', 'kids', 'children']
   },
   {
@@ -313,7 +313,7 @@ const MOOD_CARDS = [
     id: 'pop',
     title: 'Pop Hits',
     icon: TrendingUp,
-    gradient: 'from-pink-400 to-purple-500',
+    gradient: 'from-pink-400 to-accent-500',
     keywords: ['pop', 'hits', 'top', 'chart', 'radio', 'mainstream']
   },
   {
@@ -388,8 +388,8 @@ function FeaturedCarousel({ items = [], onPlay, shouldHideArtwork = () => false 
             >
               <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
                 {hideArtwork || !artworkUrl ? (
-                  <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                    <SafeTunesLogo className="w-16 h-16 text-white/70" />
+                  <div className="w-full h-full bg-brand-cream-2 flex items-center justify-center">
+                    <SafeTunesLogo className="w-16 h-16 text-accent-400" />
                   </div>
                 ) : (
                   <img
@@ -450,7 +450,7 @@ function MoodResultsGrid({ albums, onPlayAlbum, shouldHideArtwork, mood, onBack 
       <div className="px-4 pt-6 pb-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-purple-600 font-medium mb-3"
+          className="flex items-center gap-2 text-accent-600 font-medium mb-3"
         >
           <ChevronRight className="w-5 h-5 rotate-180" />
           Back to Discover
@@ -460,7 +460,7 @@ function MoodResultsGrid({ albums, onPlayAlbum, shouldHideArtwork, mood, onBack 
             <mood.icon className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{mood.title}</h1>
+            <h1 className="text-2xl font-display font-bold text-brand-navy">{mood.title}</h1>
             <p className="text-gray-500 text-sm">{albums.length} albums</p>
           </div>
         </div>
@@ -481,8 +481,8 @@ function MoodResultsGrid({ albums, onPlayAlbum, shouldHideArtwork, mood, onBack 
                   className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-lg group active:scale-[0.98] transition-transform"
                 >
                   {hideArtwork || !artworkUrl ? (
-                    <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                      <SafeTunesLogo className="w-12 h-12 text-white/70" />
+                    <div className="w-full h-full bg-brand-cream-2 flex items-center justify-center">
+                      <SafeTunesLogo className="w-12 h-12 text-accent-400" />
                     </div>
                   ) : (
                     <img
@@ -557,7 +557,7 @@ export function DiscoverTab({
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Discover</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-navy">Discover</h1>
         <p className="text-gray-500 mt-1">Browse your music by mood</p>
       </div>
 
@@ -601,8 +601,8 @@ function PlaylistGridCard({ playlist, onPlay, onClick, hideArtwork = false }) {
           className="w-full h-full object-cover"
         />
       ) : (
-        <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-          <SafeTunesLogo className="w-12 h-12 text-white/70" />
+        <div className="w-full h-full bg-brand-cream-2 flex items-center justify-center">
+          <SafeTunesLogo className="w-12 h-12 text-accent-400" />
         </div>
       )}
 
@@ -632,7 +632,7 @@ export function PlaylistsTab({
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="px-4 pt-6 pb-4 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Playlists</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-navy">Playlists</h1>
         <button
           onClick={onCreatePlaylist}
           className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
@@ -659,8 +659,8 @@ export function PlaylistsTab({
       ) : (
         <section className="px-4">
           <div className="flex flex-col items-center justify-center py-12 px-6 text-center bg-gray-50 rounded-2xl">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-3">
-              <Music className="w-8 h-8 text-purple-400" />
+            <div className="w-16 h-16 rounded-full bg-accent-100 flex items-center justify-center mb-3">
+              <Music className="w-8 h-8 text-accent-400" />
             </div>
             <h3 className="text-base font-semibold text-gray-900 mb-1">No playlists yet</h3>
             <p className="text-gray-500 text-sm mb-4">
@@ -668,7 +668,7 @@ export function PlaylistsTab({
             </p>
             <button
               onClick={onCreatePlaylist}
-              className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-full font-semibold text-sm shadow-lg active:scale-95 transition-transform"
+              className="px-5 py-2.5 bg-accent-500 text-white rounded-full font-semibold text-sm shadow-lg active:scale-95 transition-transform"
             >
               Create Playlist
             </button>
@@ -782,13 +782,13 @@ export function KidPlayerTabsDemo() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex flex-col items-center px-6 py-2 rounded-xl transition-colors ${
                 activeTab === tab.id
-                  ? 'text-purple-600'
+                  ? 'text-accent-600'
                   : 'text-gray-400 hover:text-gray-600'
               }`}
             >
               <span className="text-xl mb-0.5">{tab.icon}</span>
               <span className={`text-xs font-medium ${
-                activeTab === tab.id ? 'text-purple-600' : 'text-gray-500'
+                activeTab === tab.id ? 'text-accent-600' : 'text-gray-500'
               }`}>
                 {tab.label}
               </span>

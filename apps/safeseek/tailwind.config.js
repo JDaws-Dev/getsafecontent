@@ -8,41 +8,45 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Safe Family brand colors (shared across all apps)
+        // Safe Family brand (revived — shared across all 5 apps; copied verbatim)
         brand: {
-          cream: '#FDF8F3',
-          'cream-dark': '#F5EDE4',
-          navy: '#1a1a2e',
-          'navy-light': '#2d2d44',
+          cream: '#FBF6EF',
+          'cream-2': '#F3EADD',
+          navy: '#221D2E',
+          'ink-soft': '#6A6275',
           'peach-start': '#F5A962',
           'peach-end': '#E88B6A',
         },
-        // SafeStudy accent (blue/cyan for search/explore theme)
+        // SafeStudy signature accent — cobalt (search / study)
         accent: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+          50: '#EEF3FE',
+          100: '#D9E4FD',
+          200: '#B4CAFB',
+          300: '#85A8F7',
+          400: '#5687F4',
+          500: '#2F6BF0',
+          600: '#2556CC',
+          700: '#1E45A3',
+          800: '#1A3B85',
+          900: '#18316B',
         },
-        // Keep primary alias for backward compatibility
+        // Keep primary alias for backward compatibility (cobalt)
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+          50: '#EEF3FE',
+          100: '#D9E4FD',
+          200: '#B4CAFB',
+          300: '#85A8F7',
+          400: '#5687F4',
+          500: '#2F6BF0',
+          600: '#2556CC',
+          700: '#1E45A3',
+          800: '#1A3B85',
+          900: '#18316B',
         },
+      },
+      fontFamily: {
+        display: ['Fredoka', 'ui-rounded', 'system-ui', 'sans-serif'],
+        sans: ['Quicksand', 'ui-rounded', 'system-ui', '-apple-system', 'sans-serif'],
       },
       keyframes: {
         fadeIn: {

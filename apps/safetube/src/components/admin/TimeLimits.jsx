@@ -5,7 +5,7 @@ import { api } from '../../../convex/_generated/api';
 // Get Tailwind color class from color name
 function getColorClass(color) {
   const colors = {
-    red: 'bg-red-500',
+    red: 'bg-accent-500',
     orange: 'bg-orange-500',
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
@@ -138,7 +138,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
   if (!timeLimitsData) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-red-500 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent-500 border-t-transparent"></div>
       </div>
     );
   }
@@ -161,7 +161,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
             onClick={() => setSelectedKid(kid.kidProfileId)}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition ${
               selectedKid === kid.kidProfileId
-                ? 'border-red-500 bg-red-50'
+                ? 'border-accent-500 bg-accent-50'
                 : 'border-gray-200 bg-white hover:border-gray-300'
             }`}
           >
@@ -205,7 +205,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                   onClick={() => setFormState(s => ({ ...s, dailyLimitMinutes: preset.value }))}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
                     formState.dailyLimitMinutes === preset.value
-                      ? 'bg-red-500 text-white'
+                      ? 'bg-accent-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -225,7 +225,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                   ...s,
                   weekendLimitMinutes: e.target.checked ? s.dailyLimitMinutes : undefined,
                 }))}
-                className="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500"
+                className="w-4 h-4 text-accent-500 border-gray-300 rounded focus:ring-accent-500"
               />
               <span className="text-sm font-medium text-gray-700">Different limit on weekends</span>
             </label>
@@ -262,7 +262,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                     setFormState(s => ({ ...s, allowedStartHour: 8, allowedEndHour: 20 }));
                   }
                 }}
-                className="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500"
+                className="w-4 h-4 text-accent-500 border-gray-300 rounded focus:ring-accent-500"
               />
               <span className="text-sm font-medium text-gray-700">Restrict to specific hours</span>
             </label>
@@ -271,7 +271,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                 <select
                   value={formState.allowedStartHour ?? 8}
                   onChange={(e) => setFormState(s => ({ ...s, allowedStartHour: parseInt(e.target.value) }))}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-red-500 focus:border-red-500"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-accent-500 focus:border-accent-500"
                 >
                   {HOURS.map((h) => (
                     <option key={h.value} value={h.value}>{h.label}</option>
@@ -281,7 +281,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                 <select
                   value={formState.allowedEndHour ?? 20}
                   onChange={(e) => setFormState(s => ({ ...s, allowedEndHour: parseInt(e.target.value) }))}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-red-500 focus:border-red-500"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-accent-500 focus:border-accent-500"
                 >
                   {HOURS.map((h) => (
                     <option key={h.value} value={h.value}>{h.label}</option>
@@ -296,7 +296,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 disabled:from-gray-300 disabled:to-gray-400 text-white py-2.5 rounded-lg font-medium transition"
+              className="flex-1 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 text-white py-2.5 rounded-lg font-medium transition"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>

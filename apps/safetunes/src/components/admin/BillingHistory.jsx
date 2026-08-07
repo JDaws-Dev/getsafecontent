@@ -90,10 +90,10 @@ function BillingHistory({ stripeCustomerId }) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Billing History</h2>
+      <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+        <h2 className="text-xl font-display font-semibold text-brand-navy mb-4">Billing History</h2>
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-600"></div>
           <span className="ml-3 text-gray-600">Loading billing history...</span>
         </div>
       </div>
@@ -104,8 +104,8 @@ function BillingHistory({ stripeCustomerId }) {
     return (
       <>
         {ToastContainer}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Billing History</h2>
+        <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <h2 className="text-xl font-display font-semibold text-brand-navy mb-4">Billing History</h2>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
             <svg className="w-12 h-12 text-red-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -119,8 +119,8 @@ function BillingHistory({ stripeCustomerId }) {
 
   if (!invoices || invoices.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Billing History</h2>
+      <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+        <h2 className="text-xl font-display font-semibold text-brand-navy mb-4">Billing History</h2>
         <div className="text-center py-12">
           <svg className="w-16 h-16 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -135,8 +135,8 @@ function BillingHistory({ stripeCustomerId }) {
   return (
     <>
       {ToastContainer}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Billing History</h2>
+      <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+        <h2 className="text-xl font-display font-semibold text-brand-navy mb-2">Billing History</h2>
         <p className="text-sm text-gray-600 mb-6">
           View and download your past invoices and receipts
         </p>
@@ -169,7 +169,7 @@ function BillingHistory({ stripeCustomerId }) {
                       <div className="text-xs text-gray-500 mt-1">Invoice #{invoice.number}</div>
                     )}
                   </td>
-                  <td className="py-4 px-4 text-sm font-semibold text-gray-900">
+                  <td className="py-4 px-4 text-sm font-semibold text-brand-navy">
                     {formatCurrency(invoice.amountPaid || invoice.amountDue, invoice.currency)}
                   </td>
                   <td className="py-4 px-4 text-sm">
@@ -178,7 +178,7 @@ function BillingHistory({ stripeCustomerId }) {
                   <td className="py-4 px-4 text-sm">
                     <button
                       onClick={() => handleDownloadReceipt(invoice)}
-                      className="text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1 transition"
+                      className="text-accent-600 hover:text-accent-700 font-medium flex items-center gap-1 transition"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -195,10 +195,10 @@ function BillingHistory({ stripeCustomerId }) {
         {/* Mobile Card View */}
         <div className="md:hidden space-y-4">
           {invoices.map((invoice) => (
-            <div key={invoice.id} className="border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition">
+            <div key={invoice.id} className="border border-gray-200 rounded-lg p-4 hover:border-accent-300 transition">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <div className="font-semibold text-gray-900 mb-1">{invoice.description}</div>
+                  <div className="font-display font-semibold text-brand-navy mb-1">{invoice.description}</div>
                   <div className="text-sm text-gray-600">
                     {new Date(invoice.paidAt || invoice.created).toLocaleDateString('en-US', {
                       year: 'numeric',
@@ -220,7 +220,7 @@ function BillingHistory({ stripeCustomerId }) {
 
               <button
                 onClick={() => handleDownloadReceipt(invoice)}
-                className="w-full mt-3 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition flex items-center justify-center gap-2"
+                className="w-full mt-3 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

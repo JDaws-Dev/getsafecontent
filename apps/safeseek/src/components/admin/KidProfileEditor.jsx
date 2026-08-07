@@ -186,7 +186,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
 
           {/* Live preview */}
           <div className="flex flex-col items-center py-2">
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md ${COLORS.find((c) => c.name === color)?.class || 'bg-blue-500'}`}>
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md ${COLORS.find((c) => c.name === color)?.class || 'bg-accent-500'}`}>
               {name ? name.charAt(0).toUpperCase() : '?'}
             </div>
             {name && <p className="mt-2 font-semibold text-gray-900">{name}</p>}
@@ -200,7 +200,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[16px]"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent text-[16px]"
               placeholder="Kid's name"
               required
               autoFocus
@@ -222,7 +222,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                   if (!isNaN(val)) setAge(Math.min(18, Math.max(4, val)));
                   else if (e.target.value === '') setAge(4);
                 }}
-                className="text-3xl font-bold text-gray-900 w-16 text-center bg-transparent border-none outline-none focus:ring-2 focus:ring-blue-500 rounded-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="text-3xl font-bold text-gray-900 w-16 text-center bg-transparent border-none outline-none focus:ring-2 focus:ring-accent-500 rounded-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <button type="button" onClick={() => setAge(Math.min(18, age + 1))} className="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-lg transition active:scale-95">+</button>
             </div>
@@ -237,7 +237,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                   key={c.name}
                   type="button"
                   onClick={() => setColor(c.name)}
-                  className={`w-9 h-9 rounded-full ${c.class} transition ring-offset-2 ${color === c.name ? 'ring-2 ring-blue-500 scale-110' : 'hover:scale-105'}`}
+                  className={`w-9 h-9 rounded-full ${c.class} transition ring-offset-2 ${color === c.name ? 'ring-2 ring-accent-500 scale-110' : 'hover:scale-105'}`}
                 />
               ))}
             </div>
@@ -259,7 +259,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
               {/* Reading Level */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <BookOpen className="w-4 h-4 text-purple-500" />
+                  <BookOpen className="w-4 h-4 text-accent-500" />
                   <label className="text-sm font-medium text-gray-700">Reading Level</label>
                 </div>
                 <select
@@ -274,7 +274,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                       setLexileLevel(val);
                     }
                   }}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 text-[16px]"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-500 text-[16px]"
                 >
                   <option value="auto">Auto (based on age)</option>
                   <option value="K">Kindergarten</option>
@@ -319,7 +319,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                 <button
                   type="button"
                   onClick={() => setAllowTopicRequests(!allowTopicRequests)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${allowTopicRequests ? 'bg-blue-500' : 'bg-gray-300'}`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${allowTopicRequests ? 'bg-accent-500' : 'bg-gray-300'}`}
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${allowTopicRequests ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
@@ -345,14 +345,14 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
               {/* Custom Instructions */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare className="w-4 h-4 text-blue-500" />
+                  <MessageSquare className="w-4 h-4 text-accent-500" />
                   <label className="text-sm font-medium text-gray-700">Instructions for SafeStudy</label>
                 </div>
                 <textarea
                   value={customInstructions}
                   onChange={(e) => setCustomInstructions(e.target.value)}
                   rows={2}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-[16px] resize-none"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 text-[16px] resize-none"
                   placeholder="e.g., She's homeschooled, studying biology. Loves dinosaurs."
                 />
               </div>
@@ -367,8 +367,8 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                     { id: 'esl', label: 'English learner', desc: 'Simple vocabulary, no idioms' },
                     { id: 'low-vision', label: 'Low vision', desc: 'Concise, works with large text' },
                   ].map((need) => (
-                    <label key={need.id} className={`flex items-start gap-2 px-3 py-2 rounded-lg cursor-pointer transition text-sm ${accessibilityNeeds.includes(need.id) ? 'bg-indigo-50 border border-indigo-200' : 'bg-gray-50 border border-gray-100'}`}>
-                      <input type="checkbox" checked={accessibilityNeeds.includes(need.id)} onChange={() => toggleAccessibility(need.id)} className="w-4 h-4 mt-0.5 text-indigo-500 rounded" />
+                    <label key={need.id} className={`flex items-start gap-2 px-3 py-2 rounded-lg cursor-pointer transition text-sm ${accessibilityNeeds.includes(need.id) ? 'bg-accent-50 border border-accent-200' : 'bg-gray-50 border border-gray-100'}`}>
+                      <input type="checkbox" checked={accessibilityNeeds.includes(need.id)} onChange={() => toggleAccessibility(need.id)} className="w-4 h-4 mt-0.5 text-accent-500 rounded" />
                       <div>
                         <span className="text-gray-900 font-medium">{need.label}</span>
                         <p className="text-xs text-gray-500">{need.desc}</p>
@@ -388,7 +388,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                   <button
                     type="button"
                     onClick={() => setAllowImageSearch(!allowImageSearch)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${allowImageSearch ? 'bg-blue-500' : 'bg-gray-300'}`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${allowImageSearch ? 'bg-accent-500' : 'bg-gray-300'}`}
                   >
                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${allowImageSearch ? 'translate-x-6' : 'translate-x-1'}`} />
                   </button>
@@ -441,7 +441,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-300 disabled:to-gray-400 text-white py-3 rounded-xl font-medium transition active:scale-[0.98]"
+              className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 disabled:from-gray-300 disabled:to-gray-400 text-white py-3 rounded-xl font-medium transition active:scale-[0.98]"
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : profile ? 'Save' : 'Add Kid'}

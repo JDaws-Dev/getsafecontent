@@ -109,21 +109,98 @@ export default function KidSearch() {
   // PIN verification (mutation-based for rate limiting)
   const verifyPin = useMutation(api.kidProfiles.verifyKidPin);
 
-  // Auto-fill family code if arriving from another Safe Family app's
-  // cross-app switcher (URL ?fc=ABCDEF). Same unified code works across
-  // all 5 apps. Skip if already set via the /play/:familyCode route param.
+  // Cross-app kid pass: mint one for the signed-in kid (source) and redeem an
+  // inbound one (destination). See convex/kidPass.ts.
+  const [kidToken, setKidToken] = useState(null);
+  const mintKidPass = useMutation(api.kidPass.mintKidPass);
+  const redeemKidPass = useMutation(api.kidPass.redeemKidPass);
+
+  // Boot: arriving from another Safe Family app's cross-app switcher.
+  //   1) ?kt= (kid pass) — verify + land straight on the search dashboard as
+  //      this kid, no PIN. Falls back to ?fc= behavior on any failure.
+  //   2) ?fc= (bare family code) — pre-fill the code and skip to the profile
+  //      picker. Same unified 6-char code works across all 5 apps.
+  // Either credential is stripped from the URL immediately so it never lingers
+  // in history / referrer; we keep working from the captured values. Skipped
+  // for the route param path (/play/:familyCode) unless a ?kt= is present.
   useEffect(() => {
-    if (familyCode) return;
-    const fcParam = new URLSearchParams(window.location.search).get('fc');
-    if (!fcParam) return;
-    const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-    if (normalized.length === 6) {
-      setFamilyCode(normalized);
-      setCodeInput(normalized);
-    } else if (normalized.length > 0) {
-      setCodeInput(normalized);
+    let cancelled = false;
+    const url = new URL(window.location.href);
+    const ktParam = url.searchParams.get('kt');
+    const fcParam = url.searchParams.get('fc');
+
+    if (ktParam || fcParam) {
+      url.searchParams.delete('kt');
+      url.searchParams.delete('fc');
+      window.history.replaceState({}, '', url.pathname + url.search + url.hash);
     }
+
+    const boot = async () => {
+      // 1) Kid pass — arrived from a sibling app already signed in as this kid.
+      if (ktParam) {
+        try {
+          const res = await redeemKidPass({ token: ktParam });
+          if (cancelled) return;
+          if (res?.ok && res.profile) {
+            setFamilyCode(res.familyCode);
+            setCodeInput(res.familyCode);
+            setSelectedProfile(res.profile);
+            return;
+          }
+          // Verified family but no matching profile here — pre-fill the code
+          // and let the kid pick a profile.
+          if (res?.familyCode) {
+            setFamilyCode(res.familyCode);
+            setCodeInput(res.familyCode);
+            return;
+          }
+        } catch {
+          // fall through to ?fc= handling
+        }
+      }
+
+      // 2) Bare family code — skip straight to profile selection.
+      if (cancelled || familyCode) return;
+      if (!fcParam) return;
+      const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+      if (normalized.length === 6) {
+        setFamilyCode(normalized);
+        setCodeInput(normalized);
+      } else if (normalized.length > 0) {
+        setCodeInput(normalized);
+      }
+    };
+
+    boot();
+    return () => { cancelled = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Mint a short-lived kid pass for the signed-in kid so the header switcher
+  // can hand it to a sibling app (one tap, no PIN re-entry). Refreshed well
+  // inside its 5-minute TTL so the links never go stale.
+  useEffect(() => {
+    if (!familyCode || !selectedProfile?.name) return undefined;
+    let active = true;
+    const refresh = async () => {
+      try {
+        const res = await mintKidPass({
+          familyCode,
+          kidName: selectedProfile.name,
+          avatar: selectedProfile.icon,
+          color: selectedProfile.color,
+        });
+        if (active && res?.token) setKidToken(res.token);
+      } catch {
+        // non-fatal — the switcher still works; the destination just asks for the PIN
+      }
+    };
+    refresh();
+    const id = setInterval(refresh, 4 * 60 * 1000);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
+  }, [familyCode, selectedProfile?.name, selectedProfile?.icon, selectedProfile?.color, mintKidPass]);
 
   useEffect(() => {
     if (!pinProfile || !pinInput.every(d => d !== '')) return;
@@ -768,7 +845,7 @@ export default function KidSearch() {
 
   // ========== MAIN SEARCH INTERFACE ==========
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-brand-cream dark:bg-gray-900">
       {/* Lightbox */}
       {lightboxIndex !== null && images.length > 0 && (
         <ImageLightbox
@@ -781,6 +858,8 @@ export default function KidSearch() {
       {/* Sticky Header */}
       <SearchHeader
         selectedProfile={selectedProfile}
+        familyCode={familyCode}
+        kidToken={kidToken}
         searchStack={searchStack}
         isDark={isDark}
         hasSearchLimit={hasSearchLimit}

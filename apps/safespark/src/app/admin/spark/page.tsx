@@ -57,7 +57,7 @@ export default function AdminSparkPage() {
         <div className="space-y-3">
           <h1 className="text-2xl font-black text-slate-800">Sign in required</h1>
           <p className="text-sm text-slate-600">Operator review requires a signed-in Safe Family operator account.</p>
-          <Link href="/login" className="inline-block rounded-2xl bg-violet-600 px-5 py-2 text-sm font-black text-white hover:bg-violet-700">
+          <Link href="/login" className="inline-block rounded-2xl bg-accent-600 px-5 py-2 text-sm font-black text-brand-navy hover:bg-accent-700">
             Sign in
           </Link>
         </div>
@@ -73,7 +73,7 @@ export default function AdminSparkPage() {
             This dashboard is for the SafeSpark operator only.<br />
             <span className="text-xs">Auth resolved your account but your email doesn&apos;t match PARENT_EMAIL.</span>
           </p>
-          <Link href="/" className="text-sm font-bold text-violet-600 hover:text-violet-800">Back to home</Link>
+          <Link href="/" className="text-sm font-bold text-accent-600 hover:text-accent-800">Back to home</Link>
         </div>
       </main>
     );
@@ -85,11 +85,11 @@ export default function AdminSparkPage() {
   const uniqueUsers = new Set(feed.prompts.map((p) => p.email || p.clerkUserId)).size;
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-6 sm:px-8">
+    <main className="min-h-screen bg-brand-cream px-4 py-6 sm:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-violet-500">SafeSpark · Operator</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-accent-500">SafeSpark · Operator</p>
             <h1 className="text-2xl font-black text-slate-900">Review feed</h1>
             <p className="text-sm text-slate-600">
               All kid-Spark interactions across every family. Click any row to inspect the full thread.
@@ -100,7 +100,7 @@ export default function AdminSparkPage() {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Filter prompts / emails / projects…"
-            className="w-64 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-violet-400"
+            className="w-64 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-accent-400"
           />
         </header>
 
@@ -119,7 +119,7 @@ export default function AdminSparkPage() {
               onClick={() => setTab(t)}
               className={
                 tab === t
-                  ? 'rounded-xl bg-violet-600 px-4 py-1.5 text-xs font-black uppercase tracking-wider text-white'
+                  ? 'rounded-xl bg-accent-600 px-4 py-1.5 text-xs font-black uppercase tracking-wider text-brand-navy'
                   : 'rounded-xl px-4 py-1.5 text-xs font-black uppercase tracking-wider text-slate-500 hover:text-slate-800'
               }
             >
@@ -207,7 +207,7 @@ function PromptTable({
   return (
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <table className="w-full text-left text-sm">
-        <thead className="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-widest text-slate-500">
+        <thead className="border-b border-slate-200 bg-brand-cream text-xs font-bold uppercase tracking-widest text-slate-500">
           <tr>
             <th className="px-3 py-3">When</th>
             <th className="px-3 py-3">Who</th>
@@ -219,7 +219,7 @@ function PromptTable({
         </thead>
         <tbody className="divide-y divide-slate-100 text-slate-700 align-top">
           {rows.map((r) => (
-            <tr key={r.id} className="hover:bg-slate-50">
+            <tr key={r.id} className="hover:bg-brand-cream">
               <td className="whitespace-nowrap px-3 py-3 text-xs font-mono text-slate-500">{formatDate(r.createdAt)}</td>
               <td className="px-3 py-3 text-xs">
                 <div className="font-bold text-slate-800">{r.email || '(no email)'}</div>
@@ -242,7 +242,7 @@ function PromptTable({
                   <button
                     type="button"
                     onClick={() => onOpen(r.projectId!)}
-                    className="rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-600 hover:bg-violet-50"
+                    className="rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-600 hover:bg-accent-50"
                   >
                     Thread
                   </button>
@@ -358,9 +358,9 @@ function ProjectThreadModal({
   return (
     <div className="fixed inset-0 z-50 flex items-stretch justify-stretch bg-slate-900/60 backdrop-blur-sm">
       <div className="m-auto flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
-        <header className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3">
+        <header className="flex items-center justify-between border-b border-slate-200 bg-brand-cream px-5 py-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-violet-500">Project thread</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-accent-500">Project thread</p>
             <h2 className="text-lg font-black text-slate-900">
               {thread === undefined ? 'Loading…' : thread === null ? 'Not found' : thread.title}
             </h2>
@@ -382,7 +382,7 @@ function ProjectThreadModal({
           </button>
         </header>
         <div className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-2">
-          <div className="overflow-y-auto border-r border-slate-200 bg-slate-50 p-4">
+          <div className="overflow-y-auto border-r border-slate-200 bg-brand-cream p-4">
             <h3 className="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-500">Conversation</h3>
             {thread && thread !== null ? (
               <ol className="space-y-3">
@@ -392,7 +392,7 @@ function ProjectThreadModal({
                     className={
                       m.role === 'user'
                         ? 'rounded-2xl border border-slate-200 bg-white p-3'
-                        : 'rounded-2xl border border-violet-200 bg-violet-50 p-3'
+                        : 'rounded-2xl border border-accent-200 bg-accent-50 p-3'
                     }
                   >
                     <div className="mb-1 text-[10px] font-black uppercase tracking-widest text-slate-500">
@@ -407,7 +407,7 @@ function ProjectThreadModal({
             )}
           </div>
           <div className="overflow-hidden bg-white">
-            <h3 className="border-b border-slate-200 bg-slate-50 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+            <h3 className="border-b border-slate-200 bg-brand-cream px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
               Live preview (read-only)
             </h3>
             {thread && thread !== null ? (

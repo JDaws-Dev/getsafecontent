@@ -16,7 +16,12 @@ type Ctx = QueryCtx | MutationCtx;
  */
 export async function verifyMarketingToken(
   token: string,
-): Promise<{ userId: string; email: string; familyCode?: string } | null> {
+): Promise<{
+  userId: string;
+  email: string;
+  familyCode?: string;
+  entitledApps: string[];
+} | null> {
   const secret = process.env.MARKETING_JWT_SECRET;
   if (!secret) return null;
   try {
@@ -24,8 +29,12 @@ export async function verifyMarketingToken(
     const { payload } = await jwtVerify(
       token,
       new TextEncoder().encode(secret),
-      { issuer: 'getsafefamily.com' },
+      // Pin HS256 (Marketing's only signing alg) so a forged header can't
+      // request a different algorithm; require an expiry so a correctly
+      // signed token can never be valid forever.
+      { issuer: 'getsafefamily.com', algorithms: ['HS256'] },
     );
+    if (typeof payload.exp !== 'number') return null;
     const userId = typeof payload.sub === 'string' ? payload.sub : null;
     const email = typeof payload.email === 'string' ? payload.email : null;
     if (!userId || !email) return null;
@@ -35,10 +44,17 @@ export async function verifyMarketingToken(
       typeof payload.familyCode === 'string'
         ? payload.familyCode.toUpperCase().replace(/[^A-Z0-9]/g, '')
         : undefined;
+    // entitledApps claim drives whether this account may use SafeSpark (the
+    // paid, token-cost tier). Used to gate auto-provisioning so only entitled
+    // accounts get a SafeSpark row created on first login.
+    const entitledApps = Array.isArray(payload.entitledApps)
+      ? (payload.entitledApps.filter((a) => typeof a === 'string') as string[])
+      : [];
     return {
       userId,
       email: email.toLowerCase(),
       familyCode: familyCode && familyCode.length === 6 ? familyCode : undefined,
+      entitledApps,
     };
   } catch {
     return null;

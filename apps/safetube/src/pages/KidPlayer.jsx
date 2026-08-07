@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
 // Components
@@ -57,19 +57,65 @@ export default function KidPlayer() {
     selectedProfile?._id ? { kidProfileId: selectedProfile._id } : 'skip'
   );
 
-  // Auto-fill family code if arriving from another Safe Family app's
-  // cross-app switcher (URL ?fc=ABCDEF). Same unified code works across
-  // all 5 apps. Runs once on mount.
+  const redeemKidPass = useMutation(api.kidPass.redeemKidPass);
+
+  // Boot from another Safe Family app's cross-app switcher. A kid pass (?kt=)
+  // wins: it proves the kid was already authenticated in a sibling app, so we
+  // drop them straight onto the player with no code screen AND no PIN. A bare
+  // family code (?fc=ABCDEF) is the fallback — it only pre-fills the code so
+  // the kid still picks a profile (and enters a PIN if set). Either way we
+  // strip both params from the URL immediately so a live credential never
+  // lingers in history/referrer. Runs once on mount.
   useEffect(() => {
-    const fcParam = new URL(window.location.href).searchParams.get('fc');
-    if (!fcParam) return;
-    const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-    if (normalized.length === 6 && !familyCode) {
-      setFamilyCode(normalized);
-      setCodeInput(normalized);
-    } else if (normalized.length > 0) {
-      setCodeInput(normalized);
-    }
+    const url = new URL(window.location.href);
+    const ktParam = url.searchParams.get('kt');
+    const fcParam = url.searchParams.get('fc');
+    if (!ktParam && !fcParam) return;
+
+    // Strip the credentials from the URL right away.
+    url.searchParams.delete('kt');
+    url.searchParams.delete('fc');
+    window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+
+    const applyFamilyCode = () => {
+      if (!fcParam) return;
+      const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+      if (normalized.length === 6 && !familyCode) {
+        setFamilyCode(normalized);
+        setCodeInput(normalized);
+      } else if (normalized.length > 0) {
+        setCodeInput(normalized);
+      }
+    };
+
+    const boot = async () => {
+      if (ktParam) {
+        try {
+          const res = await redeemKidPass({ token: ktParam });
+          if (res?.ok) {
+            // Same as a successful profile + PIN login: set the family code and
+            // the selected kid, then KidHome renders straight away.
+            setFamilyCode(res.familyCode);
+            setSelectedProfile(res.profile);
+            setCodeInput(res.familyCode);
+            return;
+          }
+          // Pass failed (expired / no matching kid in this app). Fall back to
+          // the family code the pass carried, if any, so the kid just picks a
+          // profile instead of re-typing the code.
+          if (res?.familyCode && !familyCode) {
+            setFamilyCode(res.familyCode);
+            setCodeInput(res.familyCode);
+            return;
+          }
+        } catch {
+          // network / server hiccup — fall through to the ?fc= behavior
+        }
+      }
+      applyFamilyCode();
+    };
+
+    boot();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Validate family code when entered
@@ -167,9 +213,9 @@ export default function KidPlayer() {
   // Family code entry screen
   if (!familyCode || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-brand-cream flex flex-col items-center justify-center p-6">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-20 h-20 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -189,18 +235,18 @@ export default function KidPlayer() {
             }}
             placeholder="ABC123"
             maxLength={6}
-            className="w-full text-center text-2xl font-mono tracking-widest bg-white border-2 border-gray-200 rounded-xl px-4 py-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 uppercase shadow-sm"
+            className="w-full text-center text-2xl font-mono tracking-widest bg-white border-2 border-gray-200 rounded-xl px-4 py-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-100 uppercase shadow-sm"
             autoFocus
           />
           <p className="text-gray-500 text-xs text-center mt-2">
             6 letters and numbers from your parent
           </p>
           {error && (
-            <p className="text-red-500 text-sm text-center mt-2">{error}</p>
+            <p className="text-accent-500 text-sm text-center mt-2">{error}</p>
           )}
           <button
             type="submit"
-            className="w-full mt-4 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white py-3 rounded-xl font-semibold transition shadow-md active:scale-[0.98]"
+            className="w-full mt-4 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white py-3 rounded-xl font-semibold transition shadow-md active:scale-[0.98]"
           >
             Let's Go! →
           </button>
@@ -210,7 +256,7 @@ export default function KidPlayer() {
         <div className="mt-8 pt-8 border-t border-gray-200 w-full max-w-xs">
           <p className="text-center text-gray-500 text-sm">
             Are you a parent?{' '}
-            <Link to="/login" className="text-red-500 hover:text-red-600 font-medium">
+            <Link to="/login" className="text-accent-500 hover:text-accent-600 font-medium">
               Log in here →
             </Link>
           </p>
@@ -226,7 +272,7 @@ export default function KidPlayer() {
   // Trial expired screen
   if (isTrialExpired) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-brand-cream flex flex-col items-center justify-center p-6">
         <div className="text-center max-w-sm">
           <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,7 +285,7 @@ export default function KidPlayer() {
           </p>
           <button
             onClick={() => setFamilyCode('')}
-            className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-3 rounded-xl font-semibold transition shadow-md"
+            className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-6 py-3 rounded-xl font-semibold transition shadow-md"
           >
             Try Different Code
           </button>
@@ -299,10 +345,10 @@ export default function KidPlayer() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-xl">
             <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
-              timeLimitInfo?.reason === 'paused_by_parent' ? 'bg-red-100' : 'bg-orange-100'
+              timeLimitInfo?.reason === 'paused_by_parent' ? 'bg-accent-100' : 'bg-orange-100'
             }`}>
               {timeLimitInfo?.reason === 'paused_by_parent' ? (
-                <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-10 h-10 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
               ) : (
@@ -333,7 +379,7 @@ export default function KidPlayer() {
             )}
             <button
               onClick={() => setShowTimeLimitModal(false)}
-              className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white py-3 rounded-xl font-semibold transition"
+              className="w-full bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white py-3 rounded-xl font-semibold transition"
             >
               OK
             </button>

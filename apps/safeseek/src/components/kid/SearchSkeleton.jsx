@@ -10,7 +10,7 @@ export default function SearchSkeleton() {
       </div>
 
       {/* Quick Answer skeleton */}
-      <div className="relative bg-white dark:bg-gray-800 border-l-4 border-l-blue-500 rounded-lg animate-pulse overflow-hidden">
+      <div className="relative bg-white dark:bg-gray-800 border-l-4 border-l-accent-500 rounded-lg animate-pulse overflow-hidden">
         <div className="absolute inset-0 animate-shimmer" />
         <div className="p-5">
           <div className="flex items-center gap-2 mb-3">

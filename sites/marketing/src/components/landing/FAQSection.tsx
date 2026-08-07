@@ -35,6 +35,16 @@ const faqs: FAQItem[] = [
       "SafeTunes connects to Apple Music and works on any device where Apple Music is available. SafeTube works in any web browser and has a Chrome extension for easy channel approval. SafeReads is a web app that works on any device with a browser.",
   },
   {
+    question: "Do I need an Apple Music subscription for SafeTunes?",
+    answer:
+      "Yes — SafeTunes layers on top of Apple Music's catalog, so your family needs an active Apple Music subscription (individual or family plan). We don't charge for the music; we charge for the parental controls around it. If you don't have Apple Music, the other three apps (SafeTube, SafeReads, SafeStudy) work on their own.",
+  },
+  {
+    question: "Do you have iOS or Android apps?",
+    answer:
+      "SafeTunes has a native iOS app in the App Store and an Android app on Google Play. SafeTube, SafeReads, and SafeStudy run in any mobile browser today — native iOS/Android apps for those three are on the roadmap. Add them to the home screen for an app-like experience in the meantime.",
+  },
+  {
     question: "Can I share with my spouse or co-parent?",
     answer:
       "Yes! One subscription covers your entire household. Both parents can log in, approve content, and manage kid profiles. You'll both see the same approved content library—no need for separate accounts.",

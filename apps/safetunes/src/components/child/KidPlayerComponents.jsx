@@ -32,7 +32,7 @@ import { SafeTunesLogo } from '../shared/SafeTunesLogo';
 // BRAND COLORS & CONSTANTS
 // ============================================
 // Brand: Purple (#9333ea) to Pink (#ec4899) gradient
-// Tailwind: from-purple-600 to-pink-500
+// Tailwind: from-accent-600 to-pink-500
 
 // ============================================
 // MARQUEE TEXT COMPONENT (for long titles)
@@ -174,8 +174,8 @@ export function RequestRow({
       <div className="flex items-center gap-3 px-4 py-3">
         {/* Album Art */}
         {hideArtwork || !artworkUrl ? (
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <SafeTunesLogo className="w-7 h-7 text-white/70" />
+          <div className="w-14 h-14 rounded-xl bg-brand-cream-2 flex items-center justify-center flex-shrink-0 shadow-sm">
+            <SafeTunesLogo className="w-7 h-7 text-accent-400" />
           </div>
         ) : (
           <img
@@ -250,7 +250,7 @@ export function FilterPills({
             onClick={() => onChange(option)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
               isActive
-                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg shadow-purple-200'
+                ? 'bg-accent-500 text-white shadow-lg shadow-accent-200'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -289,7 +289,7 @@ export function SearchBar({
           onChange={(e) => onChange(e.target.value)}
           className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-xl
                      text-[16px] text-gray-900 placeholder-gray-400
-                     focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                     focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent
                      transition-shadow shadow-sm"
         />
         {value && !isSearching && (
@@ -303,7 +303,7 @@ export function SearchBar({
         )}
         {isSearching && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-purple-600 border-t-transparent" />
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-accent-600 border-t-transparent" />
           </div>
         )}
       </form>
@@ -357,8 +357,8 @@ export function MiniPlayer({
             onClick={onExpand}
           >
             {hideArtwork || !artworkUrl ? (
-              <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center flex-shrink-0">
-                <SafeTunesLogo className="w-6 h-6 text-white/70" />
+              <div className="w-11 h-11 rounded-lg bg-brand-cream-2 flex items-center justify-center flex-shrink-0">
+                <SafeTunesLogo className="w-6 h-6 text-accent-400" />
               </div>
             ) : (
               <img
@@ -384,7 +384,7 @@ export function MiniPlayer({
           <div className="flex items-center gap-1 flex-shrink-0">
             <button
               onClick={onPlayPause}
-              className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+              className="w-10 h-10 rounded-full bg-accent-500 flex items-center justify-center shadow-lg active:scale-95 transition-transform"
             >
               {isPlaying ? (
                 <Pause className="w-5 h-5 text-white" fill="white" />
@@ -404,7 +404,7 @@ export function MiniPlayer({
         {/* Progress indicator line */}
         <div className="h-0.5 bg-gray-200">
           <div
-            className="h-full bg-gradient-to-r from-purple-600 to-pink-500 transition-all duration-300"
+            className="h-full bg-accent-500 transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -524,7 +524,7 @@ export function FullScreenPlayer({
               <div className="absolute inset-0 backdrop-blur-3xl bg-black/60" />
             </>
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-b from-purple-900 via-purple-800 to-gray-900" />
+            <div className="absolute inset-0 bg-gradient-to-b from-accent-900 via-accent-800 to-brand-navy" />
           )}
         </div>
 
@@ -543,7 +543,7 @@ export function FullScreenPlayer({
                 Now Playing
               </span>
               {playbackSource === 'discover' && (
-                <span className="mt-1 px-2 py-0.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wide">
+                <span className="mt-1 px-2 py-0.5 bg-accent-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wide">
                   From Discover
                 </span>
               )}
@@ -562,8 +562,8 @@ export function FullScreenPlayer({
               {/* Large Album Artwork - Apple Music style (bigger) */}
               <div className="w-full aspect-square transition-all duration-300 max-w-[85vw] lg:max-w-[320px] mb-6">
                 {hideArtwork || !artworkUrl ? (
-                  <div className="w-full h-full rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 backdrop-blur-sm flex items-center justify-center shadow-2xl">
-                    <SafeTunesLogo className="w-28 h-28 text-white/70" />
+                  <div className="w-full h-full rounded-xl bg-brand-cream-2 backdrop-blur-sm flex items-center justify-center shadow-2xl">
+                    <SafeTunesLogo className="w-28 h-28 text-accent-400" />
                   </div>
                 ) : (
                   <img
@@ -640,7 +640,7 @@ export function FullScreenPlayer({
                     <>
                       <button
                         onClick={(e) => { onShuffleToggle(); e.currentTarget.blur(); }}
-                        className={`player-button p-2 rounded-full transition ${isShuffleOn ? 'text-purple-400' : 'text-white/50 hover:text-white'}`}
+                        className={`player-button p-2 rounded-full transition ${isShuffleOn ? 'text-accent-400' : 'text-white/50 hover:text-white'}`}
                       >
                         <Shuffle className="w-6 h-6" />
                       </button>
@@ -682,7 +682,7 @@ export function FullScreenPlayer({
 
                       <button
                         onClick={(e) => { onRepeatToggle(); e.currentTarget.blur(); }}
-                        className={`player-button p-2 rounded-full transition ${isRepeatOn ? 'text-purple-400' : 'text-white/50 hover:text-white'}`}
+                        className={`player-button p-2 rounded-full transition ${isRepeatOn ? 'text-accent-400' : 'text-white/50 hover:text-white'}`}
                       >
                         <Repeat className="w-6 h-6" />
                       </button>
@@ -799,7 +799,7 @@ export function FullScreenPlayer({
                   <div className="p-5">
                     {lyricsLoading ? (
                       <div className="flex justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-600"></div>
                       </div>
                     ) : lyrics ? (
                       <pre className="text-gray-800 text-base whitespace-pre-wrap font-sans leading-relaxed">
@@ -839,7 +839,7 @@ export function FullScreenPlayer({
                                   className="w-12 h-12 rounded-lg object-cover shadow-sm"
                                 />
                               ) : (
-                                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                                <div className="w-12 h-12 rounded-lg bg-accent-500 flex items-center justify-center">
                                   <Music className="w-6 h-6 text-white" />
                                 </div>
                               )}
@@ -857,8 +857,8 @@ export function FullScreenPlayer({
                       </div>
                     ) : (
                       <div className="text-center py-8 px-6">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mx-auto mb-4">
-                          <ListMusic className="w-8 h-8 text-purple-400" />
+                        <div className="w-16 h-16 rounded-full bg-accent-100 flex items-center justify-center mx-auto mb-4">
+                          <ListMusic className="w-8 h-8 text-accent-400" />
                         </div>
                         <p className="text-gray-900 font-semibold mb-1">No songs queued</p>
                         <p className="text-gray-500 text-sm">Play an album or playlist to fill up your queue</p>
@@ -902,7 +902,7 @@ export function LibraryTabs({
             onClick={() => onChange(tab)}
             className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
               isActive
-                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg shadow-purple-200'
+                ? 'bg-accent-500 text-white shadow-lg shadow-accent-200'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -945,8 +945,8 @@ export function AlbumGrid({
           >
             <div className="relative mb-3">
               {album.hideArtwork || !artworkUrl ? (
-                <div className="w-full aspect-square bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center shadow-md">
-                  <SafeTunesLogo className="w-12 h-12 text-white/70" />
+                <div className="w-full aspect-square bg-brand-cream-2 rounded-xl flex items-center justify-center shadow-md">
+                  <SafeTunesLogo className="w-12 h-12 text-accent-400" />
                 </div>
               ) : (
                 <img
@@ -961,7 +961,7 @@ export function AlbumGrid({
                     e.stopPropagation();
                     onPlayAlbum(album);
                   }}
-                  className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-95"
+                  className="absolute bottom-2 right-2 w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-95"
                 >
                   <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
                 </button>
@@ -1009,7 +1009,7 @@ export function ArtistList({
           }`}
         >
           {/* Circular Avatar */}
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-md">
+          <div className="w-12 h-12 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0 shadow-md">
             <span className="text-white font-bold text-lg">
               {artist.name?.charAt(0)?.toUpperCase() || '?'}
             </span>
@@ -1058,7 +1058,7 @@ export function SongList({
       {showShuffleAll && songs.length > 1 && (
         <button
           onClick={onShuffleAll}
-          className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-200 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          className="w-full py-3.5 bg-accent-500 text-white rounded-xl font-semibold shadow-lg shadow-accent-200 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
         >
           <Shuffle className="w-5 h-5" />
           Shuffle All ({songs.length})
@@ -1078,8 +1078,8 @@ export function SongList({
             >
               {/* Album Art */}
               {song.hideArtwork || !artworkUrl ? (
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center flex-shrink-0">
-                  <SafeTunesLogo className="w-6 h-6 text-white/70" />
+                <div className="w-12 h-12 rounded-lg bg-brand-cream-2 flex items-center justify-center flex-shrink-0">
+                  <SafeTunesLogo className="w-6 h-6 text-accent-400" />
                 </div>
               ) : (
                 <img
@@ -1114,7 +1114,7 @@ export function SongList({
                 )}
                 <button
                   onClick={() => onPlaySong?.(song)}
-                  className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center shadow-md active:scale-95 transition-transform"
+                  className="w-9 h-9 rounded-full bg-accent-500 flex items-center justify-center shadow-md active:scale-95 transition-transform"
                 >
                   <Play className="w-4 h-4 text-white ml-0.5" fill="white" />
                 </button>
@@ -1147,8 +1147,8 @@ export function GenreList({
 
   // Genre color palette
   const genreColors = [
-    'from-purple-500 to-pink-500',
-    'from-blue-500 to-purple-500',
+    'from-accent-500 to-pink-500',
+    'from-blue-500 to-accent-500',
     'from-green-500 to-teal-500',
     'from-orange-500 to-red-500',
     'from-pink-500 to-rose-500',
@@ -1219,8 +1219,8 @@ export function PlaylistList({
                 className="w-14 h-14 rounded-lg object-cover flex-shrink-0 shadow-sm"
               />
             ) : (
-              <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center flex-shrink-0">
-                <SafeTunesLogo className="w-7 h-7 text-white/70" />
+              <div className="w-14 h-14 rounded-lg bg-brand-cream-2 flex items-center justify-center flex-shrink-0">
+                <SafeTunesLogo className="w-7 h-7 text-accent-400" />
               </div>
             )}
 
@@ -1239,7 +1239,7 @@ export function PlaylistList({
                   e.stopPropagation();
                   onPlayPlaylist(playlist);
                 }}
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center shadow-md active:scale-95 transition-transform flex-shrink-0"
+                className="w-10 h-10 rounded-full bg-accent-500 flex items-center justify-center shadow-md active:scale-95 transition-transform flex-shrink-0"
               >
                 <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
               </button>
@@ -1275,18 +1275,18 @@ export function EmptyState({
           <div className="relative w-24 h-24 mb-2">
             {/* Animated music notes */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 rounded-2xl bg-accent-500 flex items-center justify-center shadow-lg">
                 <Music className="w-8 h-8 text-white" />
               </div>
             </div>
             <div className="absolute -top-1 -right-1 animate-bounce" style={{ animationDelay: '0s' }}>
-              <div className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center">
-                <span className="text-purple-600 text-xs">♪</span>
+              <div className="w-6 h-6 rounded-full bg-accent-200 flex items-center justify-center">
+                <span className="text-accent-600 text-xs">♪</span>
               </div>
             </div>
             <div className="absolute -bottom-1 -left-1 animate-bounce" style={{ animationDelay: '0.3s' }}>
-              <div className="w-5 h-5 rounded-full bg-pink-200 flex items-center justify-center">
-                <span className="text-pink-600 text-xs">♫</span>
+              <div className="w-5 h-5 rounded-full bg-accent-200 flex items-center justify-center">
+                <span className="text-accent-600 text-xs">♫</span>
               </div>
             </div>
           </div>
@@ -1295,9 +1295,9 @@ export function EmptyState({
         return (
           <div className="relative w-24 h-24 mb-2">
             {/* Stacked cards effect */}
-            <div className="absolute top-2 left-2 w-16 h-16 rounded-xl bg-purple-200 transform rotate-6" />
-            <div className="absolute top-1 left-1 w-16 h-16 rounded-xl bg-pink-200 transform -rotate-3" />
-            <div className="absolute top-0 left-0 w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+            <div className="absolute top-2 left-2 w-16 h-16 rounded-xl bg-accent-200 transform rotate-6" />
+            <div className="absolute top-1 left-1 w-16 h-16 rounded-xl bg-accent-200 transform -rotate-3" />
+            <div className="absolute top-0 left-0 w-16 h-16 rounded-xl bg-accent-500 flex items-center justify-center shadow-lg">
               <ListMusic className="w-8 h-8 text-white" />
             </div>
           </div>
@@ -1306,11 +1306,11 @@ export function EmptyState({
         return (
           <div className="relative w-24 h-24 mb-2">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-16 h-16 rounded-full border-4 border-dashed border-purple-300 flex items-center justify-center animate-pulse">
-                <Search className="w-7 h-7 text-purple-400" />
+              <div className="w-16 h-16 rounded-full border-4 border-dashed border-accent-300 flex items-center justify-center animate-pulse">
+                <Search className="w-7 h-7 text-accent-400" />
               </div>
             </div>
-            <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <div className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-accent-500 flex items-center justify-center">
               <span className="text-white text-xs">?</span>
             </div>
           </div>
@@ -1320,28 +1320,28 @@ export function EmptyState({
           <div className="relative w-24 h-24 mb-2">
             {/* Empty queue visual */}
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-              <div className="w-14 h-2 rounded-full bg-purple-100" />
-              <div className="w-12 h-2 rounded-full bg-pink-100" />
-              <div className="w-10 h-2 rounded-full bg-purple-100" />
-              <div className="w-8 h-2 rounded-full bg-pink-100 opacity-50" />
+              <div className="w-14 h-2 rounded-full bg-accent-100" />
+              <div className="w-12 h-2 rounded-full bg-accent-100" />
+              <div className="w-10 h-2 rounded-full bg-accent-100" />
+              <div className="w-8 h-2 rounded-full bg-accent-100 opacity-50" />
             </div>
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-accent-500 flex items-center justify-center shadow-lg">
               <ListMusic className="w-4 h-4 text-white" />
             </div>
           </div>
         );
       default:
         return (
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-4">
+          <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
             {isRenderedElement ? (
               // Icon is already a rendered JSX element, render it directly
               Icon
             ) : Icon && typeof Icon === 'function' ? (
               // Icon is a component reference (function), render it as a component
-              <Icon className="w-10 h-10 text-purple-400" />
+              <Icon className="w-10 h-10 text-accent-400" />
             ) : (
               // Fallback - use Music icon
-              <Music className="w-10 h-10 text-purple-400" />
+              <Music className="w-10 h-10 text-accent-400" />
             )}
           </div>
         );
@@ -1356,7 +1356,7 @@ export function EmptyState({
       {action && actionLabel && (
         <button
           onClick={action}
-          className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-full font-semibold text-sm shadow-lg shadow-purple-200 active:scale-95 transition-transform"
+          className="px-5 py-2.5 bg-accent-500 text-white rounded-full font-semibold text-sm shadow-lg shadow-accent-200 active:scale-95 transition-transform"
         >
           {actionLabel}
         </button>
@@ -1417,7 +1417,7 @@ export function LyricsModal({
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-purple-600 border-t-transparent mb-3" />
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent-600 border-t-transparent mb-3" />
               <p className="text-gray-500 text-sm">Loading lyrics...</p>
             </div>
           ) : error ? (
@@ -1499,11 +1499,11 @@ export function QueueModal({
         <div className="flex-1 overflow-y-auto">
           {/* Now Playing */}
           {currentTrack && (
-            <div className="px-6 py-3 bg-purple-50 border-b border-purple-100">
-              <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-2">Now Playing</p>
+            <div className="px-6 py-3 bg-accent-50 border-b border-accent-100">
+              <p className="text-xs font-semibold text-accent-600 uppercase tracking-wide mb-2">Now Playing</p>
               <div className="flex items-center gap-3">
                 {hideArtwork ? (
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0">
                     <Music className="w-6 h-6 text-white" />
                   </div>
                 ) : (
@@ -1545,8 +1545,8 @@ export function QueueModal({
                     >
                       <span className="w-6 text-center text-sm text-gray-400">{index + 1}</span>
                       {hideArtwork || !artworkUrl ? (
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center flex-shrink-0">
-                          <SafeTunesLogo className="w-5 h-5 text-white/70" />
+                        <div className="w-10 h-10 rounded-lg bg-brand-cream-2 flex items-center justify-center flex-shrink-0">
+                          <SafeTunesLogo className="w-5 h-5 text-accent-400" />
                         </div>
                       ) : (
                         <img
@@ -1703,8 +1703,8 @@ export function SongActionsModal({
         <div className="px-6 pb-4 lg:pt-4 border-b border-gray-100">
           <div className="flex items-center gap-4">
             {hideArtwork || !artworkUrl ? (
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                <SafeTunesLogo className="w-8 h-8 text-white/70" />
+              <div className="w-16 h-16 rounded-xl bg-brand-cream-2 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <SafeTunesLogo className="w-8 h-8 text-accent-400" />
               </div>
             ) : (
               <img
@@ -1731,13 +1731,13 @@ export function SongActionsModal({
               key={index}
               onClick={(e) => { action.onClick(); e.currentTarget.blur(); }}
               className={`w-full flex items-center gap-4 px-6 py-4 hover:bg-gray-50 active:bg-gray-100 transition focus:outline-none focus:ring-0 ${
-                action.highlight ? 'bg-purple-50' : ''
+                action.highlight ? 'bg-accent-50' : ''
               }`}
             >
-              <span className={action.highlight ? 'text-purple-600' : 'text-gray-600'}>{action.icon}</span>
-              <span className={`font-medium ${action.highlight ? 'text-purple-700' : 'text-gray-900'}`}>{action.label}</span>
+              <span className={action.highlight ? 'text-accent-600' : 'text-gray-600'}>{action.icon}</span>
+              <span className={`font-medium ${action.highlight ? 'text-accent-700' : 'text-gray-900'}`}>{action.label}</span>
               {action.highlight && (
-                <span className="ml-auto px-2 py-0.5 bg-purple-100 text-purple-600 text-xs font-bold rounded">
+                <span className="ml-auto px-2 py-0.5 bg-accent-100 text-accent-600 text-xs font-bold rounded">
                   ADD
                 </span>
               )}
@@ -1831,7 +1831,7 @@ export function SleepTimerModal({
         {/* Header */}
         <div className="px-6 pb-4 lg:pt-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-accent-600 flex items-center justify-center">
               <Moon className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -2065,7 +2065,7 @@ export function KidPlayerDemo() {
             onClick={() => setActiveView('requests')}
             className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${
               activeView === 'requests'
-                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg'
+                ? 'bg-accent-500 text-white shadow-lg'
                 : 'bg-gray-100 text-gray-600'
             }`}
           >
@@ -2075,7 +2075,7 @@ export function KidPlayerDemo() {
             onClick={() => setActiveView('library')}
             className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all ${
               activeView === 'library'
-                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg'
+                ? 'bg-accent-500 text-white shadow-lg'
                 : 'bg-gray-100 text-gray-600'
             }`}
           >
@@ -2090,7 +2090,7 @@ export function KidPlayerDemo() {
           <>
             {/* Page Title */}
             <div className="px-4 pt-4 pb-2">
-              <h1 className="text-2xl font-bold text-gray-900">Requests</h1>
+              <h1 className="text-2xl font-display font-bold text-brand-navy">Requests</h1>
             </div>
 
             {/* Search Bar */}
@@ -2141,7 +2141,7 @@ export function KidPlayerDemo() {
           <>
             {/* Page Title */}
             <div className="px-4 pt-4 pb-2">
-              <h1 className="text-2xl font-bold text-gray-900">Library</h1>
+              <h1 className="text-2xl font-display font-bold text-brand-navy">Library</h1>
             </div>
 
             {/* Library Search */}
@@ -2153,7 +2153,7 @@ export function KidPlayerDemo() {
                   placeholder="Search your library..."
                   value={librarySearchValue}
                   onChange={(e) => setLibrarySearchValue(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-[16px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent shadow-sm"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-[16px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent shadow-sm"
                 />
                 {librarySearchValue && (
                   <button

@@ -41,7 +41,7 @@ const MOOD_CARDS = [
     title: 'Disney & Kids',
     subtitle: 'Movie Magic',
     icon: Sparkles,
-    gradient: 'from-blue-400 to-purple-500',
+    gradient: 'from-blue-400 to-accent-500',
     keywords: ['disney', 'pixar', 'frozen', 'moana', 'encanto', 'soundtrack', 'animation', 'kids', 'children', 'dreamworks']
   },
   {
@@ -65,7 +65,7 @@ const MOOD_CARDS = [
     title: 'Sleepy Time',
     subtitle: 'Wind Down',
     icon: Moon,
-    gradient: 'from-indigo-400 to-purple-600',
+    gradient: 'from-indigo-400 to-accent-600',
     keywords: ['sleep', 'lullaby', 'bedtime', 'calm', 'peaceful', 'relaxing', 'soft', 'gentle', 'quiet']
   },
   {
@@ -73,7 +73,7 @@ const MOOD_CARDS = [
     title: 'Pop Hits',
     subtitle: 'Chart Toppers',
     icon: TrendingUp,
-    gradient: 'from-pink-400 to-purple-500',
+    gradient: 'from-pink-400 to-accent-500',
     keywords: ['pop', 'hits', 'top', 'chart', 'radio', 'mainstream', 'popular']
   },
   {
@@ -201,13 +201,13 @@ function SectionHeader({ title, actionLabel, onAction, icon: Icon }) {
   return (
     <div className="flex items-center justify-between mb-3 px-4">
       <div className="flex items-center gap-2">
-        {Icon && <Icon className="w-5 h-5 text-purple-600" />}
+        {Icon && <Icon className="w-5 h-5 text-accent-600" />}
         <h2 className="text-lg font-bold text-gray-900">{title}</h2>
       </div>
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="text-sm font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1"
+          className="text-sm font-semibold text-accent-600 hover:text-accent-700 flex items-center gap-1"
         >
           {actionLabel}
           <ChevronRight className="w-4 h-4" />
@@ -250,18 +250,18 @@ function SpotlightCard({ album, onPress, onPlay, onAdd, isInLibrary, hideArtwork
 
   return (
     <div className="mx-4 mb-6">
-      <div className="relative bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 rounded-3xl p-1 shadow-2xl">
+      <div className="relative bg-accent-500 rounded-3xl p-1 shadow-2xl">
         <div className="bg-white rounded-[22px] p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-5 h-5 text-purple-600" />
-            <span className="text-sm font-bold text-purple-600">Today's Pick</span>
+            <Sparkles className="w-5 h-5 text-accent-600" />
+            <span className="text-sm font-bold text-accent-600">Today's Pick</span>
           </div>
 
           <div onClick={() => onPress(album)} className="flex gap-4 w-full text-left cursor-pointer">
             <div className="relative w-28 h-28 flex-shrink-0">
               {hideArtwork || !artworkUrl ? (
-                <div className="w-full h-full rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                  <SafeTunesLogo className="w-10 h-10 text-white/70" />
+                <div className="w-full h-full rounded-xl bg-brand-cream-2 flex items-center justify-center">
+                  <SafeTunesLogo className="w-10 h-10 text-accent-400" />
                 </div>
               ) : (
                 <img
@@ -277,7 +277,7 @@ function SpotlightCard({ album, onPress, onPlay, onAdd, isInLibrary, hideArtwork
                   className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl opacity-0 hover:opacity-100 transition-opacity"
                 >
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
-                    <Play className="w-6 h-6 text-purple-600 ml-0.5" fill="currentColor" />
+                    <Play className="w-6 h-6 text-accent-600 ml-0.5" fill="currentColor" />
                   </div>
                 </button>
               )}
@@ -301,7 +301,7 @@ function SpotlightCard({ album, onPress, onPlay, onAdd, isInLibrary, hideArtwork
                 {onPlay && (
                   <button
                     onClick={(e) => { e.stopPropagation(); onPlay(album); }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm font-medium transition"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-accent-100 hover:bg-accent-200 text-accent-700 rounded-lg text-sm font-medium transition"
                   >
                     <Play className="w-3.5 h-3.5" fill="currentColor" />
                     Play
@@ -310,7 +310,7 @@ function SpotlightCard({ album, onPress, onPlay, onAdd, isInLibrary, hideArtwork
                 {!isInLibrary ? (
                   <button
                     onClick={(e) => { e.stopPropagation(); onAdd(album); }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 hover:border-purple-400 hover:bg-purple-50 text-gray-600 hover:text-purple-600 rounded-lg text-sm font-medium transition"
+                    className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 hover:border-accent-400 hover:bg-accent-50 text-gray-600 hover:text-accent-600 rounded-lg text-sm font-medium transition"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Add
@@ -343,8 +343,8 @@ function PlaylistCard({ playlist, onPress, hideArtwork }) {
     >
       <div className="relative w-[160px] aspect-square mb-2">
         {hideArtwork || !artworkUrl ? (
-          <div className="w-full h-full rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center shadow-md">
-            <SafeTunesLogo className="w-10 h-10 text-white/70" />
+          <div className="w-full h-full rounded-xl bg-brand-cream-2 flex items-center justify-center shadow-md">
+            <SafeTunesLogo className="w-10 h-10 text-accent-400" />
           </div>
         ) : (
           <img
@@ -354,11 +354,11 @@ function PlaylistCard({ playlist, onPress, hideArtwork }) {
           />
         )}
         {/* Play icon overlay */}
-        <div className="absolute bottom-2 right-2 w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center shadow-lg opacity-90 group-hover:opacity-100 transition-opacity">
+        <div className="absolute bottom-2 right-2 w-10 h-10 bg-accent-600 rounded-full flex items-center justify-center shadow-lg opacity-90 group-hover:opacity-100 transition-opacity">
           <Play className="w-5 h-5 text-white ml-0.5" fill="currentColor" />
         </div>
       </div>
-      <p className="text-sm font-medium text-gray-900 truncate leading-tight group-hover:text-purple-700 transition">
+      <p className="text-sm font-medium text-gray-900 truncate leading-tight group-hover:text-accent-700 transition">
         {playlist.playlistName}
       </p>
       <p className="text-xs text-gray-500 truncate">
@@ -383,8 +383,8 @@ function AlbumCard({ album, onPress, hideArtwork, isInLibrary, size = 'medium' }
     >
       <div className={`relative ${dimensions} aspect-square mb-2`}>
         {hideArtwork || !artworkUrl ? (
-          <div className="w-full h-full rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center shadow-md">
-            <SafeTunesLogo className="w-10 h-10 text-white/70" />
+          <div className="w-full h-full rounded-xl bg-brand-cream-2 flex items-center justify-center shadow-md">
+            <SafeTunesLogo className="w-10 h-10 text-accent-400" />
           </div>
         ) : (
           <img
@@ -428,8 +428,8 @@ function AlbumDetailModal({ album, tracks, loading, onClose, onPlayTrack, onPlay
         <div className="p-4 border-b flex items-start gap-4">
           <div className="w-20 h-20 flex-shrink-0">
             {hideArtwork || !artworkUrl ? (
-              <div className="w-full h-full rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                <SafeTunesLogo className="w-8 h-8 text-white/70" />
+              <div className="w-full h-full rounded-xl bg-brand-cream-2 flex items-center justify-center">
+                <SafeTunesLogo className="w-8 h-8 text-accent-400" />
               </div>
             ) : (
               <img
@@ -453,7 +453,7 @@ function AlbumDetailModal({ album, tracks, loading, onClose, onPlayTrack, onPlay
         <div className="px-4 py-3 border-b flex gap-2">
           <button
             onClick={onPlayAlbum}
-            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition"
+            className="flex-1 bg-accent-600 hover:bg-accent-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition"
           >
             <Play className="w-4 h-4" fill="currentColor" />
             Play All
@@ -478,7 +478,7 @@ function AlbumDetailModal({ album, tracks, loading, onClose, onPlayTrack, onPlay
         <div className="flex-1 overflow-y-auto overscroll-contain">
           {loading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-600"></div>
             </div>
           ) : tracks.length > 0 ? (
             <div className="divide-y divide-gray-100 pb-6">
@@ -488,25 +488,25 @@ function AlbumDetailModal({ album, tracks, loading, onClose, onPlayTrack, onPlay
                   <button
                     key={track.id || index}
                     onClick={() => onPlayTrackWithContext ? onPlayTrackWithContext(track, tracks, index) : onPlayTrack(track)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition ${isCurrentlyPlaying ? 'bg-purple-50' : ''}`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition ${isCurrentlyPlaying ? 'bg-accent-50' : ''}`}
                   >
-                    <span className={`w-6 text-center text-sm font-medium ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-400'}`}>
+                    <span className={`w-6 text-center text-sm font-medium ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-400'}`}>
                       {isCurrentlyPlaying ? (
                         <span className="flex items-center justify-center gap-0.5">
-                          <span className={`w-0.5 bg-purple-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
-                          <span className={`w-0.5 bg-purple-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
-                          <span className={`w-0.5 bg-purple-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
+                          <span className={`w-0.5 bg-accent-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
+                          <span className={`w-0.5 bg-accent-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
+                          <span className={`w-0.5 bg-accent-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
                         </span>
                       ) : (
                         index + 1
                       )}
                     </span>
                     <div className="flex-1 min-w-0 text-left">
-                      <p className={`font-medium truncate ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-900'}`}>
+                      <p className={`font-medium truncate ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-900'}`}>
                         {track.attributes?.name || track.songName}
                       </p>
                     </div>
-                    <span className={`text-sm ${isCurrentlyPlaying ? 'text-purple-500' : 'text-gray-400'}`}>
+                    <span className={`text-sm ${isCurrentlyPlaying ? 'text-accent-500' : 'text-gray-400'}`}>
                       {formatDuration(track.attributes?.durationInMillis || track.durationInMillis)}
                     </span>
                   </button>
@@ -536,7 +536,7 @@ function ArtistCircle({ name, albums, onClick }) {
       className="flex-shrink-0 w-20 flex flex-col items-center gap-2 group"
     >
       {/* Artist Circle - larger and circular */}
-      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center overflow-hidden shadow-lg group-hover:shadow-xl group-active:scale-95 transition-all">
+      <div className="w-20 h-20 rounded-full bg-accent-500 flex items-center justify-center overflow-hidden shadow-lg group-hover:shadow-xl group-active:scale-95 transition-all">
         {firstAlbumArt ? (
           <img src={firstAlbumArt} alt={name} className="w-full h-full object-cover" />
         ) : (
@@ -555,7 +555,7 @@ function GenreCard({ name, albums, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl p-4 text-left shadow-lg transition-all active:scale-[0.98]"
+      className="bg-accent-500 hover:bg-accent-600 text-white rounded-2xl p-4 text-left shadow-lg transition-all active:scale-[0.98]"
     >
       <p className="font-bold text-lg truncate">{name}</p>
       <p className="text-sm text-white/80">{albums.length} {albums.length === 1 ? 'album' : 'albums'}</p>
@@ -573,12 +573,12 @@ function DrillDownView({ title, subtitle, albums, onBack, onAlbumPress, onAddAlb
       <div className="px-4 pt-6 pb-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-purple-600 font-medium mb-3"
+          className="flex items-center gap-2 text-accent-600 font-medium mb-3"
         >
           <ChevronRight className="w-5 h-5 rotate-180" />
           Back to Discover
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+        <h1 className="text-2xl font-display font-bold text-brand-navy">{title}</h1>
         {subtitle && <p className="text-gray-500 text-sm mt-1">{subtitle}</p>}
       </div>
 
@@ -598,8 +598,8 @@ function DrillDownView({ title, subtitle, albums, onBack, onAlbumPress, onAddAlb
                     className="w-full aspect-square rounded-2xl overflow-hidden shadow-lg active:scale-[0.98] transition-transform"
                   >
                     {hideArtwork || !artworkUrl ? (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                        <SafeTunesLogo className="w-12 h-12 text-white/70" />
+                      <div className="w-full h-full bg-brand-cream-2 flex items-center justify-center">
+                        <SafeTunesLogo className="w-12 h-12 text-accent-400" />
                       </div>
                     ) : (
                       <img src={artworkUrl} alt={album.albumName} className="w-full h-full object-cover" />
@@ -630,8 +630,8 @@ function DrillDownView({ title, subtitle, albums, onBack, onAlbumPress, onAddAlb
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-4">
-            <Music className="w-10 h-10 text-purple-400" />
+          <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
+            <Music className="w-10 h-10 text-accent-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-1">No albums here yet</h3>
           <p className="text-gray-500 text-sm max-w-xs">Check back later!</p>
@@ -1058,7 +1058,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
           <div className="px-4 pt-6 pb-4">
             <button
               onClick={() => setSelectedPlaylist(null)}
-              className="flex items-center gap-2 text-purple-600 font-medium mb-4"
+              className="flex items-center gap-2 text-accent-600 font-medium mb-4"
             >
               <ChevronRight className="w-5 h-5 rotate-180" />
               Back
@@ -1068,7 +1068,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
             <div className="flex gap-4">
               <div className="w-28 h-28 flex-shrink-0">
                 {selectedPlaylist.hideArtwork || !artworkUrl ? (
-                  <div className="w-full h-full rounded-xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shadow-lg">
+                  <div className="w-full h-full rounded-xl bg-accent-500 flex items-center justify-center shadow-lg">
                     <ListMusic className="w-10 h-10 text-white/80" />
                   </div>
                 ) : (
@@ -1080,7 +1080,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold text-gray-900 line-clamp-2">{selectedPlaylist.playlistName}</h1>
+                <h1 className="text-xl font-display font-bold text-brand-navy line-clamp-2">{selectedPlaylist.playlistName}</h1>
                 <p className="text-gray-500 text-sm mt-1">{selectedPlaylist.curatorName || 'Playlist'}</p>
                 <p className="text-gray-400 text-xs mt-1">{selectedPlaylist.trackCount || selectedPlaylistTracks?.length || '?'} songs</p>
               </div>
@@ -1091,7 +1091,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
               <button
                 onClick={() => handlePlayPlaylist(selectedPlaylist, selectedPlaylistTracks)}
                 disabled={!selectedPlaylistTracks || selectedPlaylistTracks.length === 0}
-                className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white px-4 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition"
+                className="flex-1 bg-accent-600 hover:bg-accent-700 disabled:bg-gray-300 text-white px-4 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition"
               >
                 <Play className="w-5 h-5" fill="currentColor" />
                 Play All
@@ -1120,7 +1120,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
           <div className="pb-32">
             {!selectedPlaylistTracks ? (
               <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-600"></div>
               </div>
             ) : selectedPlaylistTracks.length > 0 ? (
               <div className="divide-y divide-gray-100">
@@ -1130,26 +1130,26 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
                     <button
                       key={track._id || `track-${index}`}
                       onClick={() => handlePlayPlaylistTrack(track, index)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition ${isCurrentlyPlaying ? 'bg-purple-50' : ''}`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition ${isCurrentlyPlaying ? 'bg-accent-50' : ''}`}
                     >
-                      <span className={`w-6 text-center text-sm font-medium ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-400'}`}>
+                      <span className={`w-6 text-center text-sm font-medium ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-400'}`}>
                         {isCurrentlyPlaying ? (
                           <span className="flex items-center justify-center gap-0.5">
-                            <span className={`w-0.5 bg-purple-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
-                            <span className={`w-0.5 bg-purple-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
-                            <span className={`w-0.5 bg-purple-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
+                            <span className={`w-0.5 bg-accent-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
+                            <span className={`w-0.5 bg-accent-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
+                            <span className={`w-0.5 bg-accent-600 rounded-full ${isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
                           </span>
                         ) : (
                           index + 1
                         )}
                       </span>
                       <div className="flex-1 min-w-0 text-left">
-                        <p className={`font-medium truncate ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-900'}`}>
+                        <p className={`font-medium truncate ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-900'}`}>
                           {track.songName}
                         </p>
                         <p className="text-xs text-gray-500 truncate">{track.artistName}</p>
                       </div>
-                      <span className={`text-sm ${isCurrentlyPlaying ? 'text-purple-500' : 'text-gray-400'}`}>
+                      <span className={`text-sm ${isCurrentlyPlaying ? 'text-accent-500' : 'text-gray-400'}`}>
                         {formatDuration(track.durationInMillis)}
                       </span>
                     </button>
@@ -1224,12 +1224,12 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
           <div className="px-4 pt-6 pb-4">
             <button
               onClick={() => setSelectedMood(null)}
-              className="flex items-center gap-2 text-purple-600 font-medium mb-3"
+              className="flex items-center gap-2 text-accent-600 font-medium mb-3"
             >
               <ChevronRight className="w-5 h-5 rotate-180" />
               Back to Discover
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">{mood.title}</h1>
+            <h1 className="text-2xl font-display font-bold text-brand-navy">{mood.title}</h1>
             <p className="text-gray-500 text-sm mt-1">
               {moodAlbums.length} {moodAlbums.length === 1 ? 'album' : 'albums'}
               {moodPlaylists.length > 0 && ` • ${moodPlaylists.length} ${moodPlaylists.length === 1 ? 'playlist' : 'playlists'}`}
@@ -1241,7 +1241,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
             <div className="mb-6">
               <div className="px-4 mb-3">
                 <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <ListMusic className="w-5 h-5 text-purple-600" />
+                  <ListMusic className="w-5 h-5 text-accent-600" />
                   Playlists
                 </h2>
               </div>
@@ -1263,7 +1263,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
             <div className="px-4 pb-32">
               {moodPlaylists.length > 0 && (
                 <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <Music className="w-5 h-5 text-purple-600" />
+                  <Music className="w-5 h-5 text-accent-600" />
                   Albums
                 </h2>
               )}
@@ -1280,8 +1280,8 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
                         className="w-full aspect-square rounded-2xl overflow-hidden shadow-lg active:scale-[0.98] transition-transform"
                       >
                         {hideArtwork || !artworkUrl ? (
-                          <div className="w-full h-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                            <SafeTunesLogo className="w-12 h-12 text-white/70" />
+                          <div className="w-full h-full bg-brand-cream-2 flex items-center justify-center">
+                            <SafeTunesLogo className="w-12 h-12 text-accent-400" />
                           </div>
                         ) : (
                           <img src={artworkUrl} alt={album.albumName} className="w-full h-full object-cover" />
@@ -1312,8 +1312,8 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
             </div>
           ) : moodPlaylists.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-4">
-                <Music className="w-10 h-10 text-purple-400" />
+              <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
+                <Music className="w-10 h-10 text-accent-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-1">No {mood.title.toLowerCase()} music yet</h3>
               <p className="text-gray-500 text-sm max-w-xs">Check back later!</p>
@@ -1356,12 +1356,12 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
           <div className="px-4 pt-6 pb-4">
             <button
               onClick={() => setSeeAllView(null)}
-              className="flex items-center gap-2 text-purple-600 font-medium mb-3"
+              className="flex items-center gap-2 text-accent-600 font-medium mb-3"
             >
               <ChevronRight className="w-5 h-5 rotate-180" />
               Back to Discover
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">All Artists</h1>
+            <h1 className="text-2xl font-display font-bold text-brand-navy">All Artists</h1>
             <p className="text-gray-500 text-sm mt-1">{albumsByArtist.length} artists</p>
           </div>
 
@@ -1374,7 +1374,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
                   onClick={() => { setSeeAllView(null); setSelectedArtist([name, albums]); }}
                   className="flex flex-col items-center gap-2 group"
                 >
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center overflow-hidden shadow-lg group-hover:shadow-xl group-active:scale-95 transition-all">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-accent-500 flex items-center justify-center overflow-hidden shadow-lg group-hover:shadow-xl group-active:scale-95 transition-all">
                     {albums[0]?.artworkUrl ? (
                       <img
                         src={albums[0].artworkUrl.replace('{w}', '200').replace('{h}', '200')}
@@ -1406,12 +1406,12 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
           <div className="px-4 pt-6 pb-4">
             <button
               onClick={() => setSeeAllView(null)}
-              className="flex items-center gap-2 text-purple-600 font-medium mb-3"
+              className="flex items-center gap-2 text-accent-600 font-medium mb-3"
             >
               <ChevronRight className="w-5 h-5 rotate-180" />
               Back to Discover
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">All Genres</h1>
+            <h1 className="text-2xl font-display font-bold text-brand-navy">All Genres</h1>
             <p className="text-gray-500 text-sm mt-1">{albumsByGenre.length} genres</p>
           </div>
 
@@ -1422,7 +1422,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
                 <button
                   key={name}
                   onClick={() => { setSeeAllView(null); setSelectedGenre([name, albums]); }}
-                  className="bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl p-4 text-left shadow-lg transition-all active:scale-[0.98]"
+                  className="bg-accent-500 hover:bg-accent-600 text-white rounded-2xl p-4 text-left shadow-lg transition-all active:scale-[0.98]"
                 >
                   <p className="font-bold text-base lg:text-lg truncate">{name}</p>
                   <p className="text-sm text-white/80">{albums.length} {albums.length === 1 ? 'album' : 'albums'}</p>
@@ -1445,12 +1445,12 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
           <div className="px-4 pt-6 pb-4">
             <button
               onClick={() => setSeeAllView(null)}
-              className="flex items-center gap-2 text-purple-600 font-medium mb-3"
+              className="flex items-center gap-2 text-accent-600 font-medium mb-3"
             >
               <ChevronRight className="w-5 h-5 rotate-180" />
               Back to Discover
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">Featured Playlists</h1>
+            <h1 className="text-2xl font-display font-bold text-brand-navy">Featured Playlists</h1>
             <p className="text-gray-500 text-sm mt-1">{featuredContent?.playlists?.length || 0} playlists</p>
           </div>
 
@@ -1467,7 +1467,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
                     className="w-full aspect-square rounded-2xl overflow-hidden shadow-lg active:scale-[0.98] transition-transform group relative"
                   >
                     {playlist.hideArtwork || !artworkUrl ? (
-                      <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                      <div className="w-full h-full bg-accent-500 flex items-center justify-center">
                         <ListMusic className="w-12 h-12 text-white/60" />
                       </div>
                     ) : (
@@ -1475,7 +1475,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     {/* Play button overlay */}
-                    <div className="absolute bottom-12 right-3 w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center shadow-lg opacity-90 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute bottom-12 right-3 w-10 h-10 bg-accent-600 rounded-full flex items-center justify-center shadow-lg opacity-90 group-hover:opacity-100 transition-opacity">
                       <Play className="w-5 h-5 text-white ml-0.5" fill="currentColor" />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -1498,7 +1498,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
 
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Discover</h1>
+        <h1 className="text-3xl font-display font-bold text-brand-navy">Discover</h1>
         <p className="text-gray-500 mt-1">New music waiting for you</p>
       </div>
 
@@ -1613,7 +1613,7 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
               <button
                 key={name}
                 onClick={() => setSelectedGenre([name, albums])}
-                className="flex-shrink-0 px-5 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-full shadow-lg active:scale-95 transition-all whitespace-nowrap"
+                className="flex-shrink-0 px-5 py-3 bg-accent-500 hover:bg-accent-600 text-white font-semibold rounded-full shadow-lg active:scale-95 transition-all whitespace-nowrap"
               >
                 {name}
               </button>
@@ -1625,8 +1625,8 @@ function DiscoveryPage({ kidProfile, onPlaySong, onPlayAlbum, currentSong = null
       {/* Empty State - only show when no albums AND no playlists */}
       {albumsNotInLibrary.length === 0 && featuredPlaylists.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-4">
-            <Music className="w-10 h-10 text-purple-400" />
+          <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
+            <Music className="w-10 h-10 text-accent-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-1">
             {(featuredContent?.albums?.length > 0 || featuredContent?.playlists?.length > 0) ? 'All caught up!' : 'Nothing here yet'}

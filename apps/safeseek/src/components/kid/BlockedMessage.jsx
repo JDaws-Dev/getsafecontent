@@ -34,7 +34,7 @@ export default function BlockedMessage({
           ) : (
             <button
               onClick={onCreateRequest}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors shadow-sm active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent-500 hover:bg-accent-600 text-white text-sm font-medium transition-colors shadow-sm active:scale-[0.98]"
             >
               <Users className="w-4 h-4" />
               Ask My Parent
@@ -52,7 +52,7 @@ export default function BlockedMessage({
               <button
                 key={index}
                 onClick={() => onSuggestionClick(q)}
-                className="text-sm bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-full px-5 py-2.5 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 shadow-sm active:scale-[0.98]"
+                className="text-sm bg-white dark:bg-gray-800 border border-accent-200 dark:border-accent-700 rounded-full px-5 py-2.5 text-accent-700 dark:text-accent-300 hover:bg-accent-50 dark:hover:bg-accent-900/30 hover:border-accent-300 dark:hover:border-accent-600 transition-all duration-200 shadow-sm active:scale-[0.98]"
               >
                 {q}
               </button>
@@ -64,7 +64,7 @@ export default function BlockedMessage({
       {relatedQuestions.length === 0 && (
         <button
           onClick={onClearBlocked}
-          className="mt-6 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium py-3 transition-colors"
+          className="mt-6 text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 font-medium py-3 transition-colors"
         >
           Try a different search
         </button>

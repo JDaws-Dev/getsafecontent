@@ -17,6 +17,7 @@ import type * as crons from "../crons.js";
 import type * as families from "../families.js";
 import type * as http from "../http.js";
 import type * as jobs from "../jobs.js";
+import type * as kidPass from "../kidPass.js";
 import type * as kidProfiles from "../kidProfiles.js";
 import type * as kidSessions from "../kidSessions.js";
 import type * as migrations from "../migrations.js";
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   families: typeof families;
   http: typeof http;
   jobs: typeof jobs;
+  kidPass: typeof kidPass;
   kidProfiles: typeof kidProfiles;
   kidSessions: typeof kidSessions;
   migrations: typeof migrations;

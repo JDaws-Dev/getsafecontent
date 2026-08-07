@@ -1,28 +1,73 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* SafeFamily palette tokens — kept identical to safetunes/safetube/
-   safereads/safestudy so cross-app visits feel like one product line.
-   Per-app accent is each app's signature (SafeTunes indigo, SafeTube
-   red, SafeReads emerald — SafeSpark is violet). */
+/* Safe Family "glow-up" design system — shared brand tokens, kept identical
+   across all 5 apps (SafeTunes/SafeTube/SafeReads/SafeStudy/SafeSpark) so a
+   cross-app visit feels like one product line. Each app keeps ONE signature
+   accent: SafeTunes grape, SafeTube coral, SafeReads leaf, SafeStudy cobalt —
+   SafeSpark is AMBER (#F2A413). */
 :root {
-  --safefamily-cream: #FDF8F3;
-  --safefamily-cream-dark: #F5EDE4;
-  --safefamily-navy: #1a1a2e;
-  --safefamily-navy-soft: #2d2d44;
-  --safespark-primary: #7c3aed;     /* violet-600 — SafeSpark accent */
-  --safespark-primary-dark: #6d28d9;
-  --safespark-primary-soft: #ede9fe; /* violet-100 surface tint */
+  /* Brand neutrals — copied verbatim from the shared system */
+  --brand-cream: #FBF6EF;
+  --brand-cream-2: #F3EADD;
+  --brand-navy: #221D2E;
+  --brand-ink-soft: #6A6275;
+  --brand-peach-start: #F5A962;
+  --brand-peach-end: #E88B6A;
 
-  --background: var(--safefamily-cream);
-  --foreground: var(--safefamily-navy);
+  /* Back-compat aliases for older markup that still references the
+     legacy safefamily / safespark custom properties. */
+  --safefamily-cream: var(--brand-cream);
+  --safefamily-cream-dark: var(--brand-cream-2);
+  --safefamily-navy: var(--brand-navy);
+  --safefamily-navy-soft: #2d2d44;
+  --safespark-primary: #F2A413;      /* amber-500 — SafeSpark accent */
+  --safespark-primary-dark: #D68A0B; /* amber-600 */
+  --safespark-primary-soft: #FEF6E7; /* amber-50 surface tint */
+
+  --background: var(--brand-cream);
+  --foreground: var(--brand-navy);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-quicksand);
+
+  /* Brand neutrals → bg-brand-cream / text-brand-navy / etc. */
+  --color-brand-cream: #FBF6EF;
+  --color-brand-cream-2: #F3EADD;
+  --color-brand-navy: #221D2E;
+  --color-brand-ink-soft: #6A6275;
+  --color-brand-peach-start: #F5A962;
+  --color-brand-peach-end: #E88B6A;
+
+  /* SafeSpark signature accent — amber ramp anchored on 500 = #F2A413 */
+  --color-accent-50: #FEF6E7;
+  --color-accent-100: #FCEAC4;
+  --color-accent-200: #F9D68A;
+  --color-accent-300: #F6C154;
+  --color-accent-400: #F4B02F;
+  --color-accent-500: #F2A413;
+  --color-accent-600: #D68A0B;
+  --color-accent-700: #B06E0C;
+  --color-accent-800: #8A5511;
+  --color-accent-900: #6E4413;
+
+  /* Type — Fredoka (display/headings) + Quicksand (body), loaded via next/font */
+  --font-display: var(--font-fredoka), "Fredoka", ui-rounded, system-ui, sans-serif;
+  --font-sans: var(--font-quicksand), "Quicksand", ui-rounded, system-ui, -apple-system, sans-serif;
+
   --animate-slide-in: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Safe Family typography — body defaults to Quicksand (via --font-sans on the
+   body element in layout.tsx); headings + .font-display get Fredoka. */
+body {
+  background: var(--brand-cream);
+  color: var(--brand-navy);
+}
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
 }
 
 @keyframes slide-in {

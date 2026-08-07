@@ -20,44 +20,42 @@ export const getKidRequests = query({
       .withIndex("by_kid_profile", (q) => q.eq("kidProfileId", args.kidProfileId))
       .collect();
 
+    // Pre-fetch this kid's approved songs once via the selective index, then
+    // do existence checks in memory. Without this, each approved album request
+    // walked the parent's full approvedSongs (>1k rows) and blew past the
+    // 32k-document read limit for families with many albums.
+    const needAlbumExistenceCheck = albumRequests.some(
+      (r) => r.status === 'approved' || r.status === 'partially_approved'
+    );
+    const needSongExistenceCheck = songRequests.some((r) => r.status === 'approved');
+
+    let approvedAlbumIds = new Set<string>();
+    let approvedAlbumNames = new Set<string>();
+    let approvedSongIds = new Set<string>();
+
+    if (needAlbumExistenceCheck || needSongExistenceCheck) {
+      const approvedForKid = await ctx.db
+        .query("approvedSongs")
+        .withIndex("by_kid_profile", (q) => q.eq("kidProfileId", args.kidProfileId))
+        .collect();
+
+      for (const song of approvedForKid) {
+        if (song.appleAlbumId) approvedAlbumIds.add(song.appleAlbumId);
+        if (song.albumName) approvedAlbumNames.add(song.albumName);
+        approvedSongIds.add(song.appleSongId);
+      }
+    }
+
     // For approved album requests, check if the album still exists
     // If album was deleted after approval, don't show the request
     const validAlbumRequests = [];
     for (const request of albumRequests) {
       if (request.status === 'approved' || request.status === 'partially_approved') {
-        // Check if ANY approved songs exist for this kid from this album
-        // This is the authoritative check - albums with null kidProfileId don't count
-        let songsFromAlbum = null;
+        const stillExists =
+          (request.appleAlbumId && approvedAlbumIds.has(request.appleAlbumId)) ||
+          (request.albumName && approvedAlbumNames.has(request.albumName));
 
-        // Check by appleAlbumId first (more reliable)
-        if (request.appleAlbumId) {
-          songsFromAlbum = await ctx.db
-            .query("approvedSongs")
-            .withIndex("by_user", (q) => q.eq("userId", kidProfile.userId))
-            .filter((q) =>
-              q.and(
-                q.eq(q.field("kidProfileId"), args.kidProfileId),
-                q.eq(q.field("appleAlbumId"), request.appleAlbumId)
-              )
-            )
-            .first();
-        }
-
-        // Fallback: check by album name
-        if (!songsFromAlbum && request.albumName) {
-          songsFromAlbum = await ctx.db
-            .query("approvedSongs")
-            .withIndex("by_user", (q) => q.eq("userId", kidProfile.userId))
-            .filter((q) =>
-              q.and(
-                q.eq(q.field("kidProfileId"), args.kidProfileId),
-                q.eq(q.field("albumName"), request.albumName)
-              )
-            )
-            .first();
-        }
-
-        if (!songsFromAlbum) {
+        if (!stillExists) {
           // No approved songs exist for this kid from this album - skip
           continue;
         }
@@ -75,16 +73,7 @@ export const getKidRequests = query({
           continue;
         }
 
-        // Check if song still exists in approvedSongs for this kid
-        const songExists = await ctx.db
-          .query("approvedSongs")
-          .withIndex("by_user_and_song", (q) =>
-            q.eq("userId", kidProfile.userId).eq("appleSongId", request.appleSongId)
-          )
-          .filter((q) => q.eq(q.field("kidProfileId"), args.kidProfileId))
-          .first();
-
-        if (!songExists) {
+        if (!approvedSongIds.has(request.appleSongId)) {
           // Song was deleted - skip this request
           continue;
         }

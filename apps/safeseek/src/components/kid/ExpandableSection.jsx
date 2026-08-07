@@ -50,7 +50,7 @@ export default function ExpandableSection({ content, heading, rootQuery, borderC
       <button
         onClick={handleReadMore}
         disabled={loading}
-        className="mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline font-medium disabled:opacity-50"
+        className="mt-2 text-xs text-accent-600 dark:text-accent-400 hover:underline font-medium disabled:opacity-50"
       >
         {loading ? 'Loading...' : expanded ? 'Show less ↑' : 'Read more ↓'}
       </button>

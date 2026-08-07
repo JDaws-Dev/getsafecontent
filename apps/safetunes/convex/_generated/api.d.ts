@@ -50,6 +50,7 @@ import type * as grantLifetime from "../grantLifetime.js";
 import type * as http from "../http.js";
 import type * as httpRateLimit from "../httpRateLimit.js";
 import type * as identity from "../identity.js";
+import type * as kidPass from "../kidPass.js";
 import type * as kidProfiles from "../kidProfiles.js";
 import type * as kidRequests from "../kidRequests.js";
 import type * as listeningStats from "../listeningStats.js";
@@ -132,6 +133,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   httpRateLimit: typeof httpRateLimit;
   identity: typeof identity;
+  kidPass: typeof kidPass;
   kidProfiles: typeof kidProfiles;
   kidRequests: typeof kidRequests;
   listeningStats: typeof listeningStats;

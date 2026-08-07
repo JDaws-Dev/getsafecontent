@@ -554,7 +554,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
           <div className="absolute inset-x-0 h-2 bg-white/30 rounded-full pointer-events-none" />
           {/* Filled progress */}
           <div
-            className="absolute left-0 h-2 bg-red-500 rounded-full pointer-events-none"
+            className="absolute left-0 h-2 bg-accent-500 rounded-full pointer-events-none"
             style={{ width: `${progress}%` }}
           />
           {/* Scrubber thumb */}
@@ -629,7 +629,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
             )}
             <button
               onClick={handleReplay}
-              className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-3 rounded-full font-semibold transition flex items-center gap-2 shadow-lg"
+              className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-6 py-3 rounded-full font-semibold transition flex items-center gap-2 shadow-lg"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -652,7 +652,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
           className="absolute inset-0 flex items-center justify-center bg-black"
           style={{ zIndex: 10003 }}
         >
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent-500 border-t-transparent"></div>
         </div>
       )}
 

@@ -2,9 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Safe Family typography (Inter) */
+/* Safe Family typography — Quicksand (body) + Fredoka (display) */
 body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Quicksand', ui-rounded, system-ui, -apple-system, sans-serif;
+  background: #FBF6EF;
+  color: #221D2E;
+}
+h1, h2, h3, h4, .font-display {
+  font-family: 'Fredoka', ui-rounded, system-ui, sans-serif;
 }
 
 /* ==================== */
@@ -12,16 +17,16 @@ body {
 /* ==================== */
 
 :root {
-  /* Light mode (default) */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-tertiary: #f3f4f6;
-  --text-primary: #111827;
-  --text-secondary: #374151;
-  --text-muted: #6b7280;
-  --border-color: #e5e7eb;
-  --card-bg: #ffffff;
-  --card-border: #f3f4f6;
+  /* Light mode (default) — Safe Family warm neutrals */
+  --bg-primary: #FBF6EF;
+  --bg-secondary: #F3EADD;
+  --bg-tertiary: #EFE4D5;
+  --text-primary: #221D2E;
+  --text-secondary: #4A4356;
+  --text-muted: #7C7385;
+  --border-color: #E7DCCB;
+  --card-bg: #FFFFFF;
+  --card-border: #EEE4D6;
 }
 
 .dark {
@@ -363,4 +368,18 @@ html, body {
 
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ----------------------------------------------------------------
+ * Accessibility globals (added by UX audit round 6)
+ * ---------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -23,9 +23,9 @@ export default function LearnResults({
     <div className="space-y-5">
       {/* AI Answer — clean card with left blue border */}
       {aiSummary && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 border-l-blue-500 rounded-lg p-5">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 border-l-accent-500 rounded-lg p-5">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 text-blue-500" />
+            <Sparkles className="w-4 h-4 text-accent-500" />
             <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Answer</h2>
             <ReadAloudButton
               text={aiSummary}
@@ -58,7 +58,7 @@ export default function LearnResults({
           {images.length > 2 && (
             <button
               onClick={onSwitchToImages}
-              className="flex items-center justify-center px-4 py-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition"
+              className="flex items-center justify-center px-4 py-2 text-sm text-accent-600 hover:text-accent-700 font-medium transition"
             >
               +{images.length - 2} more &rarr;
             </button>
@@ -78,10 +78,10 @@ export default function LearnResults({
             const borderColor = getBorderColorClass(index);
             const borderMuted = [
               'border-l-gray-300 dark:border-l-gray-600',
-              'border-l-blue-300 dark:border-l-blue-700',
+              'border-l-accent-300 dark:border-l-accent-700',
               'border-l-teal-300 dark:border-l-teal-700',
               'border-l-amber-300 dark:border-l-amber-700',
-              'border-l-purple-300 dark:border-l-purple-700',
+              'border-l-accent-300 dark:border-l-accent-700',
             ];
             const mutedBorder = borderMuted[index % borderMuted.length];
             return (
@@ -90,7 +90,7 @@ export default function LearnResults({
                   <h3 className="font-semibold text-gray-900 dark:text-white text-sm flex items-center gap-2">
                     <button
                       onClick={() => onSuggestionClick(rootQuery + ' ' + section.heading)}
-                      className="hover:text-blue-600 dark:hover:text-blue-400 text-left flex-1 transition-colors"
+                      className="hover:text-accent-600 dark:hover:text-accent-400 text-left flex-1 transition-colors"
                       title={`Search "${section.heading}"`}
                     >
                       {section.heading}
@@ -145,7 +145,7 @@ export default function LearnResults({
               <button
                 key={index}
                 onClick={() => onSuggestionClick(q)}
-                className="w-full text-left px-4 py-2.5 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center gap-2"
+                className="w-full text-left px-4 py-2.5 text-sm text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 flex items-center gap-2"
               >
                 <Search className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                 {q}

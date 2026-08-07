@@ -26,7 +26,7 @@ export default function SearchHistoryPanel({ kidSearchHistory, onClose, onSelect
           <button
             key={entry._id}
             onClick={() => onSelectQuery(entry.query)}
-            className="w-full text-left px-3 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300 rounded-xl transition-all duration-200 flex items-center gap-2 active:scale-[0.98]"
+            className="w-full text-left px-3 py-2.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-accent-50 dark:hover:bg-accent-900/20 hover:text-accent-700 dark:hover:text-accent-300 rounded-xl transition-all duration-200 flex items-center gap-2 active:scale-[0.98]"
           >
             <Clock className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
             <span className="truncate flex-1">{entry.query}</span>

@@ -143,7 +143,7 @@ function LyricsInspector({ isOpen, onClose, track }) {
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0 pr-4">
               <p className="text-xs text-white/60 uppercase tracking-wide mb-1">AI Lyrics Review</p>
-              <h2 className="text-xl font-bold truncate">{track.name || track.songName}</h2>
+              <h2 className="font-display text-xl font-bold truncate">{track.name || track.songName}</h2>
               <p className="text-white/70 text-sm truncate">{track.artistName}</p>
             </div>
             <button
@@ -197,13 +197,13 @@ function LyricsInspector({ isOpen, onClose, track }) {
             <div className="p-5 space-y-4">
               {/* Overall Rating */}
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2 text-sm">Overall Rating</h3>
+                <h3 className="font-display font-semibold text-brand-navy mb-2 text-sm">Overall Rating</h3>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`px-3 py-1.5 rounded-lg border font-medium text-sm ${getRatingColor(review.overallRating)}`}>
                     {review.overallRating?.toUpperCase().replace('-', ' ')}
                   </span>
                   {review.ageRecommendation && (
-                    <span className="px-3 py-1.5 rounded-lg border bg-purple-100 text-purple-800 border-purple-200 font-medium text-sm">
+                    <span className="px-3 py-1.5 rounded-lg border bg-accent-100 text-accent-800 border-accent-200 font-medium text-sm">
                       Ages {review.ageRecommendation}
                     </span>
                   )}
@@ -212,14 +212,14 @@ function LyricsInspector({ isOpen, onClose, track }) {
 
               {/* Summary */}
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2 text-sm">Summary</h3>
+                <h3 className="font-display font-semibold text-brand-navy mb-2 text-sm">Summary</h3>
                 <p className="text-gray-700 bg-gray-50 p-3 rounded-lg text-sm">{review.summary}</p>
               </div>
 
               {/* Positive Aspects */}
               {review.positiveAspects && review.positiveAspects.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">Positive Elements</h3>
+                  <h3 className="font-display font-semibold text-brand-navy mb-2 text-sm">Positive Elements</h3>
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <ul className="space-y-1.5">
                       {review.positiveAspects.map((aspect, index) => (
@@ -235,7 +235,7 @@ function LyricsInspector({ isOpen, onClose, track }) {
 
               {/* Content Concerns */}
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2 text-sm">
+                <h3 className="font-display font-semibold text-brand-navy mb-2 text-sm">
                   Content Concerns {review.inappropriateContent?.length > 0 && `(${review.inappropriateContent.length})`}
                 </h3>
                 {review.inappropriateContent && review.inappropriateContent.length > 0 ? (
@@ -278,7 +278,7 @@ function LyricsInspector({ isOpen, onClose, track }) {
                     onChange={(e) => setLyrics(e.target.value)}
                     placeholder="Lyrics will appear here or paste them manually..."
                     rows={12}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent font-mono text-sm"
                   />
                 </div>
               )}
@@ -293,7 +293,7 @@ function LyricsInspector({ isOpen, onClose, track }) {
               key={reviewLoading ? 'loading' : 'ready'}
               onClick={handleRunReview}
               disabled={reviewLoading || !lyrics.trim()}
-              className="w-full py-3 rounded-xl font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl font-medium text-white bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
             >
               {reviewLoading && (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -311,7 +311,7 @@ function LyricsInspector({ isOpen, onClose, track }) {
           ) : (
             <button
               onClick={() => setReview(null)}
-              className="w-full py-3 rounded-xl font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 transition"
+              className="w-full py-3 rounded-xl font-medium text-accent-700 bg-accent-100 hover:bg-accent-200 transition"
             >
               View Lyrics Again
             </button>
@@ -348,13 +348,13 @@ function PlaylistSafetyReport({ isOpen, onClose, playlist, overview, loading, er
   const getRecommendationIcon = (recommendation) => {
     switch (recommendation) {
       case 'Likely Safe':
-        return '✅';
+        return <CheckCircle className="w-7 h-7" />;
       case 'Review Recommended':
-        return '⚠️';
+        return <AlertTriangle className="w-7 h-7" />;
       case 'Detailed Review Required':
-        return '🚨';
+        return <Shield className="w-7 h-7" />;
       default:
-        return '📋';
+        return <FileText className="w-7 h-7" />;
     }
   };
 
@@ -367,7 +367,7 @@ function PlaylistSafetyReport({ isOpen, onClose, playlist, overview, loading, er
       case 'Detailed Review Required':
         return 'from-red-500 to-rose-500';
       default:
-        return 'from-purple-500 to-pink-500';
+        return 'from-accent-500 to-accent-600';
     }
   };
 
@@ -382,13 +382,13 @@ function PlaylistSafetyReport({ isOpen, onClose, playlist, overview, loading, er
       {/* Modal */}
       <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-scale-in max-h-[85vh] flex flex-col">
         {/* Header */}
-        <div className={`bg-gradient-to-r ${overview ? getHeaderGradient(overview.recommendation) : 'from-purple-500 to-pink-500'} text-white p-6`}>
+        <div className={`bg-gradient-to-r ${overview ? getHeaderGradient(overview.recommendation) : 'from-accent-500 to-accent-600'} text-white p-6`}>
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
               <Shield className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Playlist Overview</h2>
+              <h2 className="font-display text-xl font-bold">Playlist Overview</h2>
               <p className="text-white/80 text-sm">{playlist?.attributes?.name || 'Unknown Playlist'}</p>
             </div>
           </div>
@@ -398,7 +398,7 @@ function PlaylistSafetyReport({ isOpen, onClose, playlist, overview, loading, er
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="w-10 h-10 text-purple-600 animate-spin mb-4" />
+              <Loader2 className="w-10 h-10 text-accent-600 animate-spin mb-4" />
               <p className="text-gray-600">Analyzing playlist...</p>
               <p className="text-sm text-gray-500 mt-2">Reviewing track titles and artists</p>
             </div>
@@ -409,7 +409,7 @@ function PlaylistSafetyReport({ isOpen, onClose, playlist, overview, loading, er
               <p className="text-gray-600 text-sm text-center">{error}</p>
               <button
                 onClick={onRetry}
-                className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition"
+                className="mt-4 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition"
               >
                 Try Again
               </button>
@@ -419,9 +419,9 @@ function PlaylistSafetyReport({ isOpen, onClose, playlist, overview, loading, er
               {/* Recommendation Badge */}
               <div className={`p-4 rounded-lg border-2 ${getRecommendationColor(overview.recommendation)}`}>
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{getRecommendationIcon(overview.recommendation)}</span>
+                  <span className="flex-shrink-0">{getRecommendationIcon(overview.recommendation)}</span>
                   <div>
-                    <h3 className="font-bold text-lg">{overview.recommendation}</h3>
+                    <h3 className="font-display font-bold text-lg">{overview.recommendation}</h3>
                     <p className="text-sm mt-1">{overview.suggestedAction}</p>
                   </div>
                 </div>
@@ -478,7 +478,7 @@ function PlaylistSafetyReport({ isOpen, onClose, playlist, overview, loading, er
         <div className="p-4 bg-gray-50 border-t border-gray-100">
           <button
             onClick={onClose}
-            className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition"
+            className="w-full py-3 rounded-xl font-semibold text-white bg-accent-500 hover:bg-accent-600 transition"
           >
             Got It
           </button>
@@ -764,7 +764,7 @@ function PlaylistInspector({ isOpen, onClose, playlist, tracks, kidProfiles, onA
                 className="w-32 h-32 rounded-2xl shadow-2xl object-cover"
               />
             ) : (
-              <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <div className="w-32 h-32 rounded-2xl bg-accent-500 flex items-center justify-center">
                 <Music className="w-12 h-12 text-white" />
               </div>
             )}
@@ -773,7 +773,7 @@ function PlaylistInspector({ isOpen, onClose, playlist, tracks, kidProfiles, onA
           {/* Playlist Info */}
           <div className="flex-1 min-w-0 flex flex-col justify-center">
             <p className="text-xs text-white/60 uppercase tracking-wide mb-1">Playlist</p>
-            <h1 className="text-2xl font-bold truncate">
+            <h1 className="font-display text-2xl font-bold truncate">
               {playlistName}
             </h1>
             <p className="text-white/70 text-sm truncate">
@@ -852,7 +852,7 @@ function PlaylistInspector({ isOpen, onClose, playlist, tracks, kidProfiles, onA
             <div
               key={track.uniqueKey || track.id}
               className={`flex items-center gap-3 px-4 py-3 border-b border-gray-100 transition ${
-                isSelected ? 'bg-purple-50/50' : 'bg-white'
+                isSelected ? 'bg-accent-50/50' : 'bg-white'
               }`}
             >
               {/* Play Button */}
@@ -861,7 +861,7 @@ function PlaylistInspector({ isOpen, onClose, playlist, tracks, kidProfiles, onA
                 disabled={!track.previewUrl}
                 className={`flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition ${
                   isPlaying
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-accent-500 text-white'
                     : track.previewUrl
                     ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     : 'bg-gray-50 text-gray-300 cursor-not-allowed'
@@ -915,7 +915,7 @@ function PlaylistInspector({ isOpen, onClose, playlist, tracks, kidProfiles, onA
                 onClick={() => toggleTrack(track.id)}
                 className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition ${
                   isSelected
-                    ? 'bg-purple-600 border-purple-600'
+                    ? 'bg-accent-500 border-accent-500'
                     : 'bg-white border-gray-300 hover:border-gray-400'
                 }`}
               >
@@ -935,7 +935,7 @@ function PlaylistInspector({ isOpen, onClose, playlist, tracks, kidProfiles, onA
         <button
           onClick={() => setShowAssignment(true)}
           disabled={selectedTracks.size === 0}
-          className="w-full py-4 rounded-2xl font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2"
+          className="w-full py-4 rounded-2xl font-semibold text-white bg-accent-500 hover:bg-accent-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent-500/25 flex items-center justify-center gap-2"
         >
           {selectedTracks.size === 0 ? (
             'Select Songs to Continue'
@@ -994,7 +994,7 @@ function PlaylistInspector({ isOpen, onClose, playlist, tracks, kidProfiles, onA
                   className="w-14 h-14 rounded-lg shadow-md"
                 />
               ) : (
-                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-lg bg-accent-500 flex items-center justify-center">
                   <Music className="w-7 h-7 text-white" />
                 </div>
               )}
@@ -1012,7 +1012,7 @@ function PlaylistInspector({ isOpen, onClose, playlist, tracks, kidProfiles, onA
                   onClick={handlePreviewSeek}
                 >
                   <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all"
+                    className="h-full bg-accent-500 rounded-full transition-all"
                     style={{ width: `${(previewCurrentTime / previewDuration) * 100}%` }}
                   />
                   {/* Scrubber thumb */}

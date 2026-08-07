@@ -19,37 +19,83 @@ function ChildLoginPage() {
   const [error, setError] = useState('');
   const [kidProfile, setKidProfile] = useState(null);
   const attemptKidPin = useMutation(api.kidProfiles.attemptKidPin);
+  const redeemKidPass = useMutation(api.kidPass.redeemKidPass);
 
-  // Check if family code is already saved in localStorage
+  // Boot: a cross-app kid pass (?kt=) wins, then a bare family code (?fc=),
+  // then a saved localStorage session.
   useEffect(() => {
-    // URL ?fc=ABCDEF wins — kid arrived from another Safe Family app's
-    // cross-app switcher and we should auto-advance to profile selection.
-    const fcParam = new URL(window.location.href).searchParams.get('fc');
-    if (fcParam) {
-      const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-      if (normalized.length === 6) {
-        localStorage.setItem('safetunes_family_code', normalized);
-        setFamilyCode(normalized);
-        setSavedFamilyCode(normalized);
-        setStep('select-profile');
-        return;
+    let cancelled = false;
+    const url = new URL(window.location.href);
+    const ktParam = url.searchParams.get('kt');
+    const fcParam = url.searchParams.get('fc');
+
+    // Never leave a credential in the visible URL / history / referrer — strip
+    // the pass and code immediately; we keep working from the captured values.
+    if (ktParam || fcParam) {
+      url.searchParams.delete('kt');
+      url.searchParams.delete('fc');
+      window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+    }
+
+    const boot = async () => {
+      // 1) Kid pass — arrived from a sibling app already signed in as this kid.
+      if (ktParam) {
+        try {
+          const res = await redeemKidPass({ token: ktParam });
+          if (cancelled) return;
+          if (res?.ok && res.profile) {
+            localStorage.setItem('safetunes_family_code', res.familyCode);
+            localStorage.setItem('safetunes_kid_profile', JSON.stringify(res.profile));
+            localStorage.removeItem('safetunes_child_tab');
+            setSavedFamilyCode(res.familyCode);
+            setFamilyCode(res.familyCode);
+            setKidProfile(res.profile);
+            setStep('dashboard');
+            return;
+          }
+          // Verified family but no matching profile here — pre-fill the code.
+          if (res?.familyCode) {
+            localStorage.setItem('safetunes_family_code', res.familyCode);
+            setSavedFamilyCode(res.familyCode);
+            setFamilyCode(res.familyCode);
+            setStep('select-profile');
+            return;
+          }
+        } catch {
+          // fall through to fc / saved-session handling
+        }
       }
-      if (normalized.length > 0) setFamilyCode(normalized);
-    }
 
-    const savedCode = localStorage.getItem('safetunes_family_code');
-    const profileData = localStorage.getItem('safetunes_kid_profile');
+      // 2) Bare family code — skip straight to profile selection.
+      if (fcParam) {
+        const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+        if (normalized.length === 6) {
+          localStorage.setItem('safetunes_family_code', normalized);
+          setFamilyCode(normalized);
+          setSavedFamilyCode(normalized);
+          setStep('select-profile');
+          return;
+        }
+        if (normalized.length > 0) setFamilyCode(normalized);
+      }
 
-    if (savedCode && profileData) {
-      // Already logged in
-      setSavedFamilyCode(savedCode);
-      setKidProfile(JSON.parse(profileData));
-      setStep('dashboard');
-    } else if (savedCode) {
-      // Has family code but not logged in as a profile
-      setSavedFamilyCode(savedCode);
-      setStep('select-profile');
-    }
+      // 3) Returning session from localStorage.
+      const savedCode = localStorage.getItem('safetunes_family_code');
+      const profileData = localStorage.getItem('safetunes_kid_profile');
+      if (savedCode && profileData) {
+        setSavedFamilyCode(savedCode);
+        setKidProfile(JSON.parse(profileData));
+        setStep('dashboard');
+      } else if (savedCode) {
+        setSavedFamilyCode(savedCode);
+        setStep('select-profile');
+      }
+    };
+
+    boot();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Initialize MusicKit in the background - don't block login

@@ -3,8 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useMutation, useQuery } from 'convex/react';
 import { Home, Hammer, Grid3x3, GraduationCap, X, Music, PlayCircle, BookOpen, Search, Sparkles } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { api } from '../../../convex/_generated/api';
+import { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
 
 /**
  * Cross-app kid nav primitives.
@@ -93,8 +96,8 @@ export const SAFE_FAMILY_APPS: SafeFamilyApp[] = [
     host: 'https://getsafespark.com',
     url: '/make',
     Icon: Sparkles,
-    accentText: 'text-violet-700',
-    accentBg: 'bg-violet-50 text-violet-700',
+    accentText: 'text-accent-700',
+    accentBg: 'bg-accent-50 text-accent-700',
   },
 ];
 
@@ -160,7 +163,7 @@ export function AppLauncherSheet({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-brand-cream"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -173,7 +176,7 @@ export function AppLauncherSheet({
               <a
                 key={app.id}
                 href={appHrefWithCode(app, familyCode)}
-                className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-violet-300 hover:shadow-sm"
+                className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-accent-300 hover:shadow-sm"
               >
                 <span className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${app.accentBg}`}>
                   <Icon className="h-5 w-5" />
@@ -254,8 +257,8 @@ function NavTab({
       href={href}
       className={
         active
-          ? 'flex flex-1 flex-col items-center gap-0.5 rounded-xl bg-violet-50 px-3 py-1.5 text-violet-700'
-          : 'flex flex-1 flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-slate-500 hover:bg-slate-50'
+          ? 'flex flex-1 flex-col items-center gap-0.5 rounded-xl bg-accent-50 px-3 py-1.5 text-accent-700'
+          : 'flex flex-1 flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-slate-500 hover:bg-brand-cream'
       }
     >
       {icon}
@@ -277,7 +280,7 @@ function NavButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-slate-500 hover:bg-slate-50"
+      className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-slate-500 hover:bg-brand-cream"
     >
       {icon}
       <span className="text-[11px] font-semibold">{label}</span>
@@ -310,6 +313,11 @@ export function KidHeader({
   familyCode?: string | null;
   rightSlot?: React.ReactNode;
 }) {
+  // Cross-app "kid pass": mint a short-lived signed token for the current kid
+  // so tapping the switcher lands them on the sibling app WITHOUT re-entering
+  // their PIN. Self-contained here so every kid surface that renders KidHeader
+  // (/make, /dashboard, /learn) gets one-tap switching identically.
+  const kidToken = useKidPassToken(familyCode);
   return (
     <header className="flex-none border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
@@ -319,19 +327,79 @@ export function KidHeader({
             className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold tracking-tight text-slate-900"
             aria-label="SafeSpark home"
           >
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-violet-600 text-white">
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-accent-600 text-brand-navy">
               <Sparkles className="h-4 w-4" />
             </span>
             SafeSpark
           </Link>
           <KidDesktopNav familyCode={familyCode} />
         </div>
+        {/* Cross-app Safe Family switcher — desktop, always visible in the
+            header between the brand/nav and the right-side action cluster. */}
+        <div className="hidden lg:flex">
+          <SafeFamilyHeaderSwitcher current="safespark" familyCode={familyCode ?? undefined} kidToken={kidToken} />
+        </div>
         <div className="flex items-center gap-2">
           {rightSlot}
         </div>
       </div>
+      {/* Cross-app Safe Family switcher — mobile row, always visible under
+          1024px where the desktop switcher is hidden. */}
+      <div className="lg:hidden flex justify-center pb-3 -mt-1">
+        <SafeFamilyHeaderSwitcher current="safespark" familyCode={familyCode ?? undefined} kidToken={kidToken} tile={40} />
+      </div>
     </header>
   );
+}
+
+/**
+ * Mint + auto-refresh a cross-app kid pass for the signed-in kid. Reads the
+ * kid session token from localStorage (post-mount, to dodge SSR/hydration
+ * mismatch), pulls the kid's family code + display name from the live
+ * dashboard query (deduped with the page's own subscription), and re-mints
+ * every 4 min — well inside the pass's 5-min TTL so the switcher links never
+ * go stale. Non-fatal on failure: the switcher still works, the destination
+ * just falls back to asking for the family code / PIN.
+ */
+function useKidPassToken(familyCodeProp?: string | null): string | undefined {
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [kidToken, setKidToken] = useState<string | null>(null);
+  const mintKidPass = useMutation(api.kidPass.mintKidPass);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setSessionToken(localStorage.getItem('lumiKidSession'));
+  }, []);
+
+  const dashboard = useQuery(
+    api.safespark.getKidDashboardData,
+    sessionToken ? { sessionToken } : 'skip',
+  );
+
+  const familyCode = familyCodeProp ?? dashboard?.familyCode ?? null;
+  const kidName = dashboard?.profile?.displayName ?? null;
+  const color = dashboard?.profile?.avatarColor ?? undefined;
+
+  useEffect(() => {
+    if (!familyCode || !kidName) return undefined;
+    let active = true;
+    const refresh = async () => {
+      try {
+        const res = await mintKidPass({ familyCode, kidName, color });
+        if (active && res?.token) setKidToken(res.token);
+      } catch {
+        // non-fatal — the switcher still works; the destination asks for the PIN
+      }
+    };
+    refresh();
+    const id = setInterval(refresh, 4 * 60 * 1000);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
+  }, [familyCode, kidName, color, mintKidPass]);
+
+  return kidToken ?? undefined;
 }
 
 /**
@@ -374,7 +442,7 @@ function DesktopNavTab({
       href={href}
       className={
         active
-          ? 'inline-flex items-center gap-1.5 rounded-xl bg-violet-50 px-2.5 py-1.5 text-sm font-semibold text-violet-700'
+          ? 'inline-flex items-center gap-1.5 rounded-xl bg-accent-50 px-2.5 py-1.5 text-sm font-semibold text-accent-700'
           : 'inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900'
       }
     >
@@ -409,7 +477,7 @@ export function OtherAppsStrip({
             <a
               key={app.id}
               href={appHrefWithCode(app, familyCode)}
-              className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-violet-300 hover:shadow-sm"
+              className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-accent-300 hover:shadow-sm"
             >
               <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${app.accentBg}`}>
                 <Icon className="h-5 w-5" />

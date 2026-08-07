@@ -86,27 +86,27 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
 
   // Color class mapping
   const getColorClass = (color) => ({
-    red: 'bg-red-500',
+    red: 'bg-accent-500',
     orange: 'bg-orange-500',
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
     blue: 'bg-blue-500',
     purple: 'bg-purple-500',
     pink: 'bg-pink-500',
-  }[color] || 'bg-red-500');
+  }[color] || 'bg-accent-500');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex flex-col">
+    <div className="min-h-screen bg-brand-cream flex flex-col">
       {/* Header */}
       <header className="px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-md">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <span className="font-bold text-gray-900 text-lg">SafeTube</span>
+          <span className="font-display font-bold text-brand-navy text-lg">SafeTube</span>
         </div>
         <button
           onClick={onChangeCode}
@@ -144,8 +144,8 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
                   onKeyDown={(e) => handlePinKeyDown(index, e)}
                   className={`w-14 h-14 text-center text-2xl font-bold text-gray-900 border-2 rounded-xl focus:outline-none focus:ring-2 transition ${
                     pinError
-                      ? 'border-red-300 bg-red-50 focus:ring-red-200 focus:border-red-500'
-                      : 'border-gray-200 bg-white focus:ring-red-100 focus:border-red-500'
+                      ? 'border-accent-300 bg-accent-50 focus:ring-accent-200 focus:border-accent-500'
+                      : 'border-gray-200 bg-white focus:ring-accent-100 focus:border-accent-500'
                   }`}
                   autoComplete="off"
                 />
@@ -153,7 +153,7 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
             </div>
 
             {pinError && (
-              <p className="text-red-500 text-sm mb-4">{pinError}</p>
+              <p className="text-accent-500 text-sm mb-4">{pinError}</p>
             )}
 
             <button
@@ -185,7 +185,7 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
                     key={profile._id}
                     onClick={() => handleSelect(profile)}
                     disabled={isLoading}
-                    className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white shadow-sm border border-gray-100 hover:shadow-lg hover:border-red-200 transition transform hover:scale-105 disabled:opacity-50"
+                    className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white shadow-sm border border-gray-100 hover:shadow-lg hover:border-accent-200 transition transform hover:scale-105 disabled:opacity-50"
                   >
                     <div className={`w-20 h-20 rounded-full shadow-md flex items-center justify-center text-white text-2xl font-bold ${getColorClass(profile.color)}`}>
                       {profile.name.charAt(0).toUpperCase()}
@@ -217,7 +217,7 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
             <div className="mt-8 pt-8 border-t border-gray-200">
               <p className="text-center text-gray-500 text-sm">
                 Are you a parent?{' '}
-                <Link to="/login" className="text-red-500 hover:text-red-600 font-medium">
+                <Link to="/login" className="text-accent-500 hover:text-accent-600 font-medium">
                   Log in here →
                 </Link>
               </p>

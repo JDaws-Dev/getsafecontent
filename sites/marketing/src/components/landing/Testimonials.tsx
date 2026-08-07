@@ -14,10 +14,9 @@ interface Testimonial {
 }
 
 const testimonials: Testimonial[] = [
-  // One strong testimonial per app
   {
     quote:
-      "Approved 10 albums in like 5 minutes. My daughter thinks I'm the coolest mom ever now.",
+      "Honestly I was bracing for a fight. Told my daughter no more new music until I could actually see the lyrics. Two weeks in she says I'm \u201Cactually the best\u201D because I finally let her have Sabrina Carpenter. Approving songs takes me maybe 90 seconds at night.",
     author: "Sara M.",
     role: "Mom of 4, Charlotte, NC",
     app: "safetunes",
@@ -35,7 +34,7 @@ const testimonials: Testimonial[] = [
   },
   {
     quote:
-      "SafeReads flagged some stuff in a book I honestly never would have caught. Really glad I looked it up before handing it to my 9-year-old.",
+      "I'm not usually someone who looks up content warnings on every book. But my 9-year-old came home with a YA novel that was clearly way above her reading level, and SafeReads showed me exactly which chapters had what. Mobile UI could be a little snappier, but honestly it's the first tool that gave me a real answer instead of a generic rating.",
     author: "Emily T.",
     role: "Mom of 2, Raleigh, NC",
     app: "safereads",
@@ -53,7 +52,7 @@ const testimonials: Testimonial[] = [
   },
   {
     quote:
-      "Half the songs on some albums are fine and the other half... not so much. I just approve the clean tracks and skip the rest. My daughter still gets her Taylor Swift without me losing sleep over it.",
+      "I grew up on Taylor Swift. There's zero chance I'm telling my daughter she can't listen. But \u201CVigilante sh!t\u201D? Yeah, that one's a skip. The whole point of SafeTunes for me is that it's per song, not per album, so she still gets the music she actually wants.",
     author: "Amanda L.",
     role: "Mom of 1, Portland, OR",
     app: "safetunes",
@@ -62,7 +61,7 @@ const testimonials: Testimonial[] = [
   },
   {
     quote:
-      "Game changer for library trips. I check SafeReads before we go and the kids can grab whatever's on the approved list.",
+      "We have a library card and a rule: mom checks SafeReads first. Takes about 20 seconds per book. The kids grab what's already on the list. Done.",
     author: "David P.",
     role: "Dad of 3, Tampa, FL",
     app: "safereads",

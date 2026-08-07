@@ -1,4 +1,4 @@
-import { AlertTriangle, Music, PlaySquare, Book, Search, ArrowRight } from "lucide-react";
+import { MessageCircle, Music, PlaySquare, Book, Search, ArrowRight } from "lucide-react";
 
 const painPoints = [
   {
@@ -46,7 +46,7 @@ export default function ProblemSolutionSection() {
         {/* Section Header */}
         <div className="text-center mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <AlertTriangle className="w-4 h-4" />
+            <MessageCircle className="w-4 h-4" />
             Sound familiar?
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold text-navy mb-4">

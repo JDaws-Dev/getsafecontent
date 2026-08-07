@@ -29,7 +29,7 @@ export default function ExpandableSummary({ text, className = '' }) {
       {needsTruncation && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors flex items-center gap-1"
+          className="mt-2 text-accent-600 dark:text-accent-400 hover:text-accent-700 dark:hover:text-accent-300 text-sm font-medium transition-colors flex items-center gap-1"
         >
           {expanded ? 'Show less' : 'Show more'}
           <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`} />

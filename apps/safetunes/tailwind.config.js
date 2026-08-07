@@ -8,28 +8,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Safe Family brand colors (shared across all apps)
+        // Safe Family brand (revived — shared across all 5 apps)
         brand: {
-          cream: '#FDF8F3',
-          'cream-dark': '#F5EDE4',
-          navy: '#1a1a2e',
-          'navy-light': '#2d2d44',
+          cream: '#FBF6EF',
+          'cream-2': '#F3EADD',
+          navy: '#221D2E',
+          'ink-soft': '#6A6275',
           'peach-start': '#F5A962',
           'peach-end': '#E88B6A',
         },
-        // SafeTunes accent (purple/violet for music)
+        // SafeTunes signature accent — grape (music)
         accent: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
+          50: '#F4F0FD',
+          100: '#E9E0FB',
+          200: '#D4C3F6',
+          300: '#B89BF0',
+          400: '#986FE8',
+          500: '#7C4DE0',
+          600: '#6A3CCB',
+          700: '#5730A6',
+          800: '#452781',
+          900: '#3A2368',
         },
+      },
+      fontFamily: {
+        display: ['Fredoka', 'ui-rounded', 'system-ui', 'sans-serif'],
+        sans: ['Quicksand', 'ui-rounded', 'system-ui', '-apple-system', 'sans-serif'],
       },
       animation: {
         'slide-up': 'slideUp 0.3s ease-out',

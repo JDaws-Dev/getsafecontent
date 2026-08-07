@@ -7,6 +7,7 @@ import TimeLimits from '../components/admin/TimeLimits';
 import KidProfileEditor from '../components/admin/KidProfileEditor';
 // KidProfileCustomize merged into KidProfileEditor
 import OnboardingWizard from '../components/admin/OnboardingWizard';
+import { SafeFamilyParentSwitcher } from '../components/SafeFamilySwitcher';
 import Toast from '../components/common/Toast';
 import ConfirmModal from '../components/common/ConfirmModal';
 import {
@@ -116,11 +117,11 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <button
           onClick={() => onNavigate('activity')}
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left hover:border-blue-200 hover:shadow-md transition cursor-pointer"
+          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left hover:border-accent-200 hover:shadow-md transition cursor-pointer"
         >
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center">
-              <Search className="w-4 h-4 text-blue-600" />
+            <div className="w-9 h-9 bg-accent-50 rounded-xl flex items-center justify-center">
+              <Search className="w-4 h-4 text-accent-600" />
             </div>
             <span className="text-sm text-gray-500">Searches Today</span>
           </div>
@@ -142,11 +143,11 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
 
         <button
           onClick={() => onNavigate('profiles')}
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left col-span-2 sm:col-span-1 hover:border-cyan-200 hover:shadow-md transition cursor-pointer"
+          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left col-span-2 sm:col-span-1 hover:border-accent-200 hover:shadow-md transition cursor-pointer"
         >
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 bg-cyan-50 rounded-xl flex items-center justify-center">
-              <Users className="w-4 h-4 text-cyan-600" />
+            <div className="w-9 h-9 bg-accent-50 rounded-xl flex items-center justify-center">
+              <Users className="w-4 h-4 text-accent-600" />
             </div>
             <span className="text-sm text-gray-500">Kid Profiles</span>
           </div>
@@ -156,7 +157,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
 
       {/* Family Code Card */}
       {userData?.familyCode && (
-        <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-5 text-white shadow-sm">
+        <div className="bg-gradient-to-r from-accent-500 to-accent-500 rounded-2xl p-5 text-white shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
@@ -171,7 +172,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
                 href={`/play/${userData.familyCode}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden sm:inline-flex items-center gap-1.5 bg-white text-blue-600 hover:bg-blue-50 font-semibold text-sm px-3.5 py-2 rounded-xl transition shadow-sm"
+                className="hidden sm:inline-flex items-center gap-1.5 bg-white text-accent-600 hover:bg-accent-50 font-semibold text-sm px-3.5 py-2 rounded-xl transition shadow-sm"
                 title="Open the kid portal in a new tab"
               >
                 <ExternalLink className="w-4 h-4" />
@@ -209,7 +210,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
             <h3 className="font-semibold text-gray-900">Your Kids</h3>
             <button
               onClick={() => onNavigate('profiles')}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              className="text-sm text-accent-600 hover:text-accent-700 font-medium flex items-center gap-1"
             >
               Manage
               <ChevronRight className="w-4 h-4" />
@@ -267,8 +268,8 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
         /* Getting Started Checklist */
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="w-6 h-6 text-blue-500" />
+            <div className="w-12 h-12 bg-accent-50 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <CheckCircle2 className="w-6 h-6 text-accent-500" />
             </div>
             <div>
               <h3 className="font-bold text-gray-900 text-lg mb-1">Getting Started</h3>
@@ -303,7 +304,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
               </div>
               <button
                 onClick={() => onNavigate('profiles')}
-                className="mt-5 inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm"
+                className="mt-5 inline-flex items-center gap-2 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 Create First Profile
@@ -320,7 +321,7 @@ function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavi
             <h3 className="font-semibold text-gray-900">Recent Activity</h3>
             <button
               onClick={() => onNavigate('activity')}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              className="text-sm text-accent-600 hover:text-accent-700 font-medium flex items-center gap-1"
             >
               View all
               <ChevronRight className="w-4 h-4" />
@@ -536,7 +537,7 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
             value={activityFilter}
             onChange={(e) => setActivityFilter(e.target.value)}
             placeholder="Filter searches..."
-            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+            className="w-full pl-9 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-400"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -544,7 +545,7 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
             <select
               value={filterKid}
               onChange={(e) => setFilterKid(e.target.value)}
-              className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 appearance-none cursor-pointer hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+              className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 appearance-none cursor-pointer hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-400"
             >
               <option value="all">All Kids</option>
               {kidProfiles.map((p) => (
@@ -654,7 +655,7 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
                     <div className="relative">
                       <button
                         onClick={() => setTalkTooltipId(talkTooltipId === entry._id ? null : entry._id)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-full bg-accent-100 text-accent-700 hover:bg-accent-200 transition"
                       >
                         <MessageCircle className="w-3 h-3" />
                         Talk to them
@@ -694,7 +695,7 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
             setEditingProfile(null);
             setShowEditor(true);
           }}
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm"
+          className="flex items-center gap-2 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm"
         >
           <Plus className="w-4 h-4" />
           Add Profile
@@ -713,7 +714,7 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
               setEditingProfile(null);
               setShowEditor(true);
             }}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-2.5 rounded-xl font-medium shadow-sm"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-accent-500 to-accent-500 text-white px-6 py-2.5 rounded-xl font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Create First Profile
@@ -752,7 +753,7 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
                         setEditingProfile(profile);
                         setShowEditor(true);
                       }}
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                      className="p-2 text-gray-400 hover:text-accent-600 hover:bg-accent-50 rounded-lg transition"
                       title="Edit profile"
                     >
                       <Pencil className="w-4 h-4" />
@@ -821,7 +822,7 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
                 {/* Customize button */}
                 <button
                   onClick={() => { setEditingProfile(profile); setShowEditor(true); }}
-                  className="w-full mt-3 pt-3 border-t border-gray-100 text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center justify-center gap-1 py-2 hover:bg-blue-50 rounded-lg transition"
+                  className="w-full mt-3 pt-3 border-t border-gray-100 text-xs text-accent-600 hover:text-accent-700 font-medium flex items-center justify-center gap-1 py-2 hover:bg-accent-50 rounded-lg transition"
                 >
                   <Settings className="w-3.5 h-3.5" />
                   Customize search settings
@@ -880,7 +881,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
             href="https://getsafefamily.com/forgot-password"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="inline-flex items-center gap-1.5 text-sm text-accent-600 hover:text-accent-700 font-medium"
           >
             Change Password
             <ExternalLink className="w-3.5 h-3.5" />
@@ -910,7 +911,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
               userData?.subscriptionStatus === 'lifetime' || userData?.subscriptionStatus === 'active'
                 ? 'bg-green-100 text-green-700'
                 : userData?.subscriptionStatus === 'trial'
-                  ? 'bg-blue-100 text-blue-700'
+                  ? 'bg-accent-100 text-accent-700'
                   : 'bg-gray-100 text-gray-600'
             }`}
           >
@@ -930,7 +931,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
               href="https://getsafefamily.com/signup"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+              className="inline-flex items-center gap-2 text-sm text-accent-600 hover:text-accent-700 font-medium"
             >
               Upgrade to Premium
               <ExternalLink className="w-3.5 h-3.5" />
@@ -939,7 +940,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
         ) : (
           <a
             href="mailto:jeremiah@getsafefamily.com?subject=SafeStudy%20Subscription"
-            className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="inline-flex items-center gap-2 text-sm text-accent-600 hover:text-accent-700 font-medium"
           >
             <Mail className="w-3.5 h-3.5" />
             Manage Subscription
@@ -963,7 +964,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
             </code>
             <button
               onClick={onCopyCode}
-              className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-2 rounded-lg hover:bg-blue-50 transition"
+              className="flex items-center gap-1.5 text-sm text-accent-600 hover:text-accent-700 font-medium px-3 py-2 rounded-lg hover:bg-accent-50 transition"
             >
               {codeCopied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
               {codeCopied ? 'Copied!' : 'Copy'}
@@ -972,7 +973,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
               href={`/play/${userData.familyCode}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 font-medium px-3 py-2 rounded-lg transition shadow-sm"
+              className="flex items-center gap-1.5 text-sm text-white bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 font-medium px-3 py-2 rounded-lg transition shadow-sm"
               title="Open the kid portal in a new tab"
             >
               <ExternalLink className="w-4 h-4" />
@@ -1007,21 +1008,21 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
         <div className="space-y-3">
           <a
             href="/#faq"
-            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="flex items-center gap-2 text-sm text-accent-600 hover:text-accent-700 font-medium"
           >
             <ChevronRight className="w-4 h-4" />
             FAQ
           </a>
           <a
             href="mailto:jeremiah@getsafefamily.com"
-            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="flex items-center gap-2 text-sm text-accent-600 hover:text-accent-700 font-medium"
           >
             <Mail className="w-4 h-4" />
             Email Support
           </a>
           <a
             href="mailto:safety@getsafefamily.com"
-            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="flex items-center gap-2 text-sm text-accent-600 hover:text-accent-700 font-medium"
           >
             <ShieldAlert className="w-4 h-4" />
             Report a Safety Issue
@@ -1071,7 +1072,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
             </p>
             <p className="text-sm text-gray-600 mb-6">
               To delete your account, please contact{' '}
-              <a href="mailto:jeremiah@getsafefamily.com" className="text-blue-600 hover:text-blue-700 font-medium">
+              <a href="mailto:jeremiah@getsafefamily.com" className="text-accent-600 hover:text-accent-700 font-medium">
                 jeremiah@getsafefamily.com
               </a>
             </p>
@@ -1292,9 +1293,9 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
+          <div className="w-14 h-14 bg-gradient-to-br from-accent-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
             <Search className="w-7 h-7 text-white" />
           </div>
           <p className="text-gray-500">Loading...</p>
@@ -1305,9 +1306,9 @@ export default function AdminDashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-14 h-14 bg-gradient-to-br from-accent-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Search className="w-7 h-7 text-white" />
           </div>
           <p className="text-gray-500">Redirecting to login...</p>
@@ -1318,9 +1319,9 @@ export default function AdminDashboard() {
 
   if (!userData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
+          <div className="w-14 h-14 bg-gradient-to-br from-accent-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
             <Search className="w-7 h-7 text-white" />
           </div>
           <p className="text-gray-500">Loading...</p>
@@ -1351,20 +1352,25 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-brand-cream">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           {/* Top Bar */}
           <div className="flex items-center justify-between py-3.5">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-sm">
+              <div className="w-9 h-9 bg-gradient-to-br from-accent-500 to-accent-500 rounded-xl flex items-center justify-center shadow-sm">
                 <Search className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-gray-900 text-sm sm:text-base">SafeStudy</h1>
+                <h1 className="font-display font-bold text-brand-navy text-sm sm:text-base">SafeStudy</h1>
                 <p className="text-[11px] text-gray-500 leading-tight">Parent Dashboard</p>
               </div>
+            </div>
+
+            {/* Center: cross-app Safe Family switcher (desktop) */}
+            <div className="hidden lg:flex">
+              <SafeFamilyParentSwitcher current="safestudy" familyCode={userData?.familyCode} />
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3">
@@ -1372,7 +1378,7 @@ export default function AdminDashboard() {
               {userData?.familyCode && (
                 <button
                   onClick={copyFamilyCode}
-                  className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-3.5 py-2 rounded-lg text-sm transition group"
+                  className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white px-3.5 py-2 rounded-lg text-sm transition group"
                   title="Click to copy"
                 >
                   <Shield className="w-3.5 h-3.5 text-white/70" />
@@ -1412,6 +1418,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+          {/* Cross-app Safe Family switcher (mobile row, always visible under lg) */}
+          <div className="lg:hidden flex justify-center pb-3 -mt-1">
+            <SafeFamilyParentSwitcher current="safestudy" familyCode={userData?.familyCode} tile={40} />
+          </div>
+
           {/* Desktop Tab Navigation */}
           <nav className="hidden md:flex gap-1 -mb-px">
             {TABS.map((tab) => {
@@ -1422,7 +1433,7 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`relative flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
+                      ? 'border-accent-500 text-accent-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -1458,7 +1469,7 @@ export default function AdminDashboard() {
               >
                 <p className="text-xs text-gray-500">Family Code (tap to copy)</p>
                 <div className="flex items-center justify-between mt-0.5">
-                  <p className="font-mono font-bold text-blue-600 tracking-wider">{userData.familyCode}</p>
+                  <p className="font-mono font-bold text-accent-600 tracking-wider">{userData.familyCode}</p>
                   {copiedCode ? (
                     <Check className="w-4 h-4 text-green-500" />
                   ) : (
@@ -1512,14 +1523,14 @@ export default function AdminDashboard() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`relative flex flex-col items-center justify-center gap-0.5 py-2.5 transition ${
-                  isActive ? 'bg-blue-50' : ''
+                  isActive ? 'bg-accent-50' : ''
                 }`}
               >
                 {isActive && (
-                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-blue-500" />
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-500" />
                 )}
-                <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-gray-500'}`} strokeWidth={isActive ? 2.5 : 2} />
-                <span className={`text-[10px] ${isActive ? 'font-semibold text-blue-600' : 'text-gray-500'}`}>
+                <Icon className={`w-5 h-5 ${isActive ? 'text-accent-600' : 'text-gray-500'}`} strokeWidth={isActive ? 2.5 : 2} />
+                <span className={`text-[10px] ${isActive ? 'font-semibold text-accent-600' : 'text-gray-500'}`}>
                   {tab.label === 'Kid Profiles' ? 'Profiles' : tab.label}
                 </span>
                 {tab.id === 'requests' && pendingRequestCount > 0 && (

@@ -8,41 +8,45 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Safe Family brand colors (shared across all apps)
+        // Safe Family brand (revived — shared across all 5 apps, copied verbatim)
         brand: {
-          cream: '#FDF8F3',
-          'cream-dark': '#F5EDE4',
-          navy: '#1a1a2e',
-          'navy-light': '#2d2d44',
+          cream: '#FBF6EF',
+          'cream-2': '#F3EADD',
+          navy: '#221D2E',
+          'ink-soft': '#6A6275',
           'peach-start': '#F5A962',
           'peach-end': '#E88B6A',
         },
-        // SafeTube accent (red/orange for video - YouTube-inspired)
+        // SafeTube signature accent — coral (video). Ramp anchored on 500=#F0603A.
         accent: {
-          50: '#fef2f2',
-          100: '#fee2e2',
-          200: '#fecaca',
-          300: '#fca5a5',
-          400: '#f87171',
-          500: '#ef4444',
-          600: '#dc2626',
-          700: '#b91c1c',
-          800: '#991b1b',
-          900: '#7f1d1d',
+          50: '#FEF3EF',
+          100: '#FDE0D6',
+          200: '#FAC4B2',
+          300: '#F7A188',
+          400: '#F47E5F',
+          500: '#F0603A',
+          600: '#D94A26',
+          700: '#B43A1D',
+          800: '#8F2F19',
+          900: '#742818',
         },
-        // Keep primary alias for backward compatibility
+        // Keep primary alias for backward compatibility (now coral too)
         primary: {
-          50: '#fef2f2',
-          100: '#fee2e2',
-          200: '#fecaca',
-          300: '#fca5a5',
-          400: '#f87171',
-          500: '#ef4444',
-          600: '#dc2626',
-          700: '#b91c1c',
-          800: '#991b1b',
-          900: '#7f1d1d',
+          50: '#FEF3EF',
+          100: '#FDE0D6',
+          200: '#FAC4B2',
+          300: '#F7A188',
+          400: '#F47E5F',
+          500: '#F0603A',
+          600: '#D94A26',
+          700: '#B43A1D',
+          800: '#8F2F19',
+          900: '#742818',
         },
+      },
+      fontFamily: {
+        display: ['Fredoka', 'ui-rounded', 'system-ui', 'sans-serif'],
+        sans: ['Quicksand', 'ui-rounded', 'system-ui', '-apple-system', 'sans-serif'],
       },
     },
   },

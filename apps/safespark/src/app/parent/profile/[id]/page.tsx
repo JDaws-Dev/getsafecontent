@@ -44,11 +44,11 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
       <main className="flex min-h-screen items-center justify-center px-6 text-center">
         <div className="space-y-3">
           <h1 className="text-2xl font-black text-slate-800">Sign in to view this profile</h1>
-          <Link href="/login" className="inline-block rounded-2xl bg-violet-600 px-5 py-2 text-sm font-black text-white hover:bg-violet-700">
+          <Link href="/login" className="inline-block rounded-2xl bg-accent-600 px-5 py-2 text-sm font-black text-brand-navy hover:bg-accent-700">
             Sign in with Safe Family
           </Link>
           <div>
-            <Link href="/" className="text-sm font-bold text-violet-600 hover:text-violet-800">Back to home</Link>
+            <Link href="/" className="text-sm font-bold text-accent-600 hover:text-accent-800">Back to home</Link>
           </div>
         </div>
       </main>
@@ -63,7 +63,7 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
         <div className="space-y-3">
           <h1 className="text-2xl font-black text-slate-800">Profile not found</h1>
           <p className="text-sm text-slate-500">Either it doesn&apos;t exist or it belongs to a different family.</p>
-          <Link href="/parent" className="text-sm font-bold text-violet-600 hover:text-violet-800">← Back to dashboard</Link>
+          <Link href="/parent" className="text-sm font-bold text-accent-600 hover:text-accent-800">← Back to dashboard</Link>
         </div>
       </main>
     );
@@ -109,9 +109,9 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
   const colorClass = COLOR_CLASSES[profile.avatarColor ?? 'violet'] ?? COLOR_CLASSES.violet;
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-6 sm:px-8">
+    <main className="min-h-screen bg-brand-cream px-4 py-6 sm:px-8">
       <div className="mx-auto max-w-5xl space-y-6">
-        <Link href="/parent" className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-violet-500 hover:text-violet-700">
+        <Link href="/parent" className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-accent-500 hover:text-accent-700">
           <ChevronLeft className="h-3.5 w-3.5" />
           Back to dashboard
         </Link>
@@ -139,7 +139,7 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="mb-3 text-lg font-black text-slate-900">All projects</h2>
           {projects.length === 0 ? (
-            <p className="rounded-2xl bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500">
+            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-500">
               No projects yet. They&apos;ll show here as soon as {profile.displayName} starts building.
             </p>
           ) : (
@@ -168,7 +168,7 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
             </p>
           </div>
           {activityLog.length === 0 ? (
-            <p className="rounded-2xl bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500">
+            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-500">
               Nothing yet. When {profile.displayName} starts building, every prompt shows here.
             </p>
           ) : (
@@ -178,7 +178,7 @@ export default function ProfileDetailPage({ params }: { params: Promise<{ id: st
                   {entry.kind === 'prompt' && (
                     <>
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-violet-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-accent-700">
                           Asked Spark
                         </span>
                         {entry.projectTitle && (
@@ -330,7 +330,7 @@ function ProjectCardWithWipe({
             type="button"
             onClick={onWipe}
             disabled={busy}
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-brand-cream disabled:opacity-50"
             title="Wipe leaderboard / shared data for this project"
           >
             <Database className="h-3 w-3" />
@@ -343,7 +343,7 @@ function ProjectCardWithWipe({
                 type="button"
                 onClick={() => onMove(sib.id, sib.name)}
                 disabled={moving !== null}
-                className="inline-flex items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-700 hover:bg-violet-100 disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded-lg border border-accent-200 bg-accent-50 px-2 py-1 text-[10px] font-bold text-accent-700 hover:bg-accent-100 disabled:opacity-50"
                 title={`Move this game to ${sib.name}'s profile`}
               >
                 <CornerUpRight className="h-3 w-3" />
@@ -379,7 +379,7 @@ function ProjectDataInspector({ projectId }: { projectId: Id<'safesparkProjects'
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-slate-50"
+        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-600 hover:bg-brand-cream"
         aria-expanded={open}
         title="See what data this project stores (leaderboards, chat messages, etc.)"
       >
@@ -387,7 +387,7 @@ function ProjectDataInspector({ projectId }: { projectId: Id<'safesparkProjects'
         {open ? 'Hide shared data' : `View shared data (${rows === undefined && open ? '…' : summary})`}
       </button>
       {open && (
-        <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2">
+        <div className="mt-2 rounded-lg border border-slate-200 bg-brand-cream p-2">
           {rows === undefined ? (
             <p className="text-[11px] font-semibold text-slate-400">Loading…</p>
           ) : rows.length === 0 ? (
@@ -421,7 +421,7 @@ function DataRow({ row }: { row: { key: string; value: string; updatedAt: number
   return (
     <li className="rounded bg-white px-2 py-1.5">
       <div className="flex items-center justify-between gap-2">
-        <code className="truncate text-[10px] font-bold text-violet-700" title={row.key}>{row.key}</code>
+        <code className="truncate text-[10px] font-bold text-accent-700" title={row.key}>{row.key}</code>
         <span className="shrink-0 text-[9px] font-bold text-slate-400">{formatDate(row.updatedAt)}</span>
       </div>
       {Array.isArray(parsed) ? (

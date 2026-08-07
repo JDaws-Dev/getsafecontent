@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Quicksand } from 'next/font/google';
+import { Quicksand, Fredoka } from 'next/font/google';
 import './globals.css';
 import { ConvexClientProvider } from '@/components/ConvexClientProvider';
 
@@ -16,11 +16,19 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: '#a855f7',
+  themeColor: '#F2A413',
 };
 
 const quicksand = Quicksand({
   variable: '--font-quicksand',
+  subsets: ['latin'],
+});
+
+// Fredoka — Safe Family display/heading face. Variable font, so no explicit
+// weight list; exposed as a CSS variable and wired to --font-display in
+// globals.css (@theme) → the `font-display` utility + global heading rule.
+const fredoka = Fredoka({
+  variable: '--font-fredoka',
   subsets: ['latin'],
 });
 
@@ -100,8 +108,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${quicksand.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[var(--safefamily-cream)] text-[var(--safefamily-navy)] font-[family-name:var(--font-quicksand)]">
+    <html lang="en" className={`${quicksand.variable} ${fredoka.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-brand-cream text-brand-navy font-[family-name:var(--font-quicksand)]">
         <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>

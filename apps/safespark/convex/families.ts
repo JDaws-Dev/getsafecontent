@@ -186,6 +186,14 @@ export const syncParentFromToken = mutation({
       .withIndex('by_email', (q) => q.eq('email', verified.email))
       .first();
     if (!user) {
+      // Auto-provision ONLY for accounts actually entitled to SafeSpark (the
+      // paid "Family + Spark" tier). A base-bundle account that lands here
+      // (e.g. by navigating to /parent directly) must NOT get a free SafeSpark
+      // row — SafeSpark is the one token-cost app and is never in the default
+      // bundle. Entitled accounts flow straight through, same as the others.
+      if (!verified.entitledApps.includes('safespark')) {
+        return null;
+      }
       const userId = await ctx.db.insert('users', {
         clerkUserId: `marketing:${verified.email}`,
         email: verified.email,

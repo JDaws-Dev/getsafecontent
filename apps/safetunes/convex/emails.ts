@@ -590,9 +590,42 @@ export const sendOrphanAlertEmail = action({
       recordInfo: v.string(),
       createdAt: v.optional(v.number()),
     })),
+    previousTotal: v.optional(v.number()),
+    kind: v.optional(v.string()), // "delta" | "heartbeat" | "first-run"
   },
   handler: async (ctx, args) => {
     const resend = new Resend(process.env.RESEND_API_KEY);
+
+    // Subject + headline vary by why we're sending. Heartbeat emails are noisy on purpose —
+    // a stable count once a week is a positive signal that the cron is alive.
+    const kind = args.kind ?? "delta";
+    const delta =
+      args.previousTotal !== undefined ? args.totalOrphans - args.previousTotal : null;
+    const deltaStr =
+      delta === null ? "" : delta > 0 ? ` (+${delta})` : delta < 0 ? ` (${delta})` : " (no change)";
+    const subjectLine =
+      kind === "heartbeat"
+        ? `Weekly Orphan Heartbeat: ${args.totalOrphans} (stable)`
+        : kind === "first-run"
+        ? `Data Integrity: ${args.totalOrphans} orphans — first scan`
+        : `Data Integrity Delta: ${args.totalOrphans} orphans${deltaStr}`;
+    const headlineColor =
+      kind === "heartbeat" ? "#10B981" : kind === "first-run" ? "#F59E0B" : "#EF4444";
+    const headlineText =
+      kind === "heartbeat"
+        ? "Weekly Heartbeat"
+        : kind === "first-run"
+        ? "First Orphan Scan"
+        : "Data Integrity Delta";
+    const bannerColor = kind === "heartbeat" ? "#ECFDF5" : "#FEF2F2";
+    const bannerAccent = kind === "heartbeat" ? "#10B981" : "#EF4444";
+    const bannerTextColor = kind === "heartbeat" ? "#065F46" : "#991B1B";
+    const bannerBody =
+      kind === "heartbeat"
+        ? `Stable at <strong>${args.totalOrphans}</strong> orphaned record${args.totalOrphans !== 1 ? "s" : ""}. No change since last check — the cron is alive and nothing is leaking.`
+        : kind === "first-run"
+        ? `<strong>${args.totalOrphans}</strong> orphaned record${args.totalOrphans !== 1 ? "s" : ""} on the first scan with the new alerter.`
+        : `<strong>${args.totalOrphans}</strong> orphaned record${args.totalOrphans !== 1 ? "s" : ""}${deltaStr} since the last check.`;
 
     // Build summary table
     const summaryRows = Object.entries(args.summary)
@@ -621,14 +654,14 @@ export const sendOrphanAlertEmail = action({
 
           <!-- Header -->
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #EF4444; margin: 0 0 8px 0; font-size: 28px;">Data Integrity Alert</h1>
-            <p style="color: #6b7280; margin: 0; font-size: 14px;">SafeTunes - Orphaned Records Detected</p>
+            <h1 style="color: ${headlineColor}; margin: 0 0 8px 0; font-size: 28px;">${headlineText}</h1>
+            <p style="color: #6b7280; margin: 0; font-size: 14px;">SafeTunes - Orphaned Records</p>
           </div>
 
           <!-- Alert Banner -->
-          <div style="background: #FEF2F2; border-left: 4px solid #EF4444; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
-            <p style="margin: 0; font-size: 16px; color: #991B1B;">
-              <strong>${args.totalOrphans} orphaned record${args.totalOrphans !== 1 ? "s" : ""}</strong> detected during the daily integrity check.
+          <div style="background: ${bannerColor}; border-left: 4px solid ${bannerAccent}; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
+            <p style="margin: 0; font-size: 16px; color: ${bannerTextColor};">
+              ${bannerBody}
             </p>
           </div>
 
@@ -688,7 +721,7 @@ export const sendOrphanAlertEmail = action({
       const result = await resend.emails.send({
         from: "SafeTunes Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || "jeremiah@getsafefamily.com",
-        subject: `Data Integrity Alert: ${args.totalOrphans} Orphaned Records Detected`,
+        subject: subjectLine,
         html: emailContent,
       });
 

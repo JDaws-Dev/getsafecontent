@@ -30,7 +30,7 @@ export default function ImageGallery({ images, onImageClick }) {
             <button
               key={index}
               onClick={() => onImageClick(index)}
-              className="group relative rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 active:scale-[0.98]"
+              className="group relative rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2 active:scale-[0.98]"
             >
               <div className="aspect-[4/3] overflow-hidden">
                 <img
@@ -46,8 +46,8 @@ export default function ImageGallery({ images, onImageClick }) {
               {image.source && (
                 <span className={`absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded font-semibold shadow-sm ${
                   image.source === 'wikipedia'
-                    ? 'bg-white/90 text-blue-700 dark:bg-gray-800/90 dark:text-blue-300'
-                    : 'bg-white/90 text-cyan-700 dark:bg-gray-800/90 dark:text-cyan-300'
+                    ? 'bg-white/90 text-accent-700 dark:bg-gray-800/90 dark:text-accent-300'
+                    : 'bg-white/90 text-accent-700 dark:bg-gray-800/90 dark:text-accent-300'
                 }`}>
                   {image.source === 'wikipedia' ? 'Wiki' : 'SafeStudy'}
                 </span>

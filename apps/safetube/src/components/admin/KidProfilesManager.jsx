@@ -4,7 +4,7 @@ import { api } from '../../../convex/_generated/api';
 import { useAuth } from '../../contexts/AuthContext';
 
 const COLORS = [
-  { id: 'red', bg: 'bg-red-500', ring: 'ring-red-400' },
+  { id: 'red', bg: 'bg-accent-500', ring: 'ring-accent-400' },
   { id: 'orange', bg: 'bg-orange-500', ring: 'ring-orange-400' },
   { id: 'yellow', bg: 'bg-yellow-500', ring: 'ring-yellow-400' },
   { id: 'green', bg: 'bg-green-500', ring: 'ring-green-400' },
@@ -15,7 +15,7 @@ const COLORS = [
 
 function getColorClass(colorId) {
   const color = COLORS.find(c => c.id === colorId);
-  return color ? color.bg : 'bg-red-500';
+  return color ? color.bg : 'bg-accent-500';
 }
 
 // Confirm Modal component
@@ -36,7 +36,7 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel }) {
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition"
+            className="flex-1 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition"
           >
             Delete
           </button>
@@ -148,7 +148,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
         {!isCreating && !editingId && (
           <button
             onClick={startCreate}
-            className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-md"
+            className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow-md"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -187,7 +187,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Kid's name"
-                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 maxLength={20}
                 autoFocus
               />
@@ -244,7 +244,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
               <button
                 onClick={editingId ? handleUpdate : handleCreate}
                 disabled={isLoading || !formData.name.trim()}
-                className="flex-1 sm:flex-none bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg font-medium transition shadow-md"
+                className="flex-1 sm:flex-none bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-lg font-medium transition shadow-md"
               >
                 {isLoading ? 'Saving...' : editingId ? 'Save Changes' : 'Create Profile'}
               </button>
@@ -289,7 +289,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
                 </button>
                 <button
                   onClick={() => handleDelete(profile._id, profile.name)}
-                  className="bg-gray-100 hover:bg-red-500 text-gray-400 hover:text-white p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-sm transition"
+                  className="bg-gray-100 hover:bg-accent-500 text-gray-400 hover:text-white p-1.5 sm:px-3 sm:py-1.5 rounded-lg text-sm transition"
                   title="Delete profile"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -302,7 +302,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
         </div>
       ) : !isCreating ? (
         <div className="bg-white rounded-xl p-8 sm:p-12 text-center shadow-sm border border-gray-100">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-gradient-to-br from-accent-500 to-accent-600 rounded-full flex items-center justify-center shadow-lg">
             <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
             </svg>
@@ -313,7 +313,7 @@ export default function KidProfilesManager({ userId, kidProfiles }) {
           </p>
           <button
             onClick={startCreate}
-            className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-3 rounded-lg font-medium transition shadow-md"
+            className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-6 py-3 rounded-lg font-medium transition shadow-md"
           >
             Create First Profile
           </button>

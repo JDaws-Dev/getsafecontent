@@ -53,7 +53,7 @@ function ActionSheet({ isOpen, onClose, item, onAdd, onAddToDiscover, onAIReview
         onClick={e => e.stopPropagation()}
       >
         {/* Item Header */}
-        <div className={`p-4 ${isArtist ? 'bg-gradient-to-br from-indigo-600 to-purple-600' : isAlbum ? 'bg-gradient-to-br from-purple-600 to-pink-600' : 'bg-gradient-to-br from-pink-600 to-rose-600'} text-white`}>
+        <div className="p-4 bg-accent-500 text-white">
           <div className="flex gap-3 items-center">
             {item.attributes?.artwork ? (
               <img
@@ -83,7 +83,7 @@ function ActionSheet({ isOpen, onClose, item, onAdd, onAddToDiscover, onAIReview
                   <span className="px-1.5 py-0.5 bg-white/30 rounded text-xs font-bold">E</span>
                 )}
               </div>
-              <h3 className="font-bold text-lg truncate mt-1">{item.attributes?.name}</h3>
+              <h3 className="font-bold font-display text-lg truncate mt-1">{item.attributes?.name}</h3>
               <p className="text-white/80 text-sm truncate">
                 {isArtist ? 'Tap below to view albums' : item.attributes?.artistName}
               </p>
@@ -109,8 +109,8 @@ function ActionSheet({ isOpen, onClose, item, onAdd, onAddToDiscover, onAIReview
               }}
               className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 rounded-xl transition text-left"
             >
-              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 rounded-full bg-accent-100 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
@@ -130,9 +130,9 @@ function ActionSheet({ isOpen, onClose, item, onAdd, onAddToDiscover, onAIReview
                   onClose();
                   onAdd(item);
                 }}
-                className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl transition text-left border border-purple-200"
+                className="w-full flex items-center gap-4 p-4 bg-accent-50 hover:bg-accent-100 rounded-xl transition text-left border border-accent-200"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg>
@@ -154,14 +154,14 @@ function ActionSheet({ isOpen, onClose, item, onAdd, onAddToDiscover, onAIReview
                   disabled={isQuickAdding || kidProfiles.length === 0}
                   className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition text-left disabled:opacity-50"
                 >
-                  <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-accent-100 flex items-center justify-center flex-shrink-0">
                     {isQuickAdding ? (
-                      <svg className="animate-spin w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin w-4 h-4 text-accent-600" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                     ) : (
-                      <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
                     )}
@@ -183,9 +183,9 @@ function ActionSheet({ isOpen, onClose, item, onAdd, onAddToDiscover, onAIReview
               <button
                 onClick={() => onQuickAdd?.(item)}
                 disabled={isQuickAdding || kidProfiles.length === 0}
-                className="w-full flex items-center gap-4 p-4 bg-purple-50 hover:bg-purple-100 rounded-xl transition text-left border border-purple-200 disabled:opacity-50"
+                className="w-full flex items-center gap-4 p-4 bg-accent-50 hover:bg-accent-100 rounded-xl transition text-left border border-accent-200 disabled:opacity-50"
               >
-                <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0">
                   {isQuickAdding ? (
                     <svg className="animate-spin w-6 h-6 text-white" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -427,7 +427,7 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Compact Album Header */}
-        <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-4 text-white">
+        <div className="bg-accent-500 p-4 text-white">
           <div className="flex gap-3 items-center">
             {album.attributes?.artwork ? (
               <img
@@ -443,7 +443,7 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold truncate">{album.attributes?.name}</h3>
+              <h3 className="font-bold font-display truncate">{album.attributes?.name}</h3>
               <p className="text-white/80 text-sm truncate">{album.attributes?.artistName}</p>
               <p className="text-white/60 text-xs">
                 {loadingTracks ? 'Loading...' : `${albumTracks.length} songs`}
@@ -469,24 +469,24 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
                 onClick={() => setDestination('library')}
                 className={`p-3 rounded-xl border-2 text-left transition ${
                   destination === 'library'
-                    ? 'border-purple-500 bg-purple-50'
+                    ? 'border-accent-500 bg-accent-50'
                     : 'border-gray-200 hover:border-gray-300 bg-white'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <svg className={`w-4 h-4 ${destination === 'library' ? 'text-purple-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 ${destination === 'library' ? 'text-accent-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
-                  <span className={`font-medium text-sm ${destination === 'library' ? 'text-purple-700' : 'text-gray-700'}`}>
+                  <span className={`font-medium text-sm ${destination === 'library' ? 'text-accent-700' : 'text-gray-700'}`}>
                     Library
                   </span>
                   {destination === 'library' && (
-                    <svg className="w-4 h-4 text-purple-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 text-accent-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   )}
                 </div>
-                <p className={`text-xs ${destination === 'library' ? 'text-purple-600' : 'text-gray-500'}`}>
+                <p className={`text-xs ${destination === 'library' ? 'text-accent-600' : 'text-gray-500'}`}>
                   Add directly to kids
                 </p>
               </button>
@@ -495,24 +495,24 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
                 onClick={() => setDestination('discover')}
                 className={`p-3 rounded-xl border-2 text-left transition ${
                   destination === 'discover'
-                    ? 'border-pink-500 bg-pink-50'
+                    ? 'border-accent-500 bg-accent-50'
                     : 'border-gray-200 hover:border-gray-300 bg-white'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <svg className={`w-4 h-4 ${destination === 'discover' ? 'text-pink-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 ${destination === 'discover' ? 'text-accent-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                  <span className={`font-medium text-sm ${destination === 'discover' ? 'text-pink-700' : 'text-gray-700'}`}>
+                  <span className={`font-medium text-sm ${destination === 'discover' ? 'text-accent-700' : 'text-gray-700'}`}>
                     Discover
                   </span>
                   {destination === 'discover' && (
-                    <svg className="w-4 h-4 text-pink-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 text-accent-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   )}
                 </div>
-                <p className={`text-xs ${destination === 'discover' ? 'text-pink-600' : 'text-gray-500'}`}>
+                <p className={`text-xs ${destination === 'discover' ? 'text-accent-600' : 'text-gray-500'}`}>
                   Kids browse & request
                 </p>
               </button>
@@ -522,13 +522,13 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
           {/* Kid Selection (shown for both Library and Discover) */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-gray-900 text-sm">
+              <h4 className="font-medium font-display text-brand-navy text-sm">
                 {destination === 'library' ? 'Add to Library for:' : 'Show in Discover for:'}
               </h4>
               {kidProfiles.length > 1 && (
                 <button
                   onClick={() => setSelectedKids(allKidsSelected ? [] : kidProfiles.map(k => k._id))}
-                  className={`text-xs font-medium ${destination === 'discover' ? 'text-pink-600 hover:text-pink-700' : 'text-purple-600 hover:text-purple-700'}`}
+                  className="text-xs font-medium text-accent-600 hover:text-accent-700"
                 >
                   {allKidsSelected ? 'Deselect All' : 'Select All'}
                 </button>
@@ -542,18 +542,16 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
                   onClick={() => toggleKid(kid._id)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 transition ${
                     selectedKids.includes(kid._id)
-                      ? destination === 'discover'
-                        ? 'border-pink-500 bg-pink-50'
-                        : 'border-purple-500 bg-purple-50'
+                      ? 'border-accent-500 bg-accent-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className={`w-5 h-5 rounded-full ${getColorClass(kid.color)} flex items-center justify-center text-white text-xs font-bold`}>
                     {kid.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="font-medium text-gray-900 text-sm">{kid.name}</span>
+                  <span className="font-medium text-brand-navy text-sm">{kid.name}</span>
                   {selectedKids.includes(kid._id) && (
-                    <svg className={`w-3.5 h-3.5 ${destination === 'discover' ? 'text-pink-600' : 'text-purple-600'}`} fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-3.5 h-3.5 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   )}
@@ -593,7 +591,7 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
           {/* Track List - Visible by default */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-gray-900 text-sm">
+              <h4 className="font-medium font-display text-brand-navy text-sm">
                 Songs
                 <span className="ml-2 text-gray-500 font-normal">
                   {allTracksSelected ? `All ${albumTracks.length}` : `${selectedTracks.length} of ${albumTracks.length}`}
@@ -602,7 +600,7 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
               <div className="flex gap-2">
                 <button
                   onClick={selectAllTracks}
-                  className="text-xs text-purple-600 hover:text-purple-700 font-medium"
+                  className="text-xs text-accent-600 hover:text-accent-700 font-medium"
                 >
                   All
                 </button>
@@ -618,7 +616,7 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
 
             {loadingTracks ? (
               <div className="flex items-center justify-center py-4">
-                <svg className="animate-spin h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-5 w-5 text-accent-600" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -635,14 +633,14 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
                       <div
                         key={trackId}
                         className={`flex items-center gap-2 p-2 rounded-lg transition ${
-                          isSelected ? 'bg-purple-100' : 'hover:bg-gray-100'
+                          isSelected ? 'bg-accent-100' : 'hover:bg-gray-100'
                         }`}
                       >
                         {/* Checkbox for selection */}
                         <button
                           onClick={() => toggleTrack(trackId)}
                           className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                            isSelected ? 'bg-purple-600 border-purple-600' : 'border-gray-300'
+                            isSelected ? 'bg-accent-600 border-accent-600' : 'border-gray-300'
                           }`}
                         >
                           {isSelected && (
@@ -655,7 +653,7 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
                         {/* Clickable track name for selection */}
                         <button
                           onClick={() => toggleTrack(trackId)}
-                          className={`flex-1 text-sm truncate text-left ${isSelected ? 'text-gray-900 font-medium' : 'text-gray-600'}`}
+                          className={`flex-1 text-sm truncate text-left ${isSelected ? 'text-brand-navy font-medium' : 'text-gray-600'}`}
                         >
                           {track.attributes?.name}
                         </button>
@@ -725,9 +723,7 @@ function UnifiedAddModal({ isOpen, onClose, album, user, kidProfiles, onSuccess,
                 isAdding ||
                 loadingTracks
               }
-              className={`flex-1 px-4 py-2.5 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 text-sm ${
-                destination === 'discover' ? 'bg-pink-600 hover:bg-pink-700' : 'bg-purple-600 hover:bg-purple-700'
-              }`}
+              className="flex-1 px-4 py-2.5 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 text-sm bg-accent-500 hover:bg-accent-600"
             >
               {isAdding ? (
                 <>
@@ -1484,13 +1480,13 @@ export default function AddMusic({ user }) {
     <div className="space-y-4">
       {/* Header */}
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Add Music</h2>
+        <h2 className="text-2xl font-bold font-display text-brand-navy">Add Music</h2>
         <p className="text-gray-600 text-sm">Search Apple Music or import from playlists</p>
       </div>
 
       {/* Search Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Search Apple Music</h3>
+        <h3 className="text-lg font-semibold font-display text-brand-navy mb-4">Search Apple Music</h3>
 
         {/* Search Bar */}
         <div className="flex gap-3">
@@ -1509,7 +1505,7 @@ export default function AddMusic({ user }) {
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck="false"
-              className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-base"
+              className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent text-base"
             />
             {searchQuery && (
               <button
@@ -1525,7 +1521,7 @@ export default function AddMusic({ user }) {
           <button
             onClick={handleSearch}
             disabled={!searchQuery.trim() || isSearching || !isMusicKitReady}
-            className="px-3 sm:px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition flex items-center gap-2 flex-shrink-0"
+            className="px-3 sm:px-6 py-3 bg-accent-500 text-white rounded-lg hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition flex items-center gap-2 flex-shrink-0"
           >
             {isSearching ? (
               <>
@@ -1595,13 +1591,13 @@ export default function AddMusic({ user }) {
           className="w-full flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-accent-500 flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
             <div className="text-left">
-              <h3 className="text-lg font-semibold text-gray-900">AI Music Finder</h3>
+              <h3 className="text-lg font-semibold font-display text-brand-navy">AI Music Finder</h3>
               <p className="text-sm text-gray-600">Describe what you're looking for in plain English</p>
             </div>
           </div>
@@ -1648,13 +1644,13 @@ export default function AddMusic({ user }) {
                   value={aiSearchQuery}
                   onChange={(e) => setAiSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAiSearch()}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent text-base"
                 />
               </div>
               <button
                 onClick={handleAiSearch}
                 disabled={!aiSearchQuery.trim() || isAiSearching}
-                className="px-4 sm:px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition flex items-center gap-2 flex-shrink-0"
+                className="px-4 sm:px-6 py-3 bg-accent-500 text-white rounded-lg hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition flex items-center gap-2 flex-shrink-0"
               >
                 {isAiSearching ? (
                   <>
@@ -1685,13 +1681,13 @@ export default function AddMusic({ user }) {
             {aiSearchResults && (
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-semibold text-gray-900">Song Suggestions</h4>
+                  <h4 className="font-semibold font-display text-brand-navy">Song Suggestions</h4>
                   <div className="flex items-center gap-2">
                     {aiSearchResults.fromCache && (
                       <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">Cached</span>
                     )}
                     {aiSearchResults.songs?.length > 0 && (
-                      <span className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded font-medium">
+                      <span className="text-xs text-accent-600 bg-accent-50 px-2 py-1 rounded font-medium">
                         {aiSearchResults.songs.length} songs
                       </span>
                     )}
@@ -1712,7 +1708,7 @@ export default function AddMusic({ user }) {
                       </span>
                     )}
                     {aiSearchResults.genres?.map((genre, i) => (
-                      <span key={i} className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
+                      <span key={i} className="text-xs text-accent-600 bg-accent-50 px-2 py-1 rounded-full">
                         {genre}
                       </span>
                     ))}
@@ -1728,7 +1724,7 @@ export default function AddMusic({ user }) {
                         className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition group"
                       >
                         {/* Song icon */}
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center flex-shrink-0 text-white">
+                        <div className="w-10 h-10 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0 text-white">
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                           </svg>
@@ -1739,7 +1735,7 @@ export default function AddMusic({ user }) {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleAiSongClick(song)}
-                              className="font-medium text-gray-900 hover:text-purple-700 truncate text-left"
+                              className="font-medium text-brand-navy hover:text-accent-700 truncate text-left"
                             >
                               {song.songName}
                             </button>
@@ -1749,7 +1745,7 @@ export default function AddMusic({ user }) {
                           </div>
                           <button
                             onClick={() => handleAiArtistClick(song.artistName)}
-                            className="text-sm text-purple-600 hover:text-purple-800 hover:underline truncate block text-left"
+                            className="text-sm text-accent-600 hover:text-accent-800 hover:underline truncate block text-left"
                           >
                             {song.artistName}
                           </button>
@@ -1774,7 +1770,7 @@ export default function AddMusic({ user }) {
                           <button
                             onClick={() => handleAiSuggestionAdd(song, i)}
                             disabled={aiAddingIndex === i}
-                            className="px-3 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-1 bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                            className="px-3 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-1 bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-50"
                             title="Add to library"
                           >
                             {aiAddingIndex === i ? (
@@ -1816,13 +1812,13 @@ export default function AddMusic({ user }) {
           className="w-full flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-accent-500 flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
               </svg>
             </div>
             <div className="text-left">
-              <h3 className="text-lg font-semibold text-gray-900">Import from Playlist</h3>
+              <h3 className="text-lg font-semibold font-display text-brand-navy">Import from Playlist</h3>
               <p className="text-sm text-gray-600">Import albums from your Apple Music playlists</p>
             </div>
           </div>
@@ -1897,7 +1893,7 @@ export default function AddMusic({ user }) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowSongKidSelection(false)}>
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden" onClick={e => e.stopPropagation()}>
             {/* Song Header */}
-            <div className="bg-gradient-to-br from-pink-600 to-rose-600 p-4 text-white">
+            <div className="bg-accent-500 p-4 text-white">
               <div className="flex gap-3 items-center">
                 {selectedSong.attributes?.artwork ? (
                   <img
@@ -1913,7 +1909,7 @@ export default function AddMusic({ user }) {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold truncate">{selectedSong.attributes?.name}</h3>
+                  <h3 className="font-bold font-display truncate">{selectedSong.attributes?.name}</h3>
                   <p className="text-white/80 text-sm truncate">{selectedSong.attributes?.artistName}</p>
                   {selectedSong.attributes?.albumName && (
                     <p className="text-white/60 text-xs truncate">{selectedSong.attributes.albumName}</p>
@@ -1932,13 +1928,13 @@ export default function AddMusic({ user }) {
               {/* Kid Selection */}
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-gray-900 text-sm">Add to Library for:</h4>
+                  <h4 className="font-medium font-display text-brand-navy text-sm">Add to Library for:</h4>
                   {kidProfiles.length > 1 && (
                     <button
                       onClick={() => setSongSelectedKids(
                         songSelectedKids.length === kidProfiles.length ? [] : kidProfiles.map(k => k._id)
                       )}
-                      className="text-xs text-purple-600 hover:text-purple-700 font-medium"
+                      className="text-xs text-accent-600 hover:text-accent-700 font-medium"
                     >
                       {songSelectedKids.length === kidProfiles.length ? 'Deselect All' : 'Select All'}
                     </button>
@@ -1958,16 +1954,16 @@ export default function AddMusic({ user }) {
                         )}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 transition ${
                           isSelected
-                            ? 'border-purple-500 bg-purple-50'
+                            ? 'border-accent-500 bg-accent-50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
                         <div className={`w-5 h-5 rounded-full ${colorClass} flex items-center justify-center text-white text-xs font-bold`}>
                           {kid.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-medium text-gray-900 text-sm">{kid.name}</span>
+                        <span className="font-medium text-brand-navy text-sm">{kid.name}</span>
                         {isSelected && (
-                          <svg className="w-3.5 h-3.5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-3.5 h-3.5 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         )}
@@ -2049,7 +2045,7 @@ export default function AddMusic({ user }) {
                     }
                   }}
                   disabled={addingSongId || songSelectedKids.length === 0}
-                  className="flex-1 px-4 py-2.5 bg-pink-600 text-white rounded-xl font-medium hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 text-sm"
+                  className="flex-1 px-4 py-2.5 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 text-sm"
                 >
                   {addingSongId ? (
                     <>
@@ -2074,7 +2070,7 @@ export default function AddMusic({ user }) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleBackFromArtist}>
           <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
             {/* Artist Header */}
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-600 p-6 text-white">
+            <div className="bg-accent-500 p-6 text-white">
               <div className="flex items-center gap-4">
                 {selectedArtist.attributes?.artwork ? (
                   <img
@@ -2090,7 +2086,7 @@ export default function AddMusic({ user }) {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-xl truncate">{selectedArtist.attributes?.name}</h3>
+                  <h3 className="font-bold font-display text-xl truncate">{selectedArtist.attributes?.name}</h3>
                   <p className="text-white/80 text-sm">
                     {loadingArtistAlbums ? 'Loading albums...' : `${artistAlbums.length} albums`}
                   </p>
@@ -2108,15 +2104,15 @@ export default function AddMusic({ user }) {
 
             {/* Quick Add All Banner */}
             {!loadingArtistAlbums && artistAlbums.length > 0 && kidProfiles.length > 0 && (
-              <div className="px-4 py-3 bg-purple-50 border-b border-purple-100">
+              <div className="px-4 py-3 bg-accent-50 border-b border-accent-100">
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm text-purple-700 min-w-0">
+                  <div className="text-sm text-accent-700 min-w-0">
                     <span className="font-medium">Quick add:</span> {artistAlbums.length} album{artistAlbums.length !== 1 ? 's' : ''} → {kidProfiles.length === 1 ? kidProfiles[0].name : `all ${kidProfiles.length} kids`}
                   </div>
                   <button
                     onClick={handleAddAllArtistAlbums}
                     disabled={addingAllArtistAlbums}
-                    className="px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 disabled:opacity-50 transition font-medium flex items-center gap-1 flex-shrink-0"
+                    className="px-3 py-1.5 bg-accent-500 text-white text-sm rounded-lg hover:bg-accent-600 disabled:opacity-50 transition font-medium flex items-center gap-1 flex-shrink-0"
                   >
                     {addingAllArtistAlbums ? (
                       <>
@@ -2143,7 +2139,7 @@ export default function AddMusic({ user }) {
             <div className="overflow-y-auto max-h-[55vh]">
               {loadingArtistAlbums ? (
                 <div className="flex items-center justify-center py-12">
-                  <svg className="animate-spin h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-8 w-8 text-accent-600" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -2166,14 +2162,14 @@ export default function AddMusic({ user }) {
                           className="w-12 h-12 rounded-lg object-cover shadow-sm flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <svg className="w-6 h-6 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                        <div className="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg className="w-6 h-6 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                           </svg>
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h5 className="font-medium text-gray-900 truncate">{album.attributes?.name}</h5>
+                        <h5 className="font-medium text-brand-navy truncate">{album.attributes?.name}</h5>
                         <p className="text-sm text-gray-500">
                           {album.attributes?.releaseDate?.slice(0, 4)}
                           {album.attributes?.trackCount && ` · ${album.attributes.trackCount} tracks`}
@@ -2185,7 +2181,7 @@ export default function AddMusic({ user }) {
                             handleBackFromArtist();
                             handleAddAlbum({ ...album, resultType: 'album' });
                           }}
-                          className="px-3 py-1.5 border-2 border-purple-600 text-purple-700 text-sm rounded-lg hover:bg-purple-50 transition font-medium flex items-center gap-1"
+                          className="px-3 py-1.5 border-2 border-accent-600 text-accent-700 text-sm rounded-lg hover:bg-accent-50 transition font-medium flex items-center gap-1"
                         >
                           Review & Add
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2254,7 +2250,7 @@ export default function AddMusic({ user }) {
                   className="w-14 h-14 rounded-lg shadow-md"
                 />
               ) : (
-                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-lg bg-accent-500 flex items-center justify-center">
                   <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                   </svg>
@@ -2274,7 +2270,7 @@ export default function AddMusic({ user }) {
                   onClick={handlePreviewSeek}
                 >
                   <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all"
+                    className="h-full bg-accent-500 rounded-full transition-all"
                     style={{ width: `${(previewCurrentTime / previewDuration) * 100}%` }}
                   />
                   {/* Scrubber thumb */}

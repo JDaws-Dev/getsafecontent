@@ -18,7 +18,7 @@ function formatTimeAgo(timestamp) {
 // Get Tailwind color class from color name
 function getColorClass(color) {
   const colors = {
-    red: 'bg-red-500',
+    red: 'bg-accent-500',
     orange: 'bg-orange-500',
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
@@ -55,7 +55,7 @@ export default function BlockedSearches({ userId, kidProfiles, defaultKidId }) {
   if (!blockedSearches) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-red-500 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent-500 border-t-transparent"></div>
       </div>
     );
   }
@@ -152,11 +152,11 @@ export default function BlockedSearches({ userId, kidProfiles, defaultKidId }) {
             {items.map((item) => (
               <div
                 key={item._id}
-                className="flex gap-3 bg-white rounded-xl p-4 shadow-sm border border-red-100 hover:shadow-md transition"
+                className="flex gap-3 bg-white rounded-xl p-4 shadow-sm border border-accent-100 hover:shadow-md transition"
               >
                 {/* Warning Icon */}
-                <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex-shrink-0 w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
@@ -177,8 +177,8 @@ export default function BlockedSearches({ userId, kidProfiles, defaultKidId }) {
                   <p className="text-gray-700">
                     Searched for: <span className="font-medium">"{item.query}"</span>
                   </p>
-                  <p className="text-sm text-red-600 mt-1">
-                    Blocked keyword: <code className="bg-red-50 px-1.5 py-0.5 rounded text-red-700">{item.blockedKeyword}</code>
+                  <p className="text-sm text-accent-600 mt-1">
+                    Blocked keyword: <code className="bg-accent-50 px-1.5 py-0.5 rounded text-accent-700">{item.blockedKeyword}</code>
                   </p>
                 </div>
               </div>

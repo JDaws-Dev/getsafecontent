@@ -81,9 +81,9 @@ function StepDots({ current, total }) {
           key={i}
           className={`rounded-full transition-all duration-300 ${
             i === current
-              ? 'w-8 h-2.5 bg-gradient-to-r from-blue-500 to-cyan-500'
+              ? 'w-8 h-2.5 bg-gradient-to-r from-accent-500 to-accent-500'
               : i < current
-                ? 'w-2.5 h-2.5 bg-blue-400'
+                ? 'w-2.5 h-2.5 bg-accent-400'
                 : 'w-2.5 h-2.5 bg-gray-300'
           }`}
         />
@@ -110,7 +110,7 @@ function NavButtons({ onBack, onNext, nextLabel = 'Next', nextDisabled = false, 
         type="button"
         onClick={onNext}
         disabled={nextDisabled || loading}
-        className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-300 disabled:to-gray-400 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97]"
+        className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 disabled:from-gray-300 disabled:to-gray-400 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-accent-200 transition-all active:scale-[0.97]"
       >
         {loading ? 'Saving...' : nextLabel}
         {!loading && <ArrowRight className="w-5 h-5" />}
@@ -123,7 +123,7 @@ function NavButtons({ onBack, onNext, nextLabel = 'Next', nextDisabled = false, 
 function WelcomeStep({ onNext }) {
   return (
     <div className="flex flex-col items-center text-center px-6 py-8 animate-fadeIn">
-      <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-200 mb-8">
+      <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-accent-500 to-accent-500 flex items-center justify-center shadow-lg shadow-accent-200 mb-8">
         <Search className="w-12 h-12 text-white" />
       </div>
 
@@ -139,7 +139,7 @@ function WelcomeStep({ onNext }) {
 
       <button
         onClick={onNext}
-        className="flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97]"
+        className="flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-accent-200 transition-all active:scale-[0.97]"
       >
         Get Started
         <ArrowRight className="w-5 h-5" />
@@ -182,7 +182,7 @@ function NameAgeStep({ data, onChange, onNext, onBack }) {
       {/* Live Preview */}
       <div className="flex flex-col items-center mb-8">
         <div
-          className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg transition-all duration-300 ${selectedColor?.bg || 'bg-blue-500'}`}
+          className={`w-24 h-24 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg transition-all duration-300 ${selectedColor?.bg || 'bg-accent-500'}`}
         >
           {initial}
         </div>
@@ -202,7 +202,7 @@ function NameAgeStep({ data, onChange, onNext, onBack }) {
           type="text"
           value={name}
           onChange={(e) => onChange({ name: e.target.value })}
-          className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+          className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent text-lg"
           placeholder="Your child's name"
           autoFocus
         />
@@ -247,7 +247,7 @@ function NameAgeStep({ data, onChange, onNext, onBack }) {
               onClick={() => onChange({ color: c.name })}
               className={`w-11 h-11 rounded-full ${c.bg} transition-all ring-offset-2 ${
                 color === c.name
-                  ? 'ring-3 ring-blue-500 scale-110 shadow-md'
+                  ? 'ring-3 ring-accent-500 scale-110 shadow-md'
                   : 'hover:scale-105'
               }`}
               aria-label={c.name}
@@ -293,7 +293,7 @@ function ReadingLevelStep({ data, onChange, onNext, onBack }) {
         onClick={handleAutoToggle}
         className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 mb-4 transition ${
           autoReadingLevel
-            ? 'border-blue-500 bg-blue-50'
+            ? 'border-accent-500 bg-accent-50'
             : 'border-gray-200 bg-white hover:border-gray-300'
         }`}
       >
@@ -304,7 +304,7 @@ function ReadingLevelStep({ data, onChange, onNext, onBack }) {
           </p>
         </div>
         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition ${
-          autoReadingLevel ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+          autoReadingLevel ? 'border-accent-500 bg-accent-500' : 'border-gray-300'
         }`}>
           {autoReadingLevel && <Check className="w-4 h-4 text-white" />}
         </div>
@@ -319,7 +319,7 @@ function ReadingLevelStep({ data, onChange, onNext, onBack }) {
           <select
             value={readingLevel}
             onChange={(e) => handleGradeChange(e.target.value)}
-            className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-gray-900 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+            className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-gray-900 text-lg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent pr-12"
           >
             {GRADE_OPTIONS.map((g) => (
               <option key={g.value} value={g.value}>{g.label}</option>
@@ -329,7 +329,7 @@ function ReadingLevelStep({ data, onChange, onNext, onBack }) {
         </div>
       </div>
 
-      <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-700 mb-2">
+      <div className="bg-accent-50 border border-accent-100 rounded-xl px-4 py-3 text-sm text-accent-700 mb-2">
         Answers, vocabulary, and explanations will be written at a {GRADE_OPTIONS.find(g => g.value === readingLevel)?.label || readingLevel} reading level.
       </div>
 
@@ -374,7 +374,7 @@ function ContentSafetyStep({ data, onChange, onNext, onBack }) {
         className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 rounded-xl mb-3 text-sm font-medium text-gray-700 hover:bg-gray-100 transition"
       >
         <span>{allChecked ? 'Deselect all' : 'Select all'}</span>
-        <Shield className="w-4 h-4 text-blue-500" />
+        <Shield className="w-4 h-4 text-accent-500" />
       </button>
 
       {/* Topic Checkboxes */}
@@ -388,12 +388,12 @@ function ContentSafetyStep({ data, onChange, onNext, onBack }) {
               onClick={() => toggleTopic(topic.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition ${
                 checked
-                  ? 'border-blue-500 bg-blue-50'
+                  ? 'border-accent-500 bg-accent-50'
                   : 'border-gray-200 bg-white hover:border-gray-300'
               }`}
             >
               <div className={`w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition ${
-                checked ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                checked ? 'border-accent-500 bg-accent-500' : 'border-gray-300'
               }`}>
                 {checked && <Check className="w-3.5 h-3.5 text-white" />}
               </div>
@@ -424,7 +424,7 @@ function ContentSafetyStep({ data, onChange, onNext, onBack }) {
           type="button"
           onClick={() => onChange({ allowTopicRequests: !allowTopicRequests })}
           className={`relative w-12 h-7 rounded-full transition-colors flex-shrink-0 ${
-            allowTopicRequests ? 'bg-blue-500' : 'bg-gray-300'
+            allowTopicRequests ? 'bg-accent-500' : 'bg-gray-300'
           }`}
         >
           <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${
@@ -469,12 +469,12 @@ function AccessibilityStep({ data, onChange, onNext, onBack }) {
               onClick={() => toggleNeed(option.id)}
               className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 text-left transition ${
                 checked
-                  ? 'border-blue-500 bg-blue-50'
+                  ? 'border-accent-500 bg-accent-50'
                   : 'border-gray-200 bg-white hover:border-gray-300'
               }`}
             >
               <div className={`w-6 h-6 rounded flex-shrink-0 border-2 flex items-center justify-center transition ${
-                checked ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                checked ? 'border-accent-500 bg-accent-500' : 'border-gray-300'
               }`}>
                 {checked && <Check className="w-4 h-4 text-white" />}
               </div>
@@ -499,7 +499,7 @@ function AccessibilityStep({ data, onChange, onNext, onBack }) {
         <button
           type="button"
           onClick={onNext}
-          className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.97]"
+          className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white text-lg font-semibold rounded-2xl shadow-lg shadow-accent-200 transition-all active:scale-[0.97]"
         >
           {accessibilityNeeds.length === 0 ? 'Skip' : 'Next'}
           <ArrowRight className="w-5 h-5" />
@@ -541,14 +541,14 @@ function FamilyCodeStep({ data, familyCode, onNext, onBack, saving, error }) {
       )}
 
       {/* Family Code Display */}
-      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-6 sm:p-8 mb-6">
+      <div className="bg-gradient-to-br from-accent-50 to-accent-50 border-2 border-accent-200 rounded-2xl p-6 sm:p-8 mb-6">
         <div className="flex flex-col items-center gap-4">
-          <div className="text-4xl sm:text-5xl font-bold text-blue-600 tracking-[0.25em] font-mono">
+          <div className="text-4xl sm:text-5xl font-bold text-accent-600 tracking-[0.25em] font-mono">
             {familyCode || '------'}
           </div>
           <button
             onClick={copyCode}
-            className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-blue-50 border border-blue-200 text-blue-600 rounded-xl font-medium transition active:scale-95 shadow-sm"
+            className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-accent-50 border border-accent-200 text-accent-600 rounded-xl font-medium transition active:scale-95 shadow-sm"
           >
             {copied ? (
               <>
@@ -571,8 +571,8 @@ function FamilyCodeStep({ data, familyCode, onNext, onBack, saving, error }) {
           They enter this code at:
         </p>
         <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-3">
-          <ExternalLink className="w-4 h-4 text-blue-500 flex-shrink-0" />
-          <code className="text-blue-600 font-mono font-semibold text-sm sm:text-base">
+          <ExternalLink className="w-4 h-4 text-accent-500 flex-shrink-0" />
+          <code className="text-accent-600 font-mono font-semibold text-sm sm:text-base">
             getsafestudy.com/search
           </code>
         </div>
@@ -609,12 +609,12 @@ function AllSetStep({ onComplete, onAddAnother, onTrySearch }) {
       <div className="w-full max-w-sm space-y-3">
         <button
           onClick={onComplete}
-          className="w-full flex items-center gap-4 px-5 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl font-medium transition active:scale-[0.97] shadow-lg shadow-blue-200"
+          className="w-full flex items-center gap-4 px-5 py-4 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white rounded-2xl font-medium transition active:scale-[0.97] shadow-lg shadow-accent-200"
         >
           <LayoutDashboard className="w-6 h-6" />
           <span className="text-left flex-1">
             <span className="block font-semibold">Go to Dashboard</span>
-            <span className="block text-xs text-blue-100">See activity and manage profiles</span>
+            <span className="block text-xs text-accent-100">See activity and manage profiles</span>
           </span>
         </button>
 
@@ -622,7 +622,7 @@ function AllSetStep({ onComplete, onAddAnother, onTrySearch }) {
           onClick={onAddAnother}
           className="w-full flex items-center gap-4 px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 text-gray-900 rounded-2xl font-medium transition active:scale-[0.97]"
         >
-          <UserPlus className="w-6 h-6 text-blue-500" />
+          <UserPlus className="w-6 h-6 text-accent-500" />
           <span className="text-left flex-1">
             <span className="block font-semibold">Add Another Kid</span>
             <span className="block text-xs text-gray-400">Create profiles for more children</span>
@@ -633,7 +633,7 @@ function AllSetStep({ onComplete, onAddAnother, onTrySearch }) {
           onClick={onTrySearch}
           className="w-full flex items-center gap-4 px-5 py-4 bg-white hover:bg-gray-50 border border-gray-200 text-gray-900 rounded-2xl font-medium transition active:scale-[0.97]"
         >
-          <Search className="w-6 h-6 text-cyan-500" />
+          <Search className="w-6 h-6 text-accent-500" />
           <span className="text-left flex-1">
             <span className="block font-semibold">Try a Search</span>
             <span className="block text-xs text-gray-400">See what your kids will experience</span>

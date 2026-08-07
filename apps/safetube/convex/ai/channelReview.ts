@@ -127,7 +127,7 @@ If the channel appears to be clearly kid-friendly with no concerns, return an em
           messages: [
             {
               role: "system",
-              content: "You are a content advisor helping parents make informed decisions about YouTube channels for their children. Be thorough but fair - not all entertainment is harmful, but parents deserve to know about any potentially concerning content. When you recognize a channel from your training data, share relevant community feedback, Common Sense Media ratings, and any known controversies. Only state things you are confident about. Always return valid JSON only, no markdown formatting.",
+              content: "You are a content advisor helping parents make informed decisions about YouTube channels for their children. Be thorough but fair - not all entertainment is harmful, but parents deserve to know about any potentially concerning content. When you recognize a channel from your training data, share relevant community feedback, Common Sense Media ratings, and any known controversies. Only state things you are confident about.",
             },
             {
               role: "user",
@@ -136,6 +136,52 @@ If the channel appears to be clearly kid-friendly with no concerns, return an em
           ],
           temperature: 0.3,
           max_tokens: 2000,
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "channel_review",
+              strict: true,
+              schema: {
+                type: "object",
+                additionalProperties: false,
+                required: [
+                  "summary",
+                  "contentCategories",
+                  "concerns",
+                  "recommendation",
+                  "ageRecommendation",
+                  "parentCommunityNotes",
+                  "knownControversies",
+                  "commonSenseMediaRating",
+                ],
+                properties: {
+                  summary: { type: "string" },
+                  contentCategories: { type: "array", items: { type: "string" } },
+                  concerns: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      additionalProperties: false,
+                      required: ["category", "severity", "description"],
+                      properties: {
+                        category: { type: "string" },
+                        severity: { type: "string", enum: ["mild", "moderate", "significant"] },
+                        description: { type: "string" },
+                      },
+                    },
+                  },
+                  recommendation: {
+                    type: "string",
+                    enum: ["Recommended", "Review Videos First", "Not Recommended"],
+                  },
+                  ageRecommendation: { type: "string" },
+                  parentCommunityNotes: { type: "array", items: { type: "string" } },
+                  knownControversies: { type: "array", items: { type: "string" } },
+                  commonSenseMediaRating: { type: ["string", "null"] },
+                },
+              },
+            },
+          },
         }),
       });
 
@@ -157,7 +203,7 @@ If the channel appears to be clearly kid-friendly with no concerns, return an em
 
       const review = JSON.parse(cleanedContent);
 
-      console.log(`[Channel Review] Review complete. Recommendation: ${review.recommendation}`);
+      console.log(`[Channel Review] Review complete. Recommendation: ${review.recommendation}. extras: communityNotes=${(review.parentCommunityNotes || []).length} controversies=${(review.knownControversies || []).length} csm=${review.commonSenseMediaRating ?? "null"}`);
 
       // SAVE TO CACHE
       const cacheId = await ctx.runMutation(api.ai.channelReview.saveToCache, {

@@ -71,7 +71,9 @@ export default defineSchema({
     interests: v.array(v.string()),
     avoidTopics: v.array(v.string()),
     customNote: v.optional(v.string()),
-    pin: v.optional(v.string()),               // 4-digit PIN for per-profile privacy (siblings)
+    pin: v.optional(v.string()),               // PBKDF2-hashed PIN (legacy rows may be plaintext; lazy-upgraded on verify)
+    failedPinAttempts: v.optional(v.number()), // brute-force lockout counter (reset on success)
+    pinLockedUntil: v.optional(v.number()),    // epoch ms; PIN entry locked until this time
     avatarColor: v.optional(v.string()),       // 'violet' | 'pink' | 'emerald' | 'amber' | 'sky' for the picker tile
     joinCode: v.optional(v.string()),          // legacy back-compat from previous design
     claimed: v.optional(v.boolean()),          // legacy back-compat
@@ -113,6 +115,7 @@ export default defineSchema({
     deviceLabel: v.optional(v.string()),       // 'Bella\'s Chromebook'
     lastSeenAt: v.number(),
     createdAt: v.number(),
+    expiresAt: v.optional(v.number()),         // epoch ms; session invalid after this (rolling TTL on touch)
   })
     .index('by_token', ['sessionToken'])
     .index('by_profile', ['kidProfileId']),
