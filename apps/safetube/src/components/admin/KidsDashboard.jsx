@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import { useAuth } from '../../contexts/AuthContext';
 import KidProfilesManager from './KidProfilesManager';
 import TimeLimits from './TimeLimits';
 import WatchHistory from './WatchHistory';
@@ -22,6 +23,7 @@ function getColorClass(color) {
 }
 
 export default function KidsDashboard({ userId, kidProfiles }) {
+  const { token } = useAuth();
   const [activeSection, setActiveSection] = useState('overview'); // 'overview', 'profiles', 'limits', 'history', 'blocked'
   const [selectedKidId, setSelectedKidId] = useState(null);
 
@@ -34,7 +36,7 @@ export default function KidsDashboard({ userId, kidProfiles }) {
   // Get time limits for all kids (includes watched time today)
   const allTimeLimits = useQuery(
     api.timeLimits.getTimeLimitsForUser,
-    userId ? { userId } : 'skip'
+    userId ? { userId, userToken: token ?? undefined } : 'skip'
   );
 
   // Get blocked searches count for today (for alert badge)

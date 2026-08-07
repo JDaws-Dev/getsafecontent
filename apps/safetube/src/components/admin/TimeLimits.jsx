@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Get Tailwind color class from color name
 function getColorClass(color) {
@@ -44,13 +45,14 @@ const HOURS = Array.from({ length: 24 }, (_, i) => ({
 }));
 
 export default function TimeLimits({ userId, defaultKidId }) {
+  const { token } = useAuth();
   const [selectedKid, setSelectedKid] = useState(null);
   const [saving, setSaving] = useState(false);
   const [showTimeWindow, setShowTimeWindow] = useState(false);
 
   const timeLimitsData = useQuery(
     api.timeLimits.getTimeLimitsForUser,
-    userId ? { userId } : 'skip'
+    userId ? { userId, userToken: token ?? undefined } : 'skip'
   );
 
   const setTimeLimit = useMutation(api.timeLimits.setTimeLimit);
@@ -108,6 +110,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
         weekendLimitMinutes: formState.weekendLimitMinutes,
         allowedStartHour: showTimeWindow ? formState.allowedStartHour : undefined,
         allowedEndHour: showTimeWindow ? formState.allowedEndHour : undefined,
+        userToken: token ?? undefined,
       });
     } catch (err) {
       console.error('Failed to save time limit:', err);
@@ -120,7 +123,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
     if (!selectedKid) return;
     setSaving(true);
     try {
-      await deleteTimeLimit({ kidProfileId: selectedKid });
+      await deleteTimeLimit({ kidProfileId: selectedKid, userToken: token ?? undefined });
       setFormState({
         dailyLimitMinutes: 60,
         weekendLimitMinutes: undefined,

@@ -192,9 +192,10 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
           weekendLimitMinutes: form.hasWeekendLimit ? form.weekendLimitMinutes : undefined,
           allowedStartHour: form.hasTimeWindow ? form.allowedStartHour : undefined,
           allowedEndHour: form.hasTimeWindow ? form.allowedEndHour : undefined,
+          userToken: token ?? undefined,
         });
       } else if (timeLimit?.limit) {
-        await deleteTimeLimit({ kidProfileId: kid._id });
+        await deleteTimeLimit({ kidProfileId: kid._id, userToken: token ?? undefined });
       }
 
       setHasChanges(false);
@@ -523,7 +524,7 @@ export default function KidsManager({ userId, kidProfiles }) {
 
   const allTimeLimits = useQuery(
     api.timeLimits.getAllTimeLimits,
-    userId ? { userId } : 'skip'
+    userId ? { userId, userToken: token ?? undefined } : 'skip'
   );
 
   const handleCreate = async () => {

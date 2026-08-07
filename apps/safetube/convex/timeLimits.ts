@@ -1,11 +1,14 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
+import { requireOwner, requireProfileOwner } from "./identity";
 
-// Get time limit settings for a kid
+// Get time limit settings for a kid — parent-only (the kid side reads its own
+// status through `canWatch`, which is deliberately open; see the note there).
 export const getTimeLimit = query({
-  args: { kidProfileId: v.id("kidProfiles") },
+  args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireProfileOwner(ctx, args.userToken, args.kidProfileId, "timeLimits.getTimeLimit");
     const limit = await ctx.db
       .query("timeLimits")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
@@ -23,8 +26,14 @@ export const setTimeLimit = mutation({
     weekendLimitMinutes: v.optional(v.number()),
     allowedStartHour: v.optional(v.number()),
     allowedEndHour: v.optional(v.number()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Parent-only. Without this anyone reaching the deployment could raise or
+    // remove any kid's cap — which would silently undo the server-side
+    // enforcement in videos.getPlayableContent.
+    await requireProfileOwner(ctx, args.userToken, args.kidProfileId, "timeLimits.setTimeLimit");
+
     const existing = await ctx.db
       .query("timeLimits")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
@@ -54,10 +63,14 @@ export const setTimeLimit = mutation({
   },
 });
 
-// Delete time limit for a kid (removes all restrictions)
+// Delete time limit for a kid (removes all restrictions) — parent-only.
+// This is the single most abusable call in the module: it lifts the cap
+// entirely.
 export const deleteTimeLimit = mutation({
-  args: { kidProfileId: v.id("kidProfiles") },
+  args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireProfileOwner(ctx, args.userToken, args.kidProfileId, "timeLimits.deleteTimeLimit");
+
     const existing = await ctx.db
       .query("timeLimits")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
@@ -238,7 +251,15 @@ export async function evaluateTimeLimit(
   };
 }
 
-// Check if a kid can watch (based on time limits and current watch time)
+// Check if a kid can watch (based on time limits and current watch time).
+//
+// DELIBERATELY UNAUTHENTICATED — do not "fix" this by adding requireOwner.
+// This is the kid-side path: the kid signs in with a family code and holds no
+// parent JWT, so a hard owner check here would break the player for every
+// child. It is read-only and returns only that kid's own remaining-time status
+// (no PII, nothing cross-family), and knowing your own remaining minutes grants
+// no extra access — the actual gate is videos.getPlayableContent, which refuses
+// to serve content once the cap is hit.
 export const canWatch = query({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
@@ -250,8 +271,9 @@ export const canWatch = query({
 
 // Get all time limits for a user's kids (simple version)
 export const getAllTimeLimits = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "timeLimits.getAllTimeLimits");
     // Get all kid profiles
     const profiles = await ctx.db
       .query("kidProfiles")
@@ -277,8 +299,9 @@ export const getAllTimeLimits = query({
 
 // Get time limits for all kids of a user (for parent dashboard)
 export const getTimeLimitsForUser = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "timeLimits.getTimeLimitsForUser");
     // Get all kid profiles
     const profiles = await ctx.db
       .query("kidProfiles")

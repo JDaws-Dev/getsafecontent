@@ -100,7 +100,7 @@ export default function Settings({ userData, onLogout }) {
   // Get time limits and watch history for kid cards
   const allTimeLimits = useQuery(
     api.timeLimits.getAllTimeLimits,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
   const recentHistory = useQuery(
     api.watchHistory.getRecentHistory,
@@ -860,9 +860,10 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
           weekendLimitMinutes: form.hasWeekendLimit ? form.weekendLimitMinutes : undefined,
           allowedStartHour: form.hasTimeWindow ? form.allowedStartHour : undefined,
           allowedEndHour: form.hasTimeWindow ? form.allowedEndHour : undefined,
+          userToken: token ?? undefined,
         });
       } else if (timeLimit) {
-        await deleteTimeLimit({ kidProfileId: kid._id });
+        await deleteTimeLimit({ kidProfileId: kid._id, userToken: token ?? undefined });
       }
 
       setHasChanges(false);

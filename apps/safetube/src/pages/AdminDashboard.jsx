@@ -573,7 +573,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
   // Get time limits for kid status display (includes watchedMinutesToday)
   const allTimeLimits = useQuery(
     api.timeLimits.getTimeLimitsForUser,
-    userId ? { userId } : 'skip'
+    userId ? { userId, userToken: token ?? undefined } : 'skip'
   );
 
   const updateProfile = useMutation(api.kidProfiles.updateKidProfile);
