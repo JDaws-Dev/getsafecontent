@@ -4,7 +4,14 @@ import { api } from '../../../convex/_generated/api';
 import musicKitService from '../../config/musickit';
 import { useToast } from '../../contexts/ToastContext';
 
-function AppleMusicAuth({ user, showOnlyWhenDisconnected = false }) {
+// Apple Music authorization is per-browser, so the kid's device has to be
+// connected too — but ALWAYS with the parent's Apple ID. A child Apple ID
+// generally can't authorize a third-party music app, and the parent is the one
+// holding the subscription. `audience="kid"` swaps in copy that says so; the
+// old wording ("sign in with your Apple Music account") read, to a parent
+// standing at their kid's laptop, as an instruction to use the kid's account.
+function AppleMusicAuth({ user, showOnlyWhenDisconnected = false, audience = 'parent' }) {
+  const isKidScreen = audience === 'kid';
   const { showToast } = useToast();
   const updateUser = useMutation(api.users.updateUser);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -168,24 +175,34 @@ function AppleMusicAuth({ user, showOnlyWhenDisconnected = false }) {
 
   if (!isAuthorized) {
     return (
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <div className="bg-white border border-gray-200 rounded-2xl p-6">
         <div className="flex items-start">
           <div className="flex-shrink-0">
-            <svg className="w-12 h-12 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-12 h-12 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
             </svg>
           </div>
           <div className="ml-4 flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Connect to Apple Music
+            <h3 className="text-lg font-display font-bold text-brand-navy mb-2">
+              {isKidScreen ? 'Ask a parent to connect Apple Music' : 'Connect to Apple Music'}
             </h3>
             <p className="text-gray-600 mb-4">
-              Sign in with your Apple Music account to search for albums and preview content.
-              You need an active Apple Music subscription.
+              {isKidScreen ? (
+                <>
+                  A parent signs in here with their own Apple ID — the one that pays for
+                  Apple Music. A kid&apos;s Apple ID won&apos;t work. You only have to do
+                  this once on this device.
+                </>
+              ) : (
+                <>
+                  Sign in with your Apple Music account to search for albums and preview content.
+                  You need an active Apple Music subscription.
+                </>
+              )}
             </p>
             <button
               onClick={handleAuthorize}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-2 rounded-lg font-semibold transition shadow-lg"
+              className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-2 rounded-xl font-semibold transition shadow-lg"
             >
               Sign in with Apple Music
             </button>

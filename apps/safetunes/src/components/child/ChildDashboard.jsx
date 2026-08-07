@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
-import SafeFamilySwitcher from '../SafeFamilySwitcher';
+import SafeFamilySwitcher, { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
 import musicKitService from '../../config/musickit';
 import {
   MiniPlayer,
@@ -64,6 +64,35 @@ function ChildDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('home');
   const [appsOpen, setAppsOpen] = useState(false);
   const familyCode = typeof window !== 'undefined' ? (localStorage.getItem('safetunes_family_code') || '') : '';
+
+  // Cross-app kid pass: mint a short-lived token for the current kid so the
+  // header switcher can hand it to a sibling app (one-tap, no PIN re-entry).
+  // Refreshed well inside its 5-minute TTL so the links never go stale.
+  const [kidToken, setKidToken] = useState(null);
+  const mintKidPass = useMutation(api.kidPass.mintKidPass);
+  useEffect(() => {
+    if (!familyCode || !kidProfile?.name) return undefined;
+    let active = true;
+    const refresh = async () => {
+      try {
+        const res = await mintKidPass({
+          familyCode,
+          kidName: kidProfile.name,
+          avatar: kidProfile.avatar,
+          color: kidProfile.color,
+        });
+        if (active && res?.token) setKidToken(res.token);
+      } catch {
+        // non-fatal — the switcher still works; the destination just asks for the PIN
+      }
+    };
+    refresh();
+    const id = setInterval(refresh, 4 * 60 * 1000);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
+  }, [familyCode, kidProfile?.name, kidProfile?.avatar, kidProfile?.color, mintKidPass]);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [showKidWelcome, setShowKidWelcome] = useState(false);
 
@@ -2149,14 +2178,14 @@ function ChildDashboard({ onLogout }) {
 
   if (!kidProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen bg-brand-cream flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-accent-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 pb-16 md:pb-32">
+    <div className="min-h-screen bg-brand-cream pb-16 md:pb-32">
       {/* First-visit welcome modal — sets expectations so kids aren't
           dropped into an empty library without context */}
       {showKidWelcome && (
@@ -2170,7 +2199,7 @@ function ChildDashboard({ onLogout }) {
             <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${getColorClass(kidProfile?.color || 'purple')} text-white shadow-md`}>
               {getAvatarIcon(kidProfile?.avatar || 'music-note')}
             </div>
-            <h2 id="kid-welcome-title" className="text-center text-xl font-bold text-gray-900">
+            <h2 id="kid-welcome-title" className="text-center text-xl font-display font-bold text-brand-navy">
               Welcome, {kidProfile?.name || 'friend'}! 🎵
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600 leading-relaxed">
@@ -2178,22 +2207,22 @@ function ChildDashboard({ onLogout }) {
             </p>
             <ul className="mt-4 space-y-3 text-sm text-gray-700">
               <li className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-purple-700">1</span>
+                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent-100 text-xs font-bold text-accent-700">1</span>
                 <span><strong>Search for songs</strong> you want to hear.</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-purple-700">2</span>
+                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent-100 text-xs font-bold text-accent-700">2</span>
                 <span>Tap <strong>Request</strong> — your parent will review it.</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-purple-700">3</span>
+                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent-100 text-xs font-bold text-accent-700">3</span>
                 <span>Approved songs show up in your library to play anytime.</span>
               </li>
             </ul>
             <button
               type="button"
               onClick={dismissKidWelcome}
-              className="mt-6 w-full rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 py-3 font-bold text-white shadow-md transition-transform active:scale-[0.98] hover:from-purple-600 hover:to-pink-600"
+              className="mt-6 w-full rounded-xl bg-accent-500 py-3 font-bold text-white shadow-md transition-transform active:scale-[0.98] hover:bg-accent-600"
             >
               Let&rsquo;s go! 🚀
             </button>
@@ -2202,7 +2231,7 @@ function ChildDashboard({ onLogout }) {
       )}
 
       {/* Header */}
-      <header className="bg-white shadow-lg sticky top-0 z-40 border-b-2 border-purple-200">
+      <header className="bg-white shadow-lg sticky top-0 z-40 border-b-2 border-accent-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top Bar */}
           <div className="flex items-center justify-between py-4">
@@ -2212,10 +2241,15 @@ function ChildDashboard({ onLogout }) {
                 {getAvatarIcon(kidProfile.avatar)}
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{kidProfile.name}'s Music</h1>
-                <p className="text-xs text-purple-600 font-medium">SafeTunes Player</p>
+                <h1 className="text-xl font-display font-bold text-brand-navy">{kidProfile.name}'s Music</h1>
+                <p className="text-xs text-accent-600 font-medium">SafeTunes Player</p>
               </div>
-              <h1 className="sm:hidden text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{kidProfile.name}</h1>
+              <h1 className="sm:hidden text-lg font-display font-bold text-brand-navy">{kidProfile.name}</h1>
+            </div>
+
+            {/* Safe Family — always-visible one-tap app switcher (desktop; carries the family code) */}
+            <div className="hidden lg:flex">
+              <SafeFamilyHeaderSwitcher current="safetunes" familyCode={familyCode} kidToken={kidToken} />
             </div>
 
             {/* Time Remaining Badge (when time limit is enabled) */}
@@ -2225,7 +2259,7 @@ function ChildDashboard({ onLogout }) {
                   ? 'bg-red-100 text-red-700'
                   : timeLimitSettings.remainingMinutes <= 15
                   ? 'bg-orange-100 text-orange-700'
-                  : 'bg-purple-100 text-purple-700'
+                  : 'bg-accent-100 text-accent-700'
               }`}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -2243,7 +2277,7 @@ function ChildDashboard({ onLogout }) {
                     ? 'bg-red-100 text-red-700'
                     : timeLimitSettings.remainingMinutes <= 15
                     ? 'bg-orange-100 text-orange-700'
-                    : 'bg-purple-100 text-purple-700'
+                    : 'bg-accent-100 text-accent-700'
                 }`}>
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -2253,7 +2287,7 @@ function ChildDashboard({ onLogout }) {
               )}
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="p-2.5 text-gray-700 hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100 bg-gray-100 rounded-xl transition-all shadow-md"
+                className="p-2.5 text-gray-700 hover:bg-gradient-to-r hover:bg-accent-600 bg-gray-100 rounded-xl transition-all shadow-md"
                 title="Menu"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2263,6 +2297,11 @@ function ChildDashboard({ onLogout }) {
             </div>
           </div>
 
+          {/* Safe Family — mobile app-switcher row (always visible under 1024px) */}
+          <div className="lg:hidden flex justify-center pb-3 -mt-1">
+            <SafeFamilyHeaderSwitcher current="safetunes" familyCode={familyCode} kidToken={kidToken} tile={40} />
+          </div>
+
           {/* Desktop Tabs */}
           <div className="hidden md:block">
             <nav className="flex gap-2 -mb-px">
@@ -2270,8 +2309,8 @@ function ChildDashboard({ onLogout }) {
                 onClick={() => setActiveTab('home')}
                 className={`py-3 px-6 border-b-3 font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 rounded-t-xl ${
                   activeTab === 'home'
-                    ? 'border-purple-600 bg-gradient-to-t from-purple-50 to-transparent text-purple-700'
-                    : 'border-transparent text-gray-600 hover:text-purple-600 hover:bg-purple-50/50'
+                    ? 'border-accent-600 bg-accent-50 text-accent-700'
+                    : 'border-transparent text-gray-600 hover:text-accent-600 hover:bg-accent-50/50'
                 }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2283,8 +2322,8 @@ function ChildDashboard({ onLogout }) {
                 onClick={() => setActiveTab('library')}
                 className={`py-3 px-6 border-b-3 font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 rounded-t-xl ${
                   activeTab === 'library'
-                    ? 'border-blue-600 bg-gradient-to-t from-blue-50 to-transparent text-blue-700'
-                    : 'border-transparent text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                    ? 'border-accent-600 bg-accent-50 text-accent-700'
+                    : 'border-transparent text-gray-600 hover:text-accent-600 hover:bg-accent-50/50'
                 }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2296,8 +2335,8 @@ function ChildDashboard({ onLogout }) {
                 onClick={() => setActiveTab('discover')}
                 className={`py-3 px-6 border-b-3 font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 rounded-t-xl ${
                   activeTab === 'discover'
-                    ? 'border-pink-600 bg-gradient-to-t from-pink-50 to-transparent text-pink-700'
-                    : 'border-transparent text-gray-600 hover:text-pink-600 hover:bg-pink-50/50'
+                    ? 'border-accent-600 bg-accent-50 text-accent-700'
+                    : 'border-transparent text-gray-600 hover:text-accent-600 hover:bg-accent-50/50'
                 }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2309,8 +2348,8 @@ function ChildDashboard({ onLogout }) {
                 onClick={() => setActiveTab('playlists')}
                 className={`py-3 px-6 border-b-3 font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 rounded-t-xl ${
                   activeTab === 'playlists'
-                    ? 'border-green-600 bg-gradient-to-t from-green-50 to-transparent text-green-700'
-                    : 'border-transparent text-gray-600 hover:text-green-600 hover:bg-green-50/50'
+                    ? 'border-accent-600 bg-accent-50 text-accent-700'
+                    : 'border-transparent text-gray-600 hover:text-accent-600 hover:bg-accent-50/50'
                 }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2327,8 +2366,8 @@ function ChildDashboard({ onLogout }) {
                 }}
                 className={`py-3 px-6 border-b-3 font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 relative rounded-t-xl ${
                   activeTab === 'requests'
-                    ? 'border-orange-600 bg-gradient-to-t from-orange-50 to-transparent text-orange-700'
-                    : 'border-transparent text-gray-600 hover:text-orange-600 hover:bg-orange-50/50'
+                    ? 'border-accent-600 bg-accent-50 text-accent-700'
+                    : 'border-transparent text-gray-600 hover:text-accent-600 hover:bg-accent-50/50'
                 }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2345,8 +2384,8 @@ function ChildDashboard({ onLogout }) {
                 onClick={() => setActiveTab('settings')}
                 className={`py-3 px-6 border-b-3 font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 rounded-t-xl ${
                   activeTab === 'settings'
-                    ? 'border-gray-600 bg-gradient-to-t from-gray-50 to-transparent text-gray-700'
-                    : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50/50'
+                    ? 'border-accent-600 bg-accent-50 text-accent-700'
+                    : 'border-transparent text-gray-600 hover:text-accent-600 hover:bg-accent-50/50'
                 }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2384,8 +2423,11 @@ function ChildDashboard({ onLogout }) {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6 pb-32 md:pb-6">
 
-        {/* Apple Music Authorization - Kids need their own Apple Music via Family Sharing */}
-        <AppleMusicAuth showOnlyWhenDisconnected={true} />
+        {/* Apple Music Authorization — the PARENT's Apple ID, on the kid's device.
+            MusicKit authorizes per-browser, so each kid device needs connecting,
+            but always with the parent's account (kids' Apple IDs can't authorize
+            a third-party music app and the subscription is the parent's). */}
+        <AppleMusicAuth showOnlyWhenDisconnected={true} audience="kid" />
 
         {/* Old MusicPlayer removed - now using new MiniPlayer/FullScreenPlayer at bottom of file */}
 
@@ -2395,14 +2437,14 @@ function ChildDashboard({ onLogout }) {
         {false && activeTab === 'search' && (
           <div className="space-y-6">
             {/* Helpful Message */}
-            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+            <div className="bg-accent-50 border border-accent-200 rounded-xl p-4">
               <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-purple-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-accent-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-purple-900 mb-1">Request New Music</h3>
-                  <p className="text-sm text-purple-800">
+                  <h3 className="font-semibold text-accent-900 mb-1">Request New Music</h3>
+                  <p className="text-sm text-accent-800">
                     Search for new albums and songs to request. Your parent will review and approve them for you to listen to.
                   </p>
                 </div>
@@ -2421,7 +2463,7 @@ function ChildDashboard({ onLogout }) {
                     placeholder="Search Apple Music..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent text-base"
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent-600 focus:border-transparent text-base"
                   />
                   {searchQuery && !isSearching && (
                     <button
@@ -2439,7 +2481,7 @@ function ChildDashboard({ onLogout }) {
                   )}
                   {isSearching && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-accent-600"></div>
                     </div>
                   )}
                 </div>
@@ -2468,7 +2510,7 @@ function ChildDashboard({ onLogout }) {
                   {/* Bible Verse Card */}
                   <div className="bg-white border border-red-200 rounded-lg p-3 sm:p-4">
                     <div className="flex items-start gap-2 mb-2">
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-accent-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       <p className="text-xs sm:text-sm font-semibold text-gray-900">God's Word says:</p>
@@ -2476,7 +2518,7 @@ function ChildDashboard({ onLogout }) {
                     <p className="text-sm sm:text-base text-gray-700 italic mb-2 leading-relaxed">
                       "{blockedMessage.verse.verse}"
                     </p>
-                    <p className="text-xs sm:text-sm font-semibold text-purple-700">— {blockedMessage.verse.reference}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-accent-700">— {blockedMessage.verse.reference}</p>
                   </div>
 
                   {/* Dismiss Button */}
@@ -2531,13 +2573,13 @@ function ChildDashboard({ onLogout }) {
                               alt=""
                               loading="lazy"
                               referrerPolicy="no-referrer"
-                              className="w-12 h-12 rounded-lg object-cover flex-shrink-0 bg-gradient-to-br from-purple-500 to-pink-500"
+                              className="w-12 h-12 rounded-lg object-cover flex-shrink-0 bg-accent-500"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
                               }}
                             />
                           ) : (
-                            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0">
                               <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                               </svg>
@@ -2555,7 +2597,7 @@ function ChildDashboard({ onLogout }) {
                                   Album
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full flex-shrink-0 font-medium">
+                                <span className="px-2 py-0.5 bg-accent-100 text-accent-700 text-xs rounded-full flex-shrink-0 font-medium">
                                   Song
                                 </span>
                               )}
@@ -2592,7 +2634,7 @@ function ChildDashboard({ onLogout }) {
                                 </svg>
                               </div>
                             ) : (alreadyRequested || justRequested) ? (
-                              <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center" title="Request pending">
+                              <div className="w-8 h-8 bg-accent-100 text-accent-600 rounded-full flex items-center justify-center" title="Request pending">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -2600,7 +2642,7 @@ function ChildDashboard({ onLogout }) {
                             ) : (
                               <button
                                 onClick={() => isAlbum ? handleRequest(item) : handleSongRequest(item)}
-                                className="w-8 h-8 bg-purple-600 hover:bg-purple-700 text-white rounded-full flex items-center justify-center transition"
+                                className="w-8 h-8 bg-accent-600 hover:bg-accent-700 text-white rounded-full flex items-center justify-center transition"
                                 title={`Request ${isAlbum ? 'album' : 'song'}`}
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2614,7 +2656,7 @@ function ChildDashboard({ onLogout }) {
                         {/* Loading Tracks */}
                         {isAlbum && loadingAlbumTracks[item.id] && (
                           <div className="bg-gray-50 border-t border-gray-200 px-4 py-6 flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-600"></div>
                             <span className="ml-3 text-sm text-gray-500">Loading tracks...</span>
                           </div>
                         )}
@@ -2646,7 +2688,7 @@ function ChildDashboard({ onLogout }) {
                                           </svg>
                                         </div>
                                       ) : (trackAlreadyRequested || trackJustRequested) ? (
-                                        <div className="w-7 h-7 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center flex-shrink-0" title="Song requested">
+                                        <div className="w-7 h-7 bg-accent-100 text-accent-600 rounded-full flex items-center justify-center flex-shrink-0" title="Song requested">
                                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                           </svg>
@@ -2654,7 +2696,7 @@ function ChildDashboard({ onLogout }) {
                                       ) : (
                                         <button
                                           onClick={() => handleSongRequest(track, item.attributes?.name)}
-                                          className="w-7 h-7 bg-purple-600 hover:bg-purple-700 text-white rounded-full flex items-center justify-center transition flex-shrink-0"
+                                          className="w-7 h-7 bg-accent-600 hover:bg-accent-700 text-white rounded-full flex items-center justify-center transition flex-shrink-0"
                                           title="Request this song"
                                         >
                                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2692,7 +2734,7 @@ function ChildDashboard({ onLogout }) {
           <>
             {!approvedAlbums || !approvedSongs ? (
               <div className="text-center py-16">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-accent-600 mx-auto mb-4"></div>
                 <p className="text-gray-600">Loading your music...</p>
               </div>
             ) : ((activeTab === 'home' || activeTab === 'library') && filteredAlbums.length === 0) ? (
@@ -2701,7 +2743,7 @@ function ChildDashboard({ onLogout }) {
                   <div className="text-8xl animate-bounce">🎵</div>
                   <div className="absolute -top-2 -right-2 text-4xl animate-pulse">✨</div>
                 </div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent mb-3">
+                <h2 className="text-3xl font-display font-bold text-brand-navy mb-3">
                   {librarySearchQuery ? 'No results found' : 'Your music library is waiting!'}
                 </h2>
                 <p className="text-lg text-gray-600 mb-6 max-w-md mx-auto">
@@ -2710,7 +2752,7 @@ function ChildDashboard({ onLogout }) {
                 {!librarySearchQuery && (
                   <button
                     onClick={() => setActiveTab('search')}
-                    className="px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 text-white text-lg font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 active:scale-95"
+                    className="px-8 py-4 bg-accent-500 hover:bg-accent-600 text-white text-lg font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 active:scale-95"
                   >
                     🔍 Request Music
                   </button>
@@ -2764,14 +2806,14 @@ function ChildDashboard({ onLogout }) {
                     <div className="px-4 pt-6 pb-4">
                       <button
                         onClick={() => setShowSeeAllRecentlyPlayed(false)}
-                        className="flex items-center gap-2 text-purple-600 font-medium mb-3"
+                        className="flex items-center gap-2 text-accent-600 font-medium mb-3"
                       >
                         <svg className="w-5 h-5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                         Back to Home
                       </button>
-                      <h1 className="text-2xl font-bold text-gray-900">Recently Played</h1>
+                      <h1 className="text-2xl font-display font-bold text-brand-navy">Recently Played</h1>
                       <p className="text-gray-500 text-sm mt-1">Your listening history</p>
                     </div>
 
@@ -2824,8 +2866,8 @@ function ChildDashboard({ onLogout }) {
                                 </div>
 
                                 {/* Play indicator */}
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                                  <svg className="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent-100 flex items-center justify-center">
+                                  <svg className="w-4 h-4 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                                   </svg>
                                 </div>
@@ -2835,8 +2877,8 @@ function ChildDashboard({ onLogout }) {
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-4">
-                            <svg className="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
+                            <svg className="w-10 h-10 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </div>
@@ -2857,14 +2899,14 @@ function ChildDashboard({ onLogout }) {
                     <div className="px-4 pt-6 pb-4">
                       <button
                         onClick={() => setShowSeeAllOnRepeat(false)}
-                        className="flex items-center gap-2 text-purple-600 font-medium mb-3"
+                        className="flex items-center gap-2 text-accent-600 font-medium mb-3"
                       >
                         <svg className="w-5 h-5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                         Back to Home
                       </button>
-                      <h1 className="text-2xl font-bold text-gray-900">On Repeat</h1>
+                      <h1 className="text-2xl font-display font-bold text-brand-navy">On Repeat</h1>
                       <p className="text-gray-500 text-sm mt-1">Your most played songs</p>
                     </div>
 
@@ -2922,8 +2964,8 @@ function ChildDashboard({ onLogout }) {
                                 </div>
 
                                 {/* Play Count Badge */}
-                                <div className="flex-shrink-0 px-2 py-1 bg-purple-100 rounded-full">
-                                  <span className="text-xs font-semibold text-purple-700">
+                                <div className="flex-shrink-0 px-2 py-1 bg-accent-100 rounded-full">
+                                  <span className="text-xs font-semibold text-accent-700">
                                     {item.playCount || 1}×
                                   </span>
                                 </div>
@@ -2933,8 +2975,8 @@ function ChildDashboard({ onLogout }) {
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mb-4">
-                            <svg className="w-10 h-10 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-20 h-20 rounded-full bg-accent-100 flex items-center justify-center mb-4">
+                            <svg className="w-10 h-10 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                           </div>
@@ -2956,7 +2998,7 @@ function ChildDashboard({ onLogout }) {
                       <div className="space-y-4">
                         <div className="flex items-center gap-2 px-2">
                           <span className="text-2xl">✨</span>
-                          <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                          <h2 className="text-2xl font-display font-bold text-brand-navy">
                             Fresh Drops
                           </h2>
                         </div>
@@ -2969,8 +3011,8 @@ function ChildDashboard({ onLogout }) {
                             >
                               <div className="relative mb-3">
                                 {album.hideArtwork ? (
-                                  <div className="w-full aspect-square bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center shadow-md">
-                                    <SafeTunesLogo className="w-16 h-16 text-white/70" />
+                                  <div className="w-full aspect-square bg-brand-cream-2 rounded-xl flex items-center justify-center shadow-md">
+                                    <SafeTunesLogo className="w-16 h-16 text-accent-400" />
                                   </div>
                                 ) : (
                                   <img
@@ -2984,7 +3026,7 @@ function ChildDashboard({ onLogout }) {
                                     e.stopPropagation();
                                     handlePlayAlbum(album);
                                   }}
-                                  className="absolute bottom-2 right-2 w-12 h-12 bg-gradient-to-br from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-95 group-hover:scale-110"
+                                  className="absolute bottom-2 right-2 w-12 h-12 bg-accent-500 hover:bg-accent-600 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-95 group-hover:scale-110"
                                 >
                                   <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -3004,7 +3046,7 @@ function ChildDashboard({ onLogout }) {
                       <div className="space-y-4">
                         <div className="flex items-center gap-2 px-2">
                           <span className="text-2xl">🎵</span>
-                          <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-orange-600 bg-clip-text text-transparent">
+                          <h2 className="text-2xl font-display font-bold text-brand-navy">
                             Hot Tracks
                           </h2>
                         </div>
@@ -3017,21 +3059,21 @@ function ChildDashboard({ onLogout }) {
                                 onClick={() => handlePlaySong(song)}
                                 className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 active:bg-gray-100 transition text-left ${
                                   index !== Math.min(filteredSongs.length, 4) - 1 ? 'border-b border-gray-100' : ''
-                                } ${isCurrentlyPlaying ? 'bg-purple-50' : ''}`}
+                                } ${isCurrentlyPlaying ? 'bg-accent-50' : ''}`}
                               >
-                                <span className={`w-6 text-center text-sm font-medium flex-shrink-0 ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-400'}`}>
+                                <span className={`w-6 text-center text-sm font-medium flex-shrink-0 ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-400'}`}>
                                   {isCurrentlyPlaying ? (
                                     <span className="flex items-center justify-center gap-0.5">
-                                      <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
-                                      <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
-                                      <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
+                                      <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
+                                      <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
+                                      <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
                                     </span>
                                   ) : (
                                     index + 1
                                   )}
                                 </span>
                                 {song.hideArtwork || !song.artworkUrl ? (
-                                  <div className="w-12 h-12 bg-gradient-to-br from-pink-400 via-purple-400 to-orange-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <div className="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0">
                                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                                       <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                                     </svg>
@@ -3044,8 +3086,8 @@ function ChildDashboard({ onLogout }) {
                                   />
                                 )}
                                 <div className="flex-1 min-w-0">
-                                  <h3 className={`font-medium truncate ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-900'}`}>{song.songName}</h3>
-                                  <p className={`text-sm truncate ${isCurrentlyPlaying ? 'text-purple-500' : 'text-gray-500'}`}>{song.artistName}</p>
+                                  <h3 className={`font-medium truncate ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-900'}`}>{song.songName}</h3>
+                                  <p className={`text-sm truncate ${isCurrentlyPlaying ? 'text-accent-500' : 'text-gray-500'}`}>{song.artistName}</p>
                                 </div>
                               </button>
                             );
@@ -3063,7 +3105,7 @@ function ChildDashboard({ onLogout }) {
                     {libraryView === 'home' && (
                       <>
                         {/* Page Title */}
-                        <h1 className="text-2xl font-bold text-gray-900">
+                        <h1 className="text-2xl font-display font-bold text-brand-navy">
                           {librarySearchQuery ? 'Search Results' : 'Library'}
                         </h1>
 
@@ -3077,7 +3119,7 @@ function ChildDashboard({ onLogout }) {
                             placeholder="Search your library..."
                             value={librarySearchQuery}
                             onChange={(e) => setLibrarySearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-xl text-[16px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent shadow-sm"
+                            className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-xl text-[16px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent shadow-sm"
                           />
                           {librarySearchQuery && (
                             <button
@@ -3107,7 +3149,7 @@ function ChildDashboard({ onLogout }) {
                       <div className="space-y-4">
                         <div className="flex items-center gap-2 px-2">
                           <span className="text-2xl">🔍</span>
-                          <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                          <h2 className="text-xl font-display font-bold text-brand-navy">
                             {unifiedSearchResults.length} {unifiedSearchResults.length === 1 ? 'Result' : 'Results'}
                           </h2>
                         </div>
@@ -3131,12 +3173,12 @@ function ChildDashboard({ onLogout }) {
                                   setLibrarySearchQuery(''); // Clear search when navigating
                                 }
                               }}
-                              className={`flex items-center gap-4 p-4 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all cursor-pointer ${
+                              className={`flex items-center gap-4 p-4 hover:bg-gradient-to-r hover:from-accent-50 hover:to-blue-50 transition-all cursor-pointer ${
                                 index !== unifiedSearchResults.length - 1 ? 'border-b border-gray-100' : ''
                               }`}
                             >
                               {/* Artwork/Icon */}
-                              <div className="flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center shadow-md">
+                              <div className="flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-accent-400 to-blue-400 flex items-center justify-center shadow-md">
                                 {result.artworkUrl && !result.hideArtwork ? (
                                   <img
                                     src={result.artworkUrl.replace('{w}', '100').replace('{h}', '100')}
@@ -3144,7 +3186,7 @@ function ChildDashboard({ onLogout }) {
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (
-                                  <svg className="w-6 h-6 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                  <svg className="w-6 h-6 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
                                     {result.type === 'song' && (
                                       <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                                     )}
@@ -3172,7 +3214,7 @@ function ChildDashboard({ onLogout }) {
 
                               {/* Type Badge & Action */}
                               <div className="flex items-center gap-3 flex-shrink-0">
-                                <span className="text-xs font-bold text-purple-500 uppercase tracking-wide bg-purple-100 px-2 py-1 rounded-lg">
+                                <span className="text-xs font-bold text-accent-500 uppercase tracking-wide bg-accent-100 px-2 py-1 rounded-lg">
                                   {result.type}
                                 </span>
                                 {result.type === 'song' ? (
@@ -3181,14 +3223,14 @@ function ChildDashboard({ onLogout }) {
                                       e.stopPropagation();
                                       handlePlaySong(result.data);
                                     }}
-                                    className="p-2.5 bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-full transition-all shadow-lg hover:shadow-xl active:scale-95"
+                                    className="p-2.5 bg-accent-500 hover:bg-accent-600 text-white rounded-full transition-all shadow-lg hover:shadow-xl active:scale-95"
                                   >
                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                       <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                                     </svg>
                                   </button>
                                 ) : (
-                                  <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-5 h-5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                   </svg>
                                 )}
@@ -3203,7 +3245,7 @@ function ChildDashboard({ onLogout }) {
                     {librarySearchQuery && unifiedSearchResults.length === 0 && (
                       <div className="text-center py-12 px-4">
                         <div className="text-6xl mb-4">🔍</div>
-                        <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">No Results Found</h3>
+                        <h3 className="text-xl font-display font-bold text-brand-navy mb-2">No Results Found</h3>
                         <p className="text-gray-600">
                           Try searching for a different song, artist, album, or genre
                         </p>
@@ -3225,7 +3267,7 @@ function ChildDashboard({ onLogout }) {
                                       setSelectedPlaylistView(playlist);
                                       setActiveTab('playlists');
                                     }}
-                                    className={`flex items-center gap-4 p-4 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all cursor-pointer ${
+                                    className={`flex items-center gap-4 p-4 hover:bg-gradient-to-r hover:bg-accent-600 transition-all cursor-pointer ${
                                       index !== playlists.length - 1 ? 'border-b border-gray-100' : ''
                                     }`}
                                   >
@@ -3239,8 +3281,8 @@ function ChildDashboard({ onLogout }) {
                                         />
                                       </div>
                                     ) : (
-                                      <div className="w-14 h-14 bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-                                        <SafeTunesLogo className="w-8 h-8 text-white/70" />
+                                      <div className="w-14 h-14 bg-brand-cream-2 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                                        <SafeTunesLogo className="w-8 h-8 text-accent-400" />
                                       </div>
                                     )}
                                     <div className="flex-1 min-w-0">
@@ -3253,13 +3295,13 @@ function ChildDashboard({ onLogout }) {
                                           e.stopPropagation();
                                           handlePlayPlaylist(playlist);
                                         }}
-                                        className="p-2.5 bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full transition-all shadow-lg active:scale-95"
+                                        className="p-2.5 bg-accent-500 hover:bg-accent-600 text-white rounded-full transition-all shadow-lg active:scale-95"
                                       >
                                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                           <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                                         </svg>
                                       </button>
-                                      <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <svg className="w-5 h-5 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                       </svg>
                                     </div>
@@ -3288,12 +3330,12 @@ function ChildDashboard({ onLogout }) {
                                       setSelectedArtist(artist);
                                       setLibraryView('artist');
                                     }}
-                                    className={`flex items-center gap-4 p-4 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all cursor-pointer ${
+                                    className={`flex items-center gap-4 p-4 hover:bg-gradient-to-r hover:bg-accent-600 transition-all cursor-pointer ${
                                       index !== artists.length - 1 ? 'border-b border-gray-100' : ''
                                     }`}
                                   >
                                     {/* Artist Circle Avatar */}
-                                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center flex-shrink-0 shadow-md">
+                                    <div className="w-14 h-14 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0 shadow-md">
                                       <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                       </svg>
@@ -3302,7 +3344,7 @@ function ChildDashboard({ onLogout }) {
                                       <p className="font-bold text-gray-900 truncate">{artist.name}</p>
                                       <p className="text-sm text-gray-600">{artist.count} {artist.count === 1 ? 'album' : 'albums'}</p>
                                     </div>
-                                    <svg className="w-5 h-5 text-purple-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-5 h-5 text-accent-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                     </svg>
                                   </div>
@@ -3331,8 +3373,8 @@ function ChildDashboard({ onLogout }) {
                                   >
                                     <div className="relative mb-2">
                                       {album.hideArtwork ? (
-                                        <div className="w-full aspect-square bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl flex items-center justify-center shadow-md">
-                                          <SafeTunesLogo className="w-12 h-12 text-white/70" />
+                                        <div className="w-full aspect-square bg-brand-cream-2 rounded-xl flex items-center justify-center shadow-md">
+                                          <SafeTunesLogo className="w-12 h-12 text-accent-400" />
                                         </div>
                                       ) : (
                                         <img
@@ -3346,7 +3388,7 @@ function ChildDashboard({ onLogout }) {
                                           e.stopPropagation();
                                           handlePlayAlbum(album);
                                         }}
-                                        className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 opacity-0 group-hover:opacity-100"
+                                        className="absolute bottom-2 right-2 w-10 h-10 bg-accent-500 hover:bg-accent-600 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95 opacity-0 group-hover:opacity-100"
                                       >
                                         <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                                           <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -3400,7 +3442,7 @@ function ChildDashboard({ onLogout }) {
                                       showToast(`🎲 Shuffling ${shuffled.length} songs!`, 'success');
                                     }
                                   }}
-                                  className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                                  className="w-full py-3 px-4 bg-accent-500 hover:bg-accent-600 text-white font-semibold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                                 >
                                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M2.93 3.93a1 1 0 011.41 0l4.83 4.83-4.83 4.83a1 1 0 01-1.41-1.41L6.1 9.01 2.93 5.84a1 1 0 010-1.41zm10.66 0a1 1 0 011.41 0l4.83 4.83a1 1 0 010 1.41l-4.83 4.83a1 1 0 01-1.41-1.41l3.17-3.17H7a1 1 0 110-2h9.76l-3.17-3.17a1 1 0 010-1.42z" />
@@ -3415,14 +3457,14 @@ function ChildDashboard({ onLogout }) {
                                         key={song._id || `lib-song-${index}`}
                                         className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition cursor-pointer ${
                                           index !== filteredLibrarySongs.length - 1 ? 'border-b border-gray-100' : ''
-                                        } ${isCurrentlyPlaying ? 'bg-purple-50' : ''}`}
+                                        } ${isCurrentlyPlaying ? 'bg-accent-50' : ''}`}
                                       >
-                                        <span className={`w-6 text-center text-sm font-medium flex-shrink-0 ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-400'}`}>
+                                        <span className={`w-6 text-center text-sm font-medium flex-shrink-0 ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-400'}`}>
                                           {isCurrentlyPlaying ? (
                                             <span className="flex items-center justify-center gap-0.5">
-                                              <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
-                                              <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
-                                              <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
+                                              <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
+                                              <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
+                                              <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
                                             </span>
                                           ) : (
                                             index + 1
@@ -3443,8 +3485,8 @@ function ChildDashboard({ onLogout }) {
                                             />
                                           )}
                                           <div className="flex-1 min-w-0">
-                                            <p className={`font-medium truncate ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-900'}`}>{song.songName}</p>
-                                            <p className={`text-sm truncate ${isCurrentlyPlaying ? 'text-purple-500' : 'text-gray-500'}`}>{song.artistName}</p>
+                                            <p className={`font-medium truncate ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-900'}`}>{song.songName}</p>
+                                            <p className={`text-sm truncate ${isCurrentlyPlaying ? 'text-accent-500' : 'text-gray-500'}`}>{song.artistName}</p>
                                           </div>
                                         </div>
                                         {/* Three-dot menu */}
@@ -3498,7 +3540,7 @@ function ChildDashboard({ onLogout }) {
                                       setSelectedGenre(genre);
                                       setLibraryView('genre');
                                     }}
-                                    className="bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-2xl p-4 text-left shadow-lg transition-all active:scale-[0.98]"
+                                    className="bg-accent-500 hover:bg-accent-600 text-white rounded-2xl p-4 text-left shadow-lg transition-all active:scale-[0.98]"
                                   >
                                     <p className="font-bold text-lg truncate">{genre.name}</p>
                                     <p className="text-sm text-white/80">{genre.count} {genre.count === 1 ? 'album' : 'albums'}</p>
@@ -3534,7 +3576,7 @@ function ChildDashboard({ onLogout }) {
                             </svg>
                           </button>
                           <div>
-                            <h2 className="text-2xl font-bold text-gray-900">{selectedArtist.name}</h2>
+                            <h2 className="text-2xl font-display font-bold text-brand-navy">{selectedArtist.name}</h2>
                             <p className="text-sm text-gray-600">{selectedArtist.count} {selectedArtist.count === 1 ? 'album' : 'albums'}</p>
                           </div>
                         </div>
@@ -3549,8 +3591,8 @@ function ChildDashboard({ onLogout }) {
                             >
                               <div className="relative mb-3">
                                 {album.hideArtwork ? (
-                                  <div className="w-full aspect-square bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg flex items-center justify-center">
-                                    <SafeTunesLogo className="w-16 h-16 text-white/70" />
+                                  <div className="w-full aspect-square bg-brand-cream-2 rounded-lg flex items-center justify-center">
+                                    <SafeTunesLogo className="w-16 h-16 text-accent-400" />
                                   </div>
                                 ) : (
                                   <img
@@ -3564,7 +3606,7 @@ function ChildDashboard({ onLogout }) {
                                     e.stopPropagation();
                                     handlePlayAlbum(album);
                                   }}
-                                  className="absolute bottom-2 right-2 w-10 h-10 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95"
+                                  className="absolute bottom-2 right-2 w-10 h-10 bg-accent-600 hover:bg-accent-700 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95"
                                 >
                                   <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -3596,7 +3638,7 @@ function ChildDashboard({ onLogout }) {
                             </svg>
                           </button>
                           <div>
-                            <h2 className="text-2xl font-bold text-gray-900">{selectedGenre.name}</h2>
+                            <h2 className="text-2xl font-display font-bold text-brand-navy">{selectedGenre.name}</h2>
                             <p className="text-sm text-gray-600">{selectedGenre.count} {selectedGenre.count === 1 ? 'album' : 'albums'}</p>
                           </div>
                         </div>
@@ -3611,8 +3653,8 @@ function ChildDashboard({ onLogout }) {
                             >
                               <div className="relative mb-3">
                                 {album.hideArtwork ? (
-                                  <div className="w-full aspect-square bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg flex items-center justify-center">
-                                    <SafeTunesLogo className="w-16 h-16 text-white/70" />
+                                  <div className="w-full aspect-square bg-brand-cream-2 rounded-lg flex items-center justify-center">
+                                    <SafeTunesLogo className="w-16 h-16 text-accent-400" />
                                   </div>
                                 ) : (
                                   <img
@@ -3626,7 +3668,7 @@ function ChildDashboard({ onLogout }) {
                                     e.stopPropagation();
                                     handlePlayAlbum(album);
                                   }}
-                                  className="absolute bottom-2 right-2 w-10 h-10 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95"
+                                  className="absolute bottom-2 right-2 w-10 h-10 bg-accent-600 hover:bg-accent-700 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95"
                                 >
                                   <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -3661,7 +3703,7 @@ function ChildDashboard({ onLogout }) {
                               />
                               <button
                                 onClick={() => handlePlayAlbum(album)}
-                                className="absolute bottom-2 right-2 w-10 h-10 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95"
+                                className="absolute bottom-2 right-2 w-10 h-10 bg-accent-600 hover:bg-accent-700 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95"
                               >
                                 <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
                                   <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -3676,7 +3718,7 @@ function ChildDashboard({ onLogout }) {
                                   e.stopPropagation();
                                   handleViewTracks(album);
                                 }}
-                                className="flex-1 py-1.5 text-xs text-purple-600 hover:bg-purple-50 rounded-lg font-medium transition"
+                                className="flex-1 py-1.5 text-xs text-accent-600 hover:bg-accent-50 rounded-lg font-medium transition"
                               >
                                 Tracks
                               </button>
@@ -3686,7 +3728,7 @@ function ChildDashboard({ onLogout }) {
                                   setSelectedAlbumForPlaylist(album);
                                   setShowAddToPlaylist(true);
                                 }}
-                                className="flex-1 py-1.5 text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg font-medium transition flex items-center justify-center gap-1"
+                                className="flex-1 py-1.5 text-xs bg-accent-100 hover:bg-accent-200 text-accent-700 rounded-lg font-medium transition flex items-center justify-center gap-1"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -3722,7 +3764,7 @@ function ChildDashboard({ onLogout }) {
                             <div className="flex items-center gap-2 flex-shrink-0">
                               <button
                                 onClick={() => handleViewTracks(album)}
-                                className="hidden sm:block px-3 py-2 text-sm text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                                className="hidden sm:block px-3 py-2 text-sm text-accent-600 hover:bg-accent-50 rounded-lg transition"
                               >
                                 Tracks
                               </button>
@@ -3740,7 +3782,7 @@ function ChildDashboard({ onLogout }) {
                               </button>
                               <button
                                 onClick={() => handlePlayAlbum(album)}
-                                className="p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full transition"
+                                className="p-3 bg-accent-600 hover:bg-accent-700 text-white rounded-full transition"
                               >
                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                   <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -3790,7 +3832,7 @@ function ChildDashboard({ onLogout }) {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                           </button>
-                          <h2 className="text-2xl font-bold text-gray-900 flex-1">{selectedPlaylistView.name}</h2>
+                          <h2 className="text-2xl font-display font-bold text-brand-navy flex-1">{selectedPlaylistView.name}</h2>
                         </div>
 
                         {/* Playlist Info Card */}
@@ -3803,12 +3845,12 @@ function ChildDashboard({ onLogout }) {
                                 className="w-24 h-24 rounded-lg flex-shrink-0"
                               />
                             ) : (
-                              <div className="w-24 h-24 bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <SafeTunesLogo className="w-12 h-12 text-white/70" />
+                              <div className="w-24 h-24 bg-brand-cream-2 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <SafeTunesLogo className="w-12 h-12 text-accent-400" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedPlaylistView.name}</h3>
+                              <h3 className="text-xl font-display font-bold text-brand-navy mb-1">{selectedPlaylistView.name}</h3>
                               {selectedPlaylistView.description && (
                                 <p className="text-sm text-gray-600 mb-2">{selectedPlaylistView.description}</p>
                               )}
@@ -3821,7 +3863,7 @@ function ChildDashboard({ onLogout }) {
                             <button
                               onClick={() => handlePlayPlaylist(selectedPlaylistView)}
                               disabled={!selectedPlaylistView.songs || selectedPlaylistView.songs.length === 0}
-                              className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                              className="flex-1 py-3 bg-accent-600 hover:bg-accent-700 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -3859,18 +3901,18 @@ function ChildDashboard({ onLogout }) {
                                   key={song.appleSongId}
                                   className={`flex items-center gap-3 p-3 hover:bg-gray-50 transition ${
                                     index !== selectedPlaylistView.songs.length - 1 ? 'border-b border-gray-100' : ''
-                                  } ${isCurrentlyPlaying ? 'bg-purple-50' : ''}`}
+                                  } ${isCurrentlyPlaying ? 'bg-accent-50' : ''}`}
                                 >
                                   <button
                                     onClick={() => handlePlaySong({ appleSongId: song.appleSongId }, playlistTracks)}
                                     className="flex items-center gap-3 flex-1 min-w-0 text-left"
                                   >
-                                    <span className={`w-6 text-center text-sm font-medium flex-shrink-0 ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-400'}`}>
+                                    <span className={`w-6 text-center text-sm font-medium flex-shrink-0 ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-400'}`}>
                                       {isCurrentlyPlaying ? (
                                         <span className="flex items-center justify-center gap-0.5">
-                                          <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
-                                          <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
-                                          <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
+                                          <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
+                                          <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
+                                          <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
                                         </span>
                                       ) : (
                                         index + 1
@@ -3883,13 +3925,13 @@ function ChildDashboard({ onLogout }) {
                                         className="w-12 h-12 rounded-lg flex-shrink-0"
                                       />
                                     ) : (
-                                      <div className="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <SafeTunesLogo className="w-6 h-6 text-white/70" />
+                                      <div className="w-12 h-12 bg-brand-cream-2 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <SafeTunesLogo className="w-6 h-6 text-accent-400" />
                                       </div>
                                     )}
                                     <div className="flex-1 min-w-0">
-                                      <h3 className={`font-medium text-sm truncate ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-900'}`}>{song.songName}</h3>
-                                      <p className={`text-xs truncate ${isCurrentlyPlaying ? 'text-purple-500' : 'text-gray-500'}`}>{song.artistName}</p>
+                                      <h3 className={`font-medium text-sm truncate ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-900'}`}>{song.songName}</h3>
+                                      <p className={`text-xs truncate ${isCurrentlyPlaying ? 'text-accent-500' : 'text-gray-500'}`}>{song.artistName}</p>
                                     </div>
                                   </button>
                                   <button
@@ -3927,7 +3969,7 @@ function ChildDashboard({ onLogout }) {
         {songToRemoveFromPlaylist && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[70] p-4" onClick={() => setSongToRemoveFromPlaylist(null)}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-xl font-bold text-gray-900 mb-3">Remove Song?</h2>
+              <h2 className="text-xl font-display font-bold text-brand-navy mb-3">Remove Song?</h2>
               <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                 <p className="font-medium text-gray-900 truncate">{songToRemoveFromPlaylist.song.songName}</p>
                 <p className="text-sm text-gray-500 truncate">{songToRemoveFromPlaylist.song.artistName}</p>
@@ -3959,12 +4001,12 @@ function ChildDashboard({ onLogout }) {
             setSelectedAlbumForPlaylist(null);
           }}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl font-display font-bold text-brand-navy mb-4">
                 Add to Playlist
               </h2>
 
               {selectedAlbumForPlaylist && (
-                <div className="mb-4 p-3 bg-purple-50 rounded-lg">
+                <div className="mb-4 p-3 bg-accent-50 rounded-lg">
                   <p className="text-sm text-gray-600 mb-1">Adding album:</p>
                   <p className="font-semibold text-gray-900">{selectedAlbumForPlaylist.albumName}</p>
                   <p className="text-sm text-gray-500">{selectedAlbumForPlaylist.artistName}</p>
@@ -3972,7 +4014,7 @@ function ChildDashboard({ onLogout }) {
               )}
 
               {selectedSongForPlaylist && (
-                <div className="mb-4 p-3 bg-purple-50 rounded-lg">
+                <div className="mb-4 p-3 bg-accent-50 rounded-lg">
                   <p className="text-sm text-gray-600 mb-1">Adding song:</p>
                   <p className="font-semibold text-gray-900">{selectedSongForPlaylist.songName}</p>
                   <p className="text-sm text-gray-500">{selectedSongForPlaylist.artistName}</p>
@@ -3987,7 +4029,7 @@ function ChildDashboard({ onLogout }) {
                       setShowAddToPlaylist(false);
                       setShowCreatePlaylist(true);
                     }}
-                    className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition"
+                    className="px-6 py-3 bg-accent-600 hover:bg-accent-700 text-white font-semibold rounded-lg transition"
                   >
                     Create Your First Playlist
                   </button>
@@ -4004,7 +4046,7 @@ function ChildDashboard({ onLogout }) {
                           handleAddAlbumToPlaylist(playlist._id);
                         }
                       }}
-                      className="w-full p-4 bg-gray-50 hover:bg-purple-50 rounded-lg transition text-left flex items-center gap-3"
+                      className="w-full p-4 bg-gray-50 hover:bg-accent-50 rounded-lg transition text-left flex items-center gap-3"
                     >
                       {playlist.songs && playlist.songs.length > 0 && playlist.songs[0].artworkUrl && !shouldHidePlaylistArtwork(playlist) ? (
                         <img
@@ -4013,15 +4055,15 @@ function ChildDashboard({ onLogout }) {
                           className="w-12 h-12 rounded-lg flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <SafeTunesLogo className="w-6 h-6 text-white/70" />
+                        <div className="w-12 h-12 bg-brand-cream-2 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <SafeTunesLogo className="w-6 h-6 text-accent-400" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-gray-900 truncate">{playlist.name}</p>
                         <p className="text-sm text-gray-500">{playlist.songs?.length || 0} songs</p>
                       </div>
-                      <svg className="w-5 h-5 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-accent-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
@@ -4049,13 +4091,13 @@ function ChildDashboard({ onLogout }) {
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-start gap-4 mb-4">
                 {/* Hide album artwork in request modal - show music note placeholder instead */}
-                <div className="w-16 h-16 rounded-lg flex-shrink-0 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-lg flex-shrink-0 bg-accent-500 flex items-center justify-center">
                   <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <h2 className="text-xl font-bold text-gray-900 truncate">
+                  <h2 className="text-xl font-display font-bold text-brand-navy truncate">
                     Request {requestConfirmModal.type === 'album' ? 'Album' : 'Song'}
                   </h2>
                   <p className="text-gray-900 font-medium truncate">
@@ -4078,7 +4120,7 @@ function ChildDashboard({ onLogout }) {
                     placeholder="Tell your parent why you want this music..."
                     rows={3}
                     maxLength={200}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent resize-none text-sm"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent resize-none text-sm"
                     autoFocus
                   />
                   <p className="text-xs text-gray-400 mt-1 text-right">
@@ -4086,8 +4128,8 @@ function ChildDashboard({ onLogout }) {
                   </p>
                 </div>
 
-                <div className="bg-purple-50 rounded-lg p-3">
-                  <p className="text-xs text-purple-700">
+                <div className="bg-accent-50 rounded-lg p-3">
+                  <p className="text-xs text-accent-700">
                     Adding a note helps your parent understand why you want this music!
                   </p>
                 </div>
@@ -4107,7 +4149,7 @@ function ChildDashboard({ onLogout }) {
                 <button
                   onClick={handleSubmitRequest}
                   disabled={isSubmittingRequest}
-                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-accent-600 hover:bg-accent-700 text-white font-semibold rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSubmittingRequest ? (
                     <>
@@ -4130,7 +4172,7 @@ function ChildDashboard({ onLogout }) {
         {showCreatePlaylist && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowCreatePlaylist(false)}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Create Playlist</h2>
+              <h2 className="text-2xl font-display font-bold text-brand-navy mb-4">Create Playlist</h2>
 
               <div className="space-y-4">
                 <div>
@@ -4140,7 +4182,7 @@ function ChildDashboard({ onLogout }) {
                     value={playlistName}
                     onChange={(e) => setPlaylistName(e.target.value)}
                     placeholder="My Awesome Playlist"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent"
                     autoFocus
                   />
                 </div>
@@ -4152,7 +4194,7 @@ function ChildDashboard({ onLogout }) {
                     onChange={(e) => setPlaylistDescription(e.target.value)}
                     placeholder="Songs for..."
                     rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent resize-none"
                   />
                 </div>
               </div>
@@ -4171,7 +4213,7 @@ function ChildDashboard({ onLogout }) {
                 <button
                   onClick={handleCreatePlaylist}
                   disabled={!playlistName.trim()}
-                  className="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 bg-accent-600 hover:bg-accent-700 text-white font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Create
                 </button>
@@ -4188,7 +4230,7 @@ function ChildDashboard({ onLogout }) {
               <div className="p-6 border-b border-gray-200 overflow-hidden">
                 <div className="flex items-start gap-4 mb-4 overflow-hidden">
                   {shouldHideAlbumArtwork(selectedAlbum.appleAlbumId) ? (
-                    <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex-shrink-0 flex items-center justify-center">
+                    <div className="w-24 h-24 bg-accent-500 rounded-lg flex-shrink-0 flex items-center justify-center">
                       <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                       </svg>
@@ -4201,7 +4243,7 @@ function ChildDashboard({ onLogout }) {
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-1 truncate">{selectedAlbum.albumName}</h2>
+                    <h2 className="text-2xl font-display font-bold text-brand-navy mb-1 truncate">{selectedAlbum.albumName}</h2>
                     <p className="text-gray-600 truncate">{selectedAlbum.artistName}</p>
                     <p className="text-sm text-gray-500 mt-1">{albumTracks.length} tracks</p>
                   </div>
@@ -4218,7 +4260,7 @@ function ChildDashboard({ onLogout }) {
                 <div className="flex gap-3">
                   <button
                     onClick={() => handlePlayAlbum(selectedAlbum)}
-                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-2"
+                    className="flex-1 bg-accent-600 hover:bg-accent-700 text-white px-4 py-2.5 rounded-lg font-medium transition flex items-center justify-center gap-2"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
@@ -4244,7 +4286,7 @@ function ChildDashboard({ onLogout }) {
               <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
                 {loadingTracks ? (
                   <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-600 mx-auto mb-4"></div>
                     <p className="text-gray-600">Loading tracks...</p>
                   </div>
                 ) : albumTracks.length > 0 ? (
@@ -4262,26 +4304,26 @@ function ChildDashboard({ onLogout }) {
                       return (
                         <div
                           key={track.id}
-                          className={`flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition overflow-hidden ${isCurrentlyPlaying ? 'bg-purple-50' : ''}`}
+                          className={`flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition overflow-hidden ${isCurrentlyPlaying ? 'bg-accent-50' : ''}`}
                         >
                           <button
                             onClick={() => handlePlaySong(songData, albumTracks)}
                             className="flex-1 min-w-0 flex items-center gap-3 text-left"
                           >
-                            <span className={`w-6 text-center text-sm font-medium flex-shrink-0 ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-400'}`}>
+                            <span className={`w-6 text-center text-sm font-medium flex-shrink-0 ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-400'}`}>
                               {isCurrentlyPlaying ? (
                                 <span className="flex items-center justify-center gap-0.5">
-                                  <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
-                                  <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
-                                  <span className={`w-0.5 bg-purple-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
+                                  <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '8px' }}></span>
+                                  <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '12px', animationDelay: '0.1s' }}></span>
+                                  <span className={`w-0.5 bg-accent-600 rounded-full ${playerState.isPlaying ? 'animate-pulse' : ''}`} style={{ height: '6px', animationDelay: '0.2s' }}></span>
                                 </span>
                               ) : (
                                 index + 1
                               )}
                             </span>
                             <div className="flex-1 min-w-0">
-                              <p className={`font-medium truncate ${isCurrentlyPlaying ? 'text-purple-600' : 'text-gray-900'}`}>{track.attributes?.name || 'Unknown'}</p>
-                              <p className={`text-sm ${isCurrentlyPlaying ? 'text-purple-500' : 'text-gray-500'}`}>
+                              <p className={`font-medium truncate ${isCurrentlyPlaying ? 'text-accent-600' : 'text-gray-900'}`}>{track.attributes?.name || 'Unknown'}</p>
+                              <p className={`text-sm ${isCurrentlyPlaying ? 'text-accent-500' : 'text-gray-500'}`}>
                                 {track.attributes?.durationInMillis ?
                                   `${Math.floor(track.attributes.durationInMillis / 60000)}:${String(Math.floor((track.attributes.durationInMillis % 60000) / 1000)).padStart(2, '0')}`
                                   : '--:--'
@@ -4320,7 +4362,7 @@ function ChildDashboard({ onLogout }) {
           <div className="space-y-4">
             {/* Requests Header - matching design system */}
             <div className="px-4 pt-6 pb-2">
-              <h1 className="text-3xl font-bold text-gray-900">Request</h1>
+              <h1 className="text-3xl font-display font-bold text-brand-navy">Request</h1>
               <p className="text-gray-500 mt-1">Ask for new music to add</p>
             </div>
 
@@ -4331,7 +4373,7 @@ function ChildDashboard({ onLogout }) {
                   onClick={() => setRequestsSubTab('search')}
                   className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
                     requestsSubTab === 'search'
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                      ? 'bg-accent-500 text-white shadow-md'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                   }`}
                 >
@@ -4349,7 +4391,7 @@ function ChildDashboard({ onLogout }) {
                   }}
                   className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 relative ${
                     requestsSubTab === 'status'
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                      ? 'bg-accent-500 text-white shadow-md'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                   }`}
                 >
@@ -4382,7 +4424,7 @@ function ChildDashboard({ onLogout }) {
                     placeholder="Search Apple Music..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent text-base"
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-accent-600 focus:border-transparent text-base"
                   />
                   {searchQuery && !isSearching && (
                     <button
@@ -4400,7 +4442,7 @@ function ChildDashboard({ onLogout }) {
                   )}
                   {isSearching && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-accent-600"></div>
                     </div>
                   )}
                 </div>
@@ -4426,7 +4468,7 @@ function ChildDashboard({ onLogout }) {
                   </div>
                   <div className="bg-white border border-red-200 rounded-lg p-3 sm:p-4">
                     <div className="flex items-start gap-2 mb-2">
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-accent-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       <p className="text-xs sm:text-sm font-semibold text-gray-900">God's Word says:</p>
@@ -4434,7 +4476,7 @@ function ChildDashboard({ onLogout }) {
                     <p className="text-sm sm:text-base text-gray-700 italic mb-2 leading-relaxed">
                       "{blockedMessage.verse.verse}"
                     </p>
-                    <p className="text-xs sm:text-sm font-semibold text-purple-700">— {blockedMessage.verse.reference}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-accent-700">— {blockedMessage.verse.reference}</p>
                   </div>
                   <button
                     onClick={() => setBlockedMessage(null)}
@@ -4607,20 +4649,22 @@ function ChildDashboard({ onLogout }) {
 
             <div className="bg-white rounded-2xl shadow-lg p-6 space-y-6">
               {/* Profile Info */}
-              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+              <div className="flex items-center gap-4 p-4 bg-accent-50 rounded-xl">
                 <div className={`w-16 h-16 rounded-full ${getColorClass(kidProfile.color)} flex items-center justify-center text-white p-3 shadow-lg`}>
                   {getAvatarIcon(kidProfile.avatar)}
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 text-lg">{kidProfile.name}</h3>
-                  <p className="text-sm text-purple-600 font-medium">Kid Profile</p>
+                  <p className="text-sm text-accent-600 font-medium">Kid Profile</p>
                 </div>
               </div>
 
               {/* Apple Music Connection Status */}
               <div className="border-t border-gray-100 pt-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">🎵</span>
+                  <svg className="w-5 h-5 text-accent-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+                  </svg>
                   <h3 className="font-bold text-gray-900">Apple Music</h3>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-xl">
@@ -4634,7 +4678,7 @@ function ChildDashboard({ onLogout }) {
                         <p className="text-sm text-gray-600">
                           {isMusicKitAuthorized
                             ? 'You can play your approved music'
-                            : 'Connect to play music'}
+                            : "A parent connects this with their Apple ID"}
                         </p>
                       </div>
                     </div>
@@ -4650,7 +4694,7 @@ function ChildDashboard({ onLogout }) {
                     <button
                       onClick={handleConnectAppleMusic}
                       disabled={isConnectingMusic}
-                      className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-3 px-4 bg-accent-500 hover:bg-accent-600 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isConnectingMusic ? 'Connecting...' : 'Connect to Apple Music'}
                     </button>
@@ -4691,7 +4735,7 @@ function ChildDashboard({ onLogout }) {
           <button
             onClick={() => setActiveTab('home')}
             className={`relative flex flex-col items-center justify-center gap-1 py-3 transition-all ${
-              activeTab === 'home' ? 'bg-purple-50' : ''
+              activeTab === 'home' ? 'bg-accent-50' : ''
             }`}
           >
             <div className="flex flex-col items-center justify-center gap-1 text-gray-700">
@@ -4701,7 +4745,7 @@ function ChildDashboard({ onLogout }) {
               <span className={`text-xs transition-all ${activeTab === 'home' ? 'font-semibold' : 'font-normal'}`}>Home</span>
             </div>
             {activeTab === 'home' && (
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-purple-600"></div>
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-600"></div>
             )}
           </button>
 
@@ -4709,7 +4753,7 @@ function ChildDashboard({ onLogout }) {
           <button
             onClick={() => setActiveTab('library')}
             className={`relative flex flex-col items-center justify-center gap-1 py-3 transition-all ${
-              activeTab === 'library' ? 'bg-purple-50' : ''
+              activeTab === 'library' ? 'bg-accent-50' : ''
             }`}
           >
             <div className="flex flex-col items-center justify-center gap-1 text-gray-700">
@@ -4719,7 +4763,7 @@ function ChildDashboard({ onLogout }) {
               <span className={`text-xs transition-all ${activeTab === 'library' ? 'font-semibold' : 'font-normal'}`}>Library</span>
             </div>
             {activeTab === 'library' && (
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-purple-600"></div>
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-600"></div>
             )}
           </button>
 
@@ -4727,7 +4771,7 @@ function ChildDashboard({ onLogout }) {
           <button
             onClick={() => setActiveTab('discover')}
             className={`relative flex flex-col items-center justify-center gap-1 py-3 transition-all ${
-              activeTab === 'discover' ? 'bg-purple-50' : ''
+              activeTab === 'discover' ? 'bg-accent-50' : ''
             }`}
           >
             <div className="flex flex-col items-center justify-center gap-1 text-gray-700">
@@ -4737,7 +4781,7 @@ function ChildDashboard({ onLogout }) {
               <span className={`text-xs transition-all ${activeTab === 'discover' ? 'font-semibold' : 'font-normal'}`}>Discover</span>
             </div>
             {activeTab === 'discover' && (
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-purple-600"></div>
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-600"></div>
             )}
           </button>
 
@@ -4745,7 +4789,7 @@ function ChildDashboard({ onLogout }) {
           <button
             onClick={() => setActiveTab('playlists')}
             className={`relative flex flex-col items-center justify-center gap-1 py-3 transition-all ${
-              activeTab === 'playlists' ? 'bg-purple-50' : ''
+              activeTab === 'playlists' ? 'bg-accent-50' : ''
             }`}
           >
             <div className="flex flex-col items-center justify-center gap-1 text-gray-700">
@@ -4755,7 +4799,7 @@ function ChildDashboard({ onLogout }) {
               <span className={`text-xs transition-all ${activeTab === 'playlists' ? 'font-semibold' : 'font-normal'}`}>Playlists</span>
             </div>
             {activeTab === 'playlists' && (
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-purple-600"></div>
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-600"></div>
             )}
           </button>
 
@@ -4768,7 +4812,7 @@ function ChildDashboard({ onLogout }) {
               }
             }}
             className={`relative flex flex-col items-center justify-center gap-1 py-3 transition-all ${
-              activeTab === 'requests' ? 'bg-purple-50' : ''
+              activeTab === 'requests' ? 'bg-accent-50' : ''
             }`}
           >
             <div className="relative flex flex-col items-center justify-center gap-1 text-gray-700">
@@ -4783,7 +4827,7 @@ function ChildDashboard({ onLogout }) {
               )}
             </div>
             {activeTab === 'requests' && (
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-purple-600"></div>
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-600"></div>
             )}
           </button>
         </div>
@@ -4793,12 +4837,12 @@ function ChildDashboard({ onLogout }) {
       {showTimeLimitModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-accent-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Time's Up!</h3>
+            <h3 className="text-xl font-display font-bold text-brand-navy mb-2">Time's Up!</h3>
             <p className="text-gray-600 mb-4">
               You've used your {timeLimitSettings?.limitMinutes && formatTimeRemaining(timeLimitSettings.limitMinutes)} of music time for today.
             </p>
@@ -4807,7 +4851,7 @@ function ChildDashboard({ onLogout }) {
             </p>
             <button
               onClick={() => setShowTimeLimitModal(false)}
-              className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition"
+              className="w-full py-3 bg-accent-500 text-white rounded-xl font-semibold hover:bg-accent-600 transition"
             >
               Got it!
             </button>
@@ -4824,7 +4868,7 @@ function ChildDashboard({ onLogout }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Music Paused</h3>
+            <h3 className="text-xl font-display font-bold text-brand-navy mb-2">Music Paused</h3>
             <p className="text-gray-600 mb-4">
               Your parent has paused music access right now.
             </p>
@@ -4850,7 +4894,7 @@ function ChildDashboard({ onLogout }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Not Music Time Yet!</h3>
+            <h3 className="text-xl font-display font-bold text-brand-navy mb-2">Not Music Time Yet!</h3>
             <p className="text-gray-600 mb-4">
               {timeLimitSettings?.timeOfDayMessage || 'Music is not available right now.'}
             </p>
@@ -5075,7 +5119,7 @@ function ChildDashboard({ onLogout }) {
                     className="w-14 h-14 rounded-lg object-cover flex-shrink-0 shadow"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow">
+                  <div className="w-14 h-14 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0 shadow">
                     <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                     </svg>
