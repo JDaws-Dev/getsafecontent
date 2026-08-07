@@ -1,4 +1,4 @@
-import { query, mutation, internalMutation, internalQuery, QueryCtx, MutationCtx } from "./_generated/server";
+import { MutationCtx, QueryCtx, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { resolveReaderIdentity } from "./identity";
 
@@ -15,7 +15,7 @@ function isAdminEmail(email: string | undefined): boolean {
 /**
  * Admin mutation to manually activate a user's subscription.
  */
-export const activateSubscription = mutation({
+export const activateSubscription = internalMutation({
   args: {
     adminEmail: v.string(),
     targetEmail: v.string(),

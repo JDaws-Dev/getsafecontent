@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalQuery, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 
 /**
  * Redeem a coupon code for a user by email.
@@ -139,7 +139,7 @@ export const listAll = internalQuery({
  * Seed a coupon code (idempotent - won't create duplicates).
  * Run via Convex dashboard or CLI.
  */
-export const seedCoupon = mutation({
+export const seedCoupon = internalMutation({
   args: {
     code: v.string(),
     type: v.union(v.literal("lifetime"), v.literal("trial")),

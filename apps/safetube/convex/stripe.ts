@@ -64,7 +64,7 @@ export default httpAction(async (ctx, request) => {
 
         // CRITICAL: Update user subscription status first - this must succeed
         try {
-          await ctx.runMutation(api.users.updateSubscriptionStatus, {
+          await ctx.runMutation(internal.users.updateSubscriptionStatus, {
             email: customerEmail,
             subscriptionStatus: isTrial ? "trial" : "active",
             subscriptionId: session.subscription as string,

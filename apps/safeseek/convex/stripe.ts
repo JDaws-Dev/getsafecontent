@@ -83,7 +83,7 @@ export default httpAction(async (ctx, request) => {
 
         // Update user subscription status
         try {
-          await ctx.runMutation(api.users.updateSubscriptionStatus, {
+          await ctx.runMutation(internal.users.updateSubscriptionStatus, {
             email: customerEmail,
             subscriptionStatus: isTrial ? "trial" : "active",
             subscriptionId: session.subscription as string,

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "./auth";
@@ -1062,7 +1062,7 @@ export const grantLifetimeAccess = internalMutation({
  * Checks if a coupon code is valid and returns its details.
  * Used by the signup page to validate codes before form submission.
  */
-export const validateCouponCode = query({
+export const validateCouponCode = internalQuery({
   args: {
     code: v.string(),
   },
@@ -1121,7 +1121,7 @@ export const validateCouponCode = query({
  * Called after user signs up with a valid lifetime code.
  * Updates their status from trial to lifetime and grants access to all apps.
  */
-export const applyLifetimeCode = mutation({
+export const applyLifetimeCode = internalMutation({
   args: {
     couponCode: v.string(),
   },

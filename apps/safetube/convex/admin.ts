@@ -113,7 +113,7 @@ export const listAuthUsers = internalMutation({
 });
 
 // Apply a promo code to unlock lifetime access (user-facing)
-export const applyPromoCode = mutation({
+export const applyPromoCode = internalMutation({
   args: { userId: v.id("users"), promoCode: v.string() },
   handler: async (ctx, args) => {
     const lifetimeCodes = ["DAWSFRIEND", "DEWITT"];

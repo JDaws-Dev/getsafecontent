@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, action, internalMutation } from "./_generated/server";
+import { action, internalMutation, mutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 /**
@@ -615,7 +615,7 @@ export const getMigrationReport = mutation({
  * Returns a list of emails that were updated so a follow-up script can call
  * SafeSpark's /provisionUser to create the matching SafeSpark user rows.
  */
-export const backfillSafeSparkToLifetimeUsers = mutation({
+export const backfillSafeSparkToLifetimeUsers = internalMutation({
   args: {
     dryRun: v.optional(v.boolean()),
   },

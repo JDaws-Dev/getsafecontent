@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { api } from "./_generated/api";
 
 // Generate a random 6-character family code
@@ -230,7 +230,7 @@ export const grantLifetime = internalMutation({
 });
 
 // Apply a promo code to unlock lifetime access (user-facing)
-export const applyPromoCode = mutation({
+export const applyPromoCode = internalMutation({
   args: { userId: v.id("users"), promoCode: v.string() },
   handler: async (ctx, args) => {
     const lifetimeCodes = ["DAWSFRIEND", "DEWITT"];
@@ -257,7 +257,7 @@ export const applyPromoCode = mutation({
 });
 
 // Update user subscription status (called from Stripe webhook)
-export const updateSubscriptionStatus = mutation({
+export const updateSubscriptionStatus = internalMutation({
   args: {
     email: v.string(),
     subscriptionStatus: v.string(),

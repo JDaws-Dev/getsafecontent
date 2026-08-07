@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, action, internalQuery } from "./_generated/server";
+import { action, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 
 // Central accounts service URL (marketing site)
@@ -48,7 +48,7 @@ export const getUserByEmailInternal = internalQuery({
  * Apply a coupon code to user's account
  * With JWT auth, email is passed from authenticated frontend
  */
-export const applyCouponCode = mutation({
+export const applyCouponCode = internalMutation({
   args: {
     email: v.string(),
     couponCode: v.string(),
@@ -161,7 +161,7 @@ export const ensureSafeTunesUser = mutation({
  * Update SafeTunes user subscription from Stripe
  * (This maintains compatibility with existing Stripe integration)
  */
-export const updateSafeTunesUserSubscription = mutation({
+export const updateSafeTunesUserSubscription = internalMutation({
   args: {
     email: v.string(),
     subscriptionStatus: v.string(),

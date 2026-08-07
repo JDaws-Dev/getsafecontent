@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { api } from "./_generated/api";
 import { cascadeDeleteKidProfile, cascadeDeleteUser } from "./lib/cascadeDelete";
 
@@ -426,7 +426,7 @@ export const verifyParentPin = query({
 });
 
 // Update subscription status by email (used by Stripe webhook on checkout.session.completed)
-export const updateSubscriptionStatus = mutation({
+export const updateSubscriptionStatus = internalMutation({
   args: {
     email: v.string(),
     subscriptionStatus: v.string(),

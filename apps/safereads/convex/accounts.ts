@@ -575,7 +575,7 @@ export const verifyAppAccess = query({
  * Called by Stripe webhook to update subscription state.
  * This is an internal mutation - not exposed to frontend directly.
  */
-export const updateSubscription = mutation({
+export const updateSubscription = internalMutation({
   args: {
     email: v.string(),
     subscriptionStatus: v.union(
@@ -720,7 +720,7 @@ export const addAppEntitlement = internalMutation({
  * Removes an app from user's entitled apps list.
  * Used when user downgrades or removes an app.
  */
-export const removeAppEntitlement = mutation({
+export const removeAppEntitlement = internalMutation({
   args: {
     userId: v.id("users"),
     app: appValidator,
@@ -766,7 +766,7 @@ export const removeAppEntitlement = mutation({
  * Returns the current subscription ID and validates the request.
  * The actual Stripe update is done client-side via /api/subscription/update-apps.
  */
-export const prepareSubscriptionChange = mutation({
+export const prepareSubscriptionChange = internalMutation({
   args: {
     userId: v.id("users"),
     newApps: v.array(appValidator),
@@ -850,7 +850,7 @@ export const prepareSubscriptionChange = mutation({
  * Called after the Stripe API update succeeds.
  * Updates the user's entitled apps in our database.
  */
-export const confirmSubscriptionChange = mutation({
+export const confirmSubscriptionChange = internalMutation({
   args: {
     userId: v.id("users"),
     newApps: v.array(appValidator),
@@ -1045,7 +1045,7 @@ export const validateCouponCode = query({
  * Called after user signs up with a valid lifetime code.
  * Updates their status from trial to lifetime and grants access to all apps.
  */
-export const applyLifetimeCode = mutation({
+export const applyLifetimeCode = internalMutation({
   args: {
     email: v.string(),
     couponCode: v.string(),
