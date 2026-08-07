@@ -6,6 +6,7 @@ import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
 import LyricsModal from './LyricsModal';
 import { useToast } from '../common/Toast';
 import { backfillAlbumTracks } from '../../utils/backfillAlbumTracks';
+import { useAuth } from '../../contexts/AuthContext';
 
 function AlbumSearch({
   user,
@@ -15,6 +16,7 @@ function AlbumSearch({
   onSearchResultsChange = () => {}
 }) {
   const { showToast, ToastContainer } = useToast();
+  const { token } = useAuth();
   const [searchQuery, setSearchQuery] = useState(persistedSearchQuery);
   const [searchResults, setSearchResults] = useState(persistedSearchResults);
   const [isSearching, setIsSearching] = useState(false);
@@ -61,16 +63,16 @@ function AlbumSearch({
 
   // Convex hooks
   const approvedAlbums = useQuery(api.albums.getApprovedAlbums,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   );
   const approvedSongs = useQuery(api.songs.getApprovedSongs,
     user ? { userId: user._id } : 'skip'
   );
   const deniedAlbumRequests = useQuery(api.albumRequests.getDeniedRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   );
   const deniedSongRequests = useQuery(api.songRequests.getDeniedSongRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   );
   const kidProfiles = useQuery(api.kidProfiles.getKidProfiles,
     user ? { userId: user._id } : 'skip'
@@ -378,7 +380,7 @@ function AlbumSearch({
 
   const handleApproveDeniedAlbum = async (deniedRequest, albumData) => {
     try {
-      await approveDeniedAlbum({ requestId: deniedRequest._id });
+      await approveDeniedAlbum({ requestId: deniedRequest._id, userToken: token ?? undefined });
       showToast(`${albumData.attributes.name} approved`, 'success');
     } catch (error) {
       console.error('Failed to approve denied album:', error);
@@ -388,7 +390,7 @@ function AlbumSearch({
 
   const handleApproveDeniedSong = async (deniedRequest, songData) => {
     try {
-      await approveDeniedSong({ requestId: deniedRequest._id });
+      await approveDeniedSong({ requestId: deniedRequest._id, userToken: token ?? undefined });
       showToast(`${songData.attributes.name} approved`, 'success');
     } catch (error) {
       console.error('Failed to approve denied song:', error);
@@ -735,29 +737,32 @@ function AlbumSearch({
       {ToastContainer}
       <div>
         {/* Explanation Banner */}
-        <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-100">
+        <div className="mb-6 bg-accent-50 rounded-lg p-6 border border-accent-100">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-full bg-accent-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">How to Add Music</h3>
+              <h3 className="text-lg font-semibold font-display text-brand-navy mb-2">How to Add Music</h3>
               <div className="space-y-2 text-sm text-gray-700">
                 <div className="flex items-start gap-2">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-white text-purple-600 font-semibold flex items-center justify-center text-xs">1</span>
-                  <p><strong className="text-purple-700">+ Library:</strong> Adds music directly to your kids' library - they can play it right away!</p>
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-white text-accent-600 font-semibold flex items-center justify-center text-xs">1</span>
+                  <p><strong className="text-accent-700">+ Library:</strong> Adds music directly to your kids' library - they can play it right away!</p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-white text-purple-600 font-semibold flex items-center justify-center text-xs">2</span>
-                  <p><strong className="text-purple-700">+ Discover:</strong> Adds music to a "storefront" where kids can browse and choose what to add to their library themselves.</p>
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-white text-accent-600 font-semibold flex items-center justify-center text-xs">2</span>
+                  <p><strong className="text-accent-700">+ Discover:</strong> Adds music to a "storefront" where kids can browse and choose what to add to their library themselves.</p>
                 </div>
               </div>
-              <div className="mt-3 text-xs text-gray-600 bg-white rounded px-3 py-2">
-                💡 <strong>Tip:</strong> Use Discover to let your kids explore and develop their own taste, while Library is perfect for music you know they'll love!
+              <div className="mt-3 text-xs text-gray-600 bg-white rounded px-3 py-2 flex items-start gap-2">
+                <svg className="w-4 h-4 flex-shrink-0 mt-0.5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                <span><strong>Tip:</strong> Use Discover to let your kids explore and develop their own taste, while Library is perfect for music you know they'll love!</span>
               </div>
             </div>
           </div>
@@ -772,7 +777,7 @@ function AlbumSearch({
             onClick={() => setSearchType('albums')}
             className={`px-4 py-2 rounded-lg font-medium transition ${
               searchType === 'albums'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-accent-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -783,7 +788,7 @@ function AlbumSearch({
             onClick={() => setSearchType('songs')}
             className={`px-4 py-2 rounded-lg font-medium transition ${
               searchType === 'songs'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-accent-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -809,7 +814,7 @@ function AlbumSearch({
               onFocus={() => setShowSearchHistory(true)}
               onBlur={() => setTimeout(() => setShowSearchHistory(false), 200)}
               placeholder={searchType === 'albums' ? 'Search for albums, artists...' : 'Search for songs...'}
-              className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
               autoComplete="off"
               autoCapitalize="off"
               autoCorrect="off"
@@ -882,7 +887,7 @@ function AlbumSearch({
           <button
             type="submit"
             disabled={isSearching}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-3 bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -910,7 +915,7 @@ function AlbumSearch({
       {/* Search Results */}
       {searchResults.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <h2 className="text-xl font-semibold font-display text-brand-navy mb-4">
             {searchResults.length} {searchResults.length === 1 ? 'Result' : 'Results'}
             {hasMore && <span className="text-sm text-gray-500 ml-2">(scroll down for more)</span>}
           </h2>
@@ -984,7 +989,7 @@ function AlbumSearch({
                           </button>
                           <button
                             onClick={() => handleAddToDiscover(album)}
-                            className="bg-purple-600 text-white px-3 py-2 rounded-full font-semibold text-xs shadow-lg hover:scale-105 transition-transform"
+                            className="bg-accent-500 text-white px-3 py-2 rounded-full font-semibold text-xs shadow-lg hover:scale-105 transition-transform"
                           >
                             + Discover
                           </button>
@@ -1011,7 +1016,7 @@ function AlbumSearch({
 
                 {/* Album/Song Info */}
                 <div className="px-1">
-                  <h3 className="font-medium text-sm text-gray-900 mb-1 line-clamp-2 leading-tight" title={album.name}>
+                  <h3 className="font-medium text-sm text-brand-navy mb-1 line-clamp-2 leading-tight" title={album.name}>
                     {album.name}
                   </h3>
                   <p className="text-xs text-gray-600 truncate" title={album.artist}>
@@ -1034,7 +1039,7 @@ function AlbumSearch({
                         e.stopPropagation();
                         handleAlbumClick(album);
                       }}
-                      className="mt-2 w-full py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-medium transition flex items-center justify-center gap-1"
+                      className="mt-2 w-full py-1.5 bg-accent-500 hover:bg-accent-600 text-white rounded text-xs font-medium transition flex items-center justify-center gap-1"
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1061,7 +1066,7 @@ function AlbumSearch({
                 {showKidSelector === album.id && kidProfiles && (
                   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-                      <h3 className="text-lg font-bold text-gray-900 mb-4">Approve for Kids</h3>
+                      <h3 className="text-lg font-bold font-display text-brand-navy mb-4">Approve for Kids</h3>
 
                       {/* Album Preview */}
                       <div className="flex items-center space-x-3 mb-4 p-3 bg-gray-50 rounded-lg">
@@ -1144,7 +1149,7 @@ function AlbumSearch({
                 <button
                   onClick={loadMoreResults}
                   disabled={isLoadingMore}
-                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-3 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isLoadingMore ? (
                     <>
@@ -1204,7 +1209,7 @@ function AlbumSearch({
 
                     {/* Song Info */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 truncate">{song.name}</h3>
+                      <h3 className="font-semibold text-brand-navy truncate">{song.name}</h3>
                       <p className="text-sm text-gray-600 truncate">{song.artist}</p>
                       <p className="text-xs text-gray-500 truncate">{song.albumName}</p>
                       {song.genreNames && song.genreNames.length > 0 && (
@@ -1228,10 +1233,10 @@ function AlbumSearch({
                       {song.previewUrl && (
                         <button
                           onClick={() => setSelectedAlbum(song)}
-                          className="p-2 hover:bg-purple-100 rounded-full transition"
+                          className="p-2 hover:bg-accent-100 rounded-full transition"
                           title="Preview song"
                         >
-                          <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-5 h-5 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                           </svg>
                         </button>
@@ -1283,7 +1288,7 @@ function AlbumSearch({
                   {showSongKidSelector === song.id && kidProfiles && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">Approve Song for Kids</h3>
+                        <h3 className="text-lg font-bold font-display text-brand-navy mb-4">Approve Song for Kids</h3>
 
                         {/* Song Preview */}
                         <div className="flex items-center space-x-3 mb-4 p-3 bg-gray-50 rounded-lg">
@@ -1369,7 +1374,7 @@ function AlbumSearch({
                 <button
                   onClick={loadMoreResults}
                   disabled={isLoadingMore}
-                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition disabled:bg-gray-400 disabled:cursor-not-allow flex items-center gap-2"
+                  className="px-6 py-3 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition disabled:bg-gray-400 disabled:cursor-not-allow flex items-center gap-2"
                 >
                   {isLoadingMore ? (
                     <>
@@ -1398,7 +1403,7 @@ function AlbumSearch({
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Preview</h3>
+              <h3 className="text-xl font-bold font-display text-brand-navy">Preview</h3>
               <button
                 onClick={() => setSelectedAlbum(null)}
                 className="text-gray-400 hover:text-gray-600 transition"
@@ -1417,7 +1422,7 @@ function AlbumSearch({
                 className="w-24 h-24 rounded-lg shadow-lg"
               />
               <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-gray-900 text-lg line-clamp-2">{selectedAlbum.name}</h4>
+                <h4 className="font-bold text-brand-navy text-lg line-clamp-2">{selectedAlbum.name}</h4>
                 <p className="text-gray-600 text-sm">{selectedAlbum.artist}</p>
                 {selectedAlbum.type === 'song' && (
                   <p className="text-gray-500 text-xs mt-1">{selectedAlbum.albumName}</p>
@@ -1468,7 +1473,7 @@ function AlbumSearch({
                   setSelectedAlbum(null);
                   handleApprove(selectedAlbum);
                 }}
-                className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition"
+                className="w-full py-3 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-semibold transition"
               >
                 Approve Album for Kids
               </button>
@@ -1490,7 +1495,7 @@ function AlbumSearch({
                   className="w-32 h-32 rounded-lg shadow-lg"
                 />
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{albumDetail.name}</h2>
+                  <h2 className="text-2xl font-bold font-display text-brand-navy mb-2">{albumDetail.name}</h2>
                   <p className="text-lg text-gray-600 mb-2">{albumDetail.artist}</p>
                   <div className="flex items-center gap-3 text-sm text-gray-500">
                     <span>{albumDetail.year}</span>
@@ -1521,7 +1526,7 @@ function AlbumSearch({
                       setAlbumDetail(null);
                       handleApprove(albumDetail);
                     }}
-                    className="flex-1 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition"
+                    className="flex-1 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition"
                   >
                     Approve Album for Kids
                   </button>
@@ -1538,7 +1543,7 @@ function AlbumSearch({
 
             {/* Track List */}
             <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Tracks</h3>
+              <h3 className="text-lg font-semibold font-display text-brand-navy mb-4">Tracks</h3>
               {albumDetail.tracks && albumDetail.tracks.length > 0 ? (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {albumDetail.tracks.map((track, index) => (
@@ -1610,10 +1615,10 @@ function AlbumSearch({
                               }
                             }
                           }}
-                          className="p-2 hover:bg-purple-100 rounded-full transition"
+                          className="p-2 hover:bg-accent-100 rounded-full transition"
                           title="Play full song (requires Apple Music subscription)"
                         >
-                          <svg className="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-4 h-4 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                           </svg>
                         </button>
@@ -1633,7 +1638,7 @@ function AlbumSearch({
       {showSongKidSelector && albumDetail && kidProfiles && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Approve Song for Kids</h3>
+            <h3 className="text-lg font-bold font-display text-brand-navy mb-4">Approve Song for Kids</h3>
 
             {/* Song Preview */}
             <div className="flex items-center space-x-3 mb-4 p-3 bg-gray-50 rounded-lg">
@@ -1703,7 +1708,7 @@ function AlbumSearch({
       {loadingAlbumDetail && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 flex flex-col items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-600 mb-4"></div>
             <p className="text-gray-700 font-medium">Loading album details...</p>
           </div>
         </div>

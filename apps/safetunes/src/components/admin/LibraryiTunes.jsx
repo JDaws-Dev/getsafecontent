@@ -4,8 +4,10 @@ import { api } from '../../../convex/_generated/api';
 import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
 import PlaylistImport from './PlaylistImport';
 import musicKitService from '../../config/musickit';
+import { useAuth } from '../../contexts/AuthContext';
 
 function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
+  const { token } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showImport, setShowImport] = useState(false);
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
@@ -29,7 +31,7 @@ function LibraryiTunes({ user, context = 'library', featuredOnly = false }) {
   const [loadingTracks, setLoadingTracks] = useState(false);
 
   // Fetch data based on context
-  const libraryAlbums = useQuery(api.albums.getApprovedAlbums, user && context === 'library' ? { userId: user._id } : 'skip') || [];
+  const libraryAlbums = useQuery(api.albums.getApprovedAlbums, user && context === 'library' ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
   const librarySongs = useQuery(api.songs.getApprovedSongs, user && context === 'library' ? { userId: user._id } : 'skip') || [];
   const featuredAlbums = useQuery(api.featured.getFeaturedAlbums, user && context === 'discover' ? { userId: user._id } : 'skip') || [];
   const featuredSongs = useQuery(api.featured.getFeaturedSongs, user && context === 'discover' ? { userId: user._id } : 'skip') || [];

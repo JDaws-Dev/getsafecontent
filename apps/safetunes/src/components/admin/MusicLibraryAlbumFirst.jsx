@@ -4,8 +4,10 @@ import { api } from '../../../convex/_generated/api';
 import AlbumDetailModal from './AlbumDetailModal';
 import AlbumSearchSimple from './AlbumSearchSimple';
 import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
+import { useAuth } from '../../contexts/AuthContext';
 
 function MusicLibraryAlbumFirst({ user }) {
+  const { token } = useAuth();
   const [activeSubTab, setActiveSubTab] = useState('library');
   const [selectedAlbum, setSelectedAlbum] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,7 +15,7 @@ function MusicLibraryAlbumFirst({ user }) {
 
   // Fetch data - unified query returns all albums with discoverable flag
   const approvedAlbums = useQuery(api.albums.getApprovedAlbums,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   // Album tracks for song search

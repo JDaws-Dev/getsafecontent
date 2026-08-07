@@ -8,16 +8,18 @@ import Settings from './Settings';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from '../../lib/auth-client';
 import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
+import { useAuth } from '../../contexts/AuthContext';
 
 function AdminDashboardAlbumFirst({ user }) {
   const [activeTab, setActiveTab] = useState('library');
   const [selectedAlbum, setSelectedAlbum] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { token } = useAuth();
 
   // Fetch data
   const approvedAlbums = useQuery(api.albums.getApprovedAlbums,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const featuredAlbums = useQuery(api.featured.getFeaturedAlbums,
@@ -26,7 +28,7 @@ function AdminDashboardAlbumFirst({ user }) {
 
   // For requests badge count
   const pendingRequests = useQuery(api.albumRequests.getPendingRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
   const pendingCount = pendingRequests.length;
 

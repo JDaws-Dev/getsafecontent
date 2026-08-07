@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 function KidProfileManager() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -81,7 +81,7 @@ function KidProfileManager() {
     }
 
     try {
-      await deleteKidProfile({ profileId });
+      await deleteKidProfile({ profileId, userToken: token ?? undefined });
     } catch (err) {
       console.error('Failed to delete profile:', err);
     }
@@ -90,11 +90,11 @@ function KidProfileManager() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Kid Profiles</h2>
+        <h2 className="font-display text-2xl font-bold text-brand-navy">Kid Profiles</h2>
         {!showAddForm && (
           <button
             onClick={() => setShowAddForm(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition"
+            className="bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-lg font-medium transition"
           >
             + Add Child
           </button>
@@ -103,8 +103,8 @@ function KidProfileManager() {
 
       {/* Add Kid Form */}
       {showAddForm && (
-        <div className="bg-white border-2 border-purple-200 rounded-xl p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New Child</h3>
+        <div className="bg-white border-2 border-accent-200 rounded-2xl p-6 mb-6">
+          <h3 className="font-display text-lg font-semibold text-brand-navy mb-4">Add New Child</h3>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
@@ -123,7 +123,7 @@ function KidProfileManager() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent"
                 placeholder="e.g., Emma"
               />
             </div>
@@ -140,8 +140,8 @@ function KidProfileManager() {
                     onClick={() => setFormData({ ...formData, avatar: emoji })}
                     className={`text-3xl p-3 rounded-lg border-2 transition ${
                       formData.avatar === emoji
-                        ? 'border-purple-600 bg-purple-50'
-                        : 'border-gray-300 hover:border-purple-300'
+                        ? 'border-accent-600 bg-accent-50'
+                        : 'border-gray-300 hover:border-accent-300'
                     }`}
                   >
                     {emoji}
@@ -181,7 +181,7 @@ function KidProfileManager() {
                 maxLength={4}
                 value={formData.pin}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent"
                 placeholder="1234"
               />
               <p className="text-xs text-gray-500 mt-1">Your child will use this PIN to access their music player</p>
@@ -200,7 +200,7 @@ function KidProfileManager() {
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-medium transition"
+                className="flex-1 bg-accent-600 hover:bg-accent-700 text-white py-2 rounded-lg font-medium transition"
               >
                 Add Profile
               </button>
@@ -215,7 +215,7 @@ function KidProfileManager() {
           {kidProfiles.map((profile) => (
             <div
               key={profile._id}
-              className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className={`w-16 h-16 bg-${profile.color}-500 rounded-full flex items-center justify-center text-3xl`}>
@@ -232,23 +232,23 @@ function KidProfileManager() {
                 </button>
               </div>
 
-              <h3 className="text-xl font-bold text-gray-900 mb-1">{profile.name}</h3>
+              <h3 className="font-display text-xl font-bold text-brand-navy mb-1">{profile.name}</h3>
               <p className="text-sm text-gray-500">PIN: {profile.pin ? '••••' : 'None'}</p>
             </div>
           ))}
         </div>
       ) : (
         <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-          <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No kid profiles yet</h3>
+          <h3 className="font-display text-lg font-semibold text-brand-navy mb-2">No kid profiles yet</h3>
           <p className="text-gray-600 mb-4">Add a profile for each child in your family</p>
           <button
             onClick={() => setShowAddForm(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition inline-flex items-center"
+            className="bg-accent-600 hover:bg-accent-700 text-white px-6 py-2 rounded-lg font-medium transition inline-flex items-center"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
