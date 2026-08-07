@@ -53,7 +53,22 @@ cd ~/Projects/safecontent/sites/marketing && vercel --prod
 
 # Frontends (Vite/Next apps) — Convex deploy does NOT ship UI changes
 npm run build && vercel --prod --yes
+# THEN move the domain — `vercel --prod` builds a Production deployment but does
+# NOT re-alias the custom domain. Without this the old build stays live while
+# the CLI cheerfully reports "Ready".
+vercel alias set <deployment-url> <domain> --scope family-planner
 ```
+
+**Verifying a frontend deploy:** do NOT compare the live bundle hash to your local
+build — Vite hashes inline `VITE_*` env vars, so Vercel's hash legitimately differs.
+Compare **byte size / content markers** instead. And note every app has a catch-all
+SPA rewrite, so a missing asset still returns HTTP 200 — check `content_type`
+(`application/javascript` = real, `text/html` = missing).
+
+**Deploy ORDER across the fleet: all frontends BEFORE any Convex backend.** Parent-only
+kid endpoints hard-require `userToken` (`convex/identity.ts` `requireOwner`). New
+frontends send it and old backends accept it; an old cached frontend against a new
+backend throws "Please sign in again." for every parent.
 
 ## Where Things Live
 - **Operations reference** (admin endpoints, env vars, Stripe, auth, troubleshooting, security, newsletter, blog): [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
