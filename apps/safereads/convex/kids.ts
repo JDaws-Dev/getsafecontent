@@ -214,7 +214,7 @@ export const verifyPinWithRateLimit = mutation({
 /**
  * Clear a kid's PIN (remove PIN protection).
  */
-export const clearPin = mutation({
+export const clearPin = internalMutation({
   args: { kidId: v.id("kids") },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.kidId, { pin: undefined });

@@ -1,8 +1,8 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./_generated/server";
 
 // Grant lifetime subscription to a user by email
-export const run = mutation({
+export const run = internalMutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
     const user = await ctx.db
