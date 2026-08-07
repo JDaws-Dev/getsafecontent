@@ -160,19 +160,19 @@ export default function LoginPage() {
   // Show password reset prompt for migrated users
   if (showPasswordResetPrompt) {
     return (
-      <div className="min-h-screen bg-parchment-50">
+      <div className="min-h-screen bg-brand-cream">
         <div className="mx-auto max-w-md px-4 py-12 sm:py-20">
           {/* Logo */}
           <div className="mb-8 text-center">
             <Link href="/" className="inline-flex items-center gap-2">
-              <BookOpen className="h-10 w-10 text-parchment-600" />
-              <span className="font-serif text-2xl font-bold text-ink-900">
+              <BookOpen className="h-10 w-10 text-accent-600" />
+              <span className="font-display text-2xl font-bold text-brand-navy">
                 SafeReads
               </span>
             </Link>
           </div>
 
-          <div className="rounded-xl border border-parchment-200 bg-white p-8 shadow-sm">
+          <div className="rounded-xl border border-brand-cream-2 bg-white p-8 shadow-sm">
             {!resetEmailSent ? (
               <>
                 <div className="mb-6 text-center">
@@ -191,7 +191,7 @@ export default function LoginPage() {
                       />
                     </svg>
                   </div>
-                  <h1 className="font-serif text-2xl font-bold text-ink-900">
+                  <h1 className="font-display text-2xl font-bold text-brand-navy">
                     We've Upgraded Our Login System
                   </h1>
                   <p className="mt-2 text-ink-600">
@@ -219,7 +219,7 @@ export default function LoginPage() {
                     setShowPasswordResetPrompt(false);
                     setFormData((prev) => ({ ...prev, password: "" }));
                   }}
-                  className="w-full text-sm text-ink-600 hover:text-ink-900"
+                  className="w-full text-sm text-ink-600 hover:text-brand-navy"
                 >
                   ← Back to login
                 </button>
@@ -242,7 +242,7 @@ export default function LoginPage() {
                       />
                     </svg>
                   </div>
-                  <h1 className="font-serif text-2xl font-bold text-ink-900">
+                  <h1 className="font-display text-2xl font-bold text-brand-navy">
                     Check Your Email
                   </h1>
                   <p className="mt-2 text-ink-600">
@@ -266,7 +266,7 @@ export default function LoginPage() {
 
                 <button
                   onClick={() => setResetEmailSent(false)}
-                  className="w-full text-sm text-parchment-600 hover:text-parchment-700"
+                  className="w-full text-sm text-accent-600 hover:text-accent-700"
                 >
                   Didn't receive it? Try again
                 </button>
@@ -284,21 +284,21 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-parchment-50">
+    <div className="min-h-screen bg-brand-cream">
       <div className="mx-auto max-w-md px-4 py-12 sm:py-20">
         {/* Logo */}
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
-            <BookOpen className="h-10 w-10 text-parchment-600" />
-            <span className="font-serif text-2xl font-bold text-ink-900">
+            <BookOpen className="h-10 w-10 text-accent-600" />
+            <span className="font-display text-2xl font-bold text-brand-navy">
               SafeReads
             </span>
           </Link>
         </div>
 
-        <div className="rounded-xl border border-parchment-200 bg-white p-8 shadow-sm min-w-0">
+        <div className="rounded-xl border border-brand-cream-2 bg-white p-8 shadow-sm min-w-0">
           <div className="mb-6 text-center">
-            <h1 className="font-serif text-2xl font-bold text-ink-900">
+            <h1 className="font-display text-2xl font-bold text-brand-navy">
               Welcome back
             </h1>
             <p className="mt-1 text-sm text-ink-500">
@@ -323,10 +323,10 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={googleLoading || loading}
-            className="flex w-full min-h-[48px] items-center justify-center gap-3 rounded-lg border border-parchment-300 bg-white px-4 py-3 font-semibold text-ink-700 transition hover:bg-parchment-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full min-h-[48px] items-center justify-center gap-3 rounded-lg border border-brand-cream-2 bg-white px-4 py-3 font-semibold text-ink-700 transition hover:bg-brand-cream-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {googleLoading ? (
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-parchment-300 border-t-parchment-600" />
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-cream-2 border-t-accent-600" />
             ) : (
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -352,7 +352,7 @@ export default function LoginPage() {
 
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-parchment-300" />
+              <div className="w-full border-t border-brand-cream-2" />
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="bg-white px-2 text-ink-500">or</span>
@@ -379,7 +379,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? "form-error" : undefined}
-                className="w-full min-h-[44px] rounded-lg border border-parchment-300 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-parchment-600"
+                className="w-full min-h-[44px] rounded-lg border border-brand-cream-2 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-accent-500"
                 placeholder="you@example.com"
               />
             </div>
@@ -394,7 +394,7 @@ export default function LoginPage() {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-sm text-parchment-600 hover:text-parchment-700"
+                  className="text-sm text-accent-600 hover:text-accent-700"
                 >
                   Forgot password?
                 </Link>
@@ -410,7 +410,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? "form-error" : undefined}
-                className="w-full min-h-[44px] rounded-lg border border-parchment-300 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-parchment-600"
+                className="w-full min-h-[44px] rounded-lg border border-brand-cream-2 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-accent-500"
                 placeholder="Enter your password"
               />
             </div>
@@ -426,9 +426,9 @@ export default function LoginPage() {
 
           {/* Divider */}
           <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-parchment-200" />
+            <div className="flex-1 border-t border-brand-cream-2" />
             <span className="px-4 text-sm text-ink-400">or</span>
-            <div className="flex-1 border-t border-parchment-200" />
+            <div className="flex-1 border-t border-brand-cream-2" />
           </div>
 
           {/* Google Sign In */}
@@ -436,10 +436,10 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={googleLoading || loading}
-            className="flex w-full min-h-[48px] items-center justify-center gap-3 rounded-lg border border-parchment-300 bg-white px-4 py-3 font-medium text-ink-700 transition hover:bg-parchment-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full min-h-[48px] items-center justify-center gap-3 rounded-lg border border-brand-cream-2 bg-white px-4 py-3 font-medium text-ink-700 transition hover:bg-brand-cream-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {googleLoading ? (
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-parchment-300 border-t-parchment-600" />
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-cream-2 border-t-accent-600" />
             ) : (
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -468,7 +468,7 @@ export default function LoginPage() {
               Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
-                className="font-medium text-parchment-600 hover:text-parchment-700"
+                className="font-medium text-accent-600 hover:text-accent-700"
               >
                 Start free trial
               </Link>

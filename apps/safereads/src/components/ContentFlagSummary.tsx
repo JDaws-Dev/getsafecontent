@@ -26,7 +26,7 @@ export function ContentFlagSummary({ bookId }: { bookId: Id<"books"> }) {
       {activeFlags.map((flag: { category: string; severity: string }) => (
         <span
           key={flag.category}
-          className="inline-flex items-center gap-1.5 rounded-full border border-parchment-200 bg-white px-2.5 py-1 text-xs font-medium text-ink-700"
+          className="inline-flex items-center gap-1.5 rounded-full border border-brand-cream-2 bg-white px-2.5 py-1 text-xs font-medium text-ink-700"
         >
           <span
             className={`h-2 w-2 rounded-full ${SEVERITY_COLORS[flag.severity] ?? "bg-ink-300"}`}

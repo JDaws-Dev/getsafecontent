@@ -30,10 +30,10 @@ export function KidBookshelf({ books, progress, onBookClick }: KidBookshelfProps
 
   if (books.length === 0) {
     return (
-      <div className="flex flex-col items-center overflow-hidden rounded-3xl bg-gradient-to-b from-purple-50 via-violet-50 to-indigo-50 px-6 py-10 text-center ring-1 ring-purple-100">
+      <div className="flex flex-col items-center overflow-hidden rounded-3xl bg-gradient-to-b from-accent-50 via-accent-50 to-accent-100 px-6 py-10 text-center ring-1 ring-accent-100">
         {/* Decorative book stack illustration */}
         <div className="relative">
-          <div className="animate-float flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-violet-200 to-purple-300 shadow-lg shadow-purple-200/50">
+          <div className="animate-float flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-accent-200 to-accent-300 shadow-lg shadow-accent-200/50">
             <BookOpen className="h-12 w-12 text-white" />
           </div>
           {/* Floating decorative books */}
@@ -41,7 +41,7 @@ export function KidBookshelf({ books, progress, onBookClick }: KidBookshelfProps
           <span className="absolute -right-5 top-0 animate-float text-xl opacity-50" style={{ animationDelay: "1s" }}>{"📚"}</span>
           <span className="absolute -bottom-2 -right-4 animate-float text-lg opacity-40" style={{ animationDelay: "1.5s" }}>{"✨"}</span>
         </div>
-        <h3 className="mt-6 text-xl font-bold text-gray-800">
+        <h3 className="mt-6 font-display text-xl font-bold text-brand-navy">
           Your bookshelf is waiting!
         </h3>
         <p className="mt-2 max-w-xs text-sm text-gray-500">
@@ -50,7 +50,7 @@ export function KidBookshelf({ books, progress, onBookClick }: KidBookshelfProps
         <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
           <Link
             href="/read/search"
-            className="kid-touch flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-200 transition-all hover:shadow-xl hover:shadow-purple-300 active:scale-95"
+            className="kid-touch flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-accent-200 transition-all hover:shadow-xl hover:shadow-accent-300 active:scale-95"
           >
             <Search className="h-4 w-4" />
             Search for Books

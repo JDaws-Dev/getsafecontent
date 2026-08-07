@@ -5,6 +5,7 @@ import deleteUser from "./deleteUser";
 import adminDashboard from "./adminDashboard";
 import setupOnboarding from "./setupOnboarding";
 import provisionUser from "./provisionUser";
+import syncFamilyCode from "./syncFamilyCode";
 
 const http = httpRouter();
 
@@ -54,6 +55,13 @@ http.route({
   path: "/provisionUser",
   method: "POST",
   handler: provisionUser,
+});
+
+// Sync family code route (admin - reads or sets familyCode by email)
+http.route({
+  path: "/syncFamilyCode",
+  method: "GET",
+  handler: syncFamilyCode,
 });
 
 export default http;

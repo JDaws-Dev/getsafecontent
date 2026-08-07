@@ -50,7 +50,7 @@ export default function PasswordStrengthIndicator({
 
   // Strength labels and colors
   const strengthConfig: Record<number, StrengthConfig> = {
-    0: { label: "", color: "bg-parchment-200", textColor: "text-ink-400" },
+    0: { label: "", color: "bg-brand-cream-2", textColor: "text-ink-400" },
     1: { label: "Weak", color: "bg-red-500", textColor: "text-red-600" },
     2: { label: "Fair", color: "bg-orange-500", textColor: "text-orange-600" },
     3: { label: "Good", color: "bg-yellow-500", textColor: "text-yellow-600" },
@@ -75,7 +75,7 @@ export default function PasswordStrengthIndicator({
       {/* Strength bar */}
       <div className="flex items-center gap-2">
         <div
-          className="h-1.5 flex-1 overflow-hidden rounded-full bg-parchment-200"
+          className="h-1.5 flex-1 overflow-hidden rounded-full bg-brand-cream-2"
           role="progressbar"
           aria-valuenow={strengthLevel}
           aria-valuemin={0}
@@ -125,7 +125,7 @@ export default function PasswordStrengthIndicator({
               </svg>
             ) : (
               <svg
-                className="h-3.5 w-3.5 flex-shrink-0 text-parchment-300"
+                className="h-3.5 w-3.5 flex-shrink-0 text-ink-300"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

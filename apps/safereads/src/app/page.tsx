@@ -107,29 +107,29 @@ export default function Home() {
   return (
     <div className="min-h-[calc(100vh-4rem)]">
       {/* Top Nav */}
-      <nav className="sticky top-0 z-50 border-b border-parchment-200 bg-white/95 shadow-sm backdrop-blur-sm">
+      <nav className="sticky top-0 z-50 border-b border-brand-cream-2 bg-white/95 shadow-sm backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-parchment-700" />
-            <span className="font-serif text-lg font-bold text-ink-900">SafeReads</span>
+            <BookOpen className="h-6 w-6 text-accent-700" />
+            <span className="font-display text-lg font-bold text-brand-navy">SafeReads</span>
           </Link>
 
           <div className="hidden items-center gap-6 lg:flex">
             <a
               href="#how-it-works"
-              className="text-sm font-medium text-ink-500 transition-colors hover:text-ink-900"
+              className="text-sm font-medium text-ink-500 transition-colors hover:text-brand-navy"
             >
               How It Works
             </a>
             <a
               href="#pricing"
-              className="text-sm font-medium text-ink-500 transition-colors hover:text-ink-900"
+              className="text-sm font-medium text-ink-500 transition-colors hover:text-brand-navy"
             >
               Pricing
             </a>
             <a
               href="#faq"
-              className="text-sm font-medium text-ink-500 transition-colors hover:text-ink-900"
+              className="text-sm font-medium text-ink-500 transition-colors hover:text-brand-navy"
             >
               FAQ
             </a>
@@ -138,27 +138,27 @@ export default function Home() {
           <div className="flex items-center gap-2 sm:gap-3">
             <a
               href="https://getsafefamily.com"
-              className="hidden text-sm font-medium text-ink-600 transition-colors hover:text-parchment-700 xl:inline-flex"
+              className="hidden text-sm font-medium text-ink-600 transition-colors hover:text-accent-700 xl:inline-flex"
             >
               Safe Family
             </a>
             <span className="hidden text-ink-200 xl:inline">|</span>
             <Link
               href="/login"
-              className="text-sm font-medium text-ink-600 transition-colors hover:text-ink-900"
+              className="text-sm font-medium text-ink-600 transition-colors hover:text-brand-navy"
             >
               <span className="sm:hidden">Log in</span>
               <span className="hidden sm:inline">Parent Login</span>
             </Link>
             <Link
               href="/read"
-              className="hidden text-sm font-medium text-ink-600 transition-colors hover:text-ink-900 sm:inline-flex"
+              className="hidden text-sm font-medium text-ink-600 transition-colors hover:text-brand-navy sm:inline-flex"
             >
               Kid Login
             </Link>
             <Link
               href="/signup"
-              className="rounded-full bg-parchment-700 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-parchment-800 sm:px-4"
+              className="rounded-full bg-accent-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-700 sm:px-4"
             >
               <span className="sm:hidden">Try Free</span>
               <span className="hidden sm:inline">Start Free Trial</span>
@@ -168,7 +168,7 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="bg-parchment-50 pt-16 pb-12 sm:pt-24 sm:pb-16">
+      <section className="bg-brand-cream pt-16 pb-12 sm:pt-24 sm:pb-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
             {/* Left side - Text content */}
@@ -180,9 +180,9 @@ export default function Home() {
                 </span>
               </div>
 
-              <h1 className="font-serif text-3xl font-bold text-ink-900 sm:text-4xl lg:text-5xl leading-tight mb-6">
+              <h1 className="font-display text-3xl font-bold text-brand-navy sm:text-4xl lg:text-5xl leading-tight mb-6">
                 Every parent deserves to know{" "}
-                <span className="text-parchment-700">
+                <span className="text-accent-700">
                   what&apos;s inside the book
                 </span>
               </h1>
@@ -260,9 +260,9 @@ export default function Home() {
 
       {/* App Demo Video - iPhone Wrapper */}
       <section className="mx-auto max-w-xs sm:max-w-sm px-4 pb-16 sm:pb-20">
-        <div className="relative mx-auto rounded-[3rem] bg-ink-900 p-3 shadow-2xl">
+        <div className="relative mx-auto rounded-[3rem] bg-brand-navy p-3 shadow-2xl">
           {/* Dynamic Island */}
-          <div className="absolute left-1/2 top-5 z-10 h-7 w-24 -translate-x-1/2 rounded-full bg-ink-900" />
+          <div className="absolute left-1/2 top-5 z-10 h-7 w-24 -translate-x-1/2 rounded-full bg-brand-navy" />
           {/* Screen */}
           <div className="overflow-hidden rounded-[2.5rem] bg-black">
             <video
@@ -282,10 +282,10 @@ export default function Home() {
       {/* How It Works */}
       <section
         id="how-it-works"
-        className="scroll-mt-24 border-y border-parchment-200 bg-parchment-100/50 py-16 sm:py-20"
+        className="scroll-mt-24 border-y border-brand-cream-2 bg-brand-cream-2/50 py-16 sm:py-20"
       >
         <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-center font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+          <h2 className="text-center font-display text-2xl font-bold text-brand-navy sm:text-3xl">
             Look up any book in seconds
           </h2>
           <div className="mt-10 grid gap-8 sm:grid-cols-3 sm:gap-6">
@@ -312,7 +312,7 @@ export default function Home() {
       <section className="py-16 sm:py-20">
         <div className="mx-auto max-w-5xl px-4">
           <div className="text-center mb-4">
-            <h2 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+            <h2 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
               See exactly what&apos;s in the book
             </h2>
             <p className="mt-4 text-ink-500 max-w-2xl mx-auto">
@@ -323,9 +323,9 @@ export default function Home() {
 
           <div className="mt-10 mx-auto max-w-2xl">
             {/* Mock Analysis Card */}
-            <div className="rounded-2xl border border-parchment-200 bg-white shadow-xl overflow-hidden">
+            <div className="rounded-2xl border border-brand-cream-2 bg-white shadow-xl overflow-hidden">
               {/* Book Header */}
-              <div className="bg-parchment-50 p-5 sm:p-6 border-b border-parchment-200">
+              <div className="bg-brand-cream p-5 sm:p-6 border-b border-brand-cream-2">
                 <div className="flex gap-4 sm:gap-5">
                   {/* Book Cover */}
                   <div className="flex-shrink-0 w-20 sm:w-24 rounded-lg overflow-hidden shadow-md bg-[#1a3a5c]">
@@ -348,7 +348,7 @@ export default function Home() {
                   </div>
                   {/* Book Info */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-serif text-lg sm:text-xl font-bold text-ink-900 leading-tight">
+                    <h3 className="font-display text-lg sm:text-xl font-bold text-brand-navy leading-tight">
                       Percy Jackson &amp; The Lightning Thief
                     </h3>
                     <p className="text-sm text-ink-500 mt-1">Rick Riordan</p>
@@ -447,9 +447,9 @@ export default function Home() {
 
               {/* AI Summary */}
               <div className="px-5 sm:px-6 pb-5 sm:pb-6">
-                <div className="bg-parchment-50 rounded-xl p-4 border border-parchment-200">
+                <div className="bg-brand-cream rounded-xl p-4 border border-brand-cream-2">
                   <div className="flex items-start gap-2">
-                    <BookOpen className="w-4 h-4 text-parchment-600 mt-0.5 flex-shrink-0" />
+                    <BookOpen className="w-4 h-4 text-accent-600 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-xs font-semibold text-ink-700 mb-1">
                         AI Summary
@@ -476,9 +476,9 @@ export default function Home() {
       </section>
 
       {/* Parent Features */}
-      <section className="py-16 sm:py-20 bg-parchment-100/50">
+      <section className="py-16 sm:py-20 bg-brand-cream-2/50">
         <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-center font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+          <h2 className="text-center font-display text-2xl font-bold text-brand-navy sm:text-3xl">
             Built for parents who read the fine print
           </h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2">
@@ -488,12 +488,12 @@ export default function Home() {
               description="Get detailed breakdowns of violence, language, sexual content, substance use, and dark themes — powered by GPT-4o."
             />
             <Feature
-              icon={<ScanBarcode className="h-6 w-6 text-parchment-600" />}
+              icon={<ScanBarcode className="h-6 w-6 text-accent-600" />}
               title="Instant Book Lookup"
               description="Scan a barcode or snap a photo. SafeReads identifies the book and pulls metadata from Google Books and Open Library."
             />
             <Feature
-              icon={<Users className="h-6 w-6 text-parchment-600" />}
+              icon={<Users className="h-6 w-6 text-accent-600" />}
               title="Built for Families"
               description="Add kid profiles, manage wishlists, approve book requests with AI analysis, and curate a pre-approved library. One account for the whole family."
             />
@@ -509,7 +509,7 @@ export default function Home() {
       {/* Kid-Side Features */}
       <section className="py-16 sm:py-20">
         <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-center font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+          <h2 className="text-center font-display text-2xl font-bold text-brand-navy sm:text-3xl">
             A reading experience kids actually love
           </h2>
           <p className="mt-4 text-center text-ink-500 max-w-2xl mx-auto">
@@ -559,11 +559,11 @@ export default function Home() {
       {/* Pricing */}
       <section
         id="pricing"
-        className="bg-parchment-100/50 py-16 sm:py-20 scroll-mt-20"
+        className="bg-brand-cream-2/50 py-16 sm:py-20 scroll-mt-20"
       >
         <div className="mx-auto max-w-lg px-4">
           <div className="text-center mb-8">
-            <h2 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl md:text-4xl">
+            <h2 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl md:text-4xl">
               Simple Pricing
             </h2>
             <p className="mt-3 text-base sm:text-lg text-ink-500">
@@ -572,14 +572,14 @@ export default function Home() {
           </div>
 
           {/* Single pricing card */}
-          <div className="rounded-2xl shadow-xl border-2 border-parchment-600 bg-white overflow-hidden">
+          <div className="rounded-2xl shadow-xl border-2 border-accent-600 bg-white overflow-hidden">
             <div className="p-6 sm:p-8">
               <div className="text-center mb-6">
                 <p className="text-sm font-medium text-ink-500 mb-2">
                   7-day free trial, then
                 </p>
                 <div className="flex items-center justify-center mb-2">
-                  <span className="text-4xl sm:text-5xl font-bold text-ink-900">$4.99</span>
+                  <span className="text-4xl sm:text-5xl font-bold text-brand-navy">$4.99</span>
                   <span className="text-ink-500 ml-2 text-lg sm:text-xl">/month</span>
                 </div>
               </div>
@@ -624,7 +624,7 @@ export default function Home() {
       {/* Trust / Social Proof */}
       <section className="py-16 sm:py-20">
         <div className="mx-auto max-w-3xl px-4 text-center">
-          <h2 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+          <h2 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
             We give you facts, not opinions
           </h2>
           <p className="mt-4 text-ink-500">
@@ -645,7 +645,7 @@ export default function Home() {
       {/* Final CTA */}
       <section className="py-16 text-center sm:py-20">
         <div className="mx-auto max-w-2xl px-4">
-          <h2 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+          <h2 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
             Stop guessing. Start knowing.
           </h2>
           <p className="mt-3 text-ink-500">
@@ -737,7 +737,7 @@ export default function Home() {
 
           <a
             href="https://getsafefamily.com/signup"
-            className="inline-flex items-center gap-2 bg-white text-[#1a1a2e] hover:bg-gray-100 px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg"
+            className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-gray-100 px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg"
           >
             <span>Get the Bundle</span>
             <svg
@@ -765,7 +765,7 @@ export default function Home() {
               href="https://getsafespark.com"
               className="inline-flex items-center gap-2 text-sm text-white/90 hover:text-white transition-colors"
             >
-              <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a2e]">
+              <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-navy">
                 New
               </span>
               <span>
@@ -795,10 +795,10 @@ function Step({
 }) {
   return (
     <div className="text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-parchment-200 text-parchment-700">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-cream-2 text-accent-700">
         {icon}
       </div>
-      <h3 className="mt-4 font-serif text-lg font-bold text-ink-900">
+      <h3 className="mt-4 font-display text-lg font-bold text-brand-navy">
         {title}
       </h3>
       <p className="mt-2 text-sm text-ink-500">{description}</p>
@@ -816,10 +816,10 @@ function Feature({
   description: string;
 }) {
   return (
-    <div className="rounded-xl border border-parchment-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-cream-2 bg-white p-6">
       <div className="flex items-center gap-3">
         {icon}
-        <h3 className="font-serif text-lg font-bold text-ink-900">{title}</h3>
+        <h3 className="font-display text-lg font-bold text-brand-navy">{title}</h3>
       </div>
       <p className="mt-2 text-sm text-ink-500">{description}</p>
     </div>
@@ -869,7 +869,7 @@ function DemoRatingRow({
           {level}
         </span>
       </div>
-      <div className="h-1.5 w-full bg-parchment-100 rounded-full overflow-hidden mb-1">
+      <div className="h-1.5 w-full bg-brand-cream-2 rounded-full overflow-hidden mb-1">
         <div
           className={`h-full rounded-full ${styles.bar}`}
           style={{ width: width === "0%" ? "2%" : width }}
@@ -892,13 +892,13 @@ function FAQItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b border-parchment-200 last:border-b-0">
+    <div className="border-b border-brand-cream-2 last:border-b-0">
       <button
         type="button"
         onClick={onToggle}
         className="flex w-full items-center justify-between py-5 text-left"
       >
-        <span className="text-base font-medium text-ink-900 pr-4">
+        <span className="text-base font-medium text-brand-navy pr-4">
           {question}
         </span>
         <ChevronDown
@@ -956,7 +956,7 @@ function FAQSection() {
     <section id="faq" className="scroll-mt-24 py-16 sm:py-20 bg-white">
       <div className="mx-auto max-w-3xl px-4">
         <div className="text-center mb-12">
-          <h2 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+          <h2 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
             Common questions
           </h2>
           <p className="mt-4 text-ink-500">
@@ -964,7 +964,7 @@ function FAQSection() {
           </p>
         </div>
 
-        <div className="bg-parchment-50 rounded-2xl p-6 sm:p-8">
+        <div className="bg-brand-cream rounded-2xl p-6 sm:p-8">
           {faqs.map((faq, index) => (
             <FAQItem
               key={index}
@@ -981,7 +981,7 @@ function FAQSection() {
             Still have questions?{" "}
             <a
               href="mailto:jeremiah@getsafefamily.com"
-              className="font-medium text-parchment-700 underline underline-offset-2 hover:text-parchment-800"
+              className="font-medium text-accent-700 underline underline-offset-2 hover:text-accent-800"
             >
               Reach out to our team
             </a>
@@ -1026,7 +1026,7 @@ function TestimonialCard({
       <p className="mt-4 text-ink-700 text-sm leading-relaxed flex-1">
         &ldquo;{quote}&rdquo;
       </p>
-      <div className="mt-4 pt-4 border-t border-parchment-100 flex items-center gap-3">
+      <div className="mt-4 pt-4 border-t border-brand-cream-2 flex items-center gap-3">
         <div
           className={`h-10 w-10 rounded-full bg-gradient-to-br ${avatarGradient} flex items-center justify-center`}
         >
@@ -1038,7 +1038,7 @@ function TestimonialCard({
           </span>
         </div>
         <div>
-          <p className="text-sm font-medium text-ink-900">{author}</p>
+          <p className="text-sm font-medium text-brand-navy">{author}</p>
           <p className="text-xs text-ink-500">{role}</p>
         </div>
       </div>
@@ -1048,10 +1048,10 @@ function TestimonialCard({
 
 function TestimonialsSection() {
   return (
-    <section className="py-16 sm:py-20 bg-parchment-50">
+    <section className="py-16 sm:py-20 bg-brand-cream">
       <div className="mx-auto max-w-5xl px-4">
         <div className="text-center mb-12">
-          <h2 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+          <h2 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
             What parents are saying
           </h2>
           <p className="mt-4 text-ink-500">

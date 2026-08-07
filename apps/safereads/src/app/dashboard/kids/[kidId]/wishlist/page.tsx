@@ -33,7 +33,7 @@ const VERDICT_STYLES: Record<string, { bg: string; text: string; label: string }
   safe: { bg: "bg-verdict-safe/10", text: "text-verdict-safe", label: "Safe" },
   caution: { bg: "bg-verdict-caution/10", text: "text-verdict-caution", label: "Caution" },
   warning: { bg: "bg-verdict-warning/10", text: "text-verdict-warning", label: "Warning" },
-  no_verdict: { bg: "bg-parchment-100", text: "text-ink-400", label: "No Verdict" },
+  no_verdict: { bg: "bg-brand-cream-2", text: "text-ink-400", label: "No Verdict" },
 };
 
 const STATUS_CONFIG: Record<WishlistStatus, { label: string; icon: React.ReactNode; color: string; bg: string }> = {
@@ -130,7 +130,7 @@ export default function WishlistPage({
   if (kid === undefined || wishlist === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-parchment-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-accent-400" />
       </div>
     );
   }
@@ -141,7 +141,7 @@ export default function WishlistPage({
         <p className="text-lg text-ink-500">Child not found.</p>
         <Link
           href="/dashboard/kids"
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-parchment-700 hover:text-parchment-800"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accent-700 hover:text-accent-800"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to kids
@@ -180,7 +180,7 @@ export default function WishlistPage({
       </Link>
 
       <div className="mb-6">
-        <h1 className="font-serif text-2xl font-bold text-ink-900">
+        <h1 className="font-display text-2xl font-bold text-brand-navy">
           {kid.name}&apos;s Wishlist
         </h1>
         <p className="mt-1 text-sm text-ink-500">
@@ -203,14 +203,14 @@ export default function WishlistPage({
       </div>
 
       {totalCount === 0 ? (
-        <div className="rounded-lg border border-parchment-200 bg-white p-8 text-center">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-8 text-center">
           <BookOpen className="mx-auto mb-3 h-10 w-10 text-ink-300" />
           <p className="text-ink-600">
             No books on the wishlist yet. Search for books and add them here.
           </p>
           <Link
             href="/dashboard"
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-parchment-700 px-4 py-2 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent-700 px-4 py-2 text-sm font-medium text-accent-50 transition-colors hover:bg-accent-800"
           >
             Search Books
           </Link>
@@ -239,7 +239,7 @@ export default function WishlistPage({
                     return (
                       <div
                         key={item._id}
-                        className="rounded-lg border border-parchment-200 bg-white px-4 py-3"
+                        className="rounded-2xl border border-brand-cream-2 bg-white px-4 py-3"
                       >
                         <div className="flex items-start gap-3">
                           <Link
@@ -255,7 +255,7 @@ export default function WishlistPage({
                                 className="rounded object-cover"
                               />
                             ) : (
-                              <div className="flex h-[72px] w-[48px] items-center justify-center rounded bg-parchment-100">
+                              <div className="flex h-[72px] w-[48px] items-center justify-center rounded bg-brand-cream-2">
                                 <BookOpen className="h-5 w-5 text-ink-300" />
                               </div>
                             )}
@@ -263,7 +263,7 @@ export default function WishlistPage({
                           <div className="min-w-0 flex-1">
                             <Link
                               href={`/dashboard/book/${item.bookId}`}
-                              className="font-medium text-ink-900 hover:text-parchment-700"
+                              className="font-display font-medium text-brand-navy hover:text-accent-700"
                             >
                               {item.book.title}
                             </Link>
@@ -290,14 +290,14 @@ export default function WishlistPage({
                                   <ChevronDown className="h-3 w-3" />
                                 </button>
                                 {statusMenu === item._id && (
-                                  <div className="absolute left-0 top-full z-10 mt-1 w-44 rounded-lg border border-parchment-200 bg-white py-1 shadow-lg">
+                                  <div className="absolute left-0 top-full z-10 mt-1 w-44 rounded-lg border border-brand-cream-2 bg-white py-1 shadow-lg">
                                     {STATUS_ORDER.map((s) => {
                                       const sc = STATUS_CONFIG[s];
                                       return (
                                         <button
                                           key={s}
                                           onClick={() => handleStatusChange(item._id, s)}
-                                          className={`flex w-full items-center gap-2 px-3 py-2 text-xs font-medium transition-colors hover:bg-parchment-50 ${
+                                          className={`flex w-full items-center gap-2 px-3 py-2 text-xs font-medium transition-colors hover:bg-brand-cream-2 ${
                                             status === s ? `${sc.color} ${sc.bg}` : "text-ink-600"
                                           }`}
                                         >

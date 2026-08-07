@@ -69,7 +69,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={cycleTheme}
-      className="p-2 rounded-lg text-ink-600 dark:text-ink-300 hover:bg-parchment-100 dark:hover:bg-ink-700 transition-colors"
+      className="p-2 rounded-lg text-ink-600 dark:text-ink-300 hover:bg-brand-cream-2 dark:hover:bg-ink-700 transition-colors"
       aria-label={getLabel()}
       title={getLabel()}
     >
@@ -96,8 +96,8 @@ export function ThemeSelector() {
           onClick={() => setTheme(option.value)}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
             theme === option.value
-              ? "bg-parchment-100 dark:bg-parchment-900/30 border-parchment-500 text-parchment-700 dark:text-parchment-300"
-              : "bg-white dark:bg-ink-800 border-ink-200 dark:border-ink-700 text-ink-600 dark:text-ink-400 hover:border-parchment-300 dark:hover:border-parchment-600"
+              ? "bg-accent-100 dark:bg-accent-900/30 border-accent-500 text-accent-700 dark:text-accent-300"
+              : "bg-white dark:bg-ink-800 border-ink-200 dark:border-ink-700 text-ink-600 dark:text-ink-400 hover:border-accent-300 dark:hover:border-accent-600"
           }`}
         >
           {option.icon}

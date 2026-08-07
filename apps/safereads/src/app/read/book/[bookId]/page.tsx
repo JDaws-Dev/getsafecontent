@@ -177,7 +177,7 @@ export default function KidReadPage() {
   if (!kidId || approvedBooks === undefined || isPreApproved === undefined) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-200 border-t-purple-600" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-200 border-t-accent-600" />
       </div>
     );
   }
@@ -220,8 +220,8 @@ export default function KidReadPage() {
     if (!bookMeta && !bookId.startsWith("gutenberg:")) {
       return (
         <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-          <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-purple-50">
-            <BookOpen className="h-10 w-10 text-purple-300" />
+          <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-accent-50">
+            <BookOpen className="h-10 w-10 text-accent-300" />
           </div>
           <p className="mt-5 text-xl font-bold text-gray-700">
             Book not found
@@ -231,7 +231,7 @@ export default function KidReadPage() {
           </p>
           <Link
             href="/read/home"
-            className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200"
+            className="kid-touch mt-5 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-accent-200"
           >
             Back to Bookshelf
           </Link>
@@ -263,9 +263,9 @@ export default function KidReadPage() {
                 unoptimized
               />
             ) : (
-              <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-violet-50 to-purple-100 p-3">
-                <BookOpen className="h-8 w-8 text-purple-300" />
-                <p className="text-center text-xs font-medium text-purple-600">
+              <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-accent-50 to-accent-100 p-3">
+                <BookOpen className="h-8 w-8 text-accent-300" />
+                <p className="text-center text-xs font-medium text-accent-600">
                   {metaTitle}
                 </p>
               </div>
@@ -273,7 +273,7 @@ export default function KidReadPage() {
           </div>
 
           <div className="flex flex-col justify-center text-center sm:text-left">
-            <h1 className="text-xl font-bold leading-tight text-gray-900 sm:text-2xl">{metaTitle}</h1>
+            <h1 className="font-display text-xl font-bold leading-tight text-brand-navy sm:text-2xl">{metaTitle}</h1>
             {metaAuthor && <p className="mt-1.5 text-sm font-medium text-gray-400">{metaAuthor}</p>}
           </div>
         </div>
@@ -293,7 +293,7 @@ export default function KidReadPage() {
               </p>
               <Link
                 href="/read/library"
-                className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200 transition-all active:scale-95"
+                className="kid-touch mt-5 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-accent-200 transition-all active:scale-95"
               >
                 Browse More Books
               </Link>
@@ -316,15 +316,15 @@ export default function KidReadPage() {
               </p>
               <Link
                 href="/read/library"
-                className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200 transition-all active:scale-95"
+                className="kid-touch mt-5 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-accent-200 transition-all active:scale-95"
               >
                 Browse More Books
               </Link>
             </div>
           ) : (
-            <div className="flex flex-col items-center rounded-3xl bg-gradient-to-b from-violet-50 to-purple-50 p-8 text-center ring-1 ring-purple-100">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
-                <Send className="h-8 w-8 text-purple-500" />
+            <div className="flex flex-col items-center rounded-3xl bg-gradient-to-b from-accent-50 to-accent-50 p-8 text-center ring-1 ring-accent-100">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-100">
+                <Send className="h-8 w-8 text-accent-500" />
               </div>
               <p className="mt-4 text-lg font-bold text-gray-800">
                 Want to read this book?
@@ -335,7 +335,7 @@ export default function KidReadPage() {
               <button
                 onClick={handleRequestBook}
                 disabled={requestLoading}
-                className="kid-touch mt-5 flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-purple-200 transition-all hover:shadow-xl active:scale-95 disabled:opacity-60"
+                className="kid-touch mt-5 flex items-center gap-2 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-accent-200 transition-all hover:shadow-xl active:scale-95 disabled:opacity-60"
               >
                 {requestLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -359,8 +359,8 @@ export default function KidReadPage() {
     // Still loading analysis status
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-50">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-50">
+          <Loader2 className="h-8 w-8 animate-spin text-accent-400" />
         </div>
         <p className="mt-4 text-sm font-medium text-gray-500">Checking content review...</p>
       </div>
@@ -382,7 +382,7 @@ export default function KidReadPage() {
         </p>
         <Link
           href="/read/home"
-          className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200"
+          className="kid-touch mt-5 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-accent-200"
         >
           Back to Bookshelf
         </Link>
@@ -433,9 +433,9 @@ export default function KidReadPage() {
               unoptimized
             />
           ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-violet-50 to-purple-100 p-3">
-              <BookOpen className="h-8 w-8 text-purple-300" />
-              <p className="text-center text-xs font-medium text-purple-600">
+            <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-accent-50 to-accent-100 p-3">
+              <BookOpen className="h-8 w-8 text-accent-300" />
+              <p className="text-center text-xs font-medium text-accent-600">
                 {effectiveBook.title}
               </p>
             </div>
@@ -443,7 +443,7 @@ export default function KidReadPage() {
         </div>
 
         <div className="flex flex-col justify-center text-center sm:text-left">
-          <h1 className="text-xl font-bold leading-tight text-gray-900 sm:text-2xl">{effectiveBook.title}</h1>
+          <h1 className="font-display text-xl font-bold leading-tight text-brand-navy sm:text-2xl">{effectiveBook.title}</h1>
           <p className="mt-1.5 text-sm font-medium text-gray-400">{effectiveBook.author}</p>
 
           {/* Free book badge */}
@@ -503,7 +503,7 @@ export default function KidReadPage() {
           <div className="space-y-3">
             <button
               onClick={() => setIsReading(true)}
-              className="kid-touch w-full rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 py-5 text-center text-lg font-bold text-white shadow-lg shadow-purple-200 transition-all hover:from-violet-600 hover:to-purple-700 hover:shadow-xl active:scale-[0.98]"
+              className="kid-touch w-full rounded-2xl bg-gradient-to-r from-accent-500 to-accent-600 py-5 text-center text-lg font-bold text-white shadow-lg shadow-accent-200 transition-all hover:from-accent-600 hover:to-accent-700 hover:shadow-xl active:scale-[0.98]"
             >
               {currentPercent > 0 && currentPercent < 100
                 ? "Continue Reading"
@@ -552,7 +552,7 @@ export default function KidReadPage() {
               <button
                 onClick={handleListenClick}
                 disabled={audioLoading}
-                className="kid-touch flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-100 to-indigo-100 py-4 text-base font-bold text-violet-700 shadow-sm ring-1 ring-violet-200 transition-all hover:shadow-md active:scale-[0.98]"
+                className="kid-touch flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-accent-100 to-accent-100 py-4 text-base font-bold text-accent-700 shadow-sm ring-1 ring-accent-200 transition-all hover:shadow-md active:scale-[0.98]"
               >
                 {audioLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -561,7 +561,7 @@ export default function KidReadPage() {
                 )}
                 {audioLoading ? "Loading Audio..." : "Listen to Audiobook"}
                 {audioMatch.totalTime && (
-                  <span className="ml-1 text-sm font-medium text-violet-400">
+                  <span className="ml-1 text-sm font-medium text-accent-400">
                     ({audioMatch.totalTime})
                   </span>
                 )}
@@ -570,9 +570,9 @@ export default function KidReadPage() {
           </div>
         ) : (
           /* Non-free book - external links */
-          <div className="rounded-3xl bg-gradient-to-b from-violet-50 to-purple-50 p-6 text-center ring-1 ring-purple-100">
-            <BookMarked className="mx-auto h-10 w-10 text-purple-300" />
-            <h3 className="mt-3 text-lg font-bold text-gray-800">
+          <div className="rounded-3xl bg-gradient-to-b from-accent-50 to-accent-50 p-6 text-center ring-1 ring-accent-100">
+            <BookMarked className="mx-auto h-10 w-10 text-accent-300" />
+            <h3 className="mt-3 font-display text-lg font-bold text-brand-navy">
               Read This Book
             </h3>
             <p className="mt-2 mx-auto max-w-sm text-sm text-gray-500">
@@ -592,7 +592,7 @@ export default function KidReadPage() {
                 href={`https://www.worldcat.org/search?q=${encodeURIComponent(effectiveBook.title)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-95"
+                className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-blue-400 to-accent-500 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-95"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 Find at Library
@@ -602,7 +602,7 @@ export default function KidReadPage() {
                 <button
                   onClick={handleListenClick}
                   disabled={audioLoading}
-                  className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-violet-400 to-indigo-500 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-95"
+                  className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-accent-400 to-accent-500 px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg active:scale-95"
                 >
                   {audioLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -640,7 +640,7 @@ export default function KidReadPage() {
       {/* Progress Tracker — only show when there's actual reading progress */}
       {currentPercent > 0 && (
         <div className="mt-7 rounded-2xl bg-white p-5 shadow-md ring-1 ring-black/5">
-          <h3 className="text-base font-bold text-gray-800">Track Your Progress</h3>
+          <h3 className="font-display text-base font-bold text-brand-navy">Track Your Progress</h3>
           <div className="mt-4 space-y-3">
             <p className="text-sm text-gray-500">
               How far along are you?
@@ -652,8 +652,8 @@ export default function KidReadPage() {
                   onClick={() => handleUpdateProgress(percent)}
                   className={`kid-touch min-h-[44px] rounded-2xl py-3 text-sm font-bold transition-all duration-200 ${
                     currentPercent >= percent
-                      ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md"
-                      : "bg-gray-50 text-gray-500 ring-1 ring-gray-200 hover:bg-purple-50 hover:text-purple-600"
+                      ? "bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md"
+                      : "bg-gray-50 text-gray-500 ring-1 ring-gray-200 hover:bg-accent-50 hover:text-accent-600"
                   }`}
                 >
                   {percent === 100 ? "Done!" : `${percent}%`}

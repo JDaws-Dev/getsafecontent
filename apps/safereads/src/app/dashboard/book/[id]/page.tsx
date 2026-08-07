@@ -27,7 +27,7 @@ export default function BookDetailPage({
   if (book === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-parchment-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-accent-400" />
       </div>
     );
   }
@@ -38,7 +38,7 @@ export default function BookDetailPage({
         <p className="text-lg text-ink-500">Book not found.</p>
         <Link
           href="/dashboard/search"
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-parchment-700 hover:text-parchment-800"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accent-700 hover:text-accent-800"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to search

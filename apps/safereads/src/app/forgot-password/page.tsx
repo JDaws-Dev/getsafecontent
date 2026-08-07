@@ -50,19 +50,19 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-parchment-50">
+    <div className="min-h-screen bg-brand-cream">
       <div className="mx-auto max-w-md px-4 py-12 sm:py-20">
         {/* Logo */}
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
-            <BookOpen className="h-10 w-10 text-parchment-600" />
-            <span className="font-serif text-2xl font-bold text-ink-900">
+            <BookOpen className="h-10 w-10 text-accent-600" />
+            <span className="font-display text-2xl font-bold text-brand-navy">
               SafeReads
             </span>
           </Link>
         </div>
 
-        <div className="rounded-xl border border-parchment-200 bg-white p-8 shadow-sm">
+        <div className="rounded-xl border border-brand-cream-2 bg-white p-8 shadow-sm">
           {oauthOnly ? (
             // User signed up with Google OAuth
             <div className="text-center">
@@ -87,7 +87,7 @@ export default function ForgotPasswordPage() {
                 </svg>
               </div>
 
-              <h2 className="mb-2 font-serif text-xl font-bold text-ink-900">
+              <h2 className="mb-2 font-display text-xl font-bold text-brand-navy">
                 Use Google Sign-In
               </h2>
               <p className="mb-6 text-sm text-ink-500">
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
 
               <Link
                 href="/login"
-                className="mb-3 block w-full rounded-lg bg-parchment-700 px-6 py-3 text-center font-semibold text-parchment-50 transition hover:bg-parchment-800"
+                className="mb-3 block w-full rounded-lg bg-accent-600 px-6 py-3 text-center font-semibold text-white transition hover:bg-accent-700"
               >
                 Go to Login
               </Link>
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
                   setOauthOnly(false);
                   setEmail("");
                 }}
-                className="text-sm text-parchment-600 hover:text-parchment-700"
+                className="text-sm text-accent-600 hover:text-accent-700"
               >
                 Try Another Email
               </button>
@@ -115,7 +115,7 @@ export default function ForgotPasswordPage() {
           ) : !submitted ? (
             <>
               <div className="mb-6 text-center">
-                <h1 className="font-serif text-2xl font-bold text-ink-900">
+                <h1 className="font-display text-2xl font-bold text-brand-navy">
                   Reset Password
                 </h1>
                 <p className="mt-1 text-sm text-ink-500">
@@ -143,7 +143,7 @@ export default function ForgotPasswordPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-parchment-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-parchment-600"
+                    className="w-full rounded-lg border border-brand-cream-2 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-accent-500"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -151,7 +151,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-lg bg-parchment-700 px-4 py-3 font-semibold text-parchment-50 transition hover:bg-parchment-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg bg-accent-600 px-4 py-3 font-semibold text-white transition hover:bg-accent-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? "Sending..." : "Send Reset Code"}
                 </button>
@@ -162,7 +162,7 @@ export default function ForgotPasswordPage() {
                   Remember your password?{" "}
                   <Link
                     href="/login"
-                    className="font-medium text-parchment-600 hover:text-parchment-700"
+                    className="font-medium text-accent-600 hover:text-accent-700"
                   >
                     Sign in
                   </Link>
@@ -187,7 +187,7 @@ export default function ForgotPasswordPage() {
                 </svg>
               </div>
 
-              <h2 className="mb-2 font-serif text-xl font-bold text-ink-900">
+              <h2 className="mb-2 font-display text-xl font-bold text-brand-navy">
                 Check Your Email
               </h2>
               <p className="mb-6 text-sm text-ink-500">
@@ -205,7 +205,7 @@ export default function ForgotPasswordPage() {
 
               <button
                 onClick={() => router.push("/reset-password")}
-                className="mb-3 w-full rounded-lg bg-parchment-700 px-6 py-3 font-semibold text-parchment-50 transition hover:bg-parchment-800"
+                className="mb-3 w-full rounded-lg bg-accent-600 px-6 py-3 font-semibold text-white transition hover:bg-accent-700"
               >
                 Enter Reset Code
               </button>
@@ -215,7 +215,7 @@ export default function ForgotPasswordPage() {
                   setSubmitted(false);
                   setEmail("");
                 }}
-                className="text-sm text-parchment-600 hover:text-parchment-700"
+                className="text-sm text-accent-600 hover:text-accent-700"
               >
                 Didn&apos;t receive it? Try again
               </button>

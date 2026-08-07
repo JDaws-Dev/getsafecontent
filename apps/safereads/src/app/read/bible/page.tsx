@@ -333,7 +333,7 @@ export default function BiblePage() {
     const parts = text.split(regex);
     return parts.map((part, i) =>
       regex.test(part) ? (
-        <mark key={i} className="rounded-sm bg-amber-200 px-0.5 text-amber-900">
+        <mark key={i} className="rounded-sm bg-accent-100 px-0.5 text-accent-900">
           {part}
         </mark>
       ) : (
@@ -374,7 +374,7 @@ export default function BiblePage() {
   // ============================================================================
   if (showSearch) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 py-6">
+      <div className="min-h-screen bg-brand-cream py-6">
         <div className="mx-auto max-w-2xl px-4">
           {/* Header */}
           <div className="mb-5 flex items-center gap-3">
@@ -384,18 +384,18 @@ export default function BiblePage() {
                 setSearchResults(null);
                 setSearchQuery("");
               }}
-              className="flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900"
+              className="flex items-center gap-1 text-sm font-medium text-accent-800 hover:text-accent-900"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
             </button>
-            <h1 className="text-lg font-bold text-gray-900">Search the Bible</h1>
+            <h1 className="font-display text-lg font-bold text-brand-navy">Search the Bible</h1>
           </div>
 
           {/* Search Input */}
           <div className="mb-4">
-            <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-md ring-1 ring-amber-200/60">
-              <Search className="h-5 w-5 flex-shrink-0 text-amber-500" />
+            <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-md ring-1 ring-accent-200/60">
+              <Search className="h-5 w-5 flex-shrink-0 text-accent-500" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -414,7 +414,7 @@ export default function BiblePage() {
               <button
                 onClick={() => handleSearch()}
                 disabled={!searchQuery.trim() || searchLoading}
-                className="rounded-xl bg-amber-600 px-4 py-1.5 text-xs font-bold text-white transition-all hover:bg-amber-700 disabled:opacity-40"
+                className="rounded-xl bg-accent-600 px-4 py-1.5 text-xs font-bold text-white transition-all hover:bg-accent-700 disabled:opacity-40"
               >
                 {searchLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
               </button>
@@ -427,7 +427,7 @@ export default function BiblePage() {
             <select
               value={searchTranslation}
               onChange={(e) => setSearchTranslation(e.target.value)}
-              className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-amber-800 shadow-sm ring-1 ring-amber-200/60 outline-none"
+              className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-accent-800 shadow-sm ring-1 ring-accent-200/60 outline-none"
             >
               {(translations || []).map((t) => (
                 <option key={t.code} value={t.code}>{t.code} - {t.name}</option>
@@ -446,8 +446,8 @@ export default function BiblePage() {
                   onClick={() => setSearchTestament(opt.value)}
                   className={`rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
                     searchTestament === opt.value
-                      ? "bg-amber-700 text-white shadow-md"
-                      : "bg-white text-amber-700 shadow-sm ring-1 ring-amber-200/60 hover:bg-amber-50"
+                      ? "bg-accent-700 text-white shadow-md"
+                      : "bg-white text-accent-700 shadow-sm ring-1 ring-accent-200/60 hover:bg-accent-50"
                   }`}
                 >
                   {opt.label}
@@ -460,8 +460,8 @@ export default function BiblePage() {
               onClick={() => setSearchCompare((v) => !v)}
               className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
                 searchCompare
-                  ? "bg-amber-200 text-amber-900 ring-1 ring-amber-300"
-                  : "bg-white text-amber-700 shadow-sm ring-1 ring-amber-200/60 hover:bg-amber-50"
+                  ? "bg-accent-200 text-accent-900 ring-1 ring-accent-300"
+                  : "bg-white text-accent-700 shadow-sm ring-1 ring-accent-200/60 hover:bg-accent-50"
               }`}
             >
               <BookOpen className="h-3.5 w-3.5" />
@@ -472,7 +472,7 @@ export default function BiblePage() {
           {/* Suggestion chips (shown when no results) */}
           {!searchResults && !searchLoading && (
             <div className="mb-6">
-              <p className="mb-3 text-xs font-medium text-amber-700/60">Try searching for:</p>
+              <p className="mb-3 text-xs font-medium text-accent-700/60">Try searching for:</p>
               <div className="flex flex-wrap gap-2">
                 {SEARCH_SUGGESTIONS.map((chip) => (
                   <button
@@ -481,7 +481,7 @@ export default function BiblePage() {
                       setSearchQuery(chip);
                       handleSearch(chip);
                     }}
-                    className="rounded-full bg-white px-4 py-2 text-sm font-medium text-amber-800 shadow-sm ring-1 ring-amber-200/60 transition-all hover:bg-amber-50 hover:ring-amber-300 active:scale-95"
+                    className="rounded-full bg-white px-4 py-2 text-sm font-medium text-accent-800 shadow-sm ring-1 ring-accent-200/60 transition-all hover:bg-accent-50 hover:ring-accent-300 active:scale-95"
                   >
                     {chip}
                   </button>
@@ -493,18 +493,18 @@ export default function BiblePage() {
           {/* Loading state */}
           {searchLoading && (
             <div className="flex flex-col items-center justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-              <p className="mt-3 text-sm font-medium text-amber-700">Searching the Bible...</p>
+              <Loader2 className="h-8 w-8 animate-spin text-accent-500" />
+              <p className="mt-3 text-sm font-medium text-accent-700">Searching the Bible...</p>
             </div>
           )}
 
           {/* Empty state */}
           {!searchResults && !searchLoading && !searchQuery && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100">
-                <Search className="h-8 w-8 text-amber-600" />
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-100">
+                <Search className="h-8 w-8 text-accent-600" />
               </div>
-              <h3 className="text-base font-bold text-gray-900">Search for a word, phrase, or topic</h3>
+              <h3 className="text-base font-bold text-brand-navy">Search for a word, phrase, or topic</h3>
               <p className="mt-1 max-w-xs text-sm text-gray-500">
                 Find any verse across 6 Bible translations
               </p>
@@ -517,7 +517,7 @@ export default function BiblePage() {
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100">
                 <Search className="h-8 w-8 text-gray-400" />
               </div>
-              <h3 className="text-base font-bold text-gray-900">No results found</h3>
+              <h3 className="text-base font-bold text-brand-navy">No results found</h3>
               <p className="mt-1 max-w-xs text-sm text-gray-500">
                 Try a different word or phrase, or change the translation.
               </p>
@@ -527,7 +527,7 @@ export default function BiblePage() {
           {/* Search results */}
           {searchResults && searchResults.results.length > 0 && !searchLoading && (
             <div>
-              <p className="mb-3 text-xs font-medium text-amber-700/60">
+              <p className="mb-3 text-xs font-medium text-accent-700/60">
                 {searchResults.total} result{searchResults.total !== 1 ? "s" : ""} in {searchTranslation}
               </p>
               <div className="space-y-3">
@@ -550,17 +550,17 @@ export default function BiblePage() {
                   }
 
                   return (
-                    <div key={idx} className="rounded-2xl bg-white shadow-sm ring-1 ring-amber-200/40 overflow-hidden">
+                    <div key={idx} className="rounded-2xl bg-white shadow-sm ring-1 ring-accent-200/40 overflow-hidden">
                       {/* Main result */}
                       <button
                         onClick={() => jumpToSearchResult(result.book, result.chapter)}
-                        className="w-full p-4 text-left transition-colors hover:bg-amber-50/50 active:bg-amber-50"
+                        className="w-full p-4 text-left transition-colors hover:bg-accent-50/50 active:bg-accent-50"
                       >
                         <div className="mb-1.5 flex items-center gap-2">
-                          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+                          <span className="rounded-full bg-accent-100 px-2.5 py-0.5 text-xs font-bold text-accent-800">
                             {bookName} {result.chapter}:{result.verse}
                           </span>
-                          <span className="text-[10px] font-medium text-amber-500">{result.translation}</span>
+                          <span className="text-[10px] font-medium text-accent-500">{result.translation}</span>
                         </div>
                         <p className="text-sm leading-relaxed text-gray-700" style={{ fontFamily: "'Libre Baskerville', 'Georgia', serif" }}>
                           {highlightSearchTerm(result.text, searchQuery)}
@@ -572,16 +572,16 @@ export default function BiblePage() {
                         <>
                           <button
                             onClick={() => setExpandedParallel(isParallelOpen ? null : resultKey)}
-                            className="flex w-full items-center justify-between border-t border-amber-100 px-4 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50/50"
+                            className="flex w-full items-center justify-between border-t border-accent-100 px-4 py-2 text-xs font-bold text-accent-600 hover:bg-accent-50/50"
                           >
                             <span>{parallelVerses.length} other translation{parallelVerses.length !== 1 ? "s" : ""}</span>
                             <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isParallelOpen ? "rotate-180" : ""}`} />
                           </button>
                           {isParallelOpen && (
-                            <div className="border-t border-amber-100 bg-amber-50/30 px-4 py-3 space-y-3">
+                            <div className="border-t border-accent-100 bg-accent-50/30 px-4 py-3 space-y-3">
                               {parallelVerses.map((pv) => (
                                 <div key={pv.translation}>
-                                  <span className="mb-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                                  <span className="mb-1 inline-block rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-bold text-accent-700">
                                     {pv.translation}
                                   </span>
                                   <p className="text-xs leading-relaxed text-gray-600" style={{ fontFamily: "'Libre Baskerville', 'Georgia', serif" }}>
@@ -705,7 +705,7 @@ export default function BiblePage() {
               disabled={studyNotesLoading}
               className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold transition-all ${
                 showStudyNotes
-                  ? "bg-amber-200 text-amber-900"
+                  ? "bg-accent-200 text-accent-900"
                   : "opacity-60 hover:opacity-100"
               }`}
             >
@@ -735,7 +735,7 @@ export default function BiblePage() {
                 className="leading-relaxed"
                 style={{ fontSize: `${fontSize}px`, fontFamily: "'Libre Baskerville', 'Georgia', serif" }}
               >
-                <h2 className="mb-6 text-center font-serif text-xl font-bold opacity-80" style={{ fontSize: `${fontSize + 4}px` }}>
+                <h2 className="mb-6 text-center font-display text-xl font-bold opacity-80" style={{ fontSize: `${fontSize + 4}px` }}>
                   {book.name} {chapter}
                 </h2>
                 {verses.map((v) => {
@@ -752,7 +752,7 @@ export default function BiblePage() {
                     <span
                       key={v.verse}
                       className={`inline cursor-pointer rounded-sm transition-colors ${highlightClass} ${
-                        selectedVerse?.verse === v.verse ? (theme === "dark" ? "ring-1 ring-amber-500" : "ring-1 ring-amber-400") : ""
+                        selectedVerse?.verse === v.verse ? (theme === "dark" ? "ring-1 ring-accent-500" : "ring-1 ring-accent-400") : ""
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -764,7 +764,7 @@ export default function BiblePage() {
                       </sup>
                       <span>{v.text} </span>
                       {saved && (
-                        <span className="inline-block h-2 w-2 translate-y-[-2px] rounded-full bg-amber-400 opacity-60" />
+                        <span className="inline-block h-2 w-2 translate-y-[-2px] rounded-full bg-accent-400 opacity-60" />
                       )}
                     </span>
                   );
@@ -818,7 +818,7 @@ export default function BiblePage() {
                           setSelectedVerse(null);
                         }}
                         className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold ${
-                          theme === "dark" ? "bg-amber-900/50 text-amber-300" : "bg-amber-50 text-amber-700"
+                          theme === "dark" ? "bg-accent-900/50 text-accent-300" : "bg-accent-50 text-accent-700"
                         }`}
                       >
                         <Heart className="h-3 w-3" />
@@ -877,12 +877,12 @@ export default function BiblePage() {
           {showStudyNotes && studyNotes && verses && (
             <div className="mx-auto mt-8 max-w-2xl" onClick={(e) => e.stopPropagation()}>
               <div className={`rounded-2xl ${
-                theme === "dark" ? "bg-amber-900/30 ring-1 ring-amber-700/50" : "bg-gradient-to-b from-amber-50 to-orange-50 ring-1 ring-amber-200/60"
+                theme === "dark" ? "bg-accent-900/30 ring-1 ring-accent-700/50" : "bg-gradient-to-b from-accent-50 to-accent-100 ring-1 ring-accent-200/60"
               } p-5`}>
                 <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <GraduationCap className={`h-5 w-5 ${theme === "dark" ? "text-amber-400" : "text-amber-700"}`} />
-                    <h3 className={`text-base font-bold ${theme === "dark" ? "text-amber-200" : "text-amber-900"}`}>
+                    <GraduationCap className={`h-5 w-5 ${theme === "dark" ? "text-accent-400" : "text-accent-700"}`} />
+                    <h3 className={`text-base font-bold ${theme === "dark" ? "text-accent-200" : "text-accent-900"}`}>
                       Study Notes
                     </h3>
                   </div>
@@ -896,9 +896,9 @@ export default function BiblePage() {
 
                 {/* Summary */}
                 <div className={`mb-4 rounded-xl p-4 ${
-                  theme === "dark" ? "bg-amber-900/40" : "bg-white/80"
+                  theme === "dark" ? "bg-accent-900/40" : "bg-white/80"
                 }`}>
-                  <p className={`text-sm leading-relaxed ${theme === "dark" ? "text-amber-100" : "text-amber-900"}`}>
+                  <p className={`text-sm leading-relaxed ${theme === "dark" ? "text-accent-100" : "text-accent-900"}`}>
                     {studyNotes.summary}
                   </p>
                 </div>
@@ -906,13 +906,13 @@ export default function BiblePage() {
                 {/* What It Means */}
                 <div className="mb-4">
                   <h4 className={`mb-2 flex items-center gap-1.5 text-sm font-bold ${
-                    theme === "dark" ? "text-amber-300" : "text-amber-800"
+                    theme === "dark" ? "text-accent-300" : "text-accent-800"
                   }`}>
                     <Sparkles className="h-3.5 w-3.5" />
                     What It Means
                   </h4>
                   <p className={`text-sm leading-relaxed ${
-                    theme === "dark" ? "text-amber-100/80" : "text-amber-900/80"
+                    theme === "dark" ? "text-accent-100/80" : "text-accent-900/80"
                   }`}>
                     {studyNotes.whatItMeans}
                   </p>
@@ -921,13 +921,13 @@ export default function BiblePage() {
                 {/* For Your Life */}
                 <div className="mb-4">
                   <h4 className={`mb-2 flex items-center gap-1.5 text-sm font-bold ${
-                    theme === "dark" ? "text-amber-300" : "text-amber-800"
+                    theme === "dark" ? "text-accent-300" : "text-accent-800"
                   }`}>
                     <Lightbulb className="h-3.5 w-3.5" />
                     For Your Life
                   </h4>
                   <p className={`text-sm leading-relaxed ${
-                    theme === "dark" ? "text-amber-100/80" : "text-amber-900/80"
+                    theme === "dark" ? "text-accent-100/80" : "text-accent-900/80"
                   }`}>
                     {studyNotes.forYourLife}
                   </p>
@@ -937,7 +937,7 @@ export default function BiblePage() {
                 {studyNotes.keyVerses.length > 0 && (
                   <div className="mb-4">
                     <h4 className={`mb-2 text-sm font-bold ${
-                      theme === "dark" ? "text-amber-300" : "text-amber-800"
+                      theme === "dark" ? "text-accent-300" : "text-accent-800"
                     }`}>
                       Key Verses
                     </h4>
@@ -947,8 +947,8 @@ export default function BiblePage() {
                           key={i}
                           className={`rounded-lg border-l-4 py-2 pl-3 pr-2 text-xs italic leading-relaxed ${
                             theme === "dark"
-                              ? "border-amber-500 bg-amber-900/30 text-amber-200"
-                              : "border-amber-400 bg-white/60 text-amber-800"
+                              ? "border-accent-500 bg-accent-900/30 text-accent-200"
+                              : "border-accent-400 bg-white/60 text-accent-800"
                           }`}
                         >
                           {verse}
@@ -974,16 +974,16 @@ export default function BiblePage() {
 
                 {/* Discussion Question */}
                 <div className={`rounded-xl p-3 ${
-                  theme === "dark" ? "bg-purple-900/30 ring-1 ring-purple-700/30" : "bg-purple-50 ring-1 ring-purple-200/60"
+                  theme === "dark" ? "bg-accent-900/30 ring-1 ring-accent-700/30" : "bg-accent-50 ring-1 ring-accent-200/60"
                 }`}>
                   <p className={`flex items-center gap-1 text-xs font-bold ${
-                    theme === "dark" ? "text-purple-300" : "text-purple-700"
+                    theme === "dark" ? "text-accent-300" : "text-accent-700"
                   }`}>
                     <HelpCircle className="h-3.5 w-3.5" />
                     Think About This
                   </p>
                   <p className={`mt-1 text-xs leading-relaxed ${
-                    theme === "dark" ? "text-purple-200/80" : "text-purple-800/80"
+                    theme === "dark" ? "text-accent-200/80" : "text-accent-800/80"
                   }`}>
                     {studyNotes.questionToThink}
                   </p>
@@ -996,18 +996,18 @@ export default function BiblePage() {
           {studyNotesLoading && (
             <div className="mx-auto mt-8 max-w-2xl" onClick={(e) => e.stopPropagation()}>
               <div className={`rounded-2xl p-5 ${
-                theme === "dark" ? "bg-amber-900/30" : "bg-gradient-to-b from-amber-50 to-orange-50"
+                theme === "dark" ? "bg-accent-900/30" : "bg-gradient-to-b from-accent-50 to-accent-100"
               }`}>
                 <div className="flex items-center gap-3">
-                  <Loader2 className={`h-5 w-5 animate-spin ${theme === "dark" ? "text-amber-400" : "text-amber-600"}`} />
-                  <p className={`text-sm font-medium ${theme === "dark" ? "text-amber-300" : "text-amber-700"}`}>
+                  <Loader2 className={`h-5 w-5 animate-spin ${theme === "dark" ? "text-accent-400" : "text-accent-600"}`} />
+                  <p className={`text-sm font-medium ${theme === "dark" ? "text-accent-300" : "text-accent-700"}`}>
                     Preparing study notes...
                   </p>
                 </div>
                 <div className="mt-4 space-y-3">
-                  <div className={`h-4 rounded-full ${theme === "dark" ? "bg-amber-800/50" : "bg-amber-200/50"} animate-pulse`} style={{ width: "90%" }} />
-                  <div className={`h-4 rounded-full ${theme === "dark" ? "bg-amber-800/50" : "bg-amber-200/50"} animate-pulse`} style={{ width: "75%" }} />
-                  <div className={`h-4 rounded-full ${theme === "dark" ? "bg-amber-800/50" : "bg-amber-200/50"} animate-pulse`} style={{ width: "60%" }} />
+                  <div className={`h-4 rounded-full ${theme === "dark" ? "bg-accent-800/50" : "bg-accent-200/50"} animate-pulse`} style={{ width: "90%" }} />
+                  <div className={`h-4 rounded-full ${theme === "dark" ? "bg-accent-800/50" : "bg-accent-200/50"} animate-pulse`} style={{ width: "75%" }} />
+                  <div className={`h-4 rounded-full ${theme === "dark" ? "bg-accent-800/50" : "bg-accent-200/50"} animate-pulse`} style={{ width: "60%" }} />
                 </div>
               </div>
             </div>
@@ -1072,17 +1072,17 @@ export default function BiblePage() {
     );
 
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 py-6">
+      <div className="min-h-screen bg-brand-cream py-6">
         <div className="mx-auto max-w-2xl px-4">
           {/* Header */}
-          <button onClick={handleBack} className="mb-4 flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900">
+          <button onClick={handleBack} className="mb-4 flex items-center gap-1 text-sm font-medium text-accent-800 hover:text-accent-900">
             <ArrowLeft className="h-4 w-4" />
             All Books
           </button>
 
           <div className="mb-6">
-            <h1 className="font-serif text-2xl font-bold text-gray-900">{book.name}</h1>
-            <p className="mt-1 text-sm text-amber-700">{book.chapters} chapters</p>
+            <h1 className="font-display text-2xl font-bold text-brand-navy">{book.name}</h1>
+            <p className="mt-1 text-sm text-accent-700">{book.chapters} chapters</p>
           </div>
 
           {/* Chapter grid */}
@@ -1095,8 +1095,8 @@ export default function BiblePage() {
                   onClick={() => loadChapter(book, ch)}
                   className={`flex h-12 w-full items-center justify-center rounded-xl text-sm font-bold transition-all active:scale-95 ${
                     isRead
-                      ? "bg-amber-200 text-amber-900 shadow-sm ring-1 ring-amber-300"
-                      : "bg-white text-gray-700 shadow-sm ring-1 ring-black/5 hover:bg-amber-50 hover:ring-amber-200"
+                      ? "bg-accent-200 text-accent-900 shadow-sm ring-1 ring-accent-300"
+                      : "bg-white text-gray-700 shadow-sm ring-1 ring-black/5 hover:bg-accent-50 hover:ring-accent-200"
                   }`}
                 >
                   {ch}
@@ -1125,19 +1125,19 @@ export default function BiblePage() {
   return (
     <div className="py-6">
       {/* Header */}
-      <button onClick={() => router.push("/read/home")} className="mb-4 flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900">
+      <button onClick={() => router.push("/read/home")} className="mb-4 flex items-center gap-1 text-sm font-medium text-accent-800 hover:text-accent-900">
         <ArrowLeft className="h-4 w-4" />
         Home
       </button>
 
       {/* Hero */}
-      <div className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-amber-600 via-amber-700 to-orange-800 p-5 text-white shadow-xl sm:p-6">
+      <div className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-accent-600 via-accent-700 to-accent-800 p-5 text-white shadow-xl sm:p-6">
         <div className="flex items-center gap-3">
           <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 text-2xl backdrop-blur-sm">
             <BookOpen className="h-7 w-7" />
           </div>
           <div>
-            <h1 className="text-xl font-bold sm:text-2xl">Read the Bible</h1>
+            <h1 className="font-display text-xl font-bold sm:text-2xl">Read the Bible</h1>
             <p className="mt-0.5 text-sm text-white/80">
               Choose a translation and start reading
             </p>
@@ -1149,7 +1149,7 @@ export default function BiblePage() {
       <div className="mb-5 flex gap-2">
         <button
           onClick={() => router.push("/read/bible/saved")}
-          className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-amber-700 shadow-sm ring-1 ring-amber-200 transition-all hover:bg-amber-50 active:scale-95"
+          className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-accent-700 shadow-sm ring-1 ring-accent-200 transition-all hover:bg-accent-50 active:scale-95"
         >
           <Heart className="h-3.5 w-3.5" />
           My Saved Verses
@@ -1159,7 +1159,7 @@ export default function BiblePage() {
             setShowSearch(true);
             setSearchTranslation(translation);
           }}
-          className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-amber-700 shadow-sm ring-1 ring-amber-200 transition-all hover:bg-amber-50 active:scale-95"
+          className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-accent-700 shadow-sm ring-1 ring-accent-200 transition-all hover:bg-accent-50 active:scale-95"
         >
           <Search className="h-3.5 w-3.5" />
           Search
@@ -1174,8 +1174,8 @@ export default function BiblePage() {
             onClick={() => setTranslation(t.code)}
             className={`flex flex-shrink-0 flex-col items-start rounded-xl px-3.5 py-2.5 text-left transition-all active:scale-95 ${
               translation === t.code
-                ? "bg-amber-700 text-white shadow-md"
-                : "bg-white text-gray-700 shadow-sm ring-1 ring-black/5 hover:bg-amber-50"
+                ? "bg-accent-700 text-white shadow-md"
+                : "bg-white text-gray-700 shadow-sm ring-1 ring-black/5 hover:bg-accent-50"
             }`}
           >
             <span className="text-sm font-bold">{t.code}</span>
@@ -1193,34 +1193,34 @@ export default function BiblePage() {
             const book = books.find((b) => b.bookid === lastRead.bookId);
             if (book) loadChapter(book, lastRead.chapter);
           }}
-          className="mb-5 flex w-full items-center gap-3 rounded-2xl bg-white p-4 shadow-md ring-1 ring-amber-200/60 transition-all hover:shadow-lg active:scale-[0.98]"
+          className="mb-5 flex w-full items-center gap-3 rounded-2xl bg-white p-4 shadow-md ring-1 ring-accent-200/60 transition-all hover:shadow-lg active:scale-[0.98]"
         >
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-400 to-accent-500 shadow-md">
             <BookOpen className="h-5 w-5 text-white" />
           </div>
           <div className="min-w-0 flex-1 text-left">
-            <p className="text-xs font-medium text-amber-600">Continue Reading</p>
+            <p className="text-xs font-medium text-accent-600">Continue Reading</p>
             <p className="text-sm font-bold text-gray-900">
               {lastRead.bookName} {lastRead.chapter}
             </p>
           </div>
-          <ChevronRight className="h-5 w-5 text-amber-400" />
+          <ChevronRight className="h-5 w-5 text-accent-400" />
         </button>
       )}
 
       {/* Book List */}
       {booksLoading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-amber-500" />
+          <Loader2 className="h-6 w-6 animate-spin text-accent-500" />
         </div>
       ) : (
         <>
           {/* Old Testament */}
           <section className="mb-6">
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-amber-800">
-              <span className="h-px flex-1 bg-amber-200" />
+            <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-bold uppercase tracking-wider text-accent-800">
+              <span className="h-px flex-1 bg-accent-200" />
               Old Testament
-              <span className="h-px flex-1 bg-amber-200" />
+              <span className="h-px flex-1 bg-accent-200" />
             </h2>
             <div className="space-y-1">
               {otBooks.map((book) => {
@@ -1229,11 +1229,11 @@ export default function BiblePage() {
                   <button
                     key={book.bookid}
                     onClick={() => setViewState({ view: "chapters", book })}
-                    className="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3 text-left shadow-sm ring-1 ring-black/5 transition-all hover:bg-amber-50 hover:ring-amber-200 active:scale-[0.99]"
+                    className="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3 text-left shadow-sm ring-1 ring-black/5 transition-all hover:bg-accent-50 hover:ring-accent-200 active:scale-[0.99]"
                   >
                     <div className="flex items-center gap-3">
                       {hasProgress && (
-                        <div className="h-2 w-2 rounded-full bg-amber-500" />
+                        <div className="h-2 w-2 rounded-full bg-accent-500" />
                       )}
                       <span className="text-sm font-semibold text-gray-900">{book.name}</span>
                     </div>
@@ -1249,10 +1249,10 @@ export default function BiblePage() {
 
           {/* New Testament */}
           <section>
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-amber-800">
-              <span className="h-px flex-1 bg-amber-200" />
+            <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-bold uppercase tracking-wider text-accent-800">
+              <span className="h-px flex-1 bg-accent-200" />
               New Testament
-              <span className="h-px flex-1 bg-amber-200" />
+              <span className="h-px flex-1 bg-accent-200" />
             </h2>
             <div className="space-y-1">
               {ntBooks.map((book) => {
@@ -1261,11 +1261,11 @@ export default function BiblePage() {
                   <button
                     key={book.bookid}
                     onClick={() => setViewState({ view: "chapters", book })}
-                    className="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3 text-left shadow-sm ring-1 ring-black/5 transition-all hover:bg-amber-50 hover:ring-amber-200 active:scale-[0.99]"
+                    className="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3 text-left shadow-sm ring-1 ring-black/5 transition-all hover:bg-accent-50 hover:ring-accent-200 active:scale-[0.99]"
                   >
                     <div className="flex items-center gap-3">
                       {hasProgress && (
-                        <div className="h-2 w-2 rounded-full bg-amber-500" />
+                        <div className="h-2 w-2 rounded-full bg-accent-500" />
                       )}
                       <span className="text-sm font-semibold text-gray-900">{book.name}</span>
                     </div>

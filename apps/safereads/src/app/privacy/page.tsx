@@ -8,14 +8,14 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
-      <h1 className="font-serif text-3xl font-bold text-ink-900">
+      <h1 className="font-display text-3xl font-bold text-brand-navy">
         Privacy Policy
       </h1>
       <p className="mt-2 text-sm text-ink-400">Last updated: January 2026</p>
 
       <div className="mt-8 space-y-8 text-ink-600">
         <section>
-          <h2 className="font-serif text-xl font-bold text-ink-900">
+          <h2 className="font-display text-xl font-bold text-brand-navy">
             What We Collect
           </h2>
           <p className="mt-2 text-sm leading-relaxed">
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold text-ink-900">
+          <h2 className="font-display text-xl font-bold text-brand-navy">
             How We Use Your Data
           </h2>
           <p className="mt-2 text-sm leading-relaxed">
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold text-ink-900">
+          <h2 className="font-display text-xl font-bold text-brand-navy">
             Cookies
           </h2>
           <p className="mt-2 text-sm leading-relaxed">
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold text-ink-900">
+          <h2 className="font-display text-xl font-bold text-brand-navy">
             Data Retention
           </h2>
           <p className="mt-2 text-sm leading-relaxed">
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold text-ink-900">
+          <h2 className="font-display text-xl font-bold text-brand-navy">
             Third-Party Services
           </h2>
           <ul className="mt-2 list-inside list-disc space-y-1 text-sm leading-relaxed">
@@ -88,7 +88,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold text-ink-900">
+          <h2 className="font-display text-xl font-bold text-brand-navy">
             Contact
           </h2>
           <p className="mt-2 text-sm leading-relaxed">
@@ -96,7 +96,7 @@ export default function PrivacyPage() {
             deletion, email us at{" "}
             <a
               href="mailto:jeremiah@getsafefamily.com"
-              className="text-parchment-700 hover:text-parchment-800"
+              className="text-accent-700 hover:text-accent-800"
             >
               jeremiah@getsafefamily.com
             </a>

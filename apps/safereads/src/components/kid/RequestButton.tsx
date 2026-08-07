@@ -89,7 +89,7 @@ export function RequestButton({
     <button
       onClick={handleRequest}
       disabled={isLoading}
-      className="kid-touch flex min-h-[44px] items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-purple-200 transition-all duration-200 hover:from-violet-600 hover:to-purple-700 hover:shadow-lg active:scale-95 disabled:opacity-50"
+      className="kid-touch flex min-h-[44px] items-center gap-1.5 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-accent-200 transition-all duration-200 hover:from-accent-600 hover:to-accent-700 hover:shadow-lg active:scale-95 disabled:opacity-50"
     >
       {isLoading ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" />

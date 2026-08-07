@@ -218,7 +218,7 @@ export function ReadingStreaks({ streak, badges, kidColor }: ReadingStreaksProps
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="text-base">{"\uD83C\uDFC5"}</span>
-            <h3 className="text-sm font-bold text-gray-800">My Badges</h3>
+            <h3 className="font-display text-sm font-bold text-brand-navy">My Badges</h3>
           </div>
           <span className="text-[10px] font-semibold text-gray-400">
             {earnedIds.size}/{ALL_BADGE_IDS.length}

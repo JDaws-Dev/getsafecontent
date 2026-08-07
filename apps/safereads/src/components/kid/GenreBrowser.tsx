@@ -113,7 +113,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
                 <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${genre.gradient} shadow-sm transition-transform duration-200 group-hover:scale-110 group-active:scale-95`}>
                   <span className="text-2xl drop-shadow-sm">{genre.emoji}</span>
                 </div>
-                <span className="text-[11px] font-bold text-gray-700 transition-colors group-hover:text-purple-600">
+                <span className="text-[11px] font-bold text-gray-700 transition-colors group-hover:text-accent-600">
                   {genre.label}
                 </span>
               </button>
@@ -132,7 +132,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
               {selectedGenreData && (
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">{selectedGenreData.emoji}</span>
-                  <h3 className="text-lg font-bold text-gray-800">
+                  <h3 className="font-display text-lg font-bold text-brand-navy">
                     {selectedGenreData.label} Books
                   </h3>
                 </div>
@@ -142,7 +142,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
             {/* Results */}
             {isLoading ? (
               <div className="flex flex-col items-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-accent-400" />
                 <p className="mt-3 text-sm font-medium text-gray-500">
                   Finding {selectedGenreData?.label?.toLowerCase()} books...
                 </p>
@@ -179,7 +179,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
                         <span className="text-[9px] font-bold uppercase tracking-wider text-white">Free</span>
                       </div>
                     </div>
-                    <p className="mt-1.5 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-purple-700">
+                    <p className="mt-1.5 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-accent-700">
                       {book.title}
                     </p>
                     <p className="line-clamp-1 text-[9px] text-gray-400">
@@ -201,13 +201,13 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
                 <div className="mt-4 flex gap-2">
                   <button
                     onClick={() => { setSelectedGenre(null); setGenreBooks([]); }}
-                    className="kid-touch rounded-full bg-purple-50 px-4 py-2 text-xs font-bold text-purple-600 transition-all hover:bg-purple-100 active:scale-95"
+                    className="kid-touch rounded-full bg-accent-50 px-4 py-2 text-xs font-bold text-accent-600 transition-all hover:bg-accent-100 active:scale-95"
                   >
                     Browse Genres
                   </button>
                   <button
                     onClick={() => router.push("/read/search")}
-                    className="kid-touch rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95"
+                    className="kid-touch rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-all active:scale-95"
                   >
                     Search Books
                   </button>

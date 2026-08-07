@@ -42,8 +42,8 @@ export function ContentFlagList({ flags }: ContentFlagListProps) {
   if (flags.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-parchment-200 bg-white p-5">
-      <h3 className="font-serif text-lg font-bold text-ink-900">
+    <div className="rounded-2xl border border-brand-cream-2 bg-white p-5">
+      <h3 className="font-display text-lg font-bold text-brand-navy">
         Content Flags
       </h3>
       <div className="mt-3 space-y-3">

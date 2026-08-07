@@ -30,7 +30,7 @@ export function SourceBadge({ source, hasAudio, compact }: SourceBadgeProps) {
  */
 export function AudioIndicator() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold text-violet-700">
+    <span className="inline-flex items-center gap-1 rounded-full bg-accent-100 px-1.5 py-0.5 text-[9px] font-bold text-accent-700">
       <Headphones className="h-2.5 w-2.5" />
       Audio
     </span>

@@ -65,7 +65,7 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md rounded-t-2xl bg-white p-6 shadow-xl sm:rounded-xl">
+      <div className="relative w-full max-w-md rounded-t-2xl bg-white p-6 shadow-xl sm:rounded-2xl">
         <button
           onClick={onDismiss}
           className="absolute right-4 top-4 text-ink-400 hover:text-ink-600"
@@ -75,8 +75,8 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
         </button>
 
         <div className="mb-4 flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-parchment-700" />
-          <h3 className="font-serif text-xl font-bold text-ink-900">
+          <Sparkles className="h-6 w-6 text-accent-700" />
+          <h3 className="font-display text-xl font-bold text-brand-navy">
             Continue with SafeReads
           </h3>
         </div>
@@ -86,21 +86,21 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
           reviewing books for your family.
         </p>
 
-        <div className="mb-5 rounded-lg border border-parchment-200 bg-parchment-50 p-4">
-          <p className="mb-3 text-lg font-semibold text-ink-900">
+        <div className="mb-5 rounded-2xl border border-brand-cream-2 bg-brand-cream p-4">
+          <p className="mb-3 text-lg font-semibold text-brand-navy">
             $4.99<span className="text-sm font-normal text-ink-500">/month</span>
           </p>
           <ul className="space-y-2 text-sm text-ink-700">
             <li className="flex items-center gap-2">
-              <Infinity className="h-4 w-4 text-parchment-700" />
+              <Infinity className="h-4 w-4 text-accent-700" />
               Unlimited book reviews
             </li>
             <li className="flex items-center gap-2">
-              <Heart className="h-4 w-4 text-parchment-700" />
+              <Heart className="h-4 w-4 text-accent-700" />
               Priority support
             </li>
             <li className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-parchment-700" />
+              <BookOpen className="h-4 w-4 text-accent-700" />
               Full content breakdowns
             </li>
           </ul>
@@ -119,20 +119,20 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
           {!showCoupon ? (
             <button
               onClick={() => setShowCoupon(true)}
-              className="flex w-full items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-parchment-700 transition-colors hover:bg-parchment-50"
+              className="flex w-full items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-accent-700 transition-colors hover:bg-brand-cream-2"
             >
               <Tag className="h-4 w-4" />
               Have a coupon code?
             </button>
           ) : (
-            <div className="mt-2 rounded-lg border border-parchment-200 bg-parchment-50 p-3">
+            <div className="mt-2 rounded-2xl border border-brand-cream-2 bg-brand-cream p-3">
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   placeholder="Enter code"
-                  className="flex-1 rounded-md border border-parchment-300 px-3 py-1.5 text-sm uppercase placeholder:normal-case focus:border-parchment-500 focus:outline-none focus:ring-1 focus:ring-parchment-500"
+                  className="flex-1 rounded-md border border-brand-cream-2 px-3 py-1.5 text-sm uppercase placeholder:normal-case focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
                   disabled={couponLoading || couponResult?.success}
                 />
                 <button
@@ -162,7 +162,7 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
 
           <button
             onClick={onDismiss}
-            className="w-full rounded-lg px-4 py-2 text-sm font-medium text-ink-500 transition-colors hover:bg-parchment-50"
+            className="w-full rounded-lg px-4 py-2 text-sm font-medium text-ink-500 transition-colors hover:bg-brand-cream-2"
           >
             Maybe later
           </button>

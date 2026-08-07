@@ -56,7 +56,7 @@ function AnalysisSummary({ googleBookId }: { googleBookId: string }) {
 
   if (analysis === undefined) {
     return (
-      <div className="mt-2 flex items-center gap-2 rounded-lg bg-parchment-50 px-3 py-2 text-xs text-ink-400">
+      <div className="mt-2 flex items-center gap-2 rounded-lg bg-brand-cream-2 px-3 py-2 text-xs text-ink-400">
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
         Analyzing content...
       </div>
@@ -73,7 +73,7 @@ function AnalysisSummary({ googleBookId }: { googleBookId: string }) {
   }
 
   return (
-    <div className="mt-2 rounded-lg border border-parchment-200 bg-parchment-50 p-3">
+    <div className="mt-2 rounded-2xl border border-brand-cream-2 bg-brand-cream p-3">
       <div className="flex items-center gap-2">
         <VerdictBadge verdict={analysis.verdict} />
         {analysis.ageRecommendation && (
@@ -200,12 +200,12 @@ export default function RequestsPage() {
       <div className="mb-6 flex items-center gap-3">
         <Link
           href="/dashboard"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 hover:bg-parchment-100 hover:text-ink-600"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-400 hover:bg-brand-cream-2 hover:text-ink-600"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="font-serif text-2xl font-bold text-ink-900">
+          <h1 className="font-display text-2xl font-bold text-brand-navy">
             Book Requests
           </h1>
           <p className="text-sm text-ink-500">
@@ -218,8 +218,8 @@ export default function RequestsPage() {
       {pendingRequests === undefined ? (
         <div className="py-12 text-center text-ink-500">Loading...</div>
       ) : pendingRequests.length === 0 ? (
-        <div className="rounded-lg border border-parchment-200 bg-white p-8 text-center">
-          <BookOpen className="mx-auto h-10 w-10 text-parchment-300" />
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-8 text-center">
+          <BookOpen className="mx-auto h-10 w-10 text-accent-300" />
           <p className="mt-3 text-sm text-ink-500">
             No pending requests. When your kids find books they want to read, their requests will show up here.
           </p>
@@ -234,11 +234,11 @@ export default function RequestsPage() {
             return (
               <div
                 key={request._id}
-                className="rounded-xl border border-parchment-200 bg-white p-4"
+                className="rounded-2xl border border-brand-cream-2 bg-white p-4"
               >
                 <div className="flex gap-3">
                   {/* Cover */}
-                  <div className="relative h-20 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-parchment-100">
+                  <div className="relative h-20 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-brand-cream-2">
                     {request.coverUrl ? (
                       <Image
                         src={request.coverUrl}
@@ -250,14 +250,14 @@ export default function RequestsPage() {
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">
-                        <BookOpen className="h-5 w-5 text-parchment-300" />
+                        <BookOpen className="h-5 w-5 text-accent-300" />
                       </div>
                     )}
                   </div>
 
                   {/* Info */}
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <h3 className="text-sm font-semibold text-ink-900 line-clamp-1">
+                    <h3 className="text-sm font-semibold text-brand-navy line-clamp-1">
                       {request.title}
                     </h3>
                     <p className="text-xs text-ink-500">{request.author}</p>
@@ -292,7 +292,7 @@ export default function RequestsPage() {
                       value={denyReason}
                       onChange={(e) => setDenyReason(e.target.value)}
                       placeholder="Reason (optional, kid will see this)"
-                      className="w-full rounded-lg border border-parchment-300 bg-white px-3 py-2 text-xs text-ink-900 placeholder:text-ink-400 focus:border-parchment-500 focus:outline-none"
+                      className="w-full rounded-lg border border-brand-cream-2 bg-white px-3 py-2 text-xs text-brand-navy placeholder:text-ink-400 focus:border-accent-500 focus:outline-none"
                     />
                     <div className="flex gap-2">
                       <button
@@ -300,7 +300,7 @@ export default function RequestsPage() {
                           setDenyingId(null);
                           setDenyReason("");
                         }}
-                        className="flex-1 rounded-lg border border-parchment-200 py-2 text-xs font-medium text-ink-600"
+                        className="flex-1 rounded-lg border border-brand-cream-2 py-2 text-xs font-medium text-ink-600"
                       >
                         Cancel
                       </button>
@@ -317,7 +317,7 @@ export default function RequestsPage() {
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Link
                       href={`/dashboard/search?q=${encodeURIComponent(request.title)}`}
-                      className="flex min-h-[40px] items-center gap-1 rounded-lg border border-parchment-200 px-3 py-2 text-xs font-medium text-ink-600 transition-colors hover:bg-parchment-50"
+                      className="flex min-h-[40px] items-center gap-1 rounded-lg border border-brand-cream-2 px-3 py-2 text-xs font-medium text-ink-600 transition-colors hover:bg-brand-cream-2"
                     >
                       <AlertCircle className="h-3.5 w-3.5" />
                       Review
@@ -353,14 +353,14 @@ export default function RequestsPage() {
       {/* Recent History */}
       {recentHistory.length > 0 && (
         <section className="mt-8">
-          <h2 className="font-serif text-lg font-bold text-ink-900">
+          <h2 className="font-display text-lg font-bold text-brand-navy">
             Recent Decisions
           </h2>
           <div className="mt-3 space-y-2">
             {recentHistory.map((request) => (
               <div
                 key={request._id}
-                className="flex items-center gap-3 rounded-lg border border-parchment-100 bg-white px-3 py-2.5"
+                className="flex items-center gap-3 rounded-lg border border-brand-cream-2 bg-white px-3 py-2.5"
               >
                 <span
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${

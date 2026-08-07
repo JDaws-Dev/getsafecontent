@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery, useAction } from "convex/react";
+import { useQuery, useAction, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { KidBookshelf } from "@/components/kid/KidBookshelf";
 import { BookCard } from "@/components/kid/BookCard";
@@ -12,6 +12,7 @@ import { ReadingStreaks } from "@/components/kid/ReadingStreaks";
 import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star, Clock, Headphones, Wand2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { SafeFamilyHeaderSwitcher } from "@/components/SafeFamilySwitcher";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { useCoverFetcher } from "@/hooks/useCoverFetcher";
 
@@ -158,6 +159,35 @@ export default function KidHomePage() {
     localStorage.removeItem("safereads_session_started");
     router.replace("/read");
   }, [router]);
+
+  // Cross-app kid pass: mint a short-lived token for the current kid so the
+  // header switcher can hand it to a sibling app (one-tap, no PIN re-entry).
+  // Refreshed well inside its 5-minute TTL so the links never go stale.
+  const [kidToken, setKidToken] = useState<string | undefined>(undefined);
+  const mintKidPass = useMutation(api.kidPass.mintKidPass);
+  useEffect(() => {
+    const fc = typeof window !== "undefined" ? localStorage.getItem("safereads_family_code") : null;
+    if (!fc || !kidProfile?.name) return undefined;
+    let active = true;
+    const refresh = async () => {
+      try {
+        const res = await mintKidPass({
+          familyCode: fc,
+          kidName: kidProfile.name,
+          color: kidProfile.color,
+        });
+        if (active && res?.token) setKidToken(res.token);
+      } catch {
+        // non-fatal — the switcher still works; the destination just asks for the PIN
+      }
+    };
+    refresh();
+    const id = setInterval(refresh, 4 * 60 * 1000);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
+  }, [kidProfile?.name, kidProfile?.color, mintKidPass]);
 
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
@@ -494,7 +524,7 @@ export default function KidHomePage() {
   if (!kidProfile) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-200 border-t-purple-600" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-200 border-t-accent-600" />
       </div>
     );
   }
@@ -527,7 +557,7 @@ export default function KidHomePage() {
   return (
     <div className="py-6">
       {/* Sticky Kid Header -- profile pill + search shortcut */}
-      <div className="sticky-kid-header animate-fade-up sticky -top-1 z-20 -mx-4 mb-4 flex items-center justify-between bg-[#FEF7EE]/95 px-4 py-2.5 backdrop-blur-md"
+      <div className="sticky-kid-header animate-fade-up sticky -top-1 z-20 -mx-4 mb-4 flex items-center justify-between bg-brand-cream/95 px-4 py-2.5 backdrop-blur-md"
            style={{ animationDelay: "0s" }}>
         <div className="flex items-center gap-2.5">
           <div className={`flex h-9 w-9 items-center justify-center rounded-full ${avatarBg} text-sm font-bold text-white shadow-md`}>
@@ -538,6 +568,10 @@ export default function KidHomePage() {
             <p className="truncate text-sm font-bold text-gray-900">{kidProfile.name}</p>
           </div>
         </div>
+        {/* Safe Family switcher — desktop (always visible on lg+) */}
+        <div className="hidden lg:flex">
+          <SafeFamilyHeaderSwitcher current="safereads" familyCode={savedCode || ""} kidToken={kidToken} />
+        </div>
         <Link
           href="/read/search"
           className="kid-touch flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-500 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md active:scale-95"
@@ -545,6 +579,11 @@ export default function KidHomePage() {
           <Search className="h-4 w-4" />
           <span className="hidden sm:inline">Find Books</span>
         </Link>
+      </div>
+
+      {/* Safe Family switcher — mobile row (always visible < lg) */}
+      <div className="lg:hidden mb-4 flex justify-center">
+        <SafeFamilyHeaderSwitcher current="safereads" familyCode={savedCode || ""} kidToken={kidToken} tile={40} />
       </div>
 
       {/* 1. Welcome Header - Hero */}
@@ -555,7 +594,7 @@ export default function KidHomePage() {
             {greetingEmoji}
           </div>
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold sm:text-2xl">
+            <h1 className="font-display truncate text-xl font-bold sm:text-2xl">
               {timeGreeting}, {kidProfile.name}!
             </h1>
             <p className="mt-1 text-sm font-medium text-white/80 sm:text-base">
@@ -610,12 +649,12 @@ export default function KidHomePage() {
         <section className="animate-fade-up mt-6" style={{ animationDelay: "0.1s" }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-purple-500" />
-              <h2 className="text-lg font-bold text-gray-800">
+              <Sparkles className="h-4 w-4 text-accent-500" />
+              <h2 className="font-display text-lg font-bold text-brand-navy">
                 Continue Reading
               </h2>
             </div>
-            <span className="rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-bold text-purple-500">
+            <span className="rounded-full bg-accent-50 px-2.5 py-1 text-[10px] font-bold text-accent-500">
               {currentlyReadingBooks.length} book{currentlyReadingBooks.length !== 1 ? "s" : ""}
             </span>
           </div>
@@ -645,18 +684,18 @@ export default function KidHomePage() {
                   <p className="line-clamp-1 text-sm font-bold text-gray-900">{book.title}</p>
                   <p className="mt-0.5 text-xs text-gray-400">{book.author}</p>
                   <div className="mt-2.5 flex items-center gap-2">
-                    <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-purple-100">
+                    <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-accent-100">
                       <div
                         className="progress-shimmer h-full rounded-full transition-all duration-500"
                         style={{ width: `${Math.min(book.progress, 100)}%` }}
                       />
                     </div>
-                    <span className="min-w-[32px] text-right text-[11px] font-bold text-purple-600">
+                    <span className="min-w-[32px] text-right text-[11px] font-bold text-accent-600">
                       {Math.round(book.progress)}%
                     </span>
                   </div>
                 </div>
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-purple-200 transition-transform group-hover:scale-105">
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-accent-600 shadow-lg shadow-accent-200 transition-transform group-hover:scale-105">
                   <BookOpen className="h-4.5 w-4.5 text-white" />
                 </div>
               </button>
@@ -693,14 +732,14 @@ export default function KidHomePage() {
         <section className="animate-fade-up mt-7" style={{ animationDelay: "0.14s" }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Wand2 className="h-4 w-4 text-purple-500" />
-              <h2 className="font-serif text-lg font-bold text-gray-800">
+              <Wand2 className="h-4 w-4 text-accent-500" />
+              <h2 className="font-display text-lg font-bold text-brand-navy">
                 Recommended for You
               </h2>
             </div>
             <Link
               href="/read/search"
-              className="kid-touch flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
+              className="kid-touch flex items-center gap-1 rounded-full bg-accent-50 px-3 py-1.5 text-xs font-bold text-accent-600 transition-colors hover:bg-accent-100"
             >
               Explore
             </Link>
@@ -739,7 +778,7 @@ export default function KidHomePage() {
                         )}
                       </div>
                       <p
-                        className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-purple-700"
+                        className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-accent-700"
                         style={{ maxWidth: "112px" }}
                       >
                         {book.title}
@@ -751,7 +790,7 @@ export default function KidHomePage() {
                         {book.author}
                       </p>
                       <span
-                        className="mt-1 inline-block max-w-[112px] truncate rounded-full bg-purple-50 px-2 py-0.5 text-[8px] font-semibold text-purple-600 ring-1 ring-purple-100"
+                        className="mt-1 inline-block max-w-[112px] truncate rounded-full bg-accent-50 px-2 py-0.5 text-[8px] font-semibold text-accent-600 ring-1 ring-accent-100"
                       >
                         {book.reason}
                       </span>
@@ -761,13 +800,13 @@ export default function KidHomePage() {
               </div>
             ) : (
               <div className="flex flex-col items-center rounded-2xl bg-white px-4 py-8 text-center shadow-sm">
-                <Wand2 className="h-8 w-8 text-purple-200" />
+                <Wand2 className="h-8 w-8 text-accent-200" />
                 <p className="mt-2 text-sm font-medium text-gray-600">
                   Start reading to get personalized picks!
                 </p>
                 <Link
                   href="/read/search"
-                  className="kid-touch mt-3 rounded-full bg-purple-100 px-4 py-2 text-xs font-bold text-purple-700 transition-colors hover:bg-purple-200"
+                  className="kid-touch mt-3 rounded-full bg-accent-100 px-4 py-2 text-xs font-bold text-accent-700 transition-colors hover:bg-accent-200"
                 >
                   Browse Books
                 </Link>
@@ -781,7 +820,7 @@ export default function KidHomePage() {
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.15s" }}>
         <div className="flex items-center gap-2">
           <span className="text-lg">{"\uD83C\uDF1F"}</span>
-          <h2 className="text-lg font-bold text-gray-800">
+          <h2 className="font-display text-lg font-bold text-brand-navy">
             Browse by Genre
           </h2>
         </div>
@@ -798,13 +837,13 @@ export default function KidHomePage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Star className="h-4 w-4 text-yellow-500" />
-            <h2 className="text-lg font-bold text-gray-800">
+            <h2 className="font-display text-lg font-bold text-brand-navy">
               Discover More Books
             </h2>
           </div>
           <Link
             href="/read/library"
-            className="kid-touch flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-600 transition-colors hover:bg-purple-100"
+            className="kid-touch flex items-center gap-1 rounded-full bg-accent-50 px-3 py-1.5 text-xs font-bold text-accent-600 transition-colors hover:bg-accent-100"
           >
             See All
           </Link>
@@ -819,7 +858,7 @@ export default function KidHomePage() {
         <div className="mt-3">
           {recommendedLoading && recommendedBooks.length === 0 ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
+              <Loader2 className="h-6 w-6 animate-spin text-accent-400" />
             </div>
           ) : recommendedBooks.length > 0 ? (
             <div className="flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
@@ -850,7 +889,7 @@ export default function KidHomePage() {
                       )}
                       {/* Subtle headphones icon for books with audio */}
                       {book.hasAudio && (
-                        <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-violet-500/80 backdrop-blur-sm">
+                        <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent-500/80 backdrop-blur-sm">
                           <Headphones className="h-2.5 w-2.5 text-white" />
                         </div>
                       )}
@@ -862,7 +901,7 @@ export default function KidHomePage() {
                       )}
                     </div>
                     <p
-                      className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-purple-700"
+                      className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-accent-700"
                       style={{ maxWidth: "112px" }}
                     >
                       {book.title}
@@ -892,14 +931,14 @@ export default function KidHomePage() {
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.25s" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Headphones className="h-4 w-4 text-violet-500" />
-            <h2 className="text-lg font-bold text-gray-800">
+            <Headphones className="h-4 w-4 text-accent-500" />
+            <h2 className="font-display text-lg font-bold text-brand-navy">
               Listen to a Story
             </h2>
           </div>
           <Link
             href="/read/library?format=audio"
-            className="kid-touch flex items-center gap-1 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-100"
+            className="kid-touch flex items-center gap-1 rounded-full bg-accent-50 px-3 py-1.5 text-xs font-bold text-accent-600 transition-colors hover:bg-accent-100"
           >
             See All
           </Link>
@@ -910,7 +949,7 @@ export default function KidHomePage() {
         <div className="mt-3">
           {audiobooksLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+              <Loader2 className="h-6 w-6 animate-spin text-accent-400" />
             </div>
           ) : listenBooks.length > 0 ? (
             <div className="flex gap-3 overflow-x-auto overscroll-contain pb-2 scrollbar-none">
@@ -931,7 +970,7 @@ export default function KidHomePage() {
                     }}
                     className="group flex flex-shrink-0 flex-col items-start text-left"
                   >
-                    <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-violet-50 shadow-md ring-1 ring-violet-200/50 transition-all group-active:scale-[0.97]">
+                    <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-accent-50 shadow-md ring-1 ring-accent-200/50 transition-all group-active:scale-[0.97]">
                       {displayUrl ? (
                         <Image
                           src={displayUrl}
@@ -949,19 +988,19 @@ export default function KidHomePage() {
                         />
                       )}
                       {/* Prominent play/headphones overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-violet-700/90 to-transparent px-2 pb-1.5 pt-4 text-center">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-accent-700/90 to-transparent px-2 pb-1.5 pt-4 text-center">
                         <span className="flex items-center justify-center gap-1 text-[9px] font-bold uppercase tracking-wider text-white">
                           <Headphones className="h-2.5 w-2.5" />
                           Listen
                         </span>
                       </div>
                       {/* Headphones indicator */}
-                      <div className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 shadow-sm">
+                      <div className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-accent-500 shadow-sm">
                         <Headphones className="h-3 w-3 text-white" />
                       </div>
                     </div>
                     <p
-                      className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-violet-700"
+                      className="mt-2 line-clamp-2 text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-accent-700"
                       style={{ maxWidth: "112px" }}
                     >
                       {book.title}
@@ -974,7 +1013,7 @@ export default function KidHomePage() {
                     </p>
                     {book.totalTime && (
                       <p
-                        className="mt-0.5 text-[9px] font-medium text-violet-400"
+                        className="mt-0.5 text-[9px] font-medium text-accent-400"
                         style={{ maxWidth: "112px" }}
                       >
                         {book.totalTime}
@@ -986,7 +1025,7 @@ export default function KidHomePage() {
             </div>
           ) : audiobooksLoaded ? (
             <div className="flex flex-col items-center rounded-2xl bg-white px-4 py-8 text-center shadow-sm">
-              <Headphones className="h-8 w-8 text-violet-200" />
+              <Headphones className="h-8 w-8 text-accent-200" />
               <p className="mt-2 text-sm font-medium text-gray-500">
                 Audiobooks will appear here soon!
               </p>
@@ -1044,11 +1083,11 @@ export default function KidHomePage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-lg">{"\uD83D\uDCDA"}</span>
-            <h2 className="text-lg font-bold text-gray-800">My Bookshelf</h2>
+            <h2 className="font-display text-lg font-bold text-brand-navy">My Bookshelf</h2>
           </div>
           <Link
             href="/read/search"
-            className="kid-touch flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
+            className="kid-touch flex items-center gap-1.5 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-all hover:shadow-md active:scale-95"
           >
             <Search className="h-3.5 w-3.5" />
             Find Books
@@ -1060,7 +1099,7 @@ export default function KidHomePage() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-40 w-full animate-pulse rounded-xl bg-purple-100/50"
+                  className="h-40 w-full animate-pulse rounded-xl bg-accent-100/50"
                 />
               ))}
             </div>

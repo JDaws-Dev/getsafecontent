@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { FamilyCodeEntry } from "@/components/kid/FamilyCodeEntry";
 import { ProfileSelector } from "@/components/kid/ProfileSelector";
@@ -30,50 +30,111 @@ export default function PlayPage() {
     familyCode ? { code: familyCode } : "skip"
   );
 
-  // Check localStorage on mount
+  // Cross-app kid pass: redeem an inbound ?kt= token so a kid who tapped the
+  // switcher in a sibling app lands straight on their SafeReads dashboard —
+  // no family-code screen, no PIN re-entry.
+  const redeemKidPass = useMutation(api.kidPass.redeemKidPass);
+
+  // Boot: a cross-app kid pass (?kt=) wins, then a bare family code (?fc=),
+  // then a saved localStorage session.
   useEffect(() => {
-    // URL ?fc=ABCDEF wins — kid arrived from another Safe Family app's
-    // cross-app switcher. Same unified family code works across all 5 apps.
-    const fcParam = new URL(window.location.href).searchParams.get("fc");
-    if (fcParam) {
-      const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
-      if (normalized.length === 6) {
-        localStorage.setItem("safereads_family_code", normalized);
-        setFamilyCode(normalized);
-        setStep("profiles");
+    let cancelled = false;
+    const url = new URL(window.location.href);
+    const ktParam = url.searchParams.get("kt");
+    const fcParam = url.searchParams.get("fc");
+
+    // Never leave a credential in the visible URL / history / referrer — strip
+    // the pass and code immediately; we keep working from the captured values.
+    if (ktParam || fcParam) {
+      url.searchParams.delete("kt");
+      url.searchParams.delete("fc");
+      window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+    }
+
+    const boot = async () => {
+      // 1) Kid pass — arrived from a sibling app already signed in as this kid.
+      if (ktParam) {
+        try {
+          const res = await redeemKidPass({ token: ktParam });
+          if (cancelled) return;
+          if (res?.ok && res.profile) {
+            const p = res.profile;
+            localStorage.setItem("safereads_family_code", res.familyCode);
+            localStorage.setItem(
+              "safereads_kid_profile",
+              JSON.stringify({
+                _id: p._id,
+                name: p.name,
+                age: p.age,
+                color: p.color,
+                userId: p.userId,
+              })
+            );
+            localStorage.setItem("safereads_session_started", Date.now().toString());
+            router.replace(p.onboardingCompleted ? "/read/home" : "/read/onboarding");
+            return;
+          }
+          // Verified family but no matching profile here — pre-fill the code
+          // and let the kid pick a profile.
+          if (res && "familyCode" in res && res.familyCode) {
+            localStorage.setItem("safereads_family_code", res.familyCode);
+            setFamilyCode(res.familyCode);
+            setStep("profiles");
+            return;
+          }
+        } catch {
+          // fall through to fc / saved-session handling
+        }
+        if (cancelled) return;
+      }
+
+      // 2) Bare family code — skip straight to profile selection. Same unified
+      // family code works across all 5 Safe Family apps.
+      if (fcParam) {
+        const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+        if (normalized.length === 6) {
+          localStorage.setItem("safereads_family_code", normalized);
+          setFamilyCode(normalized);
+          setStep("profiles");
+          return;
+        }
+      }
+
+      const savedCode = localStorage.getItem("safereads_family_code");
+      const savedProfile = localStorage.getItem("safereads_kid_profile");
+      const sessionStarted = localStorage.getItem("safereads_session_started");
+
+      // Check session TTL (24 hours)
+      const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+      if (sessionStarted && Date.now() - parseInt(sessionStarted, 10) > SESSION_TTL_MS) {
+        // Session expired — clear everything
+        localStorage.removeItem("safereads_kid_profile");
+        localStorage.removeItem("safereads_family_code");
+        localStorage.removeItem("safereads_session_started");
+        setStep("code");
         return;
       }
-    }
 
-    const savedCode = localStorage.getItem("safereads_family_code");
-    const savedProfile = localStorage.getItem("safereads_kid_profile");
-    const sessionStarted = localStorage.getItem("safereads_session_started");
+      if (savedCode && savedProfile) {
+        // Already logged in as a kid - go to home
+        router.replace("/read/home");
+        return;
+      }
 
-    // Check session TTL (24 hours)
-    const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
-    if (sessionStarted && Date.now() - parseInt(sessionStarted, 10) > SESSION_TTL_MS) {
-      // Session expired — clear everything
-      localStorage.removeItem("safereads_kid_profile");
-      localStorage.removeItem("safereads_family_code");
-      localStorage.removeItem("safereads_session_started");
-      setStep("code");
-      return;
-    }
+      if (savedCode) {
+        // Has code but no profile selected
+        setFamilyCode(savedCode);
+        setStep("profiles");
+      } else {
+        setStep("code");
+      }
+    };
 
-    if (savedCode && savedProfile) {
-      // Already logged in as a kid - go to home
-      router.replace("/read/home");
-      return;
-    }
-
-    if (savedCode) {
-      // Has code but no profile selected
-      setFamilyCode(savedCode);
-      setStep("profiles");
-    } else {
-      setStep("code");
-    }
-  }, [router]);
+    boot();
+    return () => {
+      cancelled = true;
+    };
+  }, [router, redeemKidPass]);
 
   // Handle family code submission
   const handleCodeSubmit = (code: string) => {
@@ -108,7 +169,7 @@ export default function PlayPage() {
   if (step === "loading") {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-700 shadow-lg">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-400 to-accent-700 shadow-lg">
           <BookOpen className="h-8 w-8 animate-pulse text-white" />
         </div>
       </div>
@@ -118,19 +179,19 @@ export default function PlayPage() {
   if (step === "expired") {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-50">
-          <Hourglass className="h-9 w-9 text-amber-600" aria-hidden="true" />
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-accent-50">
+          <Hourglass className="h-9 w-9 text-accent-600" aria-hidden="true" />
         </div>
-        <p className="mt-5 text-xl font-bold text-gray-800">
+        <p className="mt-5 text-xl font-bold text-brand-navy">
           Subscription Inactive
         </p>
         <p className="mt-2 max-w-xs text-sm text-gray-500">
           Ask your parent to renew the subscription at{" "}
-          <span className="font-medium text-amber-700">getsafefamily.com</span>
+          <span className="font-medium text-accent-700">getsafefamily.com</span>
         </p>
         <button
           onClick={handleBack}
-          className="kid-touch mt-6 rounded-full bg-white px-6 py-3 text-sm font-bold text-amber-700 shadow-md transition-all hover:shadow-lg active:scale-95"
+          className="kid-touch mt-6 rounded-full bg-white px-6 py-3 text-sm font-bold text-accent-700 shadow-md transition-all hover:shadow-lg active:scale-95"
         >
           Try a different code
         </button>
@@ -157,7 +218,7 @@ export default function PlayPage() {
   if (familyData === undefined) {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-700 shadow-lg">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-400 to-accent-700 shadow-lg">
           <BookOpen className="h-8 w-8 animate-pulse text-white" />
         </div>
         <p className="mt-4 text-sm font-medium text-gray-400">Loading your family...</p>
@@ -181,10 +242,10 @@ export default function PlayPage() {
   // Family code valid but no kids (issue #8: add parent link)
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 text-center">
-      <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-amber-50">
-        <Library className="h-9 w-9 text-amber-600" aria-hidden="true" />
+      <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-accent-50">
+        <Library className="h-9 w-9 text-accent-600" aria-hidden="true" />
       </div>
-      <p className="mt-5 text-xl font-bold text-gray-800">
+      <p className="mt-5 text-xl font-bold text-brand-navy">
         No reader profiles yet
       </p>
       <p className="mt-2 text-sm text-gray-500">
@@ -192,13 +253,13 @@ export default function PlayPage() {
       </p>
       <p className="mt-3 text-xs text-gray-400">
         Parents:{" "}
-        <a href="/dashboard" className="font-medium text-amber-700 underline">
+        <a href="/dashboard" className="font-medium text-accent-700 underline">
           tap here to add profiles
         </a>
       </p>
       <button
         onClick={handleBack}
-        className="kid-touch mt-6 rounded-full bg-white px-6 py-3 text-sm font-bold text-amber-700 shadow-md transition-all hover:shadow-lg active:scale-95"
+        className="kid-touch mt-6 rounded-full bg-white px-6 py-3 text-sm font-bold text-accent-700 shadow-md transition-all hover:shadow-lg active:scale-95"
       >
         Try a different code
       </button>

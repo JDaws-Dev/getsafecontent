@@ -34,11 +34,11 @@ const markdownComponents: Components = {
       return (
         <Link
           href={`/dashboard/search?q=${encodeURIComponent(query)}`}
-          className="my-1 inline-flex items-center gap-1.5 rounded-lg border border-parchment-300 bg-white/80 px-2.5 py-1 text-sm font-semibold text-parchment-800 shadow-sm transition-colors hover:border-parchment-400 hover:bg-white"
+          className="my-1 inline-flex items-center gap-1.5 rounded-lg border border-brand-cream-2 bg-white/80 px-2.5 py-1 text-sm font-semibold text-accent-800 shadow-sm transition-colors hover:border-accent-300 hover:bg-white"
         >
-          <BookOpen className="h-3.5 w-3.5 flex-shrink-0 text-parchment-500" />
+          <BookOpen className="h-3.5 w-3.5 flex-shrink-0 text-accent-500" />
           <span className="truncate">{children}</span>
-          <Search className="h-3 w-3 flex-shrink-0 text-parchment-400" />
+          <Search className="h-3 w-3 flex-shrink-0 text-accent-400" />
         </Link>
       );
     }
@@ -56,7 +56,7 @@ const markdownComponents: Components = {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-parchment-700 underline hover:text-parchment-900"
+      className="text-accent-700 underline hover:text-accent-900"
     >
       {children}
     </a>
@@ -71,8 +71,8 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
       <div
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
           isUser
-            ? "bg-parchment-700 text-parchment-50"
-            : "bg-parchment-200 text-ink-600"
+            ? "bg-accent-600 text-white"
+            : "bg-brand-cream-2 text-ink-600"
         }`}
       >
         {isUser ? (
@@ -84,8 +84,8 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
       <div
         className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
           isUser
-            ? "bg-parchment-700 text-parchment-50"
-            : "bg-parchment-100 text-ink-800"
+            ? "bg-accent-600 text-white"
+            : "bg-brand-cream-2 text-ink-800"
         }`}
       >
         {isUser ? (

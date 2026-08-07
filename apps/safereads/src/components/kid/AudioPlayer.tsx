@@ -277,11 +277,11 @@ export function AudioPlayer({
     return (
       <>
         <audio ref={audioRef} preload="metadata" />
-        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-violet-200 bg-white/95 px-4 py-3 shadow-2xl shadow-violet-200/50 backdrop-blur-md">
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-accent-200 bg-white/95 px-4 py-3 shadow-2xl shadow-accent-200/50 backdrop-blur-md">
           {/* Progress bar at top of floating bar */}
-          <div className="absolute left-0 right-0 top-0 h-1 bg-violet-100">
+          <div className="absolute left-0 right-0 top-0 h-1 bg-accent-100">
             <div
-              className="h-full bg-gradient-to-r from-violet-500 to-purple-600 transition-[width] duration-300"
+              className="h-full bg-gradient-to-r from-accent-500 to-accent-600 transition-[width] duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -289,7 +289,7 @@ export function AudioPlayer({
           <div className="flex items-center gap-3">
             {/* Cover thumbnail */}
             {coverUrl && (
-              <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-violet-100">
+              <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-accent-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={coverUrl} alt="" className="h-full w-full object-cover" />
               </div>
@@ -311,7 +311,7 @@ export function AudioPlayer({
             {/* Play/pause */}
             <button
               onClick={togglePlay}
-              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-md transition-transform active:scale-95"
+              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-accent-600 text-white shadow-md transition-transform active:scale-95"
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -348,7 +348,7 @@ export function AudioPlayer({
   // Expanded player
   const containerClass = embedded
     ? "rounded-2xl bg-white p-5 shadow-md ring-1 ring-black/5"
-    : "fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-violet-50 via-white to-violet-50";
+    : "fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-accent-50 via-white to-accent-50";
 
   return (
     <>
@@ -383,7 +383,7 @@ export function AudioPlayer({
         <div className={`flex flex-1 flex-col items-center justify-center ${embedded ? "" : "px-6"}`}>
           {/* Cover */}
           {coverUrl && !embedded && (
-            <div className="mb-6 h-48 w-48 overflow-hidden rounded-2xl bg-violet-100 shadow-xl sm:h-56 sm:w-56">
+            <div className="mb-6 h-48 w-48 overflow-hidden rounded-2xl bg-accent-100 shadow-xl sm:h-56 sm:w-56">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={coverUrl} alt={title} className="h-full w-full object-cover" />
             </div>
@@ -391,7 +391,7 @@ export function AudioPlayer({
 
           {/* Title + Author */}
           <h2
-            className={`text-center font-bold text-gray-900 ${
+            className={`text-center font-display font-bold text-brand-navy ${
               embedded ? "text-base" : "text-xl"
             }`}
           >
@@ -401,7 +401,7 @@ export function AudioPlayer({
             <p className="mt-1 text-center text-sm text-gray-400">{author}</p>
           )}
           {currentChapter && (
-            <p className="mt-1 text-center text-xs font-medium text-violet-500">
+            <p className="mt-1 text-center text-xs font-medium text-accent-500">
               {currentChapter.title}
             </p>
           )}
@@ -414,7 +414,7 @@ export function AudioPlayer({
           {/* Progress bar */}
           <div className={`w-full ${embedded ? "mt-4" : "mt-8"} max-w-md`}>
             <div
-              className="relative h-2 w-full cursor-pointer rounded-full bg-violet-100"
+              className="relative h-2 w-full cursor-pointer rounded-full bg-accent-100"
               onClick={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
                 const pct = ((e.clientX - rect.left) / rect.width) * 100;
@@ -422,12 +422,12 @@ export function AudioPlayer({
               }}
             >
               <div
-                className="h-full rounded-full bg-gradient-to-r from-violet-500 to-purple-600 transition-[width] duration-150"
+                className="h-full rounded-full bg-gradient-to-r from-accent-500 to-accent-600 transition-[width] duration-150"
                 style={{ width: `${progressPercent}%` }}
               />
               {/* Scrubber thumb */}
               <div
-                className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-violet-500 bg-white shadow-sm transition-[left] duration-150"
+                className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2 border-accent-500 bg-white shadow-sm transition-[left] duration-150"
                 style={{ left: `calc(${progressPercent}% - 8px)` }}
               />
             </div>
@@ -462,7 +462,7 @@ export function AudioPlayer({
             {/* Play / Pause */}
             <button
               onClick={togglePlay}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-200 transition-all active:scale-95"
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-accent-600 text-white shadow-lg shadow-accent-200 transition-all active:scale-95"
             >
               {isLoading ? (
                 <Loader2 className="h-7 w-7 animate-spin" />
@@ -488,7 +488,7 @@ export function AudioPlayer({
                 onClick={() => setShowChapterList(!showChapterList)}
                 className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm ring-1 ring-black/5 transition-all active:scale-95 ${
                   showChapterList
-                    ? "bg-violet-100 text-violet-600"
+                    ? "bg-accent-100 text-accent-600"
                     : "bg-white text-gray-600"
                 }`}
                 title="Chapters"
@@ -515,13 +515,13 @@ export function AudioPlayer({
             className={`${
               embedded
                 ? "mt-4 max-h-48"
-                : "border-t border-violet-100 bg-white/80 backdrop-blur-sm"
+                : "border-t border-accent-100 bg-white/80 backdrop-blur-sm"
             } overflow-y-auto`}
             style={!embedded ? { maxHeight: "40vh" } : undefined}
           >
             <div className={embedded ? "" : "p-4"}>
               {!embedded && (
-                <h3 className="mb-3 text-sm font-bold text-gray-700">
+                <h3 className="mb-3 font-display text-sm font-bold text-brand-navy">
                   Chapters ({chapters.length})
                 </h3>
               )}
@@ -532,14 +532,14 @@ export function AudioPlayer({
                     onClick={() => goToChapter(idx)}
                     className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
                       idx === currentChapterIndex
-                        ? "bg-violet-100 text-violet-700"
+                        ? "bg-accent-100 text-accent-700"
                         : "text-gray-600 hover:bg-gray-50"
                     }`}
                   >
                     <span
                       className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                         idx === currentChapterIndex
-                          ? "bg-violet-500 text-white"
+                          ? "bg-accent-500 text-white"
                           : "bg-gray-100 text-gray-500"
                       }`}
                     >
@@ -557,13 +557,13 @@ export function AudioPlayer({
                     </div>
                     {idx === currentChapterIndex && isPlaying && (
                       <div className="flex gap-0.5">
-                        <div className="h-3 w-0.5 animate-pulse rounded-full bg-violet-500" />
+                        <div className="h-3 w-0.5 animate-pulse rounded-full bg-accent-500" />
                         <div
-                          className="h-3 w-0.5 animate-pulse rounded-full bg-violet-500"
+                          className="h-3 w-0.5 animate-pulse rounded-full bg-accent-500"
                           style={{ animationDelay: "0.15s" }}
                         />
                         <div
-                          className="h-3 w-0.5 animate-pulse rounded-full bg-violet-500"
+                          className="h-3 w-0.5 animate-pulse rounded-full bg-accent-500"
                           style={{ animationDelay: "0.3s" }}
                         />
                       </div>

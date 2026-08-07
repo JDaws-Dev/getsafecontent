@@ -10,15 +10,15 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
-      <h1 className="font-serif text-3xl font-bold text-ink-900">
+      <h1 className="font-display text-3xl font-bold text-brand-navy">
         About SafeReads
       </h1>
 
       <div className="mt-8 space-y-8 text-ink-600">
         <section>
           <div className="flex items-center gap-3">
-            <BookOpen className="h-6 w-6 text-parchment-600" />
-            <h2 className="font-serif text-xl font-bold text-ink-900">
+            <BookOpen className="h-6 w-6 text-accent-600" />
+            <h2 className="font-display text-xl font-bold text-brand-navy">
               What is SafeReads?
             </h2>
           </div>
@@ -33,7 +33,7 @@ export default function AboutPage() {
         <section>
           <div className="flex items-center gap-3">
             <Heart className="h-6 w-6 text-verdict-caution" />
-            <h2 className="font-serif text-xl font-bold text-ink-900">
+            <h2 className="font-display text-xl font-bold text-brand-navy">
               Why We Built It
             </h2>
           </div>
@@ -48,8 +48,8 @@ export default function AboutPage() {
 
         <section>
           <div className="flex items-center gap-3">
-            <Brain className="h-6 w-6 text-parchment-600" />
-            <h2 className="font-serif text-xl font-bold text-ink-900">
+            <Brain className="h-6 w-6 text-accent-600" />
+            <h2 className="font-display text-xl font-bold text-brand-navy">
               How the AI Works
             </h2>
           </div>
@@ -70,7 +70,7 @@ export default function AboutPage() {
         </section>
 
         <section>
-          <h2 className="font-serif text-xl font-bold text-ink-900">
+          <h2 className="font-display text-xl font-bold text-brand-navy">
             Our Philosophy
           </h2>
           <p className="mt-2 text-sm leading-relaxed">

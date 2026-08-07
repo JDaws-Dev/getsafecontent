@@ -4,6 +4,30 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
+// Every Safe Family app (+ AnswerAxis) shares ONE Stripe account, and Stripe
+// fans every event out to every registered webhook endpoint. Without gating,
+// this SafeReads endpoint fires on a SafeTunes/SafeStudy/AnswerAxis subscription
+// — sending a "Welcome to SafeReads!" email and flipping that customer's
+// SafeReads status — even though they never bought SafeReads. (This is the
+// cross-wired-email bug Michael Kramer reported June 2026.) Only act on
+// subscriptions that actually include SafeReads.
+const SAFEREADS_PRICE_IDS = new Set(
+  [process.env.STRIPE_PRICE_ID, process.env.SAFEREADS_PRICE_ID].filter(
+    Boolean
+  ) as string[]
+);
+
+function subscriptionIncludesSafeReads(sub: Stripe.Subscription): boolean {
+  const appsMeta = (sub.metadata?.apps || "").toLowerCase();
+  if (appsMeta) {
+    return appsMeta
+      .split(",")
+      .map((a) => a.trim())
+      .includes("safereads");
+  }
+  return sub.items.data.some((item) => SAFEREADS_PRICE_IDS.has(item.price.id));
+}
+
 export async function POST(req: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     httpClient: Stripe.createFetchHttpClient(),
@@ -37,6 +61,13 @@ export async function POST(req: Request) {
 
     case "customer.subscription.created": {
       const subscription = event.data.object as Stripe.Subscription;
+
+      // Shared Stripe account — ignore subscriptions that don't include SafeReads
+      // (otherwise we email "Welcome to SafeReads!" to e.g. SafeTunes buyers).
+      if (!subscriptionIncludesSafeReads(subscription)) {
+        break;
+      }
+
       const customerId =
         typeof subscription.customer === "string"
           ? subscription.customer
@@ -76,6 +107,12 @@ export async function POST(req: Request) {
 
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
+
+      // Shared Stripe account — only touch SafeReads subscriptions.
+      if (!subscriptionIncludesSafeReads(subscription)) {
+        break;
+      }
+
       const customerId =
         typeof subscription.customer === "string"
           ? subscription.customer
@@ -94,6 +131,12 @@ export async function POST(req: Request) {
 
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription;
+
+      // Shared Stripe account — only touch SafeReads subscriptions.
+      if (!subscriptionIncludesSafeReads(subscription)) {
+        break;
+      }
+
       const customerId =
         typeof subscription.customer === "string"
           ? subscription.customer

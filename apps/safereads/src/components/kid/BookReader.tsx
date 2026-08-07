@@ -127,6 +127,38 @@ export function BookReader({
     return () => clearTimeout(timer);
   }, [showTapHint]);
 
+  // Reading focus mode: auto-hide chrome after a brief idle window.
+  // Any scroll, tap, or mouse move inside the reader re-shows controls
+  // and resets the timer. Reveal-on-activity matches Kindle / Apple Books.
+  useEffect(() => {
+    if (!showControls) return;
+    const scrollEl = scrollRef.current;
+    if (!scrollEl) return;
+
+    let idleTimer: ReturnType<typeof setTimeout> | undefined;
+    const IDLE_MS = 3000;
+
+    const scheduleHide = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => setShowControls(false), IDLE_MS);
+    };
+    const onActivity = () => {
+      scheduleHide();
+    };
+
+    scheduleHide();
+    scrollEl.addEventListener("scroll", onActivity, { passive: true });
+    scrollEl.addEventListener("touchstart", onActivity, { passive: true });
+    scrollEl.addEventListener("mousemove", onActivity);
+
+    return () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      scrollEl.removeEventListener("scroll", onActivity);
+      scrollEl.removeEventListener("touchstart", onActivity);
+      scrollEl.removeEventListener("mousemove", onActivity);
+    };
+  }, [showControls]);
+
   // Fetch book content
   useEffect(() => {
     let cancelled = false;
@@ -411,7 +443,7 @@ export function BookReader({
 
           {/* Title */}
           <h2
-            className={`mx-4 flex-1 truncate text-center text-sm font-semibold ${
+            className={`mx-4 flex-1 truncate text-center font-display text-sm font-semibold ${
               theme === "dark" ? "text-gray-200" : "text-gray-800"
             }`}
           >

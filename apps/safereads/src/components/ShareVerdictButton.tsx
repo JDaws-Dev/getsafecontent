@@ -90,7 +90,7 @@ export function ShareVerdictButton({
   return (
     <button
       onClick={handleShare}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-parchment-300 bg-white px-3 py-1.5 text-xs font-medium text-ink-600 transition-colors hover:bg-parchment-50"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-accent-300 bg-white px-3 py-1.5 text-xs font-medium text-ink-600 transition-colors hover:bg-accent-50"
     >
       {copied ? (
         <>
