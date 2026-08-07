@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireOwner, requireProfileOwner } from "./identity";
+import { evaluateTimeLimit } from "./timeLimits";
 
 // Get all approved videos for a kid
 export const getApprovedVideos = query({
@@ -283,6 +284,32 @@ export const clearAllApprovedVideosForUser = mutation({
 export const getPlayableContent = query({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
+    // SERVER-SIDE TIME LIMIT ENFORCEMENT.
+    //
+    // Previously the daily cap lived entirely in the client: KidPlayer read
+    // timeLimits.canWatch and was trusted to stop. A tampered client — or a bug
+    // like the shorts auto-advance one — just kept playing. This is the gate
+    // that a client can't talk its way past: once the cap is hit the server
+    // stops handing out watchable content, so there are no video ids to play.
+    //
+    // We deliberately do NOT block on watch RECORDING (see
+    // watchHistory.recordWatch): refusing to record over-cap viewing would
+    // under-count the day's minutes and make the cap easier to exceed, not
+    // harder. Record everything, serve nothing.
+    const timeStatus = await evaluateTimeLimit(ctx, args.kidProfileId);
+    if (!timeStatus.canWatch) {
+      // Same shape as the success path (plus the blocked flags) so callers
+      // destructuring approvedChannelIds don't hit undefined.
+      return {
+        channels: [],
+        videos: [],
+        approvedChannelIds: [],
+        blocked: true,
+        blockedReason: timeStatus.reason,
+        timeStatus,
+      };
+    }
+
     // Get all approved channels (full channel approvals)
     const fullChannels = await ctx.db
       .query("approvedChannels")
@@ -341,6 +368,9 @@ export const getPlayableContent = query({
       channels: allChannels,
       videos: videos.sort((a, b) => b.addedAt - a.addedAt),
       approvedChannelIds: Array.from(fullChannelIds),
+      blocked: false,
+      blockedReason: null,
+      timeStatus,
     };
   },
 });

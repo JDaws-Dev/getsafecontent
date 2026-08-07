@@ -207,8 +207,12 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
               title: video.title,
               thumbnailUrl: video.thumbnailUrl,
               channelTitle: video.channelTitle,
-            }).then(watchId => {
-              watchIdRef.current = watchId;
+            }).then(result => {
+              // recordWatch now returns { watchId, blocked, timeStatus }.
+              // Tolerate the bare-id shape too, so a stale cached bundle talking
+              // to the new backend still tracks duration instead of silently
+              // recording zero minutes.
+              watchIdRef.current = result?.watchId ?? result;
             }).catch(err => {
               console.error('Failed to record watch:', err);
             });
@@ -287,8 +291,12 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
               title: video.title,
               thumbnailUrl: video.thumbnailUrl,
               channelTitle: video.channelTitle,
-            }).then(watchId => {
-              watchIdRef.current = watchId;
+            }).then(result => {
+              // recordWatch now returns { watchId, blocked, timeStatus }.
+              // Tolerate the bare-id shape too, so a stale cached bundle talking
+              // to the new backend still tracks duration instead of silently
+              // recording zero minutes.
+              watchIdRef.current = result?.watchId ?? result;
             }).catch(err => {
               console.error('Failed to record watch:', err);
             });

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { evaluateTimeLimit } from "./timeLimits";
 
 // Record a video watch
 export const recordWatch = mutation({
@@ -22,7 +23,16 @@ export const recordWatch = mutation({
       watchDurationSeconds: args.watchDurationSeconds,
     });
 
-    return watchId;
+    // We record FIRST and never reject, even when the kid is over their cap.
+    // Rejecting here would be self-defeating: unrecorded minutes don't count
+    // toward the daily total, so blocking the write would make the limit easier
+    // to exceed. Enforcement lives in videos.getPlayableContent, which stops
+    // serving watchable content. This flag just lets the player react promptly
+    // instead of waiting for the next canWatch poll.
+    const timeStatus = await evaluateTimeLimit(ctx, args.kidProfileId);
+
+    // Returned as an object; callers that only need the id read `.watchId`.
+    return { watchId, blocked: !timeStatus.canWatch, timeStatus };
   },
 });
 

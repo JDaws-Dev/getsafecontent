@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 
 // Get time limit settings for a kid
 export const getTimeLimit = query({
@@ -139,116 +140,111 @@ function getCurrentHourInTimezone(timezone: string | undefined): { hour: number;
   }
 }
 
+/**
+ * Shared time-limit evaluation. THE single source of truth — the `canWatch`
+ * query, the kid's content feed (videos.getPlayableContent) and watch recording
+ * all call this, so an enforcement point can't drift from what the UI shows.
+ *
+ * Enforcement note: SafeTube embeds the YouTube iframe directly, so the server
+ * can never truly stop a frame from rendering. What it CAN do is refuse to hand
+ * out watchable content once the cap is hit, which is what
+ * getPlayableContent uses this for. Client-side checks alone were bypassable
+ * (a tampered client, or the shorts auto-advance bug, just kept playing).
+ */
+export async function evaluateTimeLimit(
+  ctx: { db: any },
+  kidProfileId: Id<"kidProfiles">,
+) {
+  const limit = await ctx.db
+    .query("timeLimits")
+    .withIndex("by_kid", (q: any) => q.eq("kidProfileId", kidProfileId))
+    .first();
+
+  if (!limit || limit.dailyLimitMinutes === 0) {
+    return { canWatch: true, reason: null, remainingMinutes: null };
+  }
+
+  const kidProfile = await ctx.db.get(kidProfileId);
+  if (!kidProfile) {
+    return { canWatch: true, reason: null, remainingMinutes: null };
+  }
+
+  const parentUser = await ctx.db.get(kidProfile.userId);
+  const { hour: currentHour, dayOfWeek, startOfDay: startOfToday } =
+    getCurrentHourInTimezone(parentUser?.timezone);
+
+  if (limit.allowedStartHour !== undefined && limit.allowedEndHour !== undefined) {
+    const start = limit.allowedStartHour;
+    const end = limit.allowedEndHour;
+    const outside =
+      start <= end
+        ? currentHour < start || currentHour >= end
+        : currentHour >= end && currentHour < start;
+    if (outside) {
+      return {
+        canWatch: false,
+        reason: "outside_hours",
+        allowedStart: start,
+        allowedEnd: end,
+        allowedStartHour: start,
+        allowedEndHour: end,
+        remainingMinutes: null,
+        minutesRemaining: null,
+      };
+    }
+  }
+
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const dailyLimit =
+    isWeekend && limit.weekendLimitMinutes !== undefined
+      ? limit.weekendLimitMinutes
+      : limit.dailyLimitMinutes;
+
+  if (dailyLimit === 0) {
+    return { canWatch: true, reason: null, remainingMinutes: null };
+  }
+
+  const history = await ctx.db
+    .query("watchHistory")
+    .withIndex("by_kid_recent", (q: any) => q.eq("kidProfileId", kidProfileId))
+    .filter((q: any) => q.gte(q.field("watchedAt"), startOfToday))
+    .collect();
+
+  const watchedMinutes = Math.round(
+    history.reduce((sum: number, h: any) => sum + (h.watchDurationSeconds || 0), 0) / 60
+  );
+  const remainingMinutes = Math.max(0, dailyLimit - watchedMinutes);
+
+  if (remainingMinutes <= 0) {
+    return {
+      canWatch: false,
+      reason: "limit_reached",
+      dailyLimit,
+      dailyLimitMinutes: dailyLimit,
+      watchedMinutes,
+      remainingMinutes: 0,
+      minutesRemaining: 0,
+    };
+  }
+
+  return {
+    canWatch: true,
+    reason: null,
+    dailyLimit,
+    dailyLimitMinutes: dailyLimit,
+    watchedMinutes,
+    remainingMinutes,
+    minutesRemaining: remainingMinutes,
+  };
+}
+
 // Check if a kid can watch (based on time limits and current watch time)
 export const canWatch = query({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
-    const limit = await ctx.db
-      .query("timeLimits")
-      .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
-      .first();
-
-    // No limit set = can watch
-    if (!limit || limit.dailyLimitMinutes === 0) {
-      return { canWatch: true, reason: null, remainingMinutes: null };
-    }
-
-    // Get kid profile to find parent user
-    const kidProfile = await ctx.db.get(args.kidProfileId);
-    if (!kidProfile) {
-      return { canWatch: true, reason: null, remainingMinutes: null };
-    }
-
-    // Get parent user to get timezone
-    const parentUser = await ctx.db.get(kidProfile.userId);
-    const timezone = parentUser?.timezone;
-
-    // Get current time info in the family's timezone
-    const { hour: currentHour, dayOfWeek, startOfDay: startOfToday } = getCurrentHourInTimezone(timezone);
-
-    if (limit.allowedStartHour !== undefined && limit.allowedEndHour !== undefined) {
-      const start = limit.allowedStartHour;
-      const end = limit.allowedEndHour;
-
-      // Handle overnight windows (e.g., 6-22 means 6am to 10pm)
-      // Field names mirror what the KidPlayer modal reads (allowedStartHour /
-      // allowedEndHour / minutesRemaining); the shorter aliases are kept for
-      // any older callers.
-      if (start <= end) {
-        // Normal window (e.g., 8am to 8pm)
-        if (currentHour < start || currentHour >= end) {
-          return {
-            canWatch: false,
-            reason: "outside_hours",
-            allowedStart: start,
-            allowedEnd: end,
-            allowedStartHour: start,
-            allowedEndHour: end,
-            remainingMinutes: null,
-            minutesRemaining: null,
-          };
-        }
-      } else {
-        // Overnight window (e.g., 10pm to 6am would be blocked)
-        if (currentHour >= end && currentHour < start) {
-          return {
-            canWatch: false,
-            reason: "outside_hours",
-            allowedStart: start,
-            allowedEnd: end,
-            allowedStartHour: start,
-            allowedEndHour: end,
-            remainingMinutes: null,
-            minutesRemaining: null,
-          };
-        }
-      }
-    }
-
-    // Check daily limit
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const dailyLimit = isWeekend && limit.weekendLimitMinutes !== undefined
-      ? limit.weekendLimitMinutes
-      : limit.dailyLimitMinutes;
-
-    if (dailyLimit === 0) {
-      return { canWatch: true, reason: null, remainingMinutes: null };
-    }
-
-    // Get today's watch time (using family's timezone for "today")
-    const history = await ctx.db
-      .query("watchHistory")
-      .withIndex("by_kid_recent", (q) => q.eq("kidProfileId", args.kidProfileId))
-      .filter((q) => q.gte(q.field("watchedAt"), startOfToday))
-      .collect();
-
-    const watchedMinutes = Math.round(
-      history.reduce((sum, h) => sum + (h.watchDurationSeconds || 0), 0) / 60
-    );
-
-    const remainingMinutes = Math.max(0, dailyLimit - watchedMinutes);
-
-    if (remainingMinutes <= 0) {
-      return {
-        canWatch: false,
-        reason: "limit_reached",
-        dailyLimit,
-        dailyLimitMinutes: dailyLimit,
-        watchedMinutes,
-        remainingMinutes: 0,
-        minutesRemaining: 0,
-      };
-    }
-
-    return {
-      canWatch: true,
-      reason: null,
-      dailyLimit,
-      dailyLimitMinutes: dailyLimit,
-      watchedMinutes,
-      remainingMinutes,
-      minutesRemaining: remainingMinutes,
-    };
+    // Delegates to the shared evaluator so the UI can never disagree with what
+    // the content feed enforces.
+    return await evaluateTimeLimit(ctx, args.kidProfileId);
   },
 });
 
