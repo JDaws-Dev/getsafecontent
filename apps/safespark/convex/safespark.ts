@@ -1128,7 +1128,7 @@ async function requireOperator(
 // userToken. Returns a richer payload — every prompt now comes with
 // the reply that came back AND the project title/kind, so the operator
 // can review quality without an extra round trip per row.
-export const listAllRequests = query({
+export const listAllRequests = internalQuery({
   args: { limit: v.optional(v.number()), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const op = await requireOperator(ctx as SafeSparkCtx, args.userToken);

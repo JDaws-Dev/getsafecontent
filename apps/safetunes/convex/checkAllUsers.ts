@@ -1,7 +1,7 @@
-import { query } from "./_generated/server";
+import { internalQuery, query } from "./_generated/server";
 
 // Query to get detailed user information
-export const getAllUsers = query({
+export const getAllUsers = internalQuery({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 
 /**
  * Central Accounts API
@@ -301,7 +301,7 @@ export const getAccount = query({
  *
  * Returns all user accounts for admin dashboard.
  */
-export const getAllAccounts = query({
+export const getAllAccounts = internalQuery({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();

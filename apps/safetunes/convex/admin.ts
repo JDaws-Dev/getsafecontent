@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 
 // Delete a user and all their associated data by email (admin use via HTTP endpoint)
 export const deleteUserByEmailInternal = internalMutation({
@@ -193,7 +193,7 @@ export const deleteUserByEmailInternal = internalMutation({
 });
 
 // Get all users with kid profile counts, song/album counts, and recent activity (admin only)
-export const getAllUsersWithKids = query({
+export const getAllUsersWithKids = internalQuery({
   args: {},
   handler: async (ctx) => {
     // Get all users

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
 
 /**
  * Redeem a coupon code for a user by email.
@@ -128,7 +128,7 @@ export const validateCoupon = query({
 /**
  * Get all coupon codes (admin only - for future admin page).
  */
-export const listAll = query({
+export const listAll = internalQuery({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("couponCodes").collect();
