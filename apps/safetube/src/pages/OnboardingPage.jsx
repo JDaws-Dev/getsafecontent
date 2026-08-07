@@ -16,7 +16,7 @@ const COLORS = [
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
-  const { user: centralUser, isAuthenticated, isLoading: sessionLoading } = useAuth();
+  const { user: centralUser, isAuthenticated, isLoading: sessionLoading, token } = useAuth();
 
   const [step, setStep] = useState(1); // 1 = welcome, 2 = create kids
   const [kids, setKids] = useState([{ name: '', color: 'blue' }]);
@@ -89,6 +89,7 @@ export default function OnboardingPage() {
           userId: user._id,
           name: kid.name.trim(),
           color: kid.color,
+          userToken: token ?? undefined,
         });
       }
 

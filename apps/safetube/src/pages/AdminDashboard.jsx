@@ -11,7 +11,7 @@ import VideoRequests from '../components/admin/VideoRequests';
 import Settings from '../components/admin/Settings';
 import GettingStarted from '../components/admin/GettingStarted';
 import UpgradePrompt from '../components/UpgradePrompt';
-import { useSubscriptionSync } from '../hooks/useSubscriptionSync';
+import { SafeFamilyParentSwitcher } from '../components/SafeFamilySwitcher';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -73,8 +73,8 @@ export default function AdminDashboard() {
     entitledApps: centralUser?.entitledApps || [],
   } : null;
 
-  // Sync subscription status with central service on startup and periodically
-  useSubscriptionSync();
+  // Subscription sync now runs app-wide from <SubscriptionSync /> in App.jsx,
+  // so it covers parents who never reach this dashboard.
   const setTimezone = useMutation(api.users.setTimezone);
 
   const copyFamilyCode = async () => {
@@ -149,9 +149,9 @@ export default function AdminDashboard() {
 
   if (sessionPending) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -165,9 +165,9 @@ export default function AdminDashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -181,9 +181,9 @@ export default function AdminDashboard() {
 
   if (!userData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -221,29 +221,33 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50">
+    <div className="min-h-screen bg-brand-cream">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top Bar */}
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+              <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-md">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">SafeTube</h1>
+                <h1 className="text-xl font-display font-bold text-brand-navy">SafeTube</h1>
                 <p className="text-xs text-gray-600">Parent Dashboard</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
+              {/* Safe Family cross-app switcher (desktop) — links to other apps' parent dashboards */}
+              <div className="hidden lg:flex items-center mr-1">
+                <SafeFamilyParentSwitcher current="safetube" familyCode={userData.familyCode} showLabel={false} tile={36} />
+              </div>
               {/* Family Code Badge - Clickable to copy */}
               <button
                 onClick={copyFamilyCode}
-                className="hidden sm:flex items-center bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 px-4 py-2 rounded-lg transition group"
+                className="hidden sm:flex items-center bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 px-4 py-2 rounded-lg transition group"
                 title="Click to copy"
               >
                 <span className="text-white/80 text-xs mr-2">Family Code:</span>
@@ -273,6 +277,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+          {/* Safe Family cross-app switcher (mobile) — always visible under 1024px */}
+          <div className="lg:hidden flex justify-center pb-3 -mt-1">
+            <SafeFamilyParentSwitcher current="safetube" familyCode={userData.familyCode} tile={38} />
+          </div>
+
           {/* Desktop Tabs - Consolidated to 4 tabs */}
           <div className="hidden md:block">
             <nav className="flex gap-1 -mb-px">
@@ -281,7 +290,7 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab('home')}
                 className={`${
                   activeTab === 'home'
-                    ? 'border-b-2 border-red-500 text-red-600'
+                    ? 'border-b-2 border-accent-500 text-accent-600'
                     : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
                 } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2`}
               >
@@ -296,7 +305,7 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab('content')}
                 className={`${
                   activeTab === 'content'
-                    ? 'border-b-2 border-red-500 text-red-600'
+                    ? 'border-b-2 border-accent-500 text-accent-600'
                     : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
                 } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2`}
               >
@@ -311,7 +320,7 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab('requests')}
                 className={`${
                   activeTab === 'requests'
-                    ? 'border-b-2 border-red-500 text-red-600'
+                    ? 'border-b-2 border-accent-500 text-accent-600'
                     : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
                 } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2 relative`}
               >
@@ -320,7 +329,7 @@ export default function AdminDashboard() {
                 </svg>
                 <span>Requests</span>
                 {pendingRequestsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-medium">
+                  <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-medium">
                     {pendingRequestsCount > 9 ? '9+' : pendingRequestsCount}
                   </span>
                 )}
@@ -331,7 +340,7 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab('account')}
                 className={`${
                   activeTab === 'account'
-                    ? 'border-b-2 border-red-500 text-red-600'
+                    ? 'border-b-2 border-accent-500 text-accent-600'
                     : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
                 } ml-auto py-3 px-4 font-medium text-sm transition-all duration-200 flex items-center gap-2`}
               >
@@ -359,7 +368,7 @@ export default function AdminDashboard() {
             >
               <p className="text-xs text-gray-500">Family Code (tap to copy)</p>
               <div className="flex items-center justify-between">
-                <p className="font-mono font-bold text-red-600 tracking-wider">{userData.familyCode}</p>
+                <p className="font-mono font-bold text-accent-600 tracking-wider">{userData.familyCode}</p>
                 {copiedCode ? (
                   <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -388,7 +397,7 @@ export default function AdminDashboard() {
                 handleLogout();
                 setShowMobileMenu(false);
               }}
-              className="w-full px-4 py-3 text-left hover:bg-gray-100 transition flex items-center gap-3 text-red-600"
+              className="w-full px-4 py-3 text-left hover:bg-gray-100 transition flex items-center gap-3 text-accent-600"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -406,35 +415,35 @@ export default function AdminDashboard() {
           <button
             onClick={() => setActiveTab('home')}
             className={`relative flex flex-col items-center justify-center gap-0.5 py-2 transition-all ${
-              activeTab === 'home' ? 'bg-red-50' : ''
+              activeTab === 'home' ? 'bg-accent-50' : ''
             }`}
           >
             <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeTab === 'home' ? 2.5 : 2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-            <span className={`text-[10px] ${activeTab === 'home' ? 'font-semibold text-red-600' : 'text-gray-600'}`}>Home</span>
-            {activeTab === 'home' && <div className="absolute top-0 left-0 right-0 h-0.5 bg-red-500"></div>}
+            <span className={`text-[10px] ${activeTab === 'home' ? 'font-semibold text-accent-600' : 'text-gray-600'}`}>Home</span>
+            {activeTab === 'home' && <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-500"></div>}
           </button>
 
           {/* Content (merged Add + Library) */}
           <button
             onClick={() => setActiveTab('content')}
             className={`relative flex flex-col items-center justify-center gap-0.5 py-2 transition-all ${
-              activeTab === 'content' ? 'bg-red-50' : ''
+              activeTab === 'content' ? 'bg-accent-50' : ''
             }`}
           >
             <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeTab === 'content' ? 2.5 : 2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <span className={`text-[10px] ${activeTab === 'content' ? 'font-semibold text-red-600' : 'text-gray-600'}`}>Content</span>
-            {activeTab === 'content' && <div className="absolute top-0 left-0 right-0 h-0.5 bg-red-500"></div>}
+            <span className={`text-[10px] ${activeTab === 'content' ? 'font-semibold text-accent-600' : 'text-gray-600'}`}>Content</span>
+            {activeTab === 'content' && <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-500"></div>}
           </button>
 
           {/* Requests (with badge) */}
           <button
             onClick={() => setActiveTab('requests')}
             className={`relative flex flex-col items-center justify-center gap-0.5 py-2 transition-all ${
-              activeTab === 'requests' ? 'bg-red-50' : ''
+              activeTab === 'requests' ? 'bg-accent-50' : ''
             }`}
           >
             <div className="relative">
@@ -442,27 +451,27 @@ export default function AdminDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeTab === 'requests' ? 2.5 : 2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
               {pendingRequestsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-medium">
+                <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-medium">
                   {pendingRequestsCount > 9 ? '9+' : pendingRequestsCount}
                 </span>
               )}
             </div>
-            <span className={`text-[10px] ${activeTab === 'requests' ? 'font-semibold text-red-600' : 'text-gray-600'}`}>Requests</span>
-            {activeTab === 'requests' && <div className="absolute top-0 left-0 right-0 h-0.5 bg-red-500"></div>}
+            <span className={`text-[10px] ${activeTab === 'requests' ? 'font-semibold text-accent-600' : 'text-gray-600'}`}>Requests</span>
+            {activeTab === 'requests' && <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-500"></div>}
           </button>
 
           {/* Account */}
           <button
             onClick={() => setActiveTab('account')}
             className={`relative flex flex-col items-center justify-center gap-0.5 py-2 transition-all ${
-              activeTab === 'account' ? 'bg-red-50' : ''
+              activeTab === 'account' ? 'bg-accent-50' : ''
             }`}
           >
             <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeTab === 'account' ? 2.5 : 2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            <span className={`text-[10px] ${activeTab === 'account' ? 'font-semibold text-red-600' : 'text-gray-600'}`}>Account</span>
-            {activeTab === 'account' && <div className="absolute top-0 left-0 right-0 h-0.5 bg-red-500"></div>}
+            <span className={`text-[10px] ${activeTab === 'account' ? 'font-semibold text-accent-600' : 'text-gray-600'}`}>Account</span>
+            {activeTab === 'account' && <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-500"></div>}
           </button>
         </div>
       </nav>
@@ -490,8 +499,8 @@ export default function AdminDashboard() {
                 onClick={() => setContentSubTab('add')}
                 className={`px-4 py-2 rounded-lg font-medium transition ${
                   contentSubTab === 'add'
-                    ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:border-red-300'
+                    ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:border-accent-300'
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -505,8 +514,8 @@ export default function AdminDashboard() {
                 onClick={() => setContentSubTab('library')}
                 className={`px-4 py-2 rounded-lg font-medium transition ${
                   contentSubTab === 'library'
-                    ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:border-red-300'
+                    ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:border-accent-300'
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -554,6 +563,8 @@ export default function AdminDashboard() {
 
 // Home tab component - simple dashboard overview
 function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCopied }) {
+  // Own useAuth call — sibling component, AdminDashboard's `token` isn't in scope.
+  const { token } = useAuth();
   const [showGettingStarted, setShowGettingStarted] = useState(() => {
     return !kidProfiles || kidProfiles.length === 0;
   });
@@ -573,6 +584,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
       await updateProfile({
         profileId: kid._id,
         videoPaused: !kid.videoPaused,
+        userToken: token ?? undefined,
       });
     } catch (err) {
       console.error('Failed to toggle pause:', err);
@@ -594,7 +606,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
         <div className="text-right">
           <button
             onClick={onCopyCode}
-            className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-md"
+            className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-md"
           >
             <span className="text-lg font-mono font-bold text-white tracking-wider">
               {userData.familyCode}
@@ -622,7 +634,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
           </div>
           <button
             onClick={() => onNavigate('account')}
-            className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1"
+            className="text-accent-600 hover:text-accent-700 text-sm font-medium flex items-center gap-1"
           >
             Manage
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -642,7 +654,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
             <p className="text-gray-500 text-sm mb-4">Add a profile for each child to get started</p>
             <button
               onClick={() => onNavigate('account')}
-              className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
+              className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
             >
               Add Kids in Settings
             </button>
@@ -658,20 +670,20 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
                 const isLimitReached = dailyLimit > 0 && remainingMinutes === 0;
 
                 const colorClass = {
-                  red: 'bg-red-500',
+                  red: 'bg-accent-500',
                   orange: 'bg-orange-500',
                   yellow: 'bg-yellow-500',
                   green: 'bg-green-500',
                   blue: 'bg-blue-500',
                   purple: 'bg-purple-500',
                   pink: 'bg-pink-500',
-                }[kid.color] || 'bg-red-500';
+                }[kid.color] || 'bg-accent-500';
 
                 return (
                   <div
                     key={kid._id}
                     className={`flex items-center gap-3 p-3 rounded-xl border ${
-                      kid.videoPaused ? 'bg-red-50 border-red-200' : isLimitReached ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'
+                      kid.videoPaused ? 'bg-accent-50 border-accent-200' : isLimitReached ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'
                     }`}
                   >
                     {/* Avatar */}
@@ -747,10 +759,10 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
       <div className="grid grid-cols-2 gap-4">
         <button
           onClick={() => onNavigate('content')}
-          className="bg-white hover:bg-gray-50 rounded-xl p-4 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-red-200"
+          className="bg-white hover:bg-gray-50 rounded-xl p-4 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-accent-200"
         >
-          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mb-2">
-            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 bg-accent-100 rounded-lg flex items-center justify-center mb-2">
+            <svg className="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
           </div>
@@ -759,7 +771,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
         </button>
         <button
           onClick={() => onNavigate('requests')}
-          className="bg-white hover:bg-gray-50 rounded-xl p-4 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-red-200"
+          className="bg-white hover:bg-gray-50 rounded-xl p-4 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-accent-200"
         >
           <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
             <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -793,25 +805,25 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
           <div className="px-6 pb-6">
             <ol className="space-y-3 text-gray-600 text-sm">
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white text-xs font-medium">1</span>
-                <span>Go to <button onClick={() => onNavigate('account')} className="text-red-600 hover:underline font-medium">Settings</button> and add a profile for each kid</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-accent-500 to-accent-600 rounded-full flex items-center justify-center text-white text-xs font-medium">1</span>
+                <span>Go to <button onClick={() => onNavigate('account')} className="text-accent-600 hover:underline font-medium">Settings</button> and add a profile for each kid</span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white text-xs font-medium">2</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-accent-500 to-accent-600 rounded-full flex items-center justify-center text-white text-xs font-medium">2</span>
                 <span>Go to Content tab and search for YouTube channels/videos to approve</span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white text-xs font-medium">3</span>
-                <span>Share your family code <strong className="font-mono text-red-600">{userData.familyCode}</strong> with your kids</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-accent-500 to-accent-600 rounded-full flex items-center justify-center text-white text-xs font-medium">3</span>
+                <span>Share your family code <strong className="font-mono text-accent-600">{userData.familyCode}</strong> with your kids</span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white text-xs font-medium">4</span>
-                <span>Kids visit <Link to="/play" className="text-red-600 hover:underline font-medium">getsafetube.com/play</Link> and enter the code</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-accent-500 to-accent-600 rounded-full flex items-center justify-center text-white text-xs font-medium">4</span>
+                <span>Kids visit <Link to="/play" className="text-accent-600 hover:underline font-medium">getsafetube.com/play</Link> and enter the code</span>
               </li>
             </ol>
             <button
               onClick={() => setShowFullSetupGuide(true)}
-              className="mt-4 text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+              className="mt-4 text-sm text-accent-600 hover:text-accent-700 font-medium flex items-center gap-1"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -892,7 +904,7 @@ function TrialExpiredScreen({ userData, onLogout }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-brand-cream flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
         <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <svg className="w-10 h-10 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -905,14 +917,14 @@ function TrialExpiredScreen({ userData, onLogout }) {
           Your 7-day free trial has expired. Subscribe to continue using SafeTube and keep your kids safe on YouTube.
         </p>
 
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-          <p className="text-red-700 font-medium">Your kids can no longer access their approved content</p>
+        <div className="bg-accent-50 border border-accent-200 rounded-xl p-4 mb-6">
+          <p className="text-accent-700 font-medium">Your kids can no longer access their approved content</p>
         </div>
 
         <div className="space-y-3">
           <a
             href="mailto:jeremiah@getsafefamily.com?subject=SafeTube%20Subscription"
-            className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white py-3 rounded-xl font-semibold transition shadow-md flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white py-3 rounded-xl font-semibold transition shadow-md flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -948,19 +960,19 @@ function TrialExpiredScreen({ userData, onLogout }) {
                     setPromoError('');
                   }}
                   placeholder="Enter code"
-                  className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-center font-mono uppercase focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                  className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-center font-mono uppercase focus:outline-none focus:border-accent-500 focus:ring-2 focus:ring-accent-100"
                   autoFocus
                 />
                 <button
                   onClick={handleApplyPromo}
                   disabled={isApplying || !promoCode.trim()}
-                  className="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-lg font-medium transition"
+                  className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-lg font-medium transition"
                 >
                   {isApplying ? '...' : 'Apply'}
                 </button>
               </div>
               {promoError && (
-                <p className="text-red-500 text-sm">{promoError}</p>
+                <p className="text-accent-500 text-sm">{promoError}</p>
               )}
             </div>
           )}

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Color constants
 const COLORS = [
-  { id: 'red', bg: 'bg-red-500', ring: 'ring-red-400' },
+  { id: 'red', bg: 'bg-accent-500', ring: 'ring-accent-400' },
   { id: 'orange', bg: 'bg-orange-500', ring: 'ring-orange-400' },
   { id: 'yellow', bg: 'bg-yellow-500', ring: 'ring-yellow-400' },
   { id: 'green', bg: 'bg-green-500', ring: 'ring-green-400' },
@@ -15,7 +16,7 @@ const COLORS = [
 
 function getColorClass(colorId) {
   const color = COLORS.find(c => c.id === colorId);
-  return color ? color.bg : 'bg-red-500';
+  return color ? color.bg : 'bg-accent-500';
 }
 
 // Time limit presets
@@ -76,7 +77,7 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel }) {
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition"
+            className="flex-1 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition"
           >
             Delete
           </button>
@@ -89,7 +90,7 @@ function ConfirmModal({ isOpen, title, message, onConfirm, onCancel }) {
 // Toggle Switch component
 function Toggle({ enabled, onChange, color = 'green' }) {
   const bgColor = color === 'red'
-    ? (enabled ? 'bg-red-500' : 'bg-gray-300')
+    ? (enabled ? 'bg-accent-500' : 'bg-gray-300')
     : (enabled ? 'bg-green-500' : 'bg-gray-300');
 
   return (
@@ -109,6 +110,9 @@ function Toggle({ enabled, onChange, color = 'green' }) {
 
 // Expandable Kid Card component - simplified with inline editing
 function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
+  // Own useAuth call — KidCard is a sibling of KidsManager, not a child of it,
+  // so the parent's `token` is not in scope here.
+  const { token } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
@@ -177,6 +181,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
         requestsEnabled: form.requestsEnabled,
         shortsEnabled: form.shortsEnabled,
         videoPaused: form.videoPaused,
+        userToken: token ?? undefined,
       });
 
       // Save or delete time limits
@@ -218,7 +223,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-gray-900">{kid.name}</h3>
                 {kid.videoPaused && (
-                  <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-xs rounded font-medium">Paused</span>
+                  <span className="px-1.5 py-0.5 bg-accent-100 text-accent-700 text-xs rounded font-medium">Paused</span>
                 )}
               </div>
               <div className="flex items-center gap-2 mt-0.5 text-sm text-gray-500">
@@ -255,7 +260,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
                 type="text"
                 value={form.name}
                 onChange={(e) => updateForm({ name: e.target.value })}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-500"
                 maxLength={20}
               />
             </div>
@@ -310,10 +315,10 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
               </div>
 
               {/* Video Paused - styled differently as it's a lockout */}
-              <div className="flex items-center justify-between py-2 px-3 bg-red-50 rounded-lg -mx-3">
+              <div className="flex items-center justify-between py-2 px-3 bg-accent-50 rounded-lg -mx-3">
                 <div>
-                  <p className="text-sm font-medium text-red-700">Pause All Videos</p>
-                  <p className="text-xs text-red-600/70">Temporarily block playback</p>
+                  <p className="text-sm font-medium text-accent-700">Pause All Videos</p>
+                  <p className="text-xs text-accent-600/70">Temporarily block playback</p>
                 </div>
                 <Toggle
                   enabled={form.videoPaused}
@@ -352,7 +357,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
                         onClick={() => updateForm({ dailyLimitMinutes: preset.value })}
                         className={`px-2 py-1.5 rounded-lg text-xs font-medium transition ${
                           form.dailyLimitMinutes === preset.value
-                            ? 'bg-red-500 text-white'
+                            ? 'bg-accent-500 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
@@ -372,7 +377,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
                         hasWeekendLimit: e.target.checked,
                         weekendLimitMinutes: e.target.checked ? form.dailyLimitMinutes : undefined
                       })}
-                      className="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500"
+                      className="w-4 h-4 text-accent-500 border-gray-300 rounded focus:ring-accent-500"
                     />
                     <span className="text-sm text-gray-700">Different limit on weekends</span>
                   </label>
@@ -406,7 +411,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
                         allowedStartHour: e.target.checked ? 8 : undefined,
                         allowedEndHour: e.target.checked ? 20 : undefined
                       })}
-                      className="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500"
+                      className="w-4 h-4 text-accent-500 border-gray-300 rounded focus:ring-accent-500"
                     />
                     <span className="text-sm text-gray-700">Only allow during certain hours</span>
                   </label>
@@ -415,7 +420,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
                       <select
                         value={form.allowedStartHour ?? 8}
                         onChange={(e) => updateForm({ allowedStartHour: parseInt(e.target.value) })}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-2 py-1.5 text-sm focus:ring-red-500 focus:border-red-500"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-2 py-1.5 text-sm focus:ring-accent-500 focus:border-accent-500"
                       >
                         {HOURS.map((h) => (
                           <option key={h.value} value={h.value}>{h.label}</option>
@@ -425,7 +430,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
                       <select
                         value={form.allowedEndHour ?? 20}
                         onChange={(e) => updateForm({ allowedEndHour: parseInt(e.target.value) })}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-2 py-1.5 text-sm focus:ring-red-500 focus:border-red-500"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-2 py-1.5 text-sm focus:ring-accent-500 focus:border-accent-500"
                       >
                         {HOURS.map((h) => (
                           <option key={h.value} value={h.value}>{h.label}</option>
@@ -462,7 +467,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
                 {kidHistory.length > 3 && (
                   <button
                     onClick={() => setShowAllHistory(!showAllHistory)}
-                    className="w-full text-xs text-red-600 hover:text-red-700 font-medium py-1"
+                    className="w-full text-xs text-accent-600 hover:text-accent-700 font-medium py-1"
                   >
                     {showAllHistory ? 'Show less' : `+${kidHistory.length - 3} more`}
                   </button>
@@ -478,7 +483,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
               disabled={saving || !form.name.trim()}
               className={`flex-1 py-2.5 rounded-lg font-medium transition ${
                 hasChanges
-                  ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white'
+                  ? 'bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white'
                   : 'bg-gray-100 text-gray-500'
               }`}
             >
@@ -486,7 +491,7 @@ function KidCard({ kid, userId, allTimeLimits, recentHistory, onDelete }) {
             </button>
             <button
               onClick={() => onDelete(kid._id, kid.name)}
-              className="px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-lg font-medium transition"
+              className="px-4 py-2.5 text-accent-600 hover:bg-accent-50 rounded-lg font-medium transition"
             >
               Delete
             </button>
@@ -503,6 +508,8 @@ export default function KidsManager({ userId, kidProfiles }) {
   const [isLoading, setIsLoading] = useState(false);
   const [confirmModal, setConfirmModal] = useState(null);
   const [formData, setFormData] = useState({ name: '', color: 'red' });
+
+  const { token } = useAuth();
 
   const createProfile = useMutation(api.kidProfiles.createKidProfile);
   const deleteProfile = useMutation(api.kidProfiles.deleteKidProfile);
@@ -526,6 +533,7 @@ export default function KidsManager({ userId, kidProfiles }) {
         userId,
         name: formData.name.trim(),
         color: formData.color,
+        userToken: token ?? undefined,
       });
       setFormData({ name: '', color: 'red' });
       setIsCreating(false);
@@ -540,7 +548,7 @@ export default function KidsManager({ userId, kidProfiles }) {
     if (!confirmModal) return;
     setIsLoading(true);
     try {
-      await deleteProfile({ profileId: confirmModal.id });
+      await deleteProfile({ profileId: confirmModal.id, userToken: token ?? undefined });
       setConfirmModal(null);
     } catch (err) {
       console.error('Failed to delete profile:', err);
@@ -559,7 +567,7 @@ export default function KidsManager({ userId, kidProfiles }) {
         {!isCreating && (
           <button
             onClick={() => setIsCreating(true)}
-            className="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-medium text-sm transition"
+            className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium text-sm transition"
           >
             + Add Kid
           </button>
@@ -579,7 +587,7 @@ export default function KidsManager({ userId, kidProfiles }) {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Enter name"
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-500"
                   maxLength={20}
                   autoFocus
                 />
@@ -605,7 +613,7 @@ export default function KidsManager({ userId, kidProfiles }) {
                 <button
                   onClick={handleCreate}
                   disabled={isLoading || !formData.name.trim()}
-                  className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 disabled:from-gray-300 disabled:to-gray-400 text-white px-4 py-2 rounded-lg font-medium transition"
+                  className="flex-1 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 disabled:from-gray-300 disabled:to-gray-400 text-white px-4 py-2 rounded-lg font-medium transition"
                 >
                   {isLoading ? 'Creating...' : 'Create Profile'}
                 </button>
@@ -649,7 +657,7 @@ export default function KidsManager({ userId, kidProfiles }) {
               <p className="text-gray-500 text-sm mb-4">Add a profile for each child to get started</p>
               <button
                 onClick={() => setIsCreating(true)}
-                className="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-medium text-sm transition"
+                className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium text-sm transition"
               >
                 Add Your First Kid
               </button>

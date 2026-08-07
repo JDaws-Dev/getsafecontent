@@ -3,6 +3,7 @@ import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import GettingStarted from './GettingStarted';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { ThemeSelector } from '../common/ThemeToggle';
 
 // Stripe Price ID - SafeTube Premium $4.99/month
@@ -10,7 +11,7 @@ const STRIPE_PRICE_ID = import.meta.env.VITE_STRIPE_PRICE_ID || 'price_1Spp7oKgk
 
 // Color constants
 const COLORS = [
-  { id: 'red', bg: 'bg-red-500', hex: '#ef4444' },
+  { id: 'red', bg: 'bg-accent-500', hex: '#F0603A' },
   { id: 'orange', bg: 'bg-orange-500', hex: '#f97316' },
   { id: 'yellow', bg: 'bg-yellow-500', hex: '#eab308' },
   { id: 'green', bg: 'bg-green-500', hex: '#22c55e' },
@@ -21,7 +22,7 @@ const COLORS = [
 
 function getColorClass(colorId) {
   const color = COLORS.find(c => c.id === colorId);
-  return color ? color.bg : 'bg-red-500';
+  return color ? color.bg : 'bg-accent-500';
 }
 
 // Time limit presets
@@ -65,6 +66,7 @@ function formatTimeAgo(timestamp) {
 }
 
 export default function Settings({ userData, onLogout }) {
+  const { token } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSetupGuide, setShowSetupGuide] = useState(false);
   const [activeSection, setActiveSection] = useState('kids'); // 'kids', 'account', 'support'
@@ -92,7 +94,7 @@ export default function Settings({ userData, onLogout }) {
   // Get kid profiles
   const kidProfiles = useQuery(
     api.kidProfiles.getKidProfiles,
-    userData?._id ? { userId: userData._id } : 'skip'
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
 
   // Get time limits and watch history for kid cards
@@ -111,7 +113,7 @@ export default function Settings({ userData, onLogout }) {
     if (!confirmModal) return;
     setIsLoading(true);
     try {
-      await deleteProfile({ profileId: confirmModal.id });
+      await deleteProfile({ profileId: confirmModal.id, userToken: token ?? undefined });
       setConfirmModal(null);
       if (expandedKidId === confirmModal.id) {
         setExpandedKidId(null);
@@ -180,7 +182,7 @@ export default function Settings({ userData, onLogout }) {
           onClick={() => setActiveSection('kids')}
           className={`px-4 py-2 font-medium text-sm rounded-t-lg transition ${
             activeSection === 'kids'
-              ? 'bg-white text-red-600 border border-gray-200 border-b-white -mb-px'
+              ? 'bg-white text-accent-600 border border-gray-200 border-b-white -mb-px'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -190,7 +192,7 @@ export default function Settings({ userData, onLogout }) {
           onClick={() => setActiveSection('account')}
           className={`px-4 py-2 font-medium text-sm rounded-t-lg transition ${
             activeSection === 'account'
-              ? 'bg-white text-red-600 border border-gray-200 border-b-white -mb-px'
+              ? 'bg-white text-accent-600 border border-gray-200 border-b-white -mb-px'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -200,7 +202,7 @@ export default function Settings({ userData, onLogout }) {
           onClick={() => setActiveSection('support')}
           className={`px-4 py-2 font-medium text-sm rounded-t-lg transition ${
             activeSection === 'support'
-              ? 'bg-white text-red-600 border border-gray-200 border-b-white -mb-px'
+              ? 'bg-white text-accent-600 border border-gray-200 border-b-white -mb-px'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -210,7 +212,7 @@ export default function Settings({ userData, onLogout }) {
           onClick={() => setActiveSection('appearance')}
           className={`px-4 py-2 font-medium text-sm rounded-t-lg transition ${
             activeSection === 'appearance'
-              ? 'bg-white text-red-600 border border-gray-200 border-b-white -mb-px'
+              ? 'bg-white text-accent-600 border border-gray-200 border-b-white -mb-px'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -223,7 +225,7 @@ export default function Settings({ userData, onLogout }) {
         <div className="space-y-6">
           {/* Kids Management Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-red-500 to-orange-500">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-accent-500 to-accent-600">
               <div>
                 <h2 className="text-lg font-semibold text-white">Kid Profiles</h2>
                 <p className="text-sm text-white/80">Manage access and time limits for each child</p>
@@ -250,7 +252,7 @@ export default function Settings({ userData, onLogout }) {
                 <p className="text-gray-500 text-sm mb-4">Add a profile for each child to get started</p>
                 <button
                   onClick={() => setShowAddKid(true)}
-                  className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
+                  className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
                 >
                   Add Your First Kid
                 </button>
@@ -289,7 +291,7 @@ export default function Settings({ userData, onLogout }) {
               </div>
               <button
                 onClick={() => setShowSetupGuide(true)}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-4 py-2.5 rounded-xl font-medium transition"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-4 py-2.5 rounded-xl font-medium transition"
               >
                 View Setup Guide
               </button>
@@ -303,7 +305,7 @@ export default function Settings({ userData, onLogout }) {
         <div className="space-y-6">
           {/* Account Information */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-accent-500 to-accent-600 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -342,7 +344,7 @@ export default function Settings({ userData, onLogout }) {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Family Code</label>
-                    <p className="text-2xl font-mono font-bold text-red-600 tracking-wider">{userData?.familyCode || 'Not set'}</p>
+                    <p className="text-2xl font-mono font-bold text-accent-600 tracking-wider">{userData?.familyCode || 'Not set'}</p>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Member Since</label>
@@ -365,7 +367,7 @@ export default function Settings({ userData, onLogout }) {
                       type="text"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                       placeholder="Your name"
                       autoComplete="name"
                       autoFocus
@@ -381,11 +383,11 @@ export default function Settings({ userData, onLogout }) {
                   </div>
 
                   {editNameError && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                      <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="p-3 bg-accent-50 border border-accent-200 rounded-lg flex items-start gap-2">
+                      <svg className="w-5 h-5 text-accent-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                       </svg>
-                      <span className="text-sm text-red-700">{editNameError}</span>
+                      <span className="text-sm text-accent-700">{editNameError}</span>
                     </div>
                   )}
 
@@ -393,7 +395,7 @@ export default function Settings({ userData, onLogout }) {
                     <button
                       type="submit"
                       disabled={editNameLoading}
-                      className="px-6 py-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-6 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {editNameLoading ? 'Saving...' : 'Save Changes'}
                     </button>
@@ -430,7 +432,7 @@ export default function Settings({ userData, onLogout }) {
               </p>
               <button
                 onClick={handlePasswordChange}
-                className="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-medium transition"
+                className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium transition"
               >
                 Change Password
               </button>
@@ -438,8 +440,8 @@ export default function Settings({ userData, onLogout }) {
           </div>
 
           {/* Safe Family Account */}
-          <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl shadow-sm border border-red-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-red-100 bg-gradient-to-r from-red-500 to-orange-500 flex items-center gap-3">
+          <div className="bg-accent-50 rounded-2xl shadow-sm border border-accent-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-accent-100 bg-gradient-to-r from-accent-500 to-accent-600 flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -451,8 +453,8 @@ export default function Settings({ userData, onLogout }) {
               </div>
             </div>
             <div className="p-6">
-              <div className="flex items-center gap-2 mb-4 p-3 bg-white rounded-lg border border-red-200">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+              <div className="flex items-center gap-2 mb-4 p-3 bg-white rounded-lg border border-accent-200">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-100 text-accent-700">
                   <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
                   </svg>
@@ -465,7 +467,7 @@ export default function Settings({ userData, onLogout }) {
                 href="https://getsafefamily.com/account"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-medium transition shadow-md"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium transition shadow-md"
               >
                 <span>Manage Safe Family Account</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -494,9 +496,9 @@ export default function Settings({ userData, onLogout }) {
               Log Out
             </button>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-red-200 overflow-hidden">
-              <div className="px-5 py-3 bg-red-50 border-b border-red-200">
-                <h3 className="font-semibold text-red-900 text-sm flex items-center gap-2">
+            <div className="bg-white rounded-2xl shadow-sm border border-accent-200 overflow-hidden">
+              <div className="px-5 py-3 bg-accent-50 border-b border-accent-200">
+                <h3 className="font-semibold text-accent-900 text-sm flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
@@ -507,7 +509,7 @@ export default function Settings({ userData, onLogout }) {
                 <p className="text-xs text-gray-500 mb-3">Permanently delete your account and all data</p>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition"
+                  className="w-full px-4 py-2 bg-accent-100 hover:bg-accent-200 text-accent-700 rounded-lg text-sm font-medium transition"
                 >
                   Delete Account
                 </button>
@@ -533,7 +535,7 @@ export default function Settings({ userData, onLogout }) {
             <div className="p-4 space-y-2">
               <a
                 href="mailto:jeremiah@getsafefamily.com"
-                className="flex items-center gap-3 text-gray-700 hover:text-red-600 transition p-3 rounded-xl hover:bg-gray-50"
+                className="flex items-center gap-3 text-gray-700 hover:text-accent-600 transition p-3 rounded-xl hover:bg-gray-50"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -559,7 +561,7 @@ export default function Settings({ userData, onLogout }) {
             <div className="p-4 space-y-2">
               <a
                 href="/privacy"
-                className="flex items-center gap-3 text-gray-700 hover:text-red-600 transition p-3 rounded-xl hover:bg-gray-50"
+                className="flex items-center gap-3 text-gray-700 hover:text-accent-600 transition p-3 rounded-xl hover:bg-gray-50"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -568,7 +570,7 @@ export default function Settings({ userData, onLogout }) {
               </a>
               <a
                 href="/terms"
-                className="flex items-center gap-3 text-gray-700 hover:text-red-600 transition p-3 rounded-xl hover:bg-gray-50"
+                className="flex items-center gap-3 text-gray-700 hover:text-accent-600 transition p-3 rounded-xl hover:bg-gray-50"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -585,7 +587,7 @@ export default function Settings({ userData, onLogout }) {
         <div className="space-y-6">
           {/* Theme Selection Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-red-500 to-orange-500">
+            <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-accent-500 to-accent-600">
               <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
@@ -644,7 +646,7 @@ export default function Settings({ userData, onLogout }) {
               <button
                 onClick={handleDeleteConfirm}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition"
+                className="flex-1 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition"
               >
                 {isLoading ? 'Deleting...' : 'Delete'}
               </button>
@@ -657,8 +659,8 @@ export default function Settings({ userData, onLogout }) {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
@@ -667,7 +669,7 @@ export default function Settings({ userData, onLogout }) {
               This action cannot be undone. All your data, kid profiles, and approved content will be permanently deleted.
             </p>
             <p className="text-sm text-gray-500 text-center mb-4">
-              Type <span className="font-mono font-bold text-red-600">DELETE</span> to confirm:
+              Type <span className="font-mono font-bold text-accent-600">DELETE</span> to confirm:
             </p>
             <input
               type="text"
@@ -677,11 +679,11 @@ export default function Settings({ userData, onLogout }) {
                 setDeleteError('');
               }}
               placeholder="Type DELETE"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 text-center font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 text-center font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
               disabled={deleteLoading}
             />
             {deleteError && (
-              <p className="text-sm text-red-600 text-center mb-4">{deleteError}</p>
+              <p className="text-sm text-accent-600 text-center mb-4">{deleteError}</p>
             )}
             <div className="flex gap-3">
               <button
@@ -714,7 +716,7 @@ export default function Settings({ userData, onLogout }) {
                   }
                 }}
                 disabled={deleteLoading || deleteConfirmText !== 'DELETE'}
-                className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-3 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {deleteLoading ? 'Deleting...' : 'Delete Account'}
               </button>
@@ -751,7 +753,7 @@ export default function Settings({ userData, onLogout }) {
 // Toggle Switch component
 function Toggle({ enabled, onChange, color = 'green' }) {
   const bgColor = color === 'red'
-    ? (enabled ? 'bg-red-500' : 'bg-gray-300')
+    ? (enabled ? 'bg-accent-500' : 'bg-gray-300')
     : (enabled ? 'bg-green-500' : 'bg-gray-300');
 
   return (
@@ -771,6 +773,8 @@ function Toggle({ enabled, onChange, color = 'green' }) {
 
 // Kid Card - expandable with full inline editing
 function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, recentHistory }) {
+  // Own useAuth call — sibling component, parent's `token` isn't in scope.
+  const { token } = useAuth();
   const [saving, setSaving] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -845,6 +849,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
         requestsEnabled: form.requestsEnabled,
         shortsEnabled: form.shortsEnabled,
         videoPaused: form.videoPaused,
+        userToken: token ?? undefined,
       });
 
       // Save or delete time limits
@@ -869,10 +874,10 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
   };
 
   return (
-    <div className={`bg-gray-50 rounded-xl border overflow-hidden ${kid.videoPaused ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
+    <div className={`bg-gray-50 rounded-xl border overflow-hidden ${kid.videoPaused ? 'border-accent-200 bg-accent-50' : 'border-gray-200'}`}>
       {/* Card Header - Always visible */}
       <div
-        className={`p-4 cursor-pointer transition ${kid.videoPaused ? 'hover:bg-red-100' : 'hover:bg-gray-100'}`}
+        className={`p-4 cursor-pointer transition ${kid.videoPaused ? 'hover:bg-accent-100' : 'hover:bg-gray-100'}`}
         onClick={onToggle}
       >
         <div className="flex items-center gap-3">
@@ -893,7 +898,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                 </svg>
               )}
               {kid.videoPaused && (
-                <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">Paused</span>
+                <span className="text-xs bg-accent-100 text-accent-600 px-2 py-0.5 rounded-full font-medium">Paused</span>
               )}
             </div>
             <div className="flex items-center gap-2 mt-0.5 text-sm text-gray-500">
@@ -930,7 +935,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                 type="text"
                 value={form.name}
                 onChange={(e) => updateForm({ name: e.target.value })}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-500"
                 maxLength={20}
               />
             </div>
@@ -971,14 +976,14 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                     updateForm({ pin: val });
                   }}
                   placeholder="••••"
-                  className="w-24 text-center text-xl font-mono tracking-widest bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-24 text-center text-xl font-mono tracking-widest bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-500"
                   maxLength={4}
                 />
                 {form.pin && (
                   <button
                     type="button"
                     onClick={() => updateForm({ pin: '' })}
-                    className="text-xs text-red-600 hover:text-red-700 font-medium"
+                    className="text-xs text-accent-600 hover:text-accent-700 font-medium"
                   >
                     Remove PIN
                   </button>
@@ -1025,10 +1030,10 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
               </div>
 
               {/* Video Paused - styled differently as it's a lockout */}
-              <div className="flex items-center justify-between py-2 px-3 bg-red-50 rounded-lg -mx-3">
+              <div className="flex items-center justify-between py-2 px-3 bg-accent-50 rounded-lg -mx-3">
                 <div>
-                  <p className="text-sm font-medium text-red-700">Pause All Videos</p>
-                  <p className="text-xs text-red-600/70">Temporarily block playback</p>
+                  <p className="text-sm font-medium text-accent-700">Pause All Videos</p>
+                  <p className="text-xs text-accent-600/70">Temporarily block playback</p>
                 </div>
                 <Toggle
                   enabled={form.videoPaused}
@@ -1068,7 +1073,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                         onClick={() => updateForm({ dailyLimitMinutes: preset.value })}
                         className={`px-2 py-1.5 rounded-lg text-xs font-medium transition ${
                           form.dailyLimitMinutes === preset.value
-                            ? 'bg-red-500 text-white'
+                            ? 'bg-accent-500 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
@@ -1088,7 +1093,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                         hasWeekendLimit: e.target.checked,
                         weekendLimitMinutes: e.target.checked ? form.dailyLimitMinutes : undefined
                       })}
-                      className="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500"
+                      className="w-4 h-4 text-accent-500 border-gray-300 rounded focus:ring-accent-500"
                     />
                     <span className="text-sm text-gray-700">Different limit on weekends</span>
                   </label>
@@ -1123,7 +1128,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                         allowedStartHour: e.target.checked ? 8 : undefined,
                         allowedEndHour: e.target.checked ? 20 : undefined
                       })}
-                      className="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500"
+                      className="w-4 h-4 text-accent-500 border-gray-300 rounded focus:ring-accent-500"
                     />
                     <span className="text-sm text-gray-700">Only allow during certain hours</span>
                   </label>
@@ -1132,7 +1137,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                       <select
                         value={form.allowedStartHour ?? 8}
                         onChange={(e) => updateForm({ allowedStartHour: parseInt(e.target.value) })}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-2 py-1.5 text-sm focus:ring-red-500 focus:border-red-500"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-2 py-1.5 text-sm focus:ring-accent-500 focus:border-accent-500"
                       >
                         {HOURS.map((h) => (
                           <option key={h.value} value={h.value}>{h.label}</option>
@@ -1142,7 +1147,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                       <select
                         value={form.allowedEndHour ?? 20}
                         onChange={(e) => updateForm({ allowedEndHour: parseInt(e.target.value) })}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-2 py-1.5 text-sm focus:ring-red-500 focus:border-red-500"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-2 py-1.5 text-sm focus:ring-accent-500 focus:border-accent-500"
                       >
                         {HOURS.map((h) => (
                           <option key={h.value} value={h.value}>{h.label}</option>
@@ -1179,7 +1184,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                 {kidHistory.length > 3 && (
                   <button
                     onClick={() => setShowAllHistory(!showAllHistory)}
-                    className="w-full text-xs text-red-600 hover:text-red-700 font-medium py-1"
+                    className="w-full text-xs text-accent-600 hover:text-accent-700 font-medium py-1"
                   >
                     {showAllHistory ? 'Show less' : `+${kidHistory.length - 3} more`}
                   </button>
@@ -1195,7 +1200,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
               disabled={saving || !form.name.trim()}
               className={`flex-1 py-2.5 rounded-lg font-medium transition ${
                 hasChanges
-                  ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white'
+                  ? 'bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white'
                   : 'bg-gray-100 text-gray-500'
               }`}
             >
@@ -1203,7 +1208,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
             </button>
             <button
               onClick={() => onDelete(kid._id, kid.name)}
-              className="px-4 py-2.5 text-red-600 hover:bg-red-50 rounded-lg font-medium transition"
+              className="px-4 py-2.5 text-accent-600 hover:bg-accent-50 rounded-lg font-medium transition"
             >
               Delete
             </button>
@@ -1219,6 +1224,7 @@ function AddKidModal({ userId, onClose }) {
   const [name, setName] = useState('');
   const [color, setColor] = useState('red');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { token } = useAuth();
 
   const createKid = useMutation(api.kidProfiles.createKidProfile);
 
@@ -1232,6 +1238,7 @@ function AddKidModal({ userId, onClose }) {
         userId,
         name: name.trim(),
         color,
+        userToken: token ?? undefined,
       });
       onClose();
     } catch (err) {
@@ -1264,7 +1271,7 @@ function AddKidModal({ userId, onClose }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter kid's name"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent-500"
               maxLength={20}
               autoFocus
             />
@@ -1299,7 +1306,7 @@ function AddKidModal({ userId, onClose }) {
             <button
               type="submit"
               disabled={!name.trim() || isSubmitting}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-medium transition disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium transition disabled:opacity-50"
             >
               {isSubmitting ? 'Adding...' : 'Add Kid'}
             </button>
@@ -1426,7 +1433,7 @@ function SubscriptionCard({ userData }) {
   const colorClasses = {
     purple: { bg: 'bg-purple-100', text: 'text-purple-700', dot: 'bg-purple-500' },
     green: { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500' },
-    red: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' },
+    red: { bg: 'bg-accent-100', text: 'text-accent-700', dot: 'bg-accent-500' },
     orange: { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500' },
     blue: { bg: 'bg-blue-100', text: 'text-blue-700', dot: 'bg-blue-500' },
   };
@@ -1456,7 +1463,7 @@ function SubscriptionCard({ userData }) {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          <div className="mb-4 p-3 bg-accent-50 border border-accent-200 rounded-lg text-sm text-accent-700">
             {error}
           </div>
         )}
@@ -1467,7 +1474,7 @@ function SubscriptionCard({ userData }) {
             <button
               onClick={handleSubscribe}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-4 py-3 rounded-xl font-medium transition shadow-md disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-4 py-3 rounded-xl font-medium transition shadow-md disabled:opacity-50"
             >
               {isLoading ? (
                 <>
@@ -1520,14 +1527,14 @@ function SubscriptionCard({ userData }) {
                 </button>
                 <button
                   onClick={() => setShowCancelModal(true)}
-                  className="w-full text-sm text-gray-500 hover:text-red-600 py-2 transition"
+                  className="w-full text-sm text-gray-500 hover:text-accent-600 py-2 transition"
                 >
                   Cancel Subscription
                 </button>
               </>
             ) : (
               <p className="text-center text-sm text-gray-500">
-                To manage or cancel, contact <a href="mailto:jeremiah@getsafefamily.com" className="text-red-600 hover:underline">jeremiah@getsafefamily.com</a>
+                To manage or cancel, contact <a href="mailto:jeremiah@getsafefamily.com" className="text-accent-600 hover:underline">jeremiah@getsafefamily.com</a>
               </p>
             )}
           </div>
@@ -1567,7 +1574,7 @@ function SubscriptionCard({ userData }) {
                     key={reason}
                     className={`flex items-center p-3 border rounded-lg cursor-pointer transition ${
                       cancelReason === reason
-                        ? 'border-red-600 bg-red-50'
+                        ? 'border-accent-600 bg-accent-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
@@ -1577,7 +1584,7 @@ function SubscriptionCard({ userData }) {
                       value={reason}
                       checked={cancelReason === reason}
                       onChange={(e) => setCancelReason(e.target.value)}
-                      className="w-4 h-4 text-red-600 focus:ring-red-500"
+                      className="w-4 h-4 text-accent-600 focus:ring-accent-500"
                     />
                     <span className="ml-3 text-gray-700">{reason}</span>
                   </label>
@@ -1591,7 +1598,7 @@ function SubscriptionCard({ userData }) {
                     onChange={(e) => setCancelOtherReason(e.target.value)}
                     placeholder="Please tell us more..."
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   />
                 </div>
               )}
@@ -1611,7 +1618,7 @@ function SubscriptionCard({ userData }) {
                 <button
                   onClick={handleCancelWithReason}
                   disabled={cancelLoading || !cancelReason}
-                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {cancelLoading ? (
                     <>
@@ -1635,7 +1642,7 @@ function SubscriptionCard({ userData }) {
           <button
             onClick={handleManageSubscription}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl font-medium transition disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 text-white px-4 py-3 rounded-xl font-medium transition disabled:opacity-50"
           >
             {isLoading ? 'Loading...' : 'Update Payment Method'}
           </button>
@@ -1644,7 +1651,7 @@ function SubscriptionCard({ userData }) {
         {/* Contact for lifetime users */}
         {hasLifetime && (
           <p className="text-center text-sm text-gray-500">
-            Questions? Contact <a href="mailto:jeremiah@getsafefamily.com" className="text-red-600 hover:underline">jeremiah@getsafefamily.com</a>
+            Questions? Contact <a href="mailto:jeremiah@getsafefamily.com" className="text-accent-600 hover:underline">jeremiah@getsafefamily.com</a>
           </p>
         )}
       </div>
