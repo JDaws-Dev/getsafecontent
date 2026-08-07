@@ -23,7 +23,7 @@ const ChevronRight = () => (
 const BackButton = ({ onClick, label = 'Back' }) => (
   <button
     onClick={onClick}
-    className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium mb-4"
+    className="flex items-center gap-2 text-accent-600 hover:text-accent-700 font-medium mb-4"
   >
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -512,7 +512,7 @@ function Settings({ user, onLogout, initialSection }) {
     <div className="max-w-2xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+        <h1 className="text-2xl font-display font-bold text-brand-navy">Settings</h1>
       </div>
 
       {/* iOS Trial Expired Message */}
@@ -534,7 +534,7 @@ function Settings({ user, onLogout, initialSection }) {
 
       {/* Main Menu View */}
       {activeSection === 'menu' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           {menuItems.map((item, index) => (
             <button
               key={item.id}
@@ -544,7 +544,7 @@ function Settings({ user, onLogout, initialSection }) {
               }`}
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                <div className="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center text-accent-600">
                   {item.icon}
                 </div>
                 <div className="text-left">
@@ -578,8 +578,8 @@ function Settings({ user, onLogout, initialSection }) {
         <div className="space-y-6">
           <BackButton onClick={() => setActiveSection('menu')} label="Settings" />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Content Controls</h2>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <h2 className="text-xl font-display font-semibold text-brand-navy mb-6">Content Controls</h2>
 
             {/* Global Hide Artwork Toggle */}
             <div className="flex items-center justify-between py-4 border-b border-gray-100">
@@ -603,8 +603,8 @@ function Settings({ user, onLogout, initialSection }) {
                     showToast('Failed to update setting', 'error');
                   }
                 }}
-                className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
-                  fullUser?.globalHideArtwork ? 'bg-purple-600' : 'bg-gray-200'
+                className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 ${
+                  fullUser?.globalHideArtwork ? 'bg-accent-600' : 'bg-gray-200'
                 }`}
               >
                 <span
@@ -616,12 +616,12 @@ function Settings({ user, onLogout, initialSection }) {
             </div>
 
             {/* Info box explaining the feature */}
-            <div className="mt-6 p-4 bg-purple-50 border border-purple-100 rounded-lg">
+            <div className="mt-6 p-4 bg-accent-50 border border-accent-100 rounded-lg">
               <div className="flex gap-3">
-                <svg className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 text-accent-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
-                <div className="text-sm text-purple-800">
+                <div className="text-sm text-accent-800">
                   <p className="font-medium mb-1">How this works</p>
                   <p>When enabled, all album artwork will be replaced with a music note placeholder. Your individual "hide artwork" settings for specific albums are preserved - when you turn this off, those individual settings will take effect again.</p>
                 </div>
@@ -636,8 +636,8 @@ function Settings({ user, onLogout, initialSection }) {
         <div className="space-y-6">
           <BackButton onClick={() => setActiveSection('menu')} label="Settings" />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Appearance</h2>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <h2 className="text-xl font-display font-semibold text-brand-navy mb-6">Appearance</h2>
 
             {/* Theme Selection */}
             <div className="space-y-4">
@@ -651,12 +651,12 @@ function Settings({ user, onLogout, initialSection }) {
             </div>
 
             {/* Info box */}
-            <div className="mt-6 p-4 bg-purple-50 border border-purple-100 rounded-lg">
+            <div className="mt-6 p-4 bg-accent-50 border border-accent-100 rounded-lg">
               <div className="flex gap-3">
-                <svg className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 text-accent-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
-                <div className="text-sm text-purple-800">
+                <div className="text-sm text-accent-800">
                   <p className="font-medium mb-1">System theme</p>
                   <p>When set to System, SafeTunes will automatically switch between light and dark mode based on your device settings.</p>
                 </div>
@@ -672,13 +672,13 @@ function Settings({ user, onLogout, initialSection }) {
           <BackButton onClick={() => setActiveSection('menu')} label="Settings" />
 
           {/* Profile Info */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Profile Information</h2>
+              <h2 className="text-xl font-display font-semibold text-brand-navy">Profile Information</h2>
               {!isEditingAccount && (
                 <button
                   onClick={startEditingAccount}
-                  className="px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 border border-purple-200 hover:border-purple-300 rounded-lg transition"
+                  className="px-4 py-2 text-sm font-medium text-accent-600 hover:text-accent-700 border border-accent-200 hover:border-accent-300 rounded-lg transition"
                 >
                   Edit
                 </button>
@@ -717,7 +717,7 @@ function Settings({ user, onLogout, initialSection }) {
                     type="text"
                     value={accountForm.name}
                     onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                     placeholder="Your name"
                     autoComplete="name"
                   />
@@ -728,7 +728,7 @@ function Settings({ user, onLogout, initialSection }) {
                     type="email"
                     value={accountForm.email}
                     onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                     placeholder="your@email.com"
                     autoComplete="email"
                   />
@@ -747,7 +747,7 @@ function Settings({ user, onLogout, initialSection }) {
                   <button
                     type="submit"
                     disabled={accountLoading}
-                    className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {accountLoading ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -768,21 +768,21 @@ function Settings({ user, onLogout, initialSection }) {
           </div>
 
           {/* Safe Family Account */}
-          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl shadow-sm p-6 border border-purple-100">
+          <div className="bg-accent-50 rounded-2xl shadow-sm p-6 border border-accent-100">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-accent-600 rounded-xl flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Safe Family Account</h2>
+                <h2 className="text-xl font-display font-semibold text-brand-navy">Safe Family Account</h2>
                 <p className="text-sm text-gray-600">Manage your subscription and apps</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-4 p-3 bg-white rounded-lg border border-purple-200">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+            <div className="flex items-center gap-2 mb-4 p-3 bg-white rounded-lg border border-accent-200">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-100 text-accent-700">
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                 </svg>
@@ -795,7 +795,7 @@ function Settings({ user, onLogout, initialSection }) {
               href="https://getsafefamily.com/account"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition"
             >
               <span>Manage Safe Family Account</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -809,15 +809,15 @@ function Settings({ user, onLogout, initialSection }) {
           </div>
 
           {/* Family Code Section */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Family Code</h2>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <h2 className="text-xl font-display font-semibold text-brand-navy mb-4">Family Code</h2>
 
             {fullUser?.familyCode ? (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="bg-accent-50 border border-accent-200 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Your Family Code</p>
-                    <div className="text-3xl font-bold text-purple-600 tracking-widest">
+                    <div className="text-3xl font-bold text-accent-600 tracking-widest">
                       {fullUser.familyCode}
                     </div>
                   </div>
@@ -830,7 +830,7 @@ function Settings({ user, onLogout, initialSection }) {
                         showToast(`Your family code is: ${fullUser.familyCode}`, 'info');
                       }
                     }}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition"
+                    className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg text-sm font-medium transition"
                   >
                     Copy
                   </button>
@@ -847,21 +847,21 @@ function Settings({ user, onLogout, initialSection }) {
           </div>
 
           {/* Security Section */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Security</h2>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <h2 className="text-xl font-display font-semibold text-brand-navy mb-4">Security</h2>
             <p className="text-sm text-gray-600 mb-4">
               To change your password, we'll send a reset code to your email.
             </p>
             <button
               onClick={handlePasswordChange}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition"
+              className="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition"
             >
               Change Password
             </button>
           </div>
 
           {/* Danger Zone - Account Deletion */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-red-200">
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-red-200">
             <h2 className="text-xl font-semibold text-red-900 mb-2">Delete Account</h2>
             <p className="text-sm text-gray-600 mb-4">
               Permanently delete your account and all data.
@@ -881,18 +881,18 @@ function Settings({ user, onLogout, initialSection }) {
         <div className="space-y-6">
           <BackButton onClick={() => setActiveSection('menu')} label="Settings" />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Apple Music Integration</h2>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <h2 className="text-xl font-display font-semibold text-brand-navy mb-6">Apple Music Integration</h2>
 
             {(fullUser?.appleMusicAuthorized || user?.appleMusicAuthorized) && (fullUser?.appleMusicAuthDate || user?.appleMusicAuthDate) && (
-              <div className="mb-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="mb-6 bg-accent-50 border border-accent-200 rounded-lg p-4">
                 <div className="flex items-center gap-3">
-                  <svg className="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-8 h-8 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                   </svg>
                   <div>
-                    <p className="font-semibold text-purple-900">Account Connected</p>
-                    <p className="text-sm text-purple-700">
+                    <p className="font-semibold text-accent-900">Account Connected</p>
+                    <p className="text-sm text-accent-700">
                       Connected on {new Date(fullUser?.appleMusicAuthDate || user?.appleMusicAuthDate).toLocaleDateString()}
                     </p>
                   </div>
@@ -908,7 +908,7 @@ function Settings({ user, onLogout, initialSection }) {
             </div>
 
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-2">About Apple Music</h3>
+              <h3 className="font-display font-semibold text-brand-navy mb-2">About Apple Music</h3>
               <ul className="text-sm text-gray-600 space-y-2">
                 <li className="flex items-start">
                   <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -939,13 +939,13 @@ function Settings({ user, onLogout, initialSection }) {
         <div className="space-y-6">
           <BackButton onClick={() => setActiveSection('menu')} label="Settings" />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Kid Profiles</h2>
+              <h2 className="text-xl font-display font-semibold text-brand-navy">Kid Profiles</h2>
               {!isCreatingKid && !editingKidId && (
                 <button
                   onClick={startCreatingKid}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
+                  className="bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -969,8 +969,8 @@ function Settings({ user, onLogout, initialSection }) {
 
             {/* Create/Edit Form - SIMPLIFIED */}
             {(isCreatingKid || editingKidId) && (
-              <div className="border border-purple-300 rounded-lg p-6 mb-6 bg-purple-50">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="border border-accent-300 rounded-lg p-6 mb-6 bg-accent-50">
+                <h3 className="text-lg font-display font-semibold text-brand-navy mb-4">
                   {isCreatingKid ? 'Create New Kid Profile' : 'Edit Kid Profile'}
                 </h3>
 
@@ -982,7 +982,7 @@ function Settings({ user, onLogout, initialSection }) {
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent"
                       placeholder="Kid's name"
                     />
                   </div>
@@ -1017,7 +1017,7 @@ function Settings({ user, onLogout, initialSection }) {
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, timeLimitEnabled: !prev.timeLimitEnabled }))}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          formData.timeLimitEnabled ? 'bg-purple-600' : 'bg-gray-300'
+                          formData.timeLimitEnabled ? 'bg-accent-600' : 'bg-gray-300'
                         }`}
                       >
                         <span
@@ -1029,7 +1029,7 @@ function Settings({ user, onLogout, initialSection }) {
                     </div>
 
                     {formData.timeLimitEnabled && (
-                      <div className="bg-white border border-purple-200 rounded-lg p-4">
+                      <div className="bg-white border border-accent-200 rounded-lg p-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Daily limit: {formData.dailyTimeLimitMinutes} minutes ({Math.floor(formData.dailyTimeLimitMinutes / 60)}h {formData.dailyTimeLimitMinutes % 60}m)
                         </label>
@@ -1040,7 +1040,7 @@ function Settings({ user, onLogout, initialSection }) {
                           step="15"
                           value={formData.dailyTimeLimitMinutes}
                           onChange={(e) => setFormData(prev => ({ ...prev, dailyTimeLimitMinutes: parseInt(e.target.value) }))}
-                          className="w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                          className="w-full h-2 bg-accent-200 rounded-lg appearance-none cursor-pointer accent-accent-600"
                         />
                         <div className="flex justify-between text-xs text-gray-500 mt-1">
                           <span>15 min</span>
@@ -1056,7 +1056,7 @@ function Settings({ user, onLogout, initialSection }) {
                               onClick={() => setFormData(prev => ({ ...prev, dailyTimeLimitMinutes: mins }))}
                               className={`px-2 py-1 text-xs font-medium rounded-lg transition ${
                                 formData.dailyTimeLimitMinutes === mins
-                                  ? 'bg-purple-600 text-white'
+                                  ? 'bg-accent-600 text-white'
                                   : 'bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-50'
                               }`}
                             >
@@ -1079,7 +1079,7 @@ function Settings({ user, onLogout, initialSection }) {
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, timeOfDayEnabled: !prev.timeOfDayEnabled }))}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          formData.timeOfDayEnabled ? 'bg-purple-600' : 'bg-gray-300'
+                          formData.timeOfDayEnabled ? 'bg-accent-600' : 'bg-gray-300'
                         }`}
                       >
                         <span
@@ -1091,7 +1091,7 @@ function Settings({ user, onLogout, initialSection }) {
                     </div>
 
                     {formData.timeOfDayEnabled && (
-                      <div className="bg-white border border-purple-200 rounded-lg p-4">
+                      <div className="bg-white border border-accent-200 rounded-lg p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-xs font-medium text-gray-600 mb-1">Start Time</label>
@@ -1099,7 +1099,7 @@ function Settings({ user, onLogout, initialSection }) {
                               type="time"
                               value={formData.allowedStartTime}
                               onChange={(e) => setFormData(prev => ({ ...prev, allowedStartTime: e.target.value }))}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent"
                             />
                           </div>
                           <div>
@@ -1108,7 +1108,7 @@ function Settings({ user, onLogout, initialSection }) {
                               type="time"
                               value={formData.allowedEndTime}
                               onChange={(e) => setFormData(prev => ({ ...prev, allowedEndTime: e.target.value }))}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent"
                             />
                           </div>
                         </div>
@@ -1132,7 +1132,7 @@ function Settings({ user, onLogout, initialSection }) {
                               }))}
                               className={`px-2 py-1 text-xs font-medium rounded-lg transition ${
                                 formData.allowedStartTime === preset.start && formData.allowedEndTime === preset.end
-                                  ? 'bg-purple-600 text-white'
+                                  ? 'bg-accent-600 text-white'
                                   : 'bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-50'
                               }`}
                             >
@@ -1160,7 +1160,7 @@ function Settings({ user, onLogout, initialSection }) {
                         }}
                         maxLength={4}
                         placeholder="••••"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-center text-lg font-bold tracking-widest"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent text-center text-lg font-bold tracking-widest"
                       />
                       <input
                         type="password"
@@ -1171,7 +1171,7 @@ function Settings({ user, onLogout, initialSection }) {
                         }}
                         maxLength={4}
                         placeholder="Confirm"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-center text-lg font-bold tracking-widest"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent text-center text-lg font-bold tracking-widest"
                       />
                     </div>
                   </div>
@@ -1186,7 +1186,7 @@ function Settings({ user, onLogout, initialSection }) {
                     </button>
                     <button
                       onClick={handleSaveKid}
-                      className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition"
+                      className="flex-1 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition"
                     >
                       {isCreatingKid ? 'Create Profile' : 'Save Changes'}
                     </button>
@@ -1204,7 +1204,7 @@ function Settings({ user, onLogout, initialSection }) {
                             setShowExportModal(true);
                           }
                         }}
-                        className="w-full px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 text-purple-700 rounded-lg font-medium transition border border-purple-200 flex items-center justify-center gap-2"
+                        className="w-full px-4 py-2 bg-accent-50 hover:bg-accent-100 text-accent-700 rounded-lg font-medium transition border border-accent-200 flex items-center justify-center gap-2"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -1258,18 +1258,18 @@ function Settings({ user, onLogout, initialSection }) {
                   <button
                     key={kid._id}
                     onClick={() => startEditingKid(kid)}
-                    className="w-full border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition flex items-center justify-between"
+                    className="w-full border border-gray-200 rounded-lg p-4 hover:border-accent-300 transition flex items-center justify-between"
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-full ${getColorClass(kid.color)} flex items-center justify-center text-white font-bold text-lg`}>
                         {kid.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="text-left">
-                        <h3 className="font-semibold text-gray-900">{kid.name}</h3>
+                        <h3 className="font-display font-semibold text-brand-navy">{kid.name}</h3>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           {kid.timeLimitEnabled && kid.dailyTimeLimitMinutes && (
                             <span className="flex items-center gap-1">
-                              <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-4 h-4 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
                               {kid.dailyTimeLimitMinutes < 60
@@ -1307,8 +1307,8 @@ function Settings({ user, onLogout, initialSection }) {
 
           {/* Archived Profiles Section */}
           {archivedProfiles.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+              <h2 className="text-lg font-display font-semibold text-brand-navy mb-4 flex items-center gap-2">
                 <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                 </svg>
@@ -1329,7 +1329,7 @@ function Settings({ user, onLogout, initialSection }) {
                           {archive.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900">{archive.name}</h3>
+                          <h3 className="font-display font-medium text-brand-navy">{archive.name}</h3>
                           <p className="text-sm text-amber-700">
                             {archive.songCount} songs, {archive.playlistCount} playlists • Expires in {archive.daysRemaining} days
                           </p>
@@ -1370,13 +1370,13 @@ function Settings({ user, onLogout, initialSection }) {
         <div className="space-y-6">
           <BackButton onClick={() => setActiveSection('menu')} label="Settings" />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Subscription</h2>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <h2 className="text-xl font-display font-semibold text-brand-navy mb-6">Subscription</h2>
 
             {/* Subscription Status */}
             <div className={`border rounded-lg p-6 mb-6 ${
               fullUser?.subscriptionStatus === 'active' ? 'bg-green-50 border-green-200' :
-              fullUser?.subscriptionStatus === 'lifetime' ? 'bg-purple-50 border-purple-200' :
+              fullUser?.subscriptionStatus === 'lifetime' ? 'bg-accent-50 border-accent-200' :
               fullUser?.subscriptionStatus === 'trial' ? 'bg-blue-50 border-blue-200' :
               'bg-gray-50 border-gray-200'
             }`}>
@@ -1384,7 +1384,7 @@ function Settings({ user, onLogout, initialSection }) {
                 <div>
                   <h3 className={`text-lg font-semibold ${
                     fullUser?.subscriptionStatus === 'active' ? 'text-green-900' :
-                    fullUser?.subscriptionStatus === 'lifetime' ? 'text-purple-900' :
+                    fullUser?.subscriptionStatus === 'lifetime' ? 'text-accent-900' :
                     fullUser?.subscriptionStatus === 'trial' ? 'text-blue-900' :
                     'text-gray-900'
                   }`}>
@@ -1397,7 +1397,7 @@ function Settings({ user, onLogout, initialSection }) {
                   </h3>
                   <p className={`text-sm ${
                     fullUser?.subscriptionStatus === 'active' ? 'text-green-700' :
-                    fullUser?.subscriptionStatus === 'lifetime' ? 'text-purple-700' :
+                    fullUser?.subscriptionStatus === 'lifetime' ? 'text-accent-700' :
                     fullUser?.subscriptionStatus === 'trial' ? 'text-blue-700' :
                     'text-gray-700'
                   }`}>
@@ -1422,7 +1422,7 @@ function Settings({ user, onLogout, initialSection }) {
                   </p>
                 </div>
                 <div className={`text-2xl font-bold ${
-                  fullUser?.subscriptionStatus === 'lifetime' ? 'text-purple-900' :
+                  fullUser?.subscriptionStatus === 'lifetime' ? 'text-accent-900' :
                   fullUser?.subscriptionStatus === 'active' ? 'text-green-900' :
                   'text-gray-900'
                 }`}>
@@ -1443,16 +1443,16 @@ function Settings({ user, onLogout, initialSection }) {
 
               {fullUser?.couponCode && (
                 <div className={`mt-3 pt-3 border-t ${
-                  fullUser?.subscriptionStatus === 'lifetime' ? 'border-purple-300' : 'border-green-300'
+                  fullUser?.subscriptionStatus === 'lifetime' ? 'border-accent-300' : 'border-green-300'
                 }`}>
                   <div className="flex items-center gap-2">
                     <svg className={`w-4 h-4 ${
-                      fullUser?.subscriptionStatus === 'lifetime' ? 'text-purple-700' : 'text-green-700'
+                      fullUser?.subscriptionStatus === 'lifetime' ? 'text-accent-700' : 'text-green-700'
                     }`} fill="currentColor" viewBox="0 0 20 20">
                       <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z" />
                     </svg>
                     <span className={`text-sm ${
-                      fullUser?.subscriptionStatus === 'lifetime' ? 'text-purple-800' : 'text-green-800'
+                      fullUser?.subscriptionStatus === 'lifetime' ? 'text-accent-800' : 'text-green-800'
                     }`}>
                       <strong>Coupon used:</strong> {fullUser.couponCode}
                     </span>
@@ -1481,7 +1481,7 @@ function Settings({ user, onLogout, initialSection }) {
                         }
                       }}
                       disabled={portalLoading}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50"
+                      className="w-full bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50"
                     >
                       {portalLoading ? 'Loading...' : 'Manage Subscription'}
                     </button>
@@ -1527,26 +1527,26 @@ function Settings({ user, onLogout, initialSection }) {
         <div className="space-y-6">
           <BackButton onClick={() => setActiveSection('menu')} label="Settings" />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Support</h2>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <h2 className="text-xl font-display font-semibold text-brand-navy mb-6">Support</h2>
 
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
+            <div className="bg-accent-50 border border-accent-200 rounded-2xl p-6">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-accent-600 rounded-full flex items-center justify-center">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Need Help?</h3>
+                  <h3 className="text-lg font-display font-bold text-brand-navy mb-2">Need Help?</h3>
                   <p className="text-gray-700 mb-4">
                     If you're having trouble or have questions, we're here to help!
                   </p>
                   <a
                     href="mailto:jeremiah@getsafefamily.com"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -1563,7 +1563,7 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Account Deletion Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1571,7 +1571,7 @@ function Settings({ user, onLogout, initialSection }) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Delete Account?</h3>
+                <h3 className="text-lg font-display font-bold text-brand-navy">Delete Account?</h3>
                 <p className="text-sm text-gray-600">This action cannot be undone</p>
               </div>
             </div>
@@ -1647,7 +1647,7 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Kid Profile Deletion Modal - Now archives for 30 days */}
       {showDeleteKidModal && kidToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1655,7 +1655,7 @@ function Settings({ user, onLogout, initialSection }) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Delete {kidToDelete.name}'s Profile?</h3>
+                <h3 className="text-lg font-display font-bold text-brand-navy">Delete {kidToDelete.name}'s Profile?</h3>
                 <p className="text-sm text-gray-600">Can be restored within 30 days</p>
               </div>
             </div>
@@ -1715,7 +1715,7 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Kid Profile Reset Modal */}
       {showResetKidModal && kidToReset && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1723,7 +1723,7 @@ function Settings({ user, onLogout, initialSection }) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Reset {kidToReset.name}'s Profile?</h3>
+                <h3 className="text-lg font-display font-bold text-brand-navy">Reset {kidToReset.name}'s Profile?</h3>
                 <p className="text-sm text-gray-600">Give them a fresh start</p>
               </div>
             </div>
@@ -1784,7 +1784,7 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Restore Archive Modal */}
       {showRestoreModal && archiveToRestore && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1792,7 +1792,7 @@ function Settings({ user, onLogout, initialSection }) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Restore {archiveToRestore.name}'s Profile?</h3>
+                <h3 className="text-lg font-display font-bold text-brand-navy">Restore {archiveToRestore.name}'s Profile?</h3>
                 <p className="text-sm text-gray-600">Bring back their data</p>
               </div>
             </div>
@@ -1842,7 +1842,7 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Cancellation Reason Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1850,7 +1850,7 @@ function Settings({ user, onLogout, initialSection }) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Before you go...</h3>
+                <h3 className="text-lg font-display font-bold text-brand-navy">Before you go...</h3>
                 <p className="text-sm text-gray-600">We'd love to know why</p>
               </div>
             </div>
@@ -1873,7 +1873,7 @@ function Settings({ user, onLogout, initialSection }) {
                   key={reason}
                   className={`flex items-center p-3 border rounded-lg cursor-pointer transition ${
                     cancelReason === reason
-                      ? 'border-purple-600 bg-purple-50'
+                      ? 'border-accent-600 bg-accent-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
@@ -1883,7 +1883,7 @@ function Settings({ user, onLogout, initialSection }) {
                     value={reason}
                     checked={cancelReason === reason}
                     onChange={(e) => setCancelReason(e.target.value)}
-                    className="w-4 h-4 text-purple-600 focus:ring-purple-500"
+                    className="w-4 h-4 text-accent-600 focus:ring-accent-500"
                   />
                   <span className="ml-3 text-gray-700">{reason}</span>
                 </label>
@@ -1897,7 +1897,7 @@ function Settings({ user, onLogout, initialSection }) {
                   onChange={(e) => setCancelOtherReason(e.target.value)}
                   placeholder="Please tell us more..."
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                 />
               </div>
             )}

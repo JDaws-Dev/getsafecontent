@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server";
 import stripe from "./stripe";
 import adminDashboard from "./adminDashboard";
 import adminOrphans from "./adminOrphans";
+import cleanupOrphans from "./cleanupOrphans";
 import grantLifetime from "./grantLifetime";
 import setSubscriptionStatus from "./setSubscriptionStatus";
 import checkUserMusic from "./checkUserMusic";
@@ -39,6 +40,19 @@ http.route({
   path: "/adminOrphans",
   method: "OPTIONS",
   handler: adminOrphans,
+});
+
+// Admin cleanup endpoint — deletes all orphaned records (cascades)
+http.route({
+  path: "/cleanupOrphans",
+  method: "GET",
+  handler: cleanupOrphans,
+});
+
+http.route({
+  path: "/cleanupOrphans",
+  method: "OPTIONS",
+  handler: cleanupOrphans,
 });
 
 // Grant lifetime subscription route

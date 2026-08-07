@@ -88,7 +88,7 @@ type SortMode = "popular" | "az";
 function BookSkeleton() {
   return (
     <div className="flex flex-col items-start animate-pulse">
-      <div className="aspect-[2/3] w-full rounded-xl bg-purple-100/60" />
+      <div className="aspect-[2/3] w-full rounded-xl bg-accent-100/60" />
       <div className="mt-2 h-3 w-4/5 rounded bg-gray-200" />
       <div className="mt-1 h-2.5 w-3/5 rounded bg-gray-100" />
     </div>
@@ -437,7 +437,7 @@ export default function LibraryPage() {
   if (!kidProfile) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-200 border-t-purple-600" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-200 border-t-accent-600" />
       </div>
     );
   }
@@ -447,11 +447,11 @@ export default function LibraryPage() {
       {/* ---- Top Bar ---- */}
       <div className="animate-fade-up mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-md">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent-500 to-accent-600 shadow-md">
             <Library className="h-4.5 w-4.5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-800">Library</h1>
+            <h1 className="text-xl font-bold font-display text-brand-navy">Library</h1>
             <p className="text-[10px] text-gray-400">Browse and discover books</p>
           </div>
         </div>
@@ -464,7 +464,7 @@ export default function LibraryPage() {
       </div>
 
       {/* ---- Sticky Filter Bar ---- */}
-      <div className="sticky top-0 z-20 -mx-4 bg-[#FEF7EE]/95 px-4 pb-3 pt-2 backdrop-blur-md">
+      <div className="sticky top-0 z-20 -mx-4 bg-brand-cream/95 px-4 pb-3 pt-2 backdrop-blur-md">
         {/* Format pills */}
         <div className="mb-2.5 flex items-center gap-2">
           {(
@@ -479,7 +479,7 @@ export default function LibraryPage() {
               onClick={() => setFormatFilter(key)}
               className={`kid-touch flex min-h-[36px] items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold transition-all duration-200 active:scale-95 ${
                 formatFilter === key
-                  ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md"
+                  ? "bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md"
                   : "bg-white text-gray-500 ring-1 ring-black/5 hover:shadow-sm"
               }`}
             >
@@ -508,7 +508,7 @@ export default function LibraryPage() {
             onClick={() => setGenreFilter(null)}
             className={`kid-touch flex min-h-[34px] flex-shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-bold transition-all duration-200 active:scale-95 ${
               !genreFilter
-                ? "bg-purple-600 text-white shadow-md"
+                ? "bg-accent-600 text-white shadow-md"
                 : "bg-white text-gray-600 ring-1 ring-black/5"
             }`}
           >
@@ -594,7 +594,7 @@ export default function LibraryPage() {
                   )}
                   {/* Audio indicator */}
                   {book.hasAudio && (
-                    <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-violet-500/85 shadow-sm backdrop-blur-sm">
+                    <div className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-accent-500/85 shadow-sm backdrop-blur-sm">
                       <Headphones className="h-2.5 w-2.5 text-white" />
                     </div>
                   )}
@@ -637,7 +637,7 @@ export default function LibraryPage() {
                   )}
                   {/* Audiobook "Listen" badge */}
                   {book.source === "audiobook" && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-violet-700/85 to-transparent px-1.5 pb-1 pt-3 text-center">
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-accent-700/85 to-transparent px-1.5 pb-1 pt-3 text-center">
                       <span className="flex items-center justify-center gap-0.5 text-[8px] font-bold uppercase tracking-wider text-white">
                         <Headphones className="h-2 w-2" />
                         Listen
@@ -645,14 +645,14 @@ export default function LibraryPage() {
                     </div>
                   )}
                 </div>
-                <p className="mt-1.5 line-clamp-2 w-full text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-purple-700">
+                <p className="mt-1.5 line-clamp-2 w-full text-[11px] font-semibold leading-tight text-gray-800 group-hover:text-accent-700">
                   {book.title}
                 </p>
                 <p className="line-clamp-1 w-full text-[9px] text-gray-400">
                   {book.author}
                 </p>
                 {book.totalTime && (
-                  <p className="text-[9px] font-medium text-violet-400">
+                  <p className="text-[9px] font-medium text-accent-400">
                     {book.totalTime}
                   </p>
                 )}
@@ -665,8 +665,8 @@ export default function LibraryPage() {
       {/* ---- Empty state ---- */}
       {!isLoading && initialLoaded && sortedBooks.length === 0 && (
         <div className="flex flex-col items-center rounded-2xl bg-white px-6 py-12 text-center shadow-sm">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-50">
-            <BookOpen className="h-8 w-8 text-purple-300" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-50">
+            <BookOpen className="h-8 w-8 text-accent-300" />
           </div>
           <p className="mt-4 text-base font-bold text-gray-600">
             No books match your filters
@@ -679,7 +679,7 @@ export default function LibraryPage() {
               setFormatFilter("all");
               setGenreFilter(null);
             }}
-            className="kid-touch mt-4 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all active:scale-95"
+            className="kid-touch mt-4 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all active:scale-95"
           >
             Show All Books
           </button>
@@ -690,7 +690,7 @@ export default function LibraryPage() {
       {hasMore && sortedBooks.length > 0 && (
         <div ref={sentinelRef} className="flex items-center justify-center py-8">
           {pageLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-accent-400" />
           ) : (
             <div className="h-4" />
           )}

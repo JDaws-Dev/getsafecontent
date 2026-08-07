@@ -1,16 +1,25 @@
 import type { Metadata } from "next";
-import { Inter, Libre_Baskerville } from "next/font/google";
+import { Fredoka, Quicksand, Libre_Baskerville } from "next/font/google";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ClientNavWrapper } from "@/components/ClientNavWrapper";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+// Safe Family "glow-up" type system (shared across all 5 apps):
+// Quicksand = body, Fredoka = display/headings.
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
   subsets: ["latin"],
   display: "swap",
 });
 
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Retained for legacy bookish serif accents (parent/marketing surfaces).
 const libreBaskerville = Libre_Baskerville({
   variable: "--font-serif",
   subsets: ["latin"],
@@ -56,7 +65,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${libreBaskerville.variable} font-sans antialiased`}>
+      <body className={`${quicksand.variable} ${fredoka.variable} ${libreBaskerville.variable} font-sans antialiased`}>
         <ThemeProvider>
           <ConvexClientProvider>
             <ClientNavWrapper>{children}</ClientNavWrapper>

@@ -27,7 +27,7 @@ const VERDICT_STYLES: Record<string, { bg: string; text: string; label: string }
   safe: { bg: "bg-verdict-safe", text: "text-white", label: "Safe" },
   caution: { bg: "bg-verdict-caution", text: "text-white", label: "Caution" },
   warning: { bg: "bg-verdict-warning", text: "text-white", label: "Warning" },
-  no_verdict: { bg: "bg-parchment-300", text: "text-ink-600", label: "No Verdict" },
+  no_verdict: { bg: "bg-brand-cream-2", text: "text-ink-600", label: "No Verdict" },
 };
 
 export default function DashboardPage() {
@@ -80,7 +80,7 @@ export default function DashboardPage() {
 
       {/* Canceled checkout message */}
       {subscriptionBanner === "canceled" && (
-        <div className="mb-6 flex items-center justify-between gap-3 rounded-lg bg-parchment-50 border border-parchment-200 px-4 py-3">
+        <div className="mb-6 flex items-center justify-between gap-3 rounded-lg bg-brand-cream border border-brand-cream-2 px-4 py-3">
           <p className="text-sm text-ink-600">
             Checkout was canceled. You can upgrade anytime from Settings.
           </p>
@@ -94,7 +94,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <h1 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+      <h1 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
         Welcome{firstName ? `, ${firstName}` : ""}
       </h1>
       <p className="mt-2 text-sm text-ink-500 sm:text-base">
@@ -103,18 +103,18 @@ export default function DashboardPage() {
 
       {/* Family Code — prominent, right after greeting */}
       {familyCode && (
-        <div className="mt-4 flex items-center gap-3 rounded-xl bg-gradient-to-r from-purple-50 to-violet-50 p-4 ring-1 ring-purple-200">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-purple-600 text-white">
+        <div className="mt-4 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-accent-50 to-accent-100 p-4 ring-1 ring-accent-200">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent-600 text-white">
             <Users className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-purple-700">
+            <p className="text-xs font-medium text-accent-700">
               Kid Login Code — share this with your kids
             </p>
-            <p className="mt-0.5 font-mono text-xl font-bold tracking-[0.2em] text-purple-900">
+            <p className="mt-0.5 font-mono text-xl font-bold tracking-[0.2em] text-accent-900">
               {familyCode.code}
             </p>
-            <p className="mt-0.5 text-[10px] text-purple-500">
+            <p className="mt-0.5 text-[10px] text-accent-500">
               Kids go to getsafereads.com/read and enter this code
             </p>
           </div>
@@ -124,7 +124,7 @@ export default function DashboardPage() {
               setCodeCopied(true);
               setTimeout(() => setCodeCopied(false), 2000);
             }}
-            className="flex items-center gap-1 rounded-lg bg-purple-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-purple-700"
+            className="flex items-center gap-1 rounded-lg bg-accent-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-accent-700"
           >
             {codeCopied ? (
               <>
@@ -144,13 +144,13 @@ export default function DashboardPage() {
       {/* Ask Advisor — prominent CTA */}
       <Link
         href="/dashboard/chat"
-        className="mt-6 flex items-center gap-4 rounded-xl border border-parchment-200 bg-gradient-to-r from-parchment-100 to-white p-4 transition-colors hover:border-parchment-300 hover:shadow-sm"
+        className="mt-6 flex items-center gap-4 rounded-2xl border border-brand-cream-2 bg-gradient-to-r from-brand-cream-2 to-white p-4 transition-colors hover:border-accent-300 hover:shadow-sm"
       >
-        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-parchment-700 text-parchment-50">
+        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-accent-700 text-accent-50">
           <MessageCircle className="h-6 w-6" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-serif text-base font-bold text-ink-900">
+          <p className="font-display text-base font-bold text-brand-navy">
             Ask the SafeReads Advisor
           </p>
           <p className="mt-0.5 text-sm text-ink-500">
@@ -185,14 +185,14 @@ export default function DashboardPage() {
       {/* Recent Analyses */}
       <section className="mt-10">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-serif text-lg font-bold text-ink-900">
+          <h2 className="font-display text-lg font-bold text-brand-navy">
             <span className="sm:hidden">Recent Reviews</span>
             <span className="hidden sm:inline">Recently Reviewed on SafeReads</span>
           </h2>
           {recentAnalyses && recentAnalyses.length > 0 && (
             <Link
               href="/dashboard/search"
-              className="hidden flex-shrink-0 text-sm font-medium text-parchment-700 hover:text-parchment-800 sm:inline"
+              className="hidden flex-shrink-0 text-sm font-medium text-accent-700 hover:text-accent-800 sm:inline"
             >
               Search more
             </Link>
@@ -204,20 +204,20 @@ export default function DashboardPage() {
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="h-40 w-28 flex-shrink-0 animate-pulse rounded-lg bg-parchment-100"
+                className="h-40 w-28 flex-shrink-0 animate-pulse rounded-lg bg-brand-cream-2"
               />
             ))}
           </div>
         ) : recentAnalyses.length === 0 ? (
-          <div className="mt-4 rounded-lg border border-parchment-200 bg-white p-8 text-center">
-            <Shield className="mx-auto h-10 w-10 text-parchment-300" />
+          <div className="mt-4 rounded-2xl border border-brand-cream-2 bg-white p-8 text-center">
+            <Shield className="mx-auto h-10 w-10 text-accent-300" />
             <p className="mt-3 text-sm text-ink-500">
               No reviews yet. Search for a book to get your first content
               review.
             </p>
             <Link
               href="/dashboard/search"
-              className="mt-4 inline-block rounded-lg bg-parchment-700 px-4 py-2 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+              className="mt-4 inline-block rounded-lg bg-accent-700 px-4 py-2 text-sm font-medium text-accent-50 transition-colors hover:bg-accent-800"
             >
               Search Books
             </Link>
@@ -232,7 +232,7 @@ export default function DashboardPage() {
                   href={`/dashboard/book/${analysis.bookId}`}
                   className="group relative flex-shrink-0 snap-start"
                 >
-                  <div className="relative h-40 w-28 overflow-hidden rounded-lg bg-parchment-100 shadow-sm transition-shadow group-hover:shadow-md">
+                  <div className="relative h-40 w-28 overflow-hidden rounded-lg bg-brand-cream-2 shadow-sm transition-shadow group-hover:shadow-md">
                     {analysis.book?.coverUrl ? (
                       <Image
                         src={analysis.book.coverUrl}
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                       />
                     ) : (
                       <div className="flex h-full flex-col items-center justify-center gap-1 p-2">
-                        <BookOpen className="h-6 w-6 text-parchment-300" />
+                        <BookOpen className="h-6 w-6 text-accent-300" />
                         <p className="text-center text-[10px] leading-tight text-ink-400">
                           {analysis.book?.title ?? "Unknown"}
                         </p>
@@ -256,7 +256,7 @@ export default function DashboardPage() {
                       {style.label}
                     </span>
                   </div>
-                  <p className="mt-1.5 w-28 truncate text-xs font-medium text-ink-800 group-hover:text-parchment-700">
+                  <p className="mt-1.5 w-28 truncate text-xs font-medium text-ink-800 group-hover:text-accent-700">
                     {analysis.book?.title ?? "Unknown"}
                   </p>
                   <p className="w-28 truncate text-[10px] text-ink-400">
@@ -270,9 +270,9 @@ export default function DashboardPage() {
               href="/dashboard/search"
               className="group flex-shrink-0 snap-start sm:hidden"
             >
-              <div className="flex h-40 w-28 flex-col items-center justify-center gap-2 rounded-lg border border-parchment-200 bg-white transition-colors group-hover:border-parchment-300 group-hover:shadow-sm">
-                <Search className="h-6 w-6 text-parchment-400 group-hover:text-parchment-600" />
-                <p className="text-xs font-medium text-parchment-700 group-hover:text-parchment-800">
+              <div className="flex h-40 w-28 flex-col items-center justify-center gap-2 rounded-lg border border-brand-cream-2 bg-white transition-colors group-hover:border-accent-300 group-hover:shadow-sm">
+                <Search className="h-6 w-6 text-accent-400 group-hover:text-accent-600" />
+                <p className="text-xs font-medium text-accent-700 group-hover:text-accent-800">
                   Search more
                 </p>
               </div>
@@ -311,27 +311,27 @@ export default function DashboardPage() {
       {kids !== undefined && (
         <section className="mt-10">
           <div className="flex items-center justify-between">
-            <h2 className="font-serif text-lg font-bold text-ink-900">
+            <h2 className="font-display text-lg font-bold text-brand-navy">
               Your Kids
             </h2>
             <Link
               href="/dashboard/kids"
-              className="text-sm font-medium text-parchment-700 hover:text-parchment-800"
+              className="text-sm font-medium text-accent-700 hover:text-accent-800"
             >
               Manage
             </Link>
           </div>
 
           {kids.length === 0 ? (
-            <div className="mt-4 rounded-lg border border-parchment-200 bg-white p-6 text-center">
-              <Users className="mx-auto h-10 w-10 text-parchment-300" />
+            <div className="mt-4 rounded-2xl border border-brand-cream-2 bg-white p-6 text-center">
+              <Users className="mx-auto h-10 w-10 text-accent-300" />
               <p className="mt-3 text-sm text-ink-500">
                 Add your kids to build wishlists and track reviews for each
                 child.
               </p>
               <Link
                 href="/dashboard/kids"
-                className="mt-4 inline-block rounded-lg border border-parchment-300 px-4 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-parchment-50"
+                className="mt-4 inline-block rounded-lg border border-accent-300 px-4 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-cream-2"
               >
                 Add Kids
               </Link>
@@ -342,13 +342,13 @@ export default function DashboardPage() {
                 <Link
                   key={kid._id}
                   href={`/dashboard/kids/${kid._id}/wishlist`}
-                  className="group flex items-center gap-3 rounded-lg border border-parchment-200 bg-white p-4 transition-colors hover:border-parchment-300 hover:shadow-sm"
+                  className="group flex items-center gap-3 rounded-2xl border border-brand-cream-2 bg-white p-4 transition-colors hover:border-accent-300 hover:shadow-sm"
                 >
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-parchment-100 text-sm font-bold text-parchment-700">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent-100 text-sm font-bold text-accent-700">
                     {kid.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-ink-900 group-hover:text-parchment-700">
+                    <p className="text-sm font-medium text-brand-navy group-hover:text-accent-700">
                       {kid.name}
                     </p>
                     {kid.age !== undefined && (
@@ -382,13 +382,13 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="group flex items-start gap-3 rounded-lg border border-parchment-200 bg-white p-4 transition-colors hover:border-parchment-300 hover:shadow-sm"
+      className="group flex items-start gap-3 rounded-2xl border border-brand-cream-2 bg-white p-4 transition-colors hover:border-accent-300 hover:shadow-sm"
     >
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-parchment-100 text-parchment-700 transition-colors group-hover:bg-parchment-200">
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-accent-100 text-accent-700 transition-colors group-hover:bg-accent-200">
         {icon}
       </div>
       <div>
-        <p className="text-sm font-medium text-ink-900 group-hover:text-parchment-700">
+        <p className="text-sm font-medium text-brand-navy group-hover:text-accent-700">
           {title}
         </p>
         <p className="mt-0.5 text-xs text-ink-400">{description}</p>

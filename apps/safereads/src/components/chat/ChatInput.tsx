@@ -28,7 +28,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   };
 
   return (
-    <div className="flex items-end gap-2 border-t border-parchment-200 bg-parchment-50 p-3">
+    <div className="flex items-end gap-2 border-t border-brand-cream-2 bg-brand-cream p-3">
       <textarea
         ref={textareaRef}
         value={value}
@@ -42,12 +42,12 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         placeholder="Ask about books, recommendations, age-appropriateness..."
         disabled={disabled}
         rows={1}
-        className="flex-1 resize-none rounded-xl border border-parchment-300 bg-white px-4 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-parchment-500 focus:outline-none disabled:opacity-50"
+        className="flex-1 resize-none rounded-xl border border-brand-cream-2 bg-white px-4 py-2.5 text-sm text-ink-800 placeholder:text-ink-400 focus:border-accent-500 focus:outline-none disabled:opacity-50"
       />
       <button
         onClick={handleSubmit}
         disabled={disabled || !value.trim()}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-parchment-700 text-parchment-50 transition-colors hover:bg-parchment-800 disabled:opacity-50"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-white transition-colors hover:bg-accent-700 disabled:opacity-50"
       >
         <Send className="h-4 w-4" />
       </button>

@@ -447,3 +447,41 @@ body {
 .dark .btn-brand-outline {
   color: #f5f5f7;
 }
+
+/* ----------------------------------------------------------------
+ * Accessibility globals
+ * ---------------------------------------------------------------- */
+
+/* Respect reduced-motion preferences. Tailwind's animate-* and transitions
+   ignore prefers-reduced-motion by default; this neutralizes them. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visible focus ring for keyboard users across all interactive elements.
+   Buttons/links without explicit focus-visible get a consistent fallback. */
+:focus-visible {
+  outline: 2px solid var(--peach-start);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Screen-reader-only utility for icon-only button labels */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

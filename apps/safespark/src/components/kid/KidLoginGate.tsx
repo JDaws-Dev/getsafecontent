@@ -42,28 +42,80 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Auto-fill family code when the kid arrived from another Safe Family app's
-  // "Other apps" switcher (URL param `?fc=ABCDEF`). The same unified code
-  // works across all 5 apps via `users.familyCode`, so we save them from
-  // re-typing it.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const param = new URL(window.location.href).searchParams.get('fc');
-    if (!param) return;
-    const normalized = param.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-    if (normalized.length === 6) {
-      setCode(normalized);
-      setSubmitted(normalized);
-    } else if (normalized.length > 0) {
-      setCode(normalized);
-    }
-  }, []);
-
   const family = useQuery(
     api.families.lookupByCode,
     submitted ? { familyCode: submitted } : 'skip',
   );
   const startSession = useMutation(api.kidSessions.start);
+  const redeemKidPass = useMutation(api.kidPass.redeemKidPass);
+
+  // Boot: a cross-app kid pass (?kt=) wins, then a bare family code (?fc=).
+  //   - ?kt= : the kid arrived from a sibling app already signed in. Redeem it
+  //     server-side; on success SafeSpark mints a real kid session (no PIN)
+  //     and we proceed straight into the app.
+  //   - ?fc= : just a family code — pre-fill + jump to the profile picker (the
+  //     same unified code works across all 5 apps via families.familyCode).
+  // Either credential is stripped from the URL / history immediately so it
+  // never lingers in a bookmark, the back stack, or a referrer header.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let cancelled = false;
+    const url = new URL(window.location.href);
+    const ktParam = url.searchParams.get('kt');
+    const fcParam = url.searchParams.get('fc');
+
+    if (ktParam || fcParam) {
+      url.searchParams.delete('kt');
+      url.searchParams.delete('fc');
+      window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+    }
+
+    const prefillCode = (raw: string) => {
+      const normalized = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+      if (normalized.length === 6) {
+        setCode(normalized);
+        setSubmitted(normalized);
+      } else if (normalized.length > 0) {
+        setCode(normalized);
+      }
+    };
+
+    const boot = async () => {
+      // 1) Kid pass — redeem for a real session, no PIN re-entry.
+      if (ktParam) {
+        try {
+          const res = await redeemKidPass({ token: ktParam });
+          if (cancelled) return;
+          if (res.ok && res.token) {
+            localStorage.setItem('lumiKidSession', res.token);
+            if (onSession) {
+              onSession(res.token);
+            } else {
+              router.push('/dashboard');
+            }
+            return;
+          }
+          // Verified family but no matching profile here (or unknown family) —
+          // fall back to the picker with the code pre-filled when we have one.
+          if ('familyCode' in res && res.familyCode) {
+            prefillCode(res.familyCode);
+            return;
+          }
+        } catch {
+          // fall through to the bare family-code path
+        }
+      }
+
+      // 2) Bare family code — skip straight to profile selection.
+      if (fcParam) prefillCode(fcParam);
+    };
+
+    boot();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmitCode = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +143,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
       kidProfileId: profileId,
       pin: withPin,
     });
-    if (result.ok && result.token) {
+    if (result.ok) {
       localStorage.setItem('lumiKidSession', result.token);
       if (onSession) {
         // Embedded in another route (/make) — let the parent component
@@ -117,7 +169,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
       <main className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="max-w-md w-full text-center space-y-8">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-widest text-violet-500">SafeSpark</p>
+            <p className="text-sm font-semibold uppercase tracking-widest text-accent-500">SafeSpark</p>
             <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mt-2">
               Welcome back!
             </h1>
@@ -134,7 +186,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
             <button
               type="submit"
               disabled={code.length < 6}
-              className="w-full px-6 py-3 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 text-white font-bold text-lg shadow-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="w-full px-6 py-3 rounded-2xl bg-accent-600 text-brand-navy font-bold text-lg shadow-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               Continue →
             </button>
@@ -188,7 +240,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
     <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-2xl w-full text-center space-y-8">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-widest text-violet-500">Who&apos;s this?</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-accent-500">Who&apos;s this?</p>
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 mt-2">
             Tap your tile.
           </h1>
@@ -198,7 +250,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
             <button
               key={p._id}
               onClick={() => handleProfileTap(p)}
-              className="p-5 rounded-3xl bg-white border border-violet-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition group"
+              className="p-5 rounded-3xl bg-white border border-accent-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition group"
             >
               <div
                 className={`w-20 h-20 mx-auto rounded-full ${COLOR_CLASSES[p.avatarColor] ?? 'bg-violet-500'} flex items-center justify-center shadow-md group-hover:scale-105 transition text-white text-3xl font-bold`}
@@ -206,7 +258,15 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
                 {p.displayName.charAt(0).toUpperCase()}
               </div>
               <p className="mt-3 font-bold text-slate-800">{p.displayName}</p>
-              {p.hasPin && <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">🔒 PIN</p>}
+              {p.hasPin && (
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5 inline-flex items-center gap-1">
+                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  PIN
+                </p>
+              )}
             </button>
           ))}
         </div>
@@ -260,7 +320,7 @@ function CodeInput({ value, onChange }: { value: string; onChange: (v: string) =
               refs.current[i - 1]?.focus();
             }
           }}
-          className="w-12 h-14 sm:w-14 sm:h-16 text-center text-3xl font-bold uppercase font-mono rounded-2xl border-2 border-violet-200 focus:outline-none focus:ring-4 focus:ring-violet-200 focus:border-violet-400 bg-white"
+          className="w-12 h-14 sm:w-14 sm:h-16 text-center text-3xl font-bold uppercase font-mono rounded-2xl border-2 border-accent-200 focus:outline-none focus:ring-4 focus:ring-accent-200 focus:border-accent-400 bg-white"
         />
       ))}
     </div>
@@ -309,7 +369,7 @@ function PinInput({
               refs.current[i - 1]?.focus();
             }
           }}
-          className="w-14 h-16 text-center text-3xl font-bold rounded-2xl border-2 border-violet-200 focus:outline-none focus:ring-4 focus:ring-violet-200 focus:border-violet-400 bg-white"
+          className="w-14 h-16 text-center text-3xl font-bold rounded-2xl border-2 border-accent-200 focus:outline-none focus:ring-4 focus:ring-accent-200 focus:border-accent-400 bg-white"
         />
       ))}
     </div>

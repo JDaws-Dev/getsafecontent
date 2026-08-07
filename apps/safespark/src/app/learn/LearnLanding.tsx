@@ -49,13 +49,13 @@ const TRACK_THEMES: Record<
   }
 > = {
   talk: {
-    cardTint: 'bg-violet-50/40',
-    cardBorderHover: 'hover:border-violet-300',
-    iconChip: 'bg-violet-100 text-violet-700',
-    accentText: 'text-violet-700',
-    sectionStripe: 'bg-violet-500',
-    sectionGradient: 'bg-gradient-to-r from-violet-100 via-violet-50 to-transparent',
-    sectionIconChip: 'bg-violet-600 text-white',
+    cardTint: 'bg-accent-50/40',
+    cardBorderHover: 'hover:border-accent-300',
+    iconChip: 'bg-accent-100 text-accent-700',
+    accentText: 'text-accent-700',
+    sectionStripe: 'bg-accent-500',
+    sectionGradient: 'bg-gradient-to-r from-accent-100 via-accent-50 to-transparent',
+    sectionIconChip: 'bg-accent-600 text-brand-navy',
   },
   think: {
     cardTint: 'bg-sky-50/40',
@@ -110,7 +110,7 @@ export function LearnLanding() {
   );
 
   if (!mounted || !kidSessionToken) {
-    return <main className="min-h-screen bg-slate-50" />;
+    return <main className="min-h-screen bg-brand-cream" />;
   }
 
   const familyCode = data?.familyCode ?? null;
@@ -128,13 +128,13 @@ export function LearnLanding() {
   });
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-brand-cream text-slate-900">
       <KidHeader
         familyCode={familyCode}
         rightSlot={
           <Link
             href="/make"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 lg:hidden"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-brand-cream lg:hidden"
           >
             Skip to building
             <ArrowRight className="h-4 w-4" />
@@ -145,7 +145,7 @@ export function LearnLanding() {
       <div className="mx-auto max-w-3xl space-y-10 px-6 py-10 pb-28 lg:pb-10">
         {/* Hero */}
         <section className="text-center">
-          <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-sm ring-4 ring-violet-100">
+          <div className="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-600 text-brand-navy shadow-sm ring-4 ring-accent-100">
             <GraduationCap className="h-7 w-7" />
           </div>
           <h1 className="mt-5 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -221,7 +221,7 @@ export function LearnLanding() {
           </p>
           <Link
             href="/make"
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700"
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-accent-600 px-5 py-2.5 text-sm font-semibold text-brand-navy shadow-sm hover:bg-accent-700"
           >
             Open the maker
             <ArrowRight className="h-4 w-4" />

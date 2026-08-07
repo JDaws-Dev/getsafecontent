@@ -2,6 +2,41 @@ import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import Stripe from "stripe";
 
+// SafeTunes, SafeTube, SafeReads, SafeStudy AND AnswerAxis all share ONE Stripe
+// account. Stripe fans every event out to EVERY registered webhook endpoint, so
+// this SafeTunes endpoint also receives SafeStudy/SafeReads/AnswerAxis events.
+// Without gating, a checkout for any of those would fire a SafeTunes
+// confirmation email + flip the customer's SafeTunes status — the cross-wired
+// "4 confirmation emails from one signup" bug Michael Kramer reported June 2026.
+// Only act on purchases that actually include SafeTunes.
+const SAFETUNES_PRICE_IDS = new Set(
+  [
+    process.env.STRIPE_PRICE_ID,
+    process.env.SAFETUNES_PRICE_ID,
+    "price_1SUXOjKgkIT46sg7RKwIgAVv", // live SafeTunes monthly ($4.99)
+  ].filter(Boolean) as string[]
+);
+
+function purchaseIncludesSafeTunes(
+  session: Stripe.Checkout.Session,
+  sub: Stripe.Subscription
+): boolean {
+  // Preferred signal: the `apps` metadata set by the SafeTunes-direct and
+  // marketing checkouts (comma-separated app list).
+  const appsMeta = (sub.metadata?.apps || session.metadata?.apps || "")
+    .toLowerCase();
+  if (appsMeta) {
+    return appsMeta
+      .split(",")
+      .map((a) => a.trim())
+      .includes("safetunes");
+  }
+  // No apps metadata (legacy sub, or a checkout from another business on the
+  // shared account): only treat as SafeTunes if a line item uses a known
+  // SafeTunes price.
+  return sub.items.data.some((item) => SAFETUNES_PRICE_IDS.has(item.price.id));
+}
+
 // Stripe webhook handler
 export default httpAction(async (ctx, request) => {
   // Initialize Stripe inside the handler to access environment variables
@@ -64,9 +99,19 @@ export default httpAction(async (ctx, request) => {
         const sub = await stripe.subscriptions.retrieve(session.subscription as string);
         const isTrial = sub.status === "trialing";
 
+        // Ignore checkouts that don't include SafeTunes (shared Stripe account —
+        // see purchaseIncludesSafeTunes). Prevents cross-wired confirmation
+        // emails + status flips for SafeStudy/SafeReads/AnswerAxis purchases.
+        if (!purchaseIncludesSafeTunes(session, sub)) {
+          console.log(
+            `[Webhook] Skipping checkout.session.completed for ${customerEmail} — purchase does not include SafeTunes`
+          );
+          return new Response("Ignored: not a SafeTunes purchase", { status: 200 });
+        }
+
         // CRITICAL: Update user subscription status first - this must succeed
         try {
-          await ctx.runMutation(api.users.updateSubscriptionStatus, {
+          await ctx.runMutation(internal.users.updateSubscriptionStatus, {
             email: customerEmail,
             subscriptionStatus: isTrial ? "trial" : "active",
             subscriptionId: session.subscription as string,
@@ -145,7 +190,7 @@ export default httpAction(async (ctx, request) => {
 
         // Update subscription status
         try {
-          await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+          await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
             subscriptionId: subscription.id,
             subscriptionStatus: newStatus,
             subscriptionEndsAt: subscription.cancel_at_period_end ? subscription.current_period_end * 1000 : undefined,
@@ -221,7 +266,7 @@ export default httpAction(async (ctx, request) => {
         // Only mark as cancelled if no other active subscriptions exist
         if (!hasOtherActiveSubscription) {
           try {
-            await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+            await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
               subscriptionId: deletedSubscription.id,
               subscriptionStatus: "cancelled",
             });
@@ -257,7 +302,7 @@ export default httpAction(async (ctx, request) => {
         if (paidInvoice.subscription) {
           // Update subscription status to active (confirms payment succeeded)
           try {
-            await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+            await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
               subscriptionId: paidInvoice.subscription as string,
               subscriptionStatus: "active",
             });
@@ -297,7 +342,7 @@ export default httpAction(async (ctx, request) => {
         if (invoice.subscription) {
           // Mark subscription as past_due
           try {
-            await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+            await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
               subscriptionId: invoice.subscription as string,
               subscriptionStatus: "past_due",
             });

@@ -8,6 +8,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { FacebookPixel } from './components/analytics/FacebookPixel';
 import { GoogleAds } from './components/analytics/GoogleAds';
 import { CookieConsent } from './components/legal/CookieConsent';
+import { SubscriptionSync } from './hooks/useSubscriptionSync';
 
 // Critical pages - load immediately for fast initial render
 import LandingPageSimple from './pages/LandingPageSimple';
@@ -119,6 +120,7 @@ function App() {
             <FacebookPixel />
             <GoogleAds />
             <CookieConsent />
+            <SubscriptionSync />
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Critical paths - not lazy loaded */}

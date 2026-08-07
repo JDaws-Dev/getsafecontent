@@ -106,7 +106,7 @@ export default function KidOnboardingPage() {
   if (!kidProfile || needsOnboarding === undefined) {
     return (
       <div className="flex min-h-[80vh] flex-col items-center justify-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-400 to-purple-600 shadow-lg">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-400 to-accent-600 shadow-lg">
           <BookOpen className="h-8 w-8 animate-pulse text-white" />
         </div>
       </div>
@@ -124,9 +124,9 @@ export default function KidOnboardingPage() {
             key={s}
             className={`h-2.5 rounded-full transition-all duration-300 ${
               s === step
-                ? "w-8 bg-gradient-to-r from-violet-500 to-purple-600"
+                ? "w-8 bg-gradient-to-r from-accent-500 to-accent-600"
                 : s < step
-                  ? "w-2.5 bg-purple-300"
+                  ? "w-2.5 bg-accent-300"
                   : "w-2.5 bg-gray-200"
             }`}
           />
@@ -137,7 +137,7 @@ export default function KidOnboardingPage() {
       {step === 1 && (
         <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
           <div className="mb-2 text-center">
-            <h1 className="font-serif text-2xl font-bold text-gray-900 sm:text-3xl">
+            <h1 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
               What do you love to read?
             </h1>
             <p className="mt-2 text-sm text-gray-500">
@@ -154,13 +154,13 @@ export default function KidOnboardingPage() {
                   onClick={() => toggleGenre(genre.key)}
                   className={`group relative flex flex-col items-center gap-1.5 rounded-2xl border-2 p-3 transition-all duration-200 active:scale-95 sm:gap-2 sm:p-4 ${
                     isSelected
-                      ? `border-purple-400 bg-purple-50 shadow-md ring-2 ${genre.ring}`
-                      : "border-gray-100 bg-white shadow-sm hover:border-purple-200 hover:shadow-md"
+                      ? `border-accent-400 bg-accent-50 shadow-md ring-2 ${genre.ring}`
+                      : "border-gray-100 bg-white shadow-sm hover:border-accent-200 hover:shadow-md"
                   }`}
                 >
                   {/* Check badge */}
                   {isSelected && (
-                    <div className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-purple-500 shadow-md">
+                    <div className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-accent-500 shadow-md">
                       <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
                     </div>
                   )}
@@ -180,7 +180,7 @@ export default function KidOnboardingPage() {
           {/* Selection count */}
           <div className="mt-5 text-center">
             <p className={`text-sm font-medium transition-colors ${
-              canProceedFromStep1 ? "text-purple-600" : "text-gray-400"
+              canProceedFromStep1 ? "text-accent-600" : "text-gray-400"
             }`}>
               {selectedGenres.length === 0
                 ? "Tap your favorites above"
@@ -194,7 +194,7 @@ export default function KidOnboardingPage() {
             <button
               onClick={() => setStep(2)}
               disabled={!canProceedFromStep1}
-              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-8 py-3.5 text-base font-bold text-white shadow-lg transition-all hover:from-violet-600 hover:to-purple-700 hover:shadow-xl disabled:opacity-40 disabled:hover:shadow-lg active:scale-95"
+              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-8 py-3.5 text-base font-bold text-white shadow-lg transition-all hover:from-accent-600 hover:to-accent-700 hover:shadow-xl disabled:opacity-40 disabled:hover:shadow-lg active:scale-95"
             >
               Next
               <ChevronRight className="h-5 w-5" />
@@ -207,7 +207,7 @@ export default function KidOnboardingPage() {
       {step === 2 && (
         <div className="w-full max-w-md animate-in fade-in slide-in-from-right-4 duration-300">
           <div className="mb-2 text-center">
-            <h1 className="font-serif text-2xl font-bold text-gray-900 sm:text-3xl">
+            <h1 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
               Set your daily reading goal
             </h1>
             <p className="mt-2 text-sm text-gray-500">
@@ -224,8 +224,8 @@ export default function KidOnboardingPage() {
                   onClick={() => setSelectedGoal(goal.minutes)}
                   className={`group flex flex-col items-center gap-2 rounded-2xl border-2 p-5 transition-all duration-200 active:scale-95 sm:p-6 ${
                     isSelected
-                      ? "border-purple-400 bg-purple-50 shadow-lg ring-2 ring-purple-200"
-                      : "border-gray-100 bg-white shadow-sm hover:border-purple-200 hover:shadow-md"
+                      ? "border-accent-400 bg-accent-50 shadow-lg ring-2 ring-accent-200"
+                      : "border-gray-100 bg-white shadow-sm hover:border-accent-200 hover:shadow-md"
                   }`}
                 >
                   <span className="text-4xl transition-transform duration-200 group-hover:scale-110">
@@ -236,7 +236,7 @@ export default function KidOnboardingPage() {
                       {goal.minutes}<span className="text-base font-semibold text-gray-400"> min</span>
                     </p>
                     <p className={`mt-0.5 text-sm font-bold ${
-                      isSelected ? "text-purple-600" : "text-gray-600"
+                      isSelected ? "text-accent-600" : "text-gray-600"
                     }`}>
                       {goal.label}
                     </p>
@@ -245,7 +245,7 @@ export default function KidOnboardingPage() {
                     </p>
                   </div>
                   {isSelected && (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent-500">
                       <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
                     </div>
                   )}
@@ -264,7 +264,7 @@ export default function KidOnboardingPage() {
             </button>
             <button
               onClick={() => setStep(3)}
-              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-8 py-3.5 text-base font-bold text-white shadow-lg transition-all hover:from-violet-600 hover:to-purple-700 hover:shadow-xl active:scale-95"
+              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-8 py-3.5 text-base font-bold text-white shadow-lg transition-all hover:from-accent-600 hover:to-accent-700 hover:shadow-xl active:scale-95"
             >
               Next
               <ChevronRight className="h-5 w-5" />
@@ -276,11 +276,11 @@ export default function KidOnboardingPage() {
       {/* Step 3: All Set */}
       {step === 3 && (
         <div className="w-full max-w-md animate-in fade-in slide-in-from-right-4 duration-300 text-center">
-          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-purple-600 shadow-xl ring-4 ring-purple-200">
+          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-accent-400 to-accent-600 shadow-xl ring-4 ring-accent-200">
             <span className="text-5xl drop-shadow-sm">{"\uD83C\uDF89"}</span>
           </div>
 
-          <h1 className="font-serif text-3xl font-bold text-gray-900">
+          <h1 className="font-display text-3xl font-bold text-brand-navy">
             You&apos;re all set, {kidProfile.name}!
           </h1>
           <p className="mt-2 text-base text-gray-500">
@@ -290,8 +290,8 @@ export default function KidOnboardingPage() {
           {/* Summary cards */}
           <div className="mt-8 space-y-3 text-left">
             {/* Genres summary */}
-            <div className="rounded-2xl border border-purple-100 bg-white p-4 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-wider text-purple-400">
+            <div className="rounded-2xl border border-accent-100 bg-white p-4 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-accent-400">
                 Your Genres
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -300,7 +300,7 @@ export default function KidOnboardingPage() {
                   return (
                     <span
                       key={genre}
-                      className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-3 py-1 text-sm font-medium text-purple-700"
+                      className="inline-flex items-center gap-1 rounded-full bg-accent-50 px-3 py-1 text-sm font-medium text-accent-700"
                     >
                       <span className="text-sm">{genreData?.emoji}</span>
                       {genre}
@@ -311,8 +311,8 @@ export default function KidOnboardingPage() {
             </div>
 
             {/* Goal summary */}
-            <div className="rounded-2xl border border-purple-100 bg-white p-4 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-wider text-purple-400">
+            <div className="rounded-2xl border border-accent-100 bg-white p-4 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-accent-400">
                 Daily Goal
               </p>
               <div className="mt-2 flex items-center gap-3">
@@ -342,7 +342,7 @@ export default function KidOnboardingPage() {
             <button
               onClick={handleComplete}
               disabled={saving}
-              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-8 py-3.5 text-base font-bold text-white shadow-lg transition-all hover:from-violet-600 hover:to-purple-700 hover:shadow-xl disabled:opacity-60 active:scale-95"
+              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-8 py-3.5 text-base font-bold text-white shadow-lg transition-all hover:from-accent-600 hover:to-accent-700 hover:shadow-xl disabled:opacity-60 active:scale-95"
             >
               {saving ? (
                 <>

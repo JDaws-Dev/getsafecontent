@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="120" viewBox="0 0 600 120" fill="none">
+  <defs>
+    <linearGradient id="sr-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#ea580c"/>
+    </linearGradient>
+    <linearGradient id="sr-text-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#ea580c"/>
+    </linearGradient>
+  </defs>
+  <!-- Icon scaled to fit ~100px height -->
+  <g transform="translate(10, 5) scale(1.72)">
+    <path d="M32 6 C 22 11, 14 11, 14 11 L 14 36 C 14 50, 32 58, 32 58 C 32 58, 50 50, 50 36 L 50 11 C 50 11, 42 11, 32 6 Z" fill="none" stroke="url(#sr-grad)" stroke-width="3"/>
+    <g transform="translate(32 31) scale(0.65) translate(-32 -31.5)">
+      <path d="M32 16c-6 2-12 3-12 3v28s6-1 12-3c6 2 12 3 12 3V19s-6-1-12-3z" fill="none" stroke="url(#sr-grad)" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M32 16v28" stroke="url(#sr-grad)" stroke-width="3"/>
+    </g>
+  </g>
+  <!-- Brand text -->
+  <text x="130" y="78" font-family="Inter, -apple-system, system-ui, sans-serif" font-weight="700" font-size="64" fill="url(#sr-text-grad)">SafeReads</text>
+</svg>

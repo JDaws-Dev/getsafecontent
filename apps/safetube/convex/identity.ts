@@ -53,6 +53,7 @@ export async function requireOwner(
   ctx: { db: Db },
   userToken: string | undefined,
   ownerId: Id<"users">,
+  _label?: string, // accepted for call-site parity with requireOwnerSoft
 ): Promise<Id<"users">> {
   const me = await resolveTubeIdentity(ctx, userToken);
   if (!me) throw new Error("Please sign in again.");
@@ -95,6 +96,22 @@ export async function requireProfileOwnerSoft(
   const profile = await ctx.db.get(kidProfileId);
   if (!profile) return null;
   await requireOwnerSoft(ctx, userToken, profile.userId, label);
+  return profile;
+}
+
+/**
+ * Hard variant of requireProfileOwnerSoft — REQUIRES a valid parent token that
+ * owns the profile. Use on parent-only endpoints; NOT on kid-path endpoints.
+ */
+export async function requireProfileOwner(
+  ctx: { db: Db },
+  userToken: string | undefined,
+  kidProfileId: Id<"kidProfiles">,
+  label: string,
+): Promise<DataModel["kidProfiles"]["document"]> {
+  const profile = await ctx.db.get(kidProfileId);
+  if (!profile) throw new Error(`That profile doesn't exist (${label}).`);
+  await requireOwner(ctx, userToken, profile.userId);
   return profile;
 }
 

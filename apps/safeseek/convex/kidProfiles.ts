@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, internalQuery } from "./_generated/server";
 import { cascadeDeleteKidProfile } from "./lib/cascadeDelete";
-import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
+import { requireOwnerSoft, requireProfileOwner } from "./identity";
 
 /**
  * Strip sensitive fields (pin, rate-limit internals) from a profile
@@ -122,7 +122,7 @@ export const updateProfile = mutation({
     userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const profile = await requireProfileOwnerSoft(
+    const profile = await requireProfileOwner(
       ctx,
       args.userToken,
       args.kidProfileId,
@@ -234,7 +234,7 @@ export const verifyKidPin = mutation({
 export const deleteProfile = mutation({
   args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const profile = await requireProfileOwnerSoft(
+    const profile = await requireProfileOwner(
       ctx,
       args.userToken,
       args.kidProfileId,

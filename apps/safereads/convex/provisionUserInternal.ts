@@ -67,13 +67,16 @@ export const provisionUserInternal = internalMutation({
     if (existingUser) {
       userId = existingUser._id;
 
-      // Update subscription status and other fields
-      await ctx.db.patch(userId, {
+      const patch: Record<string, unknown> = {
         subscriptionStatus: mappedStatus,
         stripeCustomerId: args.stripeCustomerId ?? existingUser.stripeCustomerId,
         stripeSubscriptionId: args.subscriptionId ?? existingUser.stripeSubscriptionId,
         name: args.name ?? existingUser.name,
-      });
+      };
+      if (args.familyCode && args.familyCode !== existingUser.familyCode) {
+        patch.familyCode = args.familyCode;
+      }
+      await ctx.db.patch(userId, patch);
 
       console.log(`[provisionUser] Updated existing user: ${args.email}`);
     } else {

@@ -267,9 +267,9 @@ http.route({
       );
     }
 
-    if (!app || !["safetunes", "safetube", "safereads", "safestudy"].includes(app)) {
+    if (!app || !["safetunes", "safetube", "safereads", "safestudy", "safespark"].includes(app)) {
       return new Response(
-        JSON.stringify({ error: "Valid app parameter required (safetunes, safetube, safereads, safestudy)" }),
+        JSON.stringify({ error: "Valid app parameter required (safetunes, safetube, safereads, safestudy, safespark)" }),
         { status: 400, headers }
       );
     }
@@ -325,17 +325,22 @@ http.route({
     }
 
     try {
-      // Parse apps if provided
-      let apps: ("safetunes" | "safetube" | "safereads" | "safestudy")[] | undefined;
+      // Parse apps if provided. safespark IS grantable here (the paid "Family +
+      // Spark" tier) — it's just never in the DEFAULT set, so an admin must ask
+      // for it explicitly (e.g. apps=...,safespark). Granting it entitles the
+      // central account; SafeSpark then auto-provisions on first login.
+      let apps:
+        | ("safetunes" | "safetube" | "safereads" | "safestudy" | "safespark")[]
+        | undefined;
       if (appsParam) {
-        const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
+        const validApps = ["safetunes", "safetube", "safereads", "safestudy", "safespark"];
         apps = appsParam
           .split(",")
           .map((a) => a.trim().toLowerCase())
           .filter((a) => validApps.includes(a)) as typeof apps;
       }
 
-      const result = await ctx.runMutation(api.accounts.grantLifetimeAccess, {
+      const result = await ctx.runMutation(internal.accounts.grantLifetimeAccess, {
         email,
         adminKey: key,
         apps,
@@ -409,9 +414,10 @@ http.route({
         );
       }
 
-      // Validate entitled apps if provided
+      // Validate entitled apps if provided. safespark is accepted (paid tier)
+      // so an account can be entitled to SafeSpark; it's never in any default.
       if (body.entitledApps) {
-        const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
+        const validApps = ["safetunes", "safetube", "safereads", "safestudy", "safespark"];
         if (!Array.isArray(body.entitledApps) || !body.entitledApps.every((a: string) => validApps.includes(a))) {
           return new Response(
             JSON.stringify({ error: "entitledApps must be an array of valid app names" }),
@@ -420,7 +426,7 @@ http.route({
         }
       }
 
-      const result = await ctx.runMutation(api.accounts.updateSubscription, {
+      const result = await ctx.runMutation(internal.accounts.updateSubscription, {
         email: body.email,
         subscriptionStatus: body.subscriptionStatus,
         stripeCustomerId: body.stripeCustomerId,
@@ -535,7 +541,7 @@ http.route({
 
     try {
       // Get all users
-      const users = await ctx.runQuery(api.accounts.getAllAccounts, {});
+      const users = await ctx.runQuery(internal.accounts.getAllAccounts, {});
 
       type User = (typeof users)[number];
       const stats = {
@@ -679,8 +685,8 @@ http.route({
         );
       }
 
-      // Delete the user
-      const result = await ctx.runMutation(api.accounts.deleteAccount, {
+      // Delete the user (trusted admin path — this route is key-gated)
+      const result = await ctx.runMutation(internal.accounts.deleteAccountInternal, {
         userId: user.id,
         reason,
       });
@@ -967,7 +973,7 @@ http.route({
       }
 
       // Validate selectedApps if provided
-      const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
+      const validApps = ["safetunes", "safetube", "safereads", "safestudy", "safespark"];
       if (body.selectedApps) {
         if (!Array.isArray(body.selectedApps)) {
           return new Response(
@@ -1341,6 +1347,7 @@ http.route({
           subscriptionStatus: credentials.subscriptionStatus,
           entitledApps: credentials.entitledApps,
           authProvider: credentials.hasPasswordAuth ? "password" : "oauth",
+          familyCode: credentials.familyCode ?? null,
         }),
         { status: 200, headers }
       );
@@ -1702,7 +1709,7 @@ http.route({
         );
       }
 
-      const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
+      const validApps = ["safetunes", "safetube", "safereads", "safestudy", "safespark"];
       if (!body.entitledApps.every((a: string) => validApps.includes(a))) {
         return new Response(
           JSON.stringify({ success: false, error: "entitledApps contains invalid app names" }),
@@ -1751,45 +1758,10 @@ http.route({
   }),
 });
 
-// Debug endpoint to check env vars - TEMPORARY
-http.route({
-  path: "/debugEnv",
-  method: "GET",
-  handler: httpAction(async (_ctx, request) => {
-    const url = new URL(request.url);
-    const key = url.searchParams.get("key");
-    const expectedKey = process.env.ADMIN_KEY;
-
-    if (!key || key !== expectedKey) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // List all env vars (names only, not values for security)
-    const envKeys = Object.keys(process.env || {});
-    const adminKey = process.env.ADMIN_KEY;
-    const resendKey = process.env.RESEND_API_KEY;
-    const envStatus = {
-      ADMIN_KEY_exists: !!adminKey,
-      ADMIN_KEY_length: adminKey?.length || 0,
-      ADMIN_KEY_prefix: adminKey?.substring(0, 5),
-      RESEND_API_KEY_exists: !!resendKey,
-      RESEND_API_KEY_length: resendKey?.length || 0,
-      RESEND_API_KEY_prefix: resendKey?.substring(0, 5),
-      RESEND_KEY: !!process.env.RESEND_KEY,
-      SITE_URL: !!process.env.SITE_URL,
-      AUTH_GOOGLE_ID: !!process.env.AUTH_GOOGLE_ID,
-      totalEnvVars: envKeys.length,
-    };
-
-    return new Response(JSON.stringify(envStatus), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  }),
-});
+// /debugEnv removed June 22 2026 (Codex P1-f): it returned ADMIN_KEY /
+// RESEND_API_KEY prefixes + lengths over a GET URL — secret leakage via
+// server/proxy logs, browser history, and the admin key sitting in the
+// query string. Use the Convex dashboard to inspect env vars instead.
 
 /**
  * Incomplete Signups Endpoint
@@ -1907,7 +1879,7 @@ http.route({
         );
       }
 
-      const validApps = ["safetunes", "safetube", "safereads", "safestudy"];
+      const validApps = ["safetunes", "safetube", "safereads", "safestudy", "safespark"];
       if (!validApps.includes(app)) {
         return new Response(
           JSON.stringify({ error: `Invalid app: ${app}` }),
@@ -1949,6 +1921,54 @@ http.route({
         "Access-Control-Allow-Headers": "Content-Type, x-admin-key",
       },
     });
+  }),
+});
+
+/**
+ * /syncFamilyCode — admin endpoint to read or set the unified familyCode on
+ * Marketing Central. Mirrors the same endpoint on each of the 4 apps so all
+ * 5 systems expose an identical surface for code sync.
+ *
+ *   GET /syncFamilyCode?key=ADMIN_KEY&email=user@example.com
+ *   GET /syncFamilyCode?key=ADMIN_KEY&email=user@example.com&code=ABC123
+ */
+http.route({
+  path: "/syncFamilyCode",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    const key = url.searchParams.get("key");
+    const email = url.searchParams.get("email");
+    const code = url.searchParams.get("code");
+
+    const headers = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Content-Type": "application/json",
+    };
+
+    const ADMIN_SECRET = process.env.ADMIN_KEY;
+    if (!ADMIN_SECRET || key !== ADMIN_SECRET) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers,
+      });
+    }
+
+    if (!email) {
+      return new Response(JSON.stringify({ error: "Missing email" }), {
+        status: 400,
+        headers,
+      });
+    }
+
+    const { internal } = await import("./_generated/api");
+    const result = await ctx.runMutation(internal.signupInternal.syncFamilyCodeByEmailInternal, {
+      email: email.toLowerCase(),
+      code: code ? code.toUpperCase() : undefined,
+    });
+
+    return new Response(JSON.stringify(result), { status: 200, headers });
   }),
 });
 

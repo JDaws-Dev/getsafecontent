@@ -5,7 +5,7 @@ function QRCode({ url, size = 120 }) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=ef4444`;
 
   return (
-    <div className="bg-white p-2 rounded-lg shadow-sm border border-red-200">
+    <div className="bg-white p-2 rounded-lg shadow-sm border border-accent-200">
       <img
         src={qrUrl}
         alt={`QR code for ${url}`}
@@ -36,9 +36,9 @@ export default function GettingStarted({ userData, onNavigate }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-br from-red-500 to-orange-500 rounded-xl p-6 sm:p-8 text-white">
+      <div className="bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl p-6 sm:p-8 text-white">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">Getting Started with SafeTube</h1>
-        <p className="text-red-100 text-sm sm:text-base">
+        <p className="text-accent-100 text-sm sm:text-base">
           Two simple steps to give your kids access to safe YouTube videos.
         </p>
       </div>
@@ -51,14 +51,14 @@ export default function GettingStarted({ userData, onNavigate }) {
         </p>
 
         {userData?.familyCode ? (
-          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 sm:p-6">
+          <div className="bg-accent-50 border-2 border-accent-200 rounded-lg p-4 sm:p-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="text-3xl sm:text-4xl font-bold text-red-600 tracking-widest font-mono">
+              <div className="text-3xl sm:text-4xl font-bold text-accent-600 tracking-widest font-mono">
                 {userData.familyCode}
               </div>
               <button
                 onClick={copyFamilyCode}
-                className="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-medium transition shadow-md"
+                className="px-4 py-2 bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white rounded-lg font-medium transition shadow-md"
               >
                 {copiedCode ? 'Copied!' : 'Copy Code'}
               </button>
@@ -72,7 +72,7 @@ export default function GettingStarted({ userData, onNavigate }) {
       {/* Step 1: Lock Down Device */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div className="flex items-start gap-4 mb-6">
-          <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
+          <div className="w-10 h-10 bg-accent-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
             1
           </div>
           <div>
@@ -92,8 +92,8 @@ export default function GettingStarted({ userData, onNavigate }) {
             onClick={() => setSelectedDevice('ios')}
             className={`p-4 rounded-xl border-2 transition-all ${
               selectedDevice === 'ios'
-                ? 'border-red-500 bg-red-50 shadow-md'
-                : 'border-gray-200 bg-white hover:border-red-300'
+                ? 'border-accent-500 bg-accent-50 shadow-md'
+                : 'border-gray-200 bg-white hover:border-accent-300'
             }`}
           >
             <div className="flex justify-center mb-2">
@@ -109,8 +109,8 @@ export default function GettingStarted({ userData, onNavigate }) {
             onClick={() => setSelectedDevice('android')}
             className={`p-4 rounded-xl border-2 transition-all ${
               selectedDevice === 'android'
-                ? 'border-red-500 bg-red-50 shadow-md'
-                : 'border-gray-200 bg-white hover:border-red-300'
+                ? 'border-accent-500 bg-accent-50 shadow-md'
+                : 'border-gray-200 bg-white hover:border-accent-300'
             }`}
           >
             <div className="flex justify-center mb-2">
@@ -126,8 +126,8 @@ export default function GettingStarted({ userData, onNavigate }) {
             onClick={() => setSelectedDevice('chromebook')}
             className={`p-4 rounded-xl border-2 transition-all ${
               selectedDevice === 'chromebook'
-                ? 'border-red-500 bg-red-50 shadow-md'
-                : 'border-gray-200 bg-white hover:border-red-300'
+                ? 'border-accent-500 bg-accent-50 shadow-md'
+                : 'border-gray-200 bg-white hover:border-accent-300'
             }`}
           >
             <div className="flex justify-center mb-2">
@@ -152,9 +152,9 @@ export default function GettingStarted({ userData, onNavigate }) {
               <li>6. Delete ALL pre-added websites (swipe left to delete)</li>
               <li>7. Tap <strong>"Add Website"</strong> and add:</li>
             </ol>
-            <div className="mt-3 bg-white border border-red-200 rounded-lg p-3">
+            <div className="mt-3 bg-white border border-accent-200 rounded-lg p-3">
               <p className="text-sm"><strong>Title:</strong> SafeTube</p>
-              <p className="text-sm"><strong>URL:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-red-600">getsafetube.com</code></p>
+              <p className="text-sm"><strong>URL:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafetube.com</code></p>
             </div>
           </div>
         )}
@@ -171,12 +171,12 @@ export default function GettingStarted({ userData, onNavigate }) {
               <li>6. Add <strong>both</strong> of these websites:</li>
             </ol>
             <div className="mt-3 space-y-2">
-              <div className="bg-white border border-red-200 rounded-lg p-3">
-                <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-red-600">getsafetube.com</code></p>
+              <div className="bg-white border border-accent-200 rounded-lg p-3">
+                <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafetube.com</code></p>
                 <p className="text-xs text-gray-500 mt-1">SafeTube app (parental controls)</p>
               </div>
-              <div className="bg-white border border-red-200 rounded-lg p-3">
-                <p className="text-sm"><strong>Site 2:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-red-600">youtube-nocookie.com</code></p>
+              <div className="bg-white border border-accent-200 rounded-lg p-3">
+                <p className="text-sm"><strong>Site 2:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">youtube-nocookie.com</code></p>
                 <p className="text-xs text-gray-500 mt-1">Video playback (embed-only, no browsing)</p>
               </div>
             </div>
@@ -201,12 +201,12 @@ export default function GettingStarted({ userData, onNavigate }) {
               <li>6. Add <strong>both</strong> of these websites:</li>
             </ol>
             <div className="mt-3 space-y-2">
-              <div className="bg-white border border-red-200 rounded-lg p-3">
-                <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-red-600">getsafetube.com</code></p>
+              <div className="bg-white border border-accent-200 rounded-lg p-3">
+                <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafetube.com</code></p>
                 <p className="text-xs text-gray-500 mt-1">SafeTube app (parental controls)</p>
               </div>
-              <div className="bg-white border border-red-200 rounded-lg p-3">
-                <p className="text-sm"><strong>Site 2:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-red-600">youtube-nocookie.com</code></p>
+              <div className="bg-white border border-accent-200 rounded-lg p-3">
+                <p className="text-sm"><strong>Site 2:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">youtube-nocookie.com</code></p>
                 <p className="text-xs text-gray-500 mt-1">Video playback (embed-only, no browsing)</p>
               </div>
             </div>
@@ -229,7 +229,7 @@ export default function GettingStarted({ userData, onNavigate }) {
       {/* Step 2: Kids Log In */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div className="flex items-start gap-4 mb-6">
-          <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
+          <div className="w-10 h-10 bg-accent-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
             2
           </div>
           <div>
@@ -247,8 +247,8 @@ export default function GettingStarted({ userData, onNavigate }) {
               <h3 className="font-bold text-green-900 mb-3">How Kids Log In:</h3>
               <ol className="space-y-2 text-sm text-gray-700">
                 <li>1. Open their web browser</li>
-                <li>2. Go to: <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono font-bold text-red-600">getsafetube.com/play</code></li>
-                <li>3. Enter Family Code: <strong className="text-red-600">{userData?.familyCode || '(loading...)'}</strong></li>
+                <li>2. Go to: <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono font-bold text-accent-600">getsafetube.com/play</code></li>
+                <li>3. Enter Family Code: <strong className="text-accent-600">{userData?.familyCode || '(loading...)'}</strong></li>
                 <li>4. Select their profile</li>
                 <li>5. Start watching approved videos!</li>
               </ol>
@@ -273,7 +273,7 @@ export default function GettingStarted({ userData, onNavigate }) {
             onClick={() => onNavigate?.('account')}
             className="w-full flex items-center gap-3 p-3 bg-white hover:bg-orange-100 rounded-lg border border-orange-200 transition text-left"
           >
-            <span className="w-8 h-8 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</span>
+            <span className="w-8 h-8 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</span>
             <div>
               <p className="font-semibold text-gray-900">Add Kid Profiles</p>
               <p className="text-sm text-gray-600">Create a profile for each child</p>
@@ -284,7 +284,7 @@ export default function GettingStarted({ userData, onNavigate }) {
             onClick={() => onNavigate?.('content')}
             className="w-full flex items-center gap-3 p-3 bg-white hover:bg-orange-100 rounded-lg border border-orange-200 transition text-left"
           >
-            <span className="w-8 h-8 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">2</span>
+            <span className="w-8 h-8 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">2</span>
             <div>
               <p className="font-semibold text-gray-900">Add YouTube Channels</p>
               <p className="text-sm text-gray-600">Search and approve safe channels</p>

@@ -20,7 +20,7 @@ export function BottomNav() {
   if (!isAuthenticated) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-parchment-200 bg-parchment-50 sm:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-cream-2 bg-brand-cream sm:hidden">
       <div className="flex h-16 items-center justify-around">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
@@ -29,7 +29,7 @@ export function BottomNav() {
               key={href}
               href={href}
               className={`flex flex-col items-center gap-1 text-xs font-medium transition-colors ${
-                isActive ? "text-parchment-700" : "text-ink-400"
+                isActive ? "text-accent-700" : "text-ink-400"
               }`}
             >
               <Icon className="h-5 w-5" />

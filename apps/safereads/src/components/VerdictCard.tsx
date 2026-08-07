@@ -93,17 +93,17 @@ export function VerdictCard({ analysis }: VerdictCardProps) {
       {analysis.ageGuidance && (
         <div className="mt-3 flex flex-wrap gap-2">
           {analysis.ageGuidance.readAloud && (
-            <span className="inline-flex items-center gap-1 rounded-md border border-parchment-200 bg-white/60 px-2 py-1 text-xs text-ink-600">
+            <span className="inline-flex items-center gap-1 rounded-md border border-brand-cream-2 bg-white/60 px-2 py-1 text-xs text-ink-600">
               <span className="font-semibold">Read aloud:</span> {analysis.ageGuidance.readAloud}
             </span>
           )}
           {analysis.ageGuidance.independentReader && (
-            <span className="inline-flex items-center gap-1 rounded-md border border-parchment-200 bg-white/60 px-2 py-1 text-xs text-ink-600">
+            <span className="inline-flex items-center gap-1 rounded-md border border-brand-cream-2 bg-white/60 px-2 py-1 text-xs text-ink-600">
               <span className="font-semibold">Independent:</span> {analysis.ageGuidance.independentReader}
             </span>
           )}
           {analysis.ageGuidance.matureEnoughToProcess && (
-            <span className="inline-flex items-center gap-1 rounded-md border border-parchment-200 bg-white/60 px-2 py-1 text-xs text-ink-600">
+            <span className="inline-flex items-center gap-1 rounded-md border border-brand-cream-2 bg-white/60 px-2 py-1 text-xs text-ink-600">
               <span className="font-semibold">Themes:</span> {analysis.ageGuidance.matureEnoughToProcess}
             </span>
           )}

@@ -2,9 +2,12 @@ import {
   Search, Clock, Shield, Sun, Moon, Users, ArrowLeft, AlertCircle, LayoutGrid
 } from 'lucide-react';
 import { getColorClass, getAvatarIcon } from './utils';
+import { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
 
 export default function SearchHeader({
   selectedProfile,
+  familyCode,
+  kidToken,
   searchStack,
   isDark,
   hasSearchLimit,
@@ -33,11 +36,16 @@ export default function SearchHeader({
               <ArrowLeft className="w-5 h-5" />
             </button>
           )}
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-accent-600 rounded-lg flex items-center justify-center">
             <Search className="w-4 h-4 text-white" />
           </div>
-          <span className="font-semibold text-gray-900 dark:text-white text-base hidden sm:inline">SafeStudy</span>
+          <span className="font-display font-semibold text-brand-navy dark:text-white text-base hidden sm:inline">SafeStudy</span>
           <Shield className="w-4 h-4 text-green-500 dark:text-green-400" />
+        </div>
+
+        {/* Center: cross-app Safe Family switcher (desktop) */}
+        <div className="hidden lg:flex">
+          <SafeFamilyHeaderSwitcher current="safestudy" familyCode={familyCode} kidToken={kidToken} />
         </div>
 
         {/* Right: search count + profile + dark mode + history */}
@@ -61,7 +69,7 @@ export default function SearchHeader({
             <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{selectedProfile.name}</span>
             <button
               onClick={onSwitchProfile}
-              className="text-xs text-gray-400 hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400 ml-1 transition-colors"
+              className="text-xs text-gray-400 hover:text-accent-500 dark:text-gray-500 dark:hover:text-accent-400 ml-1 transition-colors"
               aria-label="Switch profile"
               title="Switch profile"
             >
@@ -91,7 +99,7 @@ export default function SearchHeader({
             onClick={onToggleRequestsInbox}
             className={`relative flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 active:scale-[0.98] ${
               showRequestsInbox
-                ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+                ? 'bg-accent-100 dark:bg-accent-900/40 text-accent-600 dark:text-accent-400'
                 : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}
             aria-label="My requests"
@@ -111,6 +119,11 @@ export default function SearchHeader({
             Component preserved for reference + admin views.
           */}
         </div>
+      </div>
+
+      {/* Cross-app Safe Family switcher (mobile row, always visible under lg) */}
+      <div className="lg:hidden flex justify-center pb-3 -mt-1">
+        <SafeFamilyHeaderSwitcher current="safestudy" familyCode={familyCode} kidToken={kidToken} tile={40} />
       </div>
     </header>
   );

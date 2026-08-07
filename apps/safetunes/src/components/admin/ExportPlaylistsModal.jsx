@@ -204,7 +204,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4 text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full mx-auto mb-4" />
+          <div className="animate-spin w-8 h-8 border-4 border-accent-600 border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-gray-600">Loading playlists...</p>
         </div>
       </div>
@@ -218,7 +218,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
         <div className="px-6 pt-6 pb-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-display font-semibold text-brand-navy">
                 Export Playlists
               </h2>
               <p className="text-sm text-gray-500 mt-0.5">
@@ -246,7 +246,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
                     s < step
                       ? 'bg-green-500 text-white'
                       : s === step
-                        ? 'bg-purple-600 text-white'
+                        ? 'bg-accent-600 text-white'
                         : 'bg-gray-200 text-gray-500'
                   }`}
                 >
@@ -281,7 +281,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
                 </p>
                 <button
                   onClick={toggleAll}
-                  className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                  className="text-sm text-accent-600 hover:text-accent-700 font-medium"
                 >
                   {selectedPlaylistIds.size === playlists.filter((p) => p.songs?.length > 0).length
                     ? 'Deselect All'
@@ -313,7 +313,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
                           isEmpty
                             ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
                             : isSelected
-                              ? 'border-purple-300 bg-purple-50'
+                              ? 'border-accent-300 bg-accent-50'
                               : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
@@ -322,7 +322,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
                           checked={isSelected}
                           disabled={isEmpty}
                           onChange={() => togglePlaylist(playlist._id)}
-                          className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-gray-300"
+                          className="w-4 h-4 rounded text-accent-600 focus:ring-accent-500 border-gray-300"
                         />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 truncate">
@@ -341,7 +341,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
               )}
 
               {selectedPlaylistIds.size > 0 && (
-                <div className="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-3 text-sm text-purple-700">
+                <div className="mt-4 bg-accent-50 border border-accent-200 rounded-lg p-3 text-sm text-accent-700">
                   Ready to export {selectedPlaylistIds.size} playlist{selectedPlaylistIds.size !== 1 ? 's' : ''} with {totalSongs} song{totalSongs !== 1 ? 's' : ''}.
                 </div>
               )}
@@ -357,7 +357,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
                 </svg>
               </div>
 
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-display font-semibold text-brand-navy mb-2">
                 Sign Into Apple Music
               </h3>
               <p className="text-sm text-gray-600 mb-6 max-w-sm mx-auto">
@@ -379,7 +379,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
                   <button
                     onClick={handleAuthorize}
                     disabled={isAuthorizing}
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-semibold px-6 py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isAuthorizing ? (
                       <>
@@ -419,16 +419,16 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
           {step === 3 && (
             <div className="py-4">
               <div className="text-center mb-6">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div className="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   {isExporting ? (
-                    <div className="w-6 h-6 border-[3px] border-purple-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-[3px] border-accent-600 border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-6 h-6 text-accent-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   )}
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-display font-semibold text-brand-navy">
                   {isExporting ? 'Exporting...' : 'Ready to Export'}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
@@ -452,7 +452,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
                     </div>
                     <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-purple-600 to-pink-500 rounded-full transition-all duration-300"
+                        className="h-full bg-accent-500 rounded-full transition-all duration-300"
                         style={{
                           width: `${((currentPlaylistIndex) / selectedPlaylists.length) * 100}%`,
                         }}
@@ -470,7 +470,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
                     </p>
                     <div className="w-full h-1.5 bg-gray-200 rounded-full mt-2 overflow-hidden">
                       <div
-                        className="h-full bg-purple-400 rounded-full transition-all duration-200"
+                        className="h-full bg-accent-400 rounded-full transition-all duration-200"
                         style={{
                           width: currentSongsTotal > 0
                             ? `${(currentSongsProgress / currentSongsTotal) * 100}%`
@@ -485,7 +485,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
               {!isExporting && (
                 <button
                   onClick={handleExport}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 rounded-xl transition"
+                  className="w-full bg-accent-500 hover:bg-accent-600 text-white font-semibold py-3 rounded-xl transition"
                 >
                   Start Export
                 </button>
@@ -512,18 +512,18 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
                     </svg>
                   )}
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-display font-semibold text-brand-navy">
                   {results.playlistsCreated > 0 ? 'Export Complete!' : 'Export Failed'}
                 </h3>
               </div>
 
               {/* Stats */}
               <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="bg-purple-50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-purple-700">
+                <div className="bg-accent-50 rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-accent-700">
                     {results.playlistsCreated}
                   </p>
-                  <p className="text-xs text-purple-600">
+                  <p className="text-xs text-accent-600">
                     Playlist{results.playlistsCreated !== 1 ? 's' : ''}
                   </p>
                 </div>
@@ -578,7 +578,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
               <button
                 onClick={() => setStep(2)}
                 disabled={selectedPlaylistIds.size === 0}
-                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
@@ -596,7 +596,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
               <button
                 onClick={() => setStep(3)}
                 disabled={!isAuthorized}
-                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
@@ -623,7 +623,7 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
               <div />
               <button
                 onClick={onClose}
-                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition"
+                className="px-6 py-2 bg-accent-600 hover:bg-accent-700 text-white font-medium rounded-lg transition"
               >
                 Done
               </button>

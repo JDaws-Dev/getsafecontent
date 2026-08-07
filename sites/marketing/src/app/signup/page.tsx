@@ -60,6 +60,7 @@ function saveSignupState(state: {
   selectedApps: AppId[];
   isYearly: boolean;
   couponCode?: string;
+  isUnifiedPlan?: boolean;
 }) {
   try {
     localStorage.setItem(SIGNUP_STATE_KEY, JSON.stringify({
@@ -76,6 +77,7 @@ function loadSignupState(): {
   selectedApps: AppId[];
   isYearly: boolean;
   couponCode?: string;
+  isUnifiedPlan?: boolean;
 } | null {
   try {
     const stored = localStorage.getItem(SIGNUP_STATE_KEY);
@@ -92,6 +94,7 @@ function loadSignupState(): {
       selectedApps: state.selectedApps,
       isYearly: state.isYearly,
       couponCode: state.couponCode,
+      isUnifiedPlan: state.isUnifiedPlan,
     };
   } catch (e) {
     console.warn("[SignupPage] Failed to load signup state:", e);
@@ -181,6 +184,65 @@ function SignupContent() {
   // Track if we've already processed OAuth return to prevent double-submission
   const [oauthProcessed, setOauthProcessed] = useState(false);
 
+  // Create a Stripe checkout session for an authenticated user and redirect to
+  // it. Email is resolved server-side from the session, so this works for any
+  // logged-in user — including a returning customer with an expired trial who
+  // just clicked "Subscribe". Centralizes the fetch/redirect/error handling so
+  // the OAuth-return effect and the already-authenticated path stay in sync.
+  const proceedToCheckout = useCallback(
+    async (opts: {
+      selectedApps: AppId[];
+      isYearly: boolean;
+      unified?: boolean;
+      couponCode?: string;
+    }) => {
+      setIsLoading(true);
+      setError("");
+      try {
+        const useUnified = opts.unified ?? isUnifiedPlan;
+        const response = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            selectedApps: opts.selectedApps,
+            isYearly: opts.isYearly,
+            ...(opts.couponCode ? { couponCode: opts.couponCode } : {}),
+            // Pass plan:"unified" so the checkout API picks the unified Price ID
+            // instead of routing by app-count to a bundle price.
+            ...(useUnified ? { plan: "unified" } : {}),
+            // email is retrieved from the authenticated session by the checkout API
+          }),
+        });
+        if (!response.ok) {
+          let errorMessage = "Failed to create checkout session";
+          try {
+            const text = await response.text();
+            if (text) {
+              const errorData = JSON.parse(text);
+              errorMessage = errorData.error || errorMessage;
+            }
+          } catch {
+            // Ignore parse errors
+          }
+          throw new Error(errorMessage);
+        }
+        const { url } = await response.json();
+        if (url) {
+          window.location.href = url;
+        } else {
+          throw new Error("No checkout URL returned");
+        }
+      } catch (err) {
+        console.error("[SignupPage] Checkout error:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to start checkout. Please try again."
+        );
+        setIsLoading(false);
+      }
+    },
+    [isUnifiedPlan]
+  );
+
   // Handle OAuth callback - when user returns authenticated after Google OAuth
   useEffect(() => {
     // Wait for auth state to settle
@@ -205,54 +267,17 @@ function SignupContent() {
         // Clear the saved state
         clearSignupState();
 
-        // Proceed directly to checkout
-        setIsLoading(true);
-        setError("");
-
-        // For OAuth users, we skip the central user creation (Convex Auth already created it)
-        // and go directly to Stripe checkout
-        fetch("/api/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            selectedApps: savedState.selectedApps,
-            isYearly: savedState.isYearly,
-            // Note: email will be retrieved from the authenticated session by the checkout API
-          }),
-        })
-          .then(async (response) => {
-            if (!response.ok) {
-              const text = await response.text();
-              let errorMessage = "Failed to create checkout session";
-              try {
-                if (text) {
-                  const errorData = JSON.parse(text);
-                  errorMessage = errorData.error || errorMessage;
-                }
-              } catch {
-                // Ignore parse errors
-              }
-              throw new Error(errorMessage);
-            }
-            return response.json();
-          })
-          .then(({ url }) => {
-            if (url) {
-              window.location.href = url;
-            } else {
-              throw new Error("No checkout URL returned");
-            }
-          })
-          .catch((err) => {
-            console.error("[SignupPage] OAuth checkout error:", err);
-            setError(
-              err instanceof Error ? err.message : "Failed to start checkout. Please try again."
-            );
-            setIsLoading(false);
-          });
+        // For OAuth users, we skip the central user creation (Convex Auth already
+        // created it) and go directly to Stripe checkout.
+        void proceedToCheckout({
+          selectedApps: savedState.selectedApps,
+          isYearly: savedState.isYearly,
+          unified: savedState.isUnifiedPlan,
+          couponCode: savedState.couponCode,
+        });
       }
     }
-  }, [isAuthenticated, isAuthLoading, oauthProcessed]);
+  }, [isAuthenticated, isAuthLoading, oauthProcessed, proceedToCheckout]);
 
   // Handle app selection changes
   const handleAppSelectionChange = useCallback(
@@ -428,15 +453,30 @@ function SignupContent() {
     setError("");
 
     try {
+      // Returning user who is ALREADY signed in (e.g., an expired trial clicking
+      // "Subscribe"): do NOT bounce them through Google again. Re-running OAuth
+      // when already authenticated doesn't change the auth state, so the
+      // OAuth-return effect never re-fires and the user is stranded on the
+      // start-trial page, unable to pay. Go straight to Stripe checkout using
+      // their existing session. (This was the getsafefamily.com subscribe-loop.)
+      if (isAuthenticated) {
+        console.log("[SignupPage] Already authenticated — going straight to checkout");
+        setOauthProcessed(true);
+        clearSignupState();
+        await proceedToCheckout({ selectedApps, isYearly, unified: isUnifiedPlan });
+        return;
+      }
+
       // Save current signup state to localStorage before OAuth redirect
       // This preserves app selection and billing preference across the redirect
       saveSignupState({
         selectedApps,
         isYearly,
+        isUnifiedPlan,
         // Note: promo codes not supported with Google OAuth (user must complete email flow)
       });
 
-      console.log("[SignupPage] Starting Google OAuth, saved state:", { selectedApps, isYearly });
+      console.log("[SignupPage] Starting Google OAuth, saved state:", { selectedApps, isYearly, isUnifiedPlan });
 
       // Redirect to Google OAuth via Convex Auth
       // After successful auth, user will be redirected back to /signup

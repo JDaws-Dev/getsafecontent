@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import { SubscriptionSync } from './hooks/useSubscriptionSync';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -54,9 +55,15 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-      {/* Kid search - accessible via family code */}
+      {/* Kid search - accessible via family code.
+          /play and /kids are aliases matching the other Safe Family apps
+          (SafeTunes, SafeTube use /play; SafeReads uses /read). */}
       <Route path="/search" element={<KidSearch />} />
       <Route path="/search/:familyCode" element={<KidSearch />} />
+      <Route path="/play" element={<KidSearch />} />
+      <Route path="/play/:familyCode" element={<KidSearch />} />
+      <Route path="/kids" element={<KidSearch />} />
+      <Route path="/kids/:familyCode" element={<KidSearch />} />
 
       {/* Protected parent routes */}
       <Route
@@ -87,6 +94,10 @@ export default function App() {
     <ErrorBoundary>
       <AuthProvider>
         <ThemeProvider>
+          {/* Pulls the authoritative subscriptionStatus from central. Mounted at
+              the root (not on a page) so it runs for every authenticated
+              session regardless of which route the parent lands on. */}
+          <SubscriptionSync />
           <BrowserRouter>
             <AppRoutes />
           </BrowserRouter>

@@ -1,9 +1,10 @@
 import { Shield } from 'lucide-react';
-import { getResearchSiteColors } from './utils';
+import { getResearchSiteColors, stripMarkdown } from './utils';
 
 export default function ResearchCard({ source }) {
   const colors = getResearchSiteColors(source.siteDomain);
   const initial = source.siteName.charAt(0).toUpperCase();
+  const cleanContent = stripMarkdown(source.content);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -48,7 +49,7 @@ export default function ResearchCard({ source }) {
       {/* Article content */}
       <div className="px-5 py-4">
         <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-[15px] whitespace-pre-line">
-          {source.content}
+          {cleanContent}
         </p>
       </div>
 

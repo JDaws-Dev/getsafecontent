@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query, internalMutation, internalQuery } from "./_generated/server";
-import { requireOwnerSoft } from "./identity";
+import { requireOwner } from "./identity";
 
 /**
  * Internal mutation to insert a search history record
@@ -174,7 +174,7 @@ export const getSearchHistory = query({
 export const getBlockedSearches = query({
   args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "searchQueries.getBlockedSearches");
+    await requireOwner(ctx, args.userToken, args.userId, "searchQueries.getBlockedSearches");
     const profiles = await ctx.db
       .query("kidProfiles")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -208,7 +208,7 @@ export const getBlockedSearches = query({
 export const getAllSearchHistory = query({
   args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    await requireOwnerSoft(ctx, args.userToken, args.userId, "searchQueries.getAllSearchHistory");
+    await requireOwner(ctx, args.userToken, args.userId, "searchQueries.getAllSearchHistory");
     const profiles = await ctx.db
       .query("kidProfiles")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))

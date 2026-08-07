@@ -91,7 +91,7 @@ export function ReportButton({ bookId, analysisId }: ReportButtonProps) {
         className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
           hasExistingReport
             ? "border-verdict-warning/30 bg-verdict-warning/5 text-verdict-warning hover:bg-verdict-warning/10"
-            : "border-parchment-300 bg-white text-ink-600 hover:bg-parchment-50"
+            : "border-brand-cream-2 bg-white text-ink-600 hover:bg-brand-cream-2"
         }`}
       >
         <Flag className="h-3.5 w-3.5" />
@@ -100,10 +100,10 @@ export function ReportButton({ bookId, analysisId }: ReportButtonProps) {
 
       <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-ink-900/40 data-[state=open]:animate-in data-[state=open]:fade-in" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl bg-parchment-50 p-6 shadow-xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95">
+          <Dialog.Overlay className="fixed inset-0 bg-brand-navy/40 data-[state=open]:animate-in data-[state=open]:fade-in" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-brand-cream p-6 shadow-xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95">
             <div className="mb-4 flex items-center justify-between">
-              <Dialog.Title className="font-serif text-lg font-bold text-ink-900">
+              <Dialog.Title className="font-display text-lg font-bold text-brand-navy">
                 Report Review Issue
               </Dialog.Title>
               <Dialog.Close asChild>
@@ -138,8 +138,8 @@ export function ReportButton({ bookId, analysisId }: ReportButtonProps) {
                       key={r.value}
                       className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-2.5 text-sm transition-colors ${
                         reason === r.value
-                          ? "border-parchment-500 bg-parchment-100 text-ink-900"
-                          : "border-parchment-200 bg-white text-ink-700 hover:bg-parchment-50"
+                          ? "border-accent-500 bg-accent-100 text-brand-navy"
+                          : "border-brand-cream-2 bg-white text-ink-700 hover:bg-brand-cream-2"
                       }`}
                     >
                       <input
@@ -153,8 +153,8 @@ export function ReportButton({ bookId, analysisId }: ReportButtonProps) {
                       <div
                         className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
                           reason === r.value
-                            ? "border-parchment-600 bg-parchment-600"
-                            : "border-parchment-300"
+                            ? "border-accent-600 bg-accent-600"
+                            : "border-accent-300"
                         }`}
                       >
                         {reason === r.value && (
@@ -180,7 +180,7 @@ export function ReportButton({ bookId, analysisId }: ReportButtonProps) {
                     onChange={(e) => setDetails(e.target.value)}
                     placeholder="Tell us more about the issue..."
                     rows={3}
-                    className="w-full rounded-lg border border-parchment-300 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 focus:border-parchment-500 focus:outline-none focus:ring-1 focus:ring-parchment-500"
+                    className="w-full rounded-lg border border-brand-cream-2 bg-white px-3 py-2 text-sm text-brand-navy placeholder:text-ink-300 focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
                   />
                 </div>
 
@@ -196,14 +196,14 @@ export function ReportButton({ bookId, analysisId }: ReportButtonProps) {
                   )}
                   <div className="ml-auto flex gap-2">
                     <Dialog.Close asChild>
-                      <button className="rounded-lg border border-parchment-300 bg-white px-4 py-2 text-sm font-medium text-ink-600 hover:bg-parchment-50">
+                      <button className="rounded-lg border border-brand-cream-2 bg-white px-4 py-2 text-sm font-medium text-ink-600 hover:bg-brand-cream-2">
                         Cancel
                       </button>
                     </Dialog.Close>
                     <button
                       onClick={handleSubmit}
                       disabled={!reason || submitting}
-                      className="rounded-lg bg-parchment-700 px-4 py-2 text-sm font-medium text-white hover:bg-parchment-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-lg bg-accent-700 px-4 py-2 text-sm font-medium text-white hover:bg-accent-800 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {submitting ? "Submitting…" : "Submit"}
                     </button>

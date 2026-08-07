@@ -8,6 +8,7 @@ import ContentReviewModal from './ContentReviewModal';
 import AlbumOverviewModal from './AlbumOverviewModal';
 import SafeTunesLogo from '../shared/SafeTunesLogo';
 import PlaylistImport from './PlaylistImport';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   KidSelector,
   DiscoverList,
@@ -425,7 +426,7 @@ function AlbumModal({ isOpen, onClose, album, userId, selectedKidId, selectedKid
         </div>
 
         {/* Header */}
-        <div className="flex items-start gap-4 p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="flex items-start gap-4 p-4 sm:p-6 border-b border-gray-200 bg-accent-50">
           {/* Album Artwork - Clickable to toggle */}
           <button
             onClick={handleToggleArtwork}
@@ -445,8 +446,8 @@ function AlbumModal({ isOpen, onClose, album, userId, selectedKidId, selectedKid
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl shadow-lg object-cover"
               />
             ) : (
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl shadow-lg flex items-center justify-center">
-                <svg className="w-10 h-10 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-accent-100 rounded-xl shadow-lg flex items-center justify-center">
+                <svg className="w-10 h-10 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                 </svg>
               </div>
@@ -465,7 +466,7 @@ function AlbumModal({ isOpen, onClose, album, userId, selectedKidId, selectedKid
 
           {/* Album Info */}
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{album.albumName}</h2>
+            <h2 className="font-display text-lg sm:text-xl font-bold text-brand-navy truncate">{album.albumName}</h2>
             <p className="text-sm text-gray-600 truncate">{album.artistName}</p>
             <div className="flex items-center gap-3 mt-1">
               <p className="text-xs text-gray-500">{tracks.length} tracks</p>
@@ -536,7 +537,7 @@ function AlbumModal({ isOpen, onClose, album, userId, selectedKidId, selectedKid
         <div className="flex-1 overflow-y-auto">
           {isLoadingTracks ? (
             <div className="p-12 text-center">
-              <svg className="w-10 h-10 mx-auto mb-3 animate-spin text-purple-500" fill="none" viewBox="0 0 24 24">
+              <svg className="w-10 h-10 mx-auto mb-3 animate-spin text-accent-500" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -577,7 +578,7 @@ function AlbumModal({ isOpen, onClose, album, userId, selectedKidId, selectedKid
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <div className="w-full h-full bg-accent-500 flex items-center justify-center">
                           <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                           </svg>
@@ -606,7 +607,7 @@ function AlbumModal({ isOpen, onClose, album, userId, selectedKidId, selectedKid
                         className={`w-6 h-6 flex-shrink-0 rounded border-2 flex items-center justify-center transition ${
                           hasAccess
                             ? `${getColorClass(selectedKid?.color)} border-transparent`
-                            : 'border-gray-300 hover:border-purple-400 bg-white'
+                            : 'border-gray-300 hover:border-accent-400 bg-white'
                         }`}
                         title={hasAccess ? 'Approved - click to remove' : 'Click to approve'}
                       >
@@ -639,7 +640,7 @@ function AlbumModal({ isOpen, onClose, album, userId, selectedKidId, selectedKid
                     {/* AI Lyrics Review Button */}
                     <button
                       onClick={() => onReviewSong?.(track)}
-                      className="p-2 rounded-full bg-gray-100 text-purple-600 hover:bg-purple-100 transition flex-shrink-0"
+                      className="p-2 rounded-full bg-gray-100 text-accent-600 hover:bg-accent-100 transition flex-shrink-0"
                       title="AI Lyrics Review"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -672,7 +673,7 @@ function AlbumModal({ isOpen, onClose, album, userId, selectedKidId, selectedKid
                     className="w-14 h-14 rounded-lg shadow-md"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-lg bg-accent-500 flex items-center justify-center">
                     <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                     </svg>
@@ -692,7 +693,7 @@ function AlbumModal({ isOpen, onClose, album, userId, selectedKidId, selectedKid
                     onClick={handleSeek}
                   >
                     <div
-                      className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all"
+                      className="h-full bg-accent-500 rounded-full transition-all"
                       style={{ width: `${(previewCurrentTime / previewDuration) * 100}%` }}
                     />
                     {/* Scrubber thumb */}
@@ -926,7 +927,7 @@ function EditDiscoverAlbumModal({ isOpen, onClose, albumId, userId, onRemove, ki
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 sm:p-4 overflow-hidden" onClick={onClose}>
-      <div className="bg-white rounded-t-xl sm:rounded-xl shadow-xl sm:max-w-2xl w-full h-[85vh] sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl sm:max-w-2xl w-full h-[85vh] sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
         {/* Mobile drag handle */}
         <div className="sm:hidden flex justify-center py-2">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
@@ -949,8 +950,8 @@ function EditDiscoverAlbumModal({ isOpen, onClose, albumId, userId, onRemove, ki
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg shadow-md object-cover"
               />
             ) : (
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg shadow-md flex items-center justify-center">
-                <svg className="w-10 h-10 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-accent-100 rounded-lg shadow-md flex items-center justify-center">
+                <svg className="w-10 h-10 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                 </svg>
               </div>
@@ -960,9 +961,9 @@ function EditDiscoverAlbumModal({ isOpen, onClose, albumId, userId, onRemove, ki
           {/* Album Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">In Discover</span>
+              <span className="px-2 py-0.5 bg-accent-100 text-accent-700 rounded-full text-xs font-medium">In Discover</span>
             </div>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{album?.albumName}</h2>
+            <h2 className="font-display text-lg sm:text-xl font-bold text-brand-navy truncate">{album?.albumName}</h2>
             <p className="text-sm text-gray-600 truncate">{album?.artistName}</p>
             <p className="text-xs text-gray-500 mt-1">{tracks.length} tracks</p>
           </div>
@@ -984,7 +985,7 @@ function EditDiscoverAlbumModal({ isOpen, onClose, albumId, userId, onRemove, ki
 
           {isLoadingTracks ? (
             <div className="text-center py-8 text-gray-500">
-              <svg className="w-8 h-8 mx-auto mb-3 animate-spin text-pink-500" fill="none" viewBox="0 0 24 24">
+              <svg className="w-8 h-8 mx-auto mb-3 animate-spin text-accent-500" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -1001,15 +1002,15 @@ function EditDiscoverAlbumModal({ isOpen, onClose, albumId, userId, onRemove, ki
                 return (
                   <div
                     key={track.appleSongId}
-                    className={`flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 ${isTrackPlaying ? 'bg-purple-50' : ''}`}
+                    className={`flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 ${isTrackPlaying ? 'bg-accent-50' : ''}`}
                   >
                     {/* Play button or track number */}
                     <button
                       onClick={() => handlePreviewTrack(track)}
                       className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
                         isTrackPlaying
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600'
+                          ? 'bg-accent-600 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-accent-100 hover:text-accent-600'
                       }`}
                       title={isTrackPlaying ? 'Stop' : 'Preview'}
                     >
@@ -1103,7 +1104,7 @@ function EditDiscoverAlbumModal({ isOpen, onClose, albumId, userId, onRemove, ki
                   className="w-16 h-16 rounded-lg shadow-lg"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 rounded-lg bg-accent-500 flex items-center justify-center shadow-lg">
                   <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                   </svg>
@@ -1122,7 +1123,7 @@ function EditDiscoverAlbumModal({ isOpen, onClose, albumId, userId, onRemove, ki
                 onClick={handlePreviewSeek}
               >
                 <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full relative"
+                  className="h-full bg-accent-500 rounded-full relative"
                   style={{ width: `${previewDuration > 0 ? (previewCurrentTime / previewDuration) * 100 : 0}%` }}
                 >
                   <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1149,7 +1150,7 @@ function EditDiscoverAlbumModal({ isOpen, onClose, albumId, userId, onRemove, ki
       {showRemoveConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4" onClick={() => setShowRemoveConfirm(false)}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-fade-in" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Remove from Discover</h3>
+            <h3 className="font-display text-lg font-bold text-brand-navy mb-2">Remove from Discover</h3>
             <p className="text-gray-600 mb-6">Remove this album from Discover? Kids will no longer see it in their Discover tab.</p>
             <div className="flex gap-3">
               <button
@@ -1174,6 +1175,7 @@ function EditDiscoverAlbumModal({ isOpen, onClose, albumId, userId, onRemove, ki
 
 // Main Component
 function MusicLibrarySeparate({ user }) {
+  const { token } = useAuth();
   const [activeTab, setActiveTab] = useState('library');
   const [successMessage, setSuccessMessage] = useState('');
   // For album modal (used by Library tab - full editing with checkboxes)
@@ -1244,11 +1246,11 @@ function MusicLibrarySeparate({ user }) {
 
   // Fetch data
   const kidProfiles = useQuery(api.kidProfiles.getKidProfiles,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const approvedAlbums = useQuery(api.albums.getApprovedAlbums,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const featuredAlbums = useQuery(api.featured.getFeaturedAlbums,
@@ -1747,12 +1749,12 @@ function MusicLibrarySeparate({ user }) {
     <div className="space-y-4">
       {/* Header */}
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Manage Music</h2>
+        <h2 className="font-display text-2xl font-bold text-brand-navy">Manage Music</h2>
         <p className="text-gray-600 text-sm">View and manage your family's approved music library</p>
       </div>
 
       {/* Sticky Tab Navigation - Pill Segmented Control */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 sticky top-0 z-40">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 sticky top-0 z-40">
 
         {/* Tab Navigation - Pill Style */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
@@ -1761,7 +1763,7 @@ function MusicLibrarySeparate({ user }) {
               onClick={() => setActiveTab('library')}
               className={`px-4 sm:px-6 py-2 text-sm sm:text-base font-medium whitespace-nowrap transition-all rounded-lg ${
                 activeTab === 'library'
-                  ? 'bg-white text-purple-600 shadow-sm'
+                  ? 'bg-white text-accent-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -1771,7 +1773,7 @@ function MusicLibrarySeparate({ user }) {
               onClick={() => setActiveTab('discover')}
               className={`px-4 sm:px-6 py-2 text-sm sm:text-base font-medium whitespace-nowrap transition-all rounded-lg ${
                 activeTab === 'discover'
-                  ? 'bg-white text-purple-600 shadow-sm'
+                  ? 'bg-white text-accent-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -1781,7 +1783,7 @@ function MusicLibrarySeparate({ user }) {
               onClick={() => setActiveTab('playlists')}
               className={`px-4 sm:px-6 py-2 text-sm sm:text-base font-medium whitespace-nowrap transition-all rounded-lg ${
                 activeTab === 'playlists'
-                  ? 'bg-white text-purple-600 shadow-sm'
+                  ? 'bg-white text-accent-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -1809,8 +1811,8 @@ function MusicLibrarySeparate({ user }) {
       {activeTab === 'library' && (
         <div className="space-y-4">
           {/* Library Explanation Banner */}
-          <div className="bg-indigo-50 border border-indigo-100 px-4 py-3 rounded-2xl">
-            <p className="text-indigo-700 font-semibold text-sm">Library</p>
+          <div className="bg-accent-50 border border-accent-100 px-4 py-3 rounded-2xl">
+            <p className="text-accent-700 font-semibold text-sm">Library</p>
             <p className="text-gray-600 text-sm mt-0.5">
               Music {selectedKid ? `${selectedKid.name}` : "your kids"} specifically requested and you approved
             </p>
@@ -1837,7 +1839,7 @@ function MusicLibrarySeparate({ user }) {
                   setSongsSectionExpanded(true);
                 }
               }}
-              className="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+              className="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent text-gray-900 placeholder-gray-400"
             />
             {librarySearchQuery && (
               <button
@@ -1859,19 +1861,19 @@ function MusicLibrarySeparate({ user }) {
           )}
 
           {/* ARTISTS Section - Collapsible */}
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <button
               onClick={() => setArtistsSectionExpanded(!artistsSectionExpanded)}
-              className="w-full p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-colors"
+              className="w-full p-4 sm:p-5 flex items-center justify-between bg-accent-50 hover:bg-accent-100 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-accent-500 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
                 <div className="text-left">
-                  <h2 className="text-lg font-bold text-gray-900">Artists</h2>
+                  <h2 className="font-display text-lg font-bold text-brand-navy">Artists</h2>
                   <p className="text-sm text-gray-600">{filteredArtists.length} artists{librarySearchQuery && ` (filtered)`}</p>
                 </div>
               </div>
@@ -1906,7 +1908,7 @@ function MusicLibrarySeparate({ user }) {
                       {/* Artist Row - Collapsible */}
                       <button
                         onClick={() => toggleArtist(artist.name)}
-                        className="w-full flex items-center gap-4 p-4 hover:bg-purple-50 transition-colors group"
+                        className="w-full flex items-center gap-4 p-4 hover:bg-accent-50 transition-colors group"
                       >
                         {/* Artist Avatar */}
                         <div className="flex-shrink-0">
@@ -1917,7 +1919,7 @@ function MusicLibrarySeparate({ user }) {
                               className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover shadow-md"
                             />
                           ) : (
-                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center shadow-md">
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-accent-400 flex items-center justify-center shadow-md">
                               <span className="text-white font-bold text-lg">
                                 {artist.name.charAt(0).toUpperCase()}
                               </span>
@@ -2033,19 +2035,19 @@ function MusicLibrarySeparate({ user }) {
           </div>
 
           {/* ALBUMS Section - Collapsible */}
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <button
               onClick={() => setAlbumsSectionExpanded(!albumsSectionExpanded)}
-              className="w-full p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-pink-50 to-orange-50 hover:from-pink-100 hover:to-orange-100 transition-colors"
+              className="w-full p-4 sm:p-5 flex items-center justify-between bg-accent-50 hover:bg-accent-100 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-accent-500 flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                   </svg>
                 </div>
                 <div className="text-left">
-                  <h2 className="text-lg font-bold text-gray-900">Albums</h2>
+                  <h2 className="font-display text-lg font-bold text-brand-navy">Albums</h2>
                   <p className="text-sm text-gray-600">{filteredAlbums.length} albums{librarySearchQuery && ` (filtered)`}</p>
                 </div>
               </div>
@@ -2147,19 +2149,19 @@ function MusicLibrarySeparate({ user }) {
           </div>
 
           {/* Songs Section */}
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <button
               onClick={() => setSongsSectionExpanded(!songsSectionExpanded)}
-              className="w-full p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-orange-50 to-yellow-50 hover:from-orange-100 hover:to-yellow-100 transition-colors"
+              className="w-full p-4 sm:p-5 flex items-center justify-between bg-accent-50 hover:bg-accent-100 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                   </svg>
                 </div>
                 <div className="text-left">
-                  <h3 className="text-lg font-semibold text-gray-900">Songs</h3>
+                  <h3 className="font-display text-lg font-semibold text-brand-navy">Songs</h3>
                   <p className="text-sm text-gray-500">{filteredSongs.length} songs</p>
                 </div>
               </div>
@@ -2195,7 +2197,7 @@ function MusicLibrarySeparate({ user }) {
                       return (
                         <div
                           key={`${song.appleSongId}-${idx}`}
-                          className={`flex items-center gap-3 p-3 hover:bg-gray-50 transition ${isPlaying ? 'bg-purple-50' : ''}`}
+                          className={`flex items-center gap-3 p-3 hover:bg-gray-50 transition ${isPlaying ? 'bg-accent-50' : ''}`}
                         >
                           {/* Artwork - clickable to play/pause */}
                           <button
@@ -2214,7 +2216,7 @@ function MusicLibrarySeparate({ user }) {
                                 className="w-12 h-12 rounded-full object-cover"
                               />
                             ) : (
-                              <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
+                              <div className="w-12 h-12 bg-accent-400 rounded-full flex items-center justify-center">
                                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                                   <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                                 </svg>
@@ -2250,7 +2252,7 @@ function MusicLibrarySeparate({ user }) {
                           {/* AI Lyrics Review Button */}
                           <button
                             onClick={() => handleReviewSong(song)}
-                            className="p-2 rounded-full bg-gray-100 text-purple-600 hover:bg-purple-100 transition flex-shrink-0"
+                            className="p-2 rounded-full bg-gray-100 text-accent-600 hover:bg-accent-100 transition flex-shrink-0"
                             title="AI Lyrics Review"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2297,7 +2299,7 @@ function MusicLibrarySeparate({ user }) {
                   </svg>
                 </button>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-xl font-bold text-gray-900 truncate">{selectedDiscoverPlaylist.playlistName}</h2>
+                  <h2 className="font-display text-xl font-bold text-brand-navy truncate">{selectedDiscoverPlaylist.playlistName}</h2>
                   <p className="text-sm text-gray-500">
                     {selectedDiscoverPlaylist.curatorName || 'Apple Music'} • {discoverPlaylistTracks.length} songs
                   </p>
@@ -2371,8 +2373,8 @@ function MusicLibrarySeparate({ user }) {
                             className="w-10 h-10 rounded object-cover"
                           />
                         ) : (
-                          <div className="w-10 h-10 bg-gradient-to-br from-purple-200 to-pink-200 rounded flex items-center justify-center">
-                            <svg className="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                          <div className="w-10 h-10 bg-accent-200 rounded flex items-center justify-center">
+                            <svg className="w-5 h-5 text-accent-500" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                             </svg>
                           </div>
@@ -2417,7 +2419,7 @@ function MusicLibrarySeparate({ user }) {
                             });
                             setReviewModalOpen(true);
                           }}
-                          className="p-2 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition"
+                          className="p-2 rounded-full bg-accent-100 text-accent-600 hover:bg-accent-200 transition"
                           title="AI Review"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2455,8 +2457,8 @@ function MusicLibrarySeparate({ user }) {
             /* Regular Discover List View */
             <>
               {/* Discover Pool Banner */}
-              <div className="bg-purple-50 border border-purple-100 px-4 py-3 rounded-2xl">
-                <p className="text-purple-700 font-semibold text-sm">Discover Pool</p>
+              <div className="bg-accent-50 border border-accent-100 px-4 py-3 rounded-2xl">
+                <p className="text-accent-700 font-semibold text-sm">Discover Pool</p>
                 <p className="text-gray-600 text-sm mt-0.5">
                   Music you make available for {selectedKid ? selectedKid.name : "your kids"} to explore on their own — giving them autonomy to choose what they listen to
                 </p>
@@ -2474,7 +2476,7 @@ function MusicLibrarySeparate({ user }) {
                   placeholder="Search albums or playlists..."
                   value={discoverSearchQuery}
                   onChange={(e) => setDiscoverSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 placeholder-gray-400"
+                  className="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent text-gray-900 placeholder-gray-400"
                 />
                 {discoverSearchQuery && (
                   <button
@@ -2547,7 +2549,7 @@ function MusicLibrarySeparate({ user }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <h2 className="text-2xl font-bold text-gray-900 flex-1 truncate">{selectedPlaylistView.name}</h2>
+                <h2 className="font-display text-2xl font-bold text-brand-navy flex-1 truncate">{selectedPlaylistView.name}</h2>
               </div>
 
               {/* Playlist Info Card */}
@@ -2568,7 +2570,7 @@ function MusicLibrarySeparate({ user }) {
                     );
                   })()}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedPlaylistView.name}</h3>
+                    <h3 className="font-display text-xl font-bold text-brand-navy mb-1">{selectedPlaylistView.name}</h3>
                     <p className="text-sm text-gray-500">{selectedPlaylistView.songs?.length || 0} songs</p>
                     <p className="text-xs text-gray-400 mt-1">Created by {selectedKid?.name || 'kid'}</p>
                   </div>
@@ -2640,7 +2642,7 @@ function MusicLibrarySeparate({ user }) {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-sm text-gray-900 truncate">{song.songName}</h3>
+                        <h3 className="font-medium text-sm text-brand-navy truncate">{song.songName}</h3>
                         <p className="text-xs text-gray-500 truncate">{song.artistName}</p>
                       </div>
                       <button
@@ -2710,7 +2712,7 @@ function MusicLibrarySeparate({ user }) {
                 }
 
                 return (
-                  <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                       {kidPlaylists.map((playlist) => {
                         const firstSongArt = playlist.songs?.find(s => s.artworkUrl)?.artworkUrl;
@@ -2850,7 +2852,7 @@ function MusicLibrarySeparate({ user }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Remove Album for {selectedKid?.name || 'Kid'}?</h3>
+              <h3 className="font-display text-lg font-semibold text-brand-navy mb-2">Remove Album for {selectedKid?.name || 'Kid'}?</h3>
               <p className="text-gray-600 text-sm mb-6">
                 Remove <span className="font-medium">"{deleteConfirmAlbum.albumName}"</span> from <span className="font-medium">{selectedKid?.name || 'this kid'}'s</span> library? This will remove all songs from this album for them only.
               </p>
@@ -2884,7 +2886,7 @@ function MusicLibrarySeparate({ user }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Remove Song for {selectedKid?.name || 'Kid'}?</h3>
+              <h3 className="font-display text-lg font-semibold text-brand-navy mb-2">Remove Song for {selectedKid?.name || 'Kid'}?</h3>
               <p className="text-gray-600 text-sm mb-6">
                 Remove <span className="font-medium">"{deleteConfirmSong.songName}"</span> by <span className="font-medium">{deleteConfirmSong.artistName}</span> from <span className="font-medium">{selectedKid?.name || 'this kid'}'s</span> library?
               </p>
@@ -2913,12 +2915,12 @@ function MusicLibrarySeparate({ user }) {
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl">
             <div className="text-center">
               {/* Warning Icon */}
-              <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-full bg-accent-100 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Remove from Discover?</h3>
+              <h3 className="font-display text-lg font-semibold text-brand-navy mb-2">Remove from Discover?</h3>
               <p className="text-gray-600 text-sm mb-6">
                 Remove <span className="font-medium">"{discoverRemoveConfirm.album?.albumName}"</span> from <span className="font-medium">{discoverRemoveConfirm.kidName}'s</span> Discover pool?
               </p>
@@ -2955,7 +2957,7 @@ function MusicLibrarySeparate({ user }) {
                     }
                     setDiscoverRemoveConfirm(null);
                   }}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-pink-600 text-white font-medium hover:bg-pink-700 transition"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-accent-500 text-white font-medium hover:bg-accent-600 transition"
                 >
                   Remove
                 </button>
@@ -2971,12 +2973,12 @@ function MusicLibrarySeparate({ user }) {
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl">
             <div className="text-center">
               {/* Warning Icon */}
-              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 rounded-full bg-accent-100 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Remove Playlist from Discover?</h3>
+              <h3 className="font-display text-lg font-semibold text-brand-navy mb-2">Remove Playlist from Discover?</h3>
               <p className="text-gray-600 text-sm mb-6">
                 Remove <span className="font-medium">"{playlistRemoveConfirm.playlistName}"</span> from Discover pool?
               </p>
@@ -2999,7 +3001,7 @@ function MusicLibrarySeparate({ user }) {
                     }
                     setPlaylistRemoveConfirm(null);
                   }}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-700 transition"
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-accent-500 text-white font-medium hover:bg-accent-600 transition"
                 >
                   Remove
                 </button>
@@ -3028,7 +3030,7 @@ function MusicLibrarySeparate({ user }) {
                   className="w-14 h-14 rounded-lg shadow-md"
                 />
               ) : (
-                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-lg bg-accent-500 flex items-center justify-center">
                   <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                   </svg>
@@ -3048,7 +3050,7 @@ function MusicLibrarySeparate({ user }) {
                   onClick={handleSongSeek}
                 >
                   <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all"
+                    className="h-full bg-accent-500 rounded-full transition-all"
                     style={{ width: `${(songPreviewTime / songPreviewDuration) * 100}%` }}
                   />
                   {/* Scrubber thumb */}

@@ -92,14 +92,14 @@ export function getColorClass(color) {
     orange: 'bg-orange-500',
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
-    blue: 'bg-blue-500',
-    purple: 'bg-purple-500',
-    pink: 'bg-pink-500',
+    blue: 'bg-accent-500',
+    purple: 'bg-accent-500',
+    pink: 'bg-accent-500',
     gray: 'bg-gray-500',
-    cyan: 'bg-cyan-500',
+    cyan: 'bg-accent-500',
     teal: 'bg-teal-500',
   };
-  return colors[color] || 'bg-blue-500';
+  return colors[color] || 'bg-accent-500';
 }
 
 // Personality emoji per profile color — matches SafeReads so a kid's avatar feels
@@ -125,10 +125,10 @@ export function getAvatarIcon(color) {
 export function getBorderColorClass(index) {
   const borders = [
     'border-l-violet-500',
-    'border-l-blue-500',
+    'border-l-accent-500',
     'border-l-teal-500',
     'border-l-orange-500',
-    'border-l-pink-500',
+    'border-l-accent-500',
   ];
   return borders[index % borders.length];
 }

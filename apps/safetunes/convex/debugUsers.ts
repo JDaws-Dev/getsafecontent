@@ -1,8 +1,10 @@
-import { query, mutation } from "./_generated/server";
+import { internalQuery, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 // Query to get ALL user data including null/undefined fields
-export const debugAllUsers = query({
+// Internal-only debug tools. bulkDeleteUsers was a PUBLIC mutation — anyone
+// could delete every user via the deployment URL. Neither has app callers.
+export const debugAllUsers = internalQuery({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();
@@ -38,7 +40,7 @@ export const debugAllUsers = query({
 });
 
 // Delete all users matching a pattern (for cleaning up test accounts)
-export const bulkDeleteUsers = mutation({
+export const bulkDeleteUsers = internalMutation({
   args: { emailPattern: v.string() },
   handler: async (ctx, args) => {
     const allUsers = await ctx.db.query("users").collect();

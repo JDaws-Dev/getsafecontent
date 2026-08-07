@@ -105,19 +105,19 @@ export default function SavedVersesPage() {
       {/* Header */}
       <button
         onClick={() => router.push("/read/bible")}
-        className="mb-4 flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900"
+        className="mb-4 flex items-center gap-1 text-sm font-medium text-accent-800 hover:text-accent-900"
       >
         <ArrowLeft className="h-4 w-4" />
         Bible
       </button>
 
-      <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-orange-700 p-5 text-white shadow-lg">
+      <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-accent-500 via-accent-600 to-accent-700 p-5 text-white shadow-lg">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
             <Heart className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">My Saved Verses</h1>
+            <h1 className="font-display text-xl font-bold">My Saved Verses</h1>
             <p className="mt-0.5 text-sm text-white/80">
               {savedVerses?.length || 0} verse{savedVerses?.length !== 1 ? "s" : ""} saved
             </p>
@@ -135,7 +135,7 @@ export default function SavedVersesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search saved verses..."
-              className="w-full rounded-xl border border-amber-200 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              className="w-full rounded-xl border border-accent-200 bg-white py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-accent-400 focus:ring-1 focus:ring-accent-400"
             />
           </div>
 
@@ -159,7 +159,7 @@ export default function SavedVersesPage() {
               <select
                 value={filterBook || ""}
                 onChange={(e) => setFilterBook(e.target.value || null)}
-                className="rounded-lg border border-amber-200 bg-white px-2 py-1 text-xs text-gray-700 outline-none"
+                className="rounded-lg border border-accent-200 bg-white px-2 py-1 text-xs text-gray-700 outline-none"
               >
                 <option value="">All Books</option>
                 {bookNames.map((name) => (
@@ -183,11 +183,11 @@ export default function SavedVersesPage() {
       {/* Verses list */}
       {savedVerses === undefined ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-6 w-6 animate-spin text-amber-500" />
+          <Loader2 className="h-6 w-6 animate-spin text-accent-500" />
         </div>
       ) : filteredVerses.length === 0 ? (
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-black/5">
-          <Heart className="mx-auto mb-3 h-10 w-10 text-amber-200" />
+          <Heart className="mx-auto mb-3 h-10 w-10 text-accent-200" />
           <p className="text-sm font-medium text-gray-600">
             {savedVerses.length === 0
               ? "No saved verses yet. Tap on any verse while reading to save it."
@@ -221,7 +221,7 @@ export default function SavedVersesPage() {
                     }}
                     className="min-w-0 flex-1 text-left"
                   >
-                    <p className="text-xs font-bold text-amber-700">
+                    <p className="text-xs font-bold text-accent-700">
                       {verse.bookName} {verse.chapter}:{verse.verse}
                       <span className="ml-1.5 font-normal text-gray-400">{verse.translation}</span>
                     </p>

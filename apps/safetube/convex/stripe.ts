@@ -143,7 +143,7 @@ export default httpAction(async (ctx, request) => {
 
         // Update subscription status
         try {
-          await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+          await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
             subscriptionId: subscription.id,
             subscriptionStatus: newStatus,
             subscriptionEndsAt: subscription.cancel_at_period_end ? subscription.current_period_end * 1000 : undefined,
@@ -219,7 +219,7 @@ export default httpAction(async (ctx, request) => {
         // Only mark as cancelled if no other active subscriptions exist
         if (!hasOtherActiveSubscription) {
           try {
-            await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+            await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
               subscriptionId: deletedSubscription.id,
               subscriptionStatus: "cancelled",
             });
@@ -255,7 +255,7 @@ export default httpAction(async (ctx, request) => {
         if (paidInvoice.subscription) {
           // Update subscription status to active (confirms payment succeeded)
           try {
-            await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+            await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
               subscriptionId: paidInvoice.subscription as string,
               subscriptionStatus: "active",
             });
@@ -295,7 +295,7 @@ export default httpAction(async (ctx, request) => {
         if (invoice.subscription) {
           // Mark subscription as past_due
           try {
-            await ctx.runMutation(api.users.updateSubscriptionByStripeId, {
+            await ctx.runMutation(internal.users.updateSubscriptionByStripeId, {
               subscriptionId: invoice.subscription as string,
               subscriptionStatus: "past_due",
             });

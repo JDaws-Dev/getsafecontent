@@ -36,13 +36,13 @@ export default function SignupPage() {
 
   // Show loading state while checking auth or redirecting
   return (
-    <div className="min-h-screen bg-parchment-50 flex items-center justify-center">
+    <div className="min-h-screen bg-brand-cream flex items-center justify-center">
       <div className="text-center px-4">
         {/* Logo */}
         <div className="mb-8 flex justify-center">
           <Link href="/" className="inline-flex items-center gap-2">
-            <BookOpen className="h-10 w-10 text-parchment-600" />
-            <span className="font-serif text-2xl font-bold text-ink-900">
+            <BookOpen className="h-10 w-10 text-accent-600" />
+            <span className="font-display text-2xl font-bold text-brand-navy">
               SafeReads
             </span>
           </Link>
@@ -50,7 +50,7 @@ export default function SignupPage() {
 
         {/* Loading spinner */}
         <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-parchment-300 border-t-parchment-600" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-cream-2 border-t-accent-600" />
           <p className="text-ink-600">
             {isLoading ? "Checking account..." : "Redirecting to signup..."}
           </p>
@@ -61,7 +61,7 @@ export default function SignupPage() {
           Not redirecting?{" "}
           <a
             href={CENTRAL_SIGNUP_URL}
-            className="font-medium text-parchment-600 hover:text-parchment-700 underline"
+            className="font-medium text-accent-600 hover:text-accent-700 underline"
           >
             Click here to sign up
           </a>
@@ -72,7 +72,7 @@ export default function SignupPage() {
           Already have an account?{" "}
           <Link
             href="/login"
-            className="font-medium text-parchment-600 hover:text-parchment-700"
+            className="font-medium text-accent-600 hover:text-accent-700"
           >
             Sign in
           </Link>

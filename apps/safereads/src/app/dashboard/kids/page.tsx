@@ -111,7 +111,7 @@ export default function KidsPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-ink-900">
+          <h1 className="font-display text-2xl font-bold text-brand-navy">
             My Kids
           </h1>
           <p className="mt-1 text-sm text-ink-500">
@@ -120,7 +120,7 @@ export default function KidsPage() {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 rounded-lg bg-parchment-700 px-4 py-2 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+          className="flex items-center gap-2 rounded-lg bg-accent-700 px-4 py-2 text-sm font-medium text-accent-50 transition-colors hover:bg-accent-800"
         >
           <Plus className="h-4 w-4" />
           Add Child
@@ -130,7 +130,7 @@ export default function KidsPage() {
       {kids === undefined ? (
         <div className="py-12 text-center text-ink-500">Loading…</div>
       ) : kids.length === 0 ? (
-        <div className="rounded-lg border border-parchment-200 bg-white p-8 text-center">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-8 text-center">
           <User className="mx-auto mb-3 h-10 w-10 text-ink-300" />
           <p className="text-ink-600">
             No kids added yet. Add a child to start building their reading
@@ -138,7 +138,7 @@ export default function KidsPage() {
           </p>
           <button
             onClick={openCreate}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-parchment-700 px-4 py-2 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent-700 px-4 py-2 text-sm font-medium text-accent-50 transition-colors hover:bg-accent-800"
           >
             <Plus className="h-4 w-4" />
             Add Your First Child
@@ -161,9 +161,9 @@ export default function KidsPage() {
       <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-ink-900/40 data-[state=open]:animate-in data-[state=open]:fade-in" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl bg-parchment-50 p-6 shadow-xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95">
+          <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl bg-brand-cream p-6 shadow-xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95">
             <div className="mb-4 flex items-center justify-between">
-              <Dialog.Title className="font-serif text-xl font-bold text-ink-900">
+              <Dialog.Title className="font-display text-xl font-bold text-brand-navy">
                 {editing ? "Edit Child" : "Add Child"}
               </Dialog.Title>
               <Dialog.Close asChild>
@@ -214,14 +214,14 @@ function KidCard({
   const colorClass = COLOR_MAP[kid.color || "purple"] || COLOR_MAP.purple;
 
   return (
-    <div className="rounded-lg border border-parchment-200 bg-white px-4 py-3">
+    <div className="rounded-2xl border border-brand-cream-2 bg-white px-4 py-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`flex h-9 w-9 items-center justify-center rounded-full ${colorClass} text-sm font-bold text-white`}>
             {kid.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <span className="font-medium text-ink-900">{kid.name}</span>
+            <span className="font-display font-medium text-brand-navy">{kid.name}</span>
             <div className="flex items-center gap-2 text-xs text-ink-400">
               {kid.age !== undefined && <span>Age {kid.age}</span>}
               {kid.pin && (
@@ -242,14 +242,14 @@ function KidCard({
           </Link>
           <Link
             href={`/dashboard/kids/${kid._id}/wishlist`}
-            className="flex items-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-parchment-700 transition-colors hover:bg-parchment-100"
+            className="flex items-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-accent-700 transition-colors hover:bg-brand-cream-2"
           >
             <BookOpen className="h-3.5 w-3.5" />
             Wishlist{wishlistCount !== undefined ? ` (${wishlistCount})` : ""}
           </Link>
           <button
             onClick={onEdit}
-            className="rounded p-1.5 text-ink-400 transition-colors hover:bg-parchment-100 hover:text-ink-600"
+            className="rounded p-1.5 text-ink-400 transition-colors hover:bg-brand-cream-2 hover:text-ink-600"
             title="Edit"
           >
             <Pencil className="h-4 w-4" />

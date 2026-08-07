@@ -15,7 +15,7 @@ export default function ImagesResults({ images, aiSummary, onImageClick, onSwitc
             <button
               key={index}
               onClick={() => onImageClick(index)}
-              className="group relative rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 aspect-[4/3] active:scale-[0.98]"
+              className="group relative rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-accent-400 aspect-[4/3] active:scale-[0.98]"
             >
               <img
                 src={image.thumbnail || image.url}
@@ -34,11 +34,11 @@ export default function ImagesResults({ images, aiSummary, onImageClick, onSwitc
         </div>
         {/* Brief AI summary below images */}
         {aiSummary && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 rounded-lg p-4">
-            <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed line-clamp-3">{stripMarkdown(aiSummary)}</p>
+          <div className="bg-accent-50 dark:bg-accent-900/20 border border-accent-100 dark:border-accent-800/50 rounded-lg p-4">
+            <p className="text-sm text-accent-800 dark:text-accent-200 leading-relaxed line-clamp-3">{stripMarkdown(aiSummary)}</p>
             <button
               onClick={onSwitchToLearn}
-              className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-2 hover:underline py-1"
+              className="text-xs text-accent-600 dark:text-accent-400 font-medium mt-2 hover:underline py-1"
             >
               Read full answer &rarr;
             </button>
@@ -58,7 +58,7 @@ export default function ImagesResults({ images, aiSummary, onImageClick, onSwitc
       </p>
       <button
         onClick={onSwitchToLearn}
-        className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline py-1 inline-flex items-center gap-1"
+        className="text-sm text-accent-600 dark:text-accent-400 font-medium hover:underline py-1 inline-flex items-center gap-1"
       >
         Switch to Learn mode <ChevronRight className="w-3.5 h-3.5" />
       </button>

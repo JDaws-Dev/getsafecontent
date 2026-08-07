@@ -141,10 +141,10 @@ export default function AdminPage() {
     return (
       <div className="mx-auto max-w-6xl px-4 py-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 rounded bg-parchment-200" />
+          <div className="h-8 w-48 rounded bg-brand-cream-2" />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-24 rounded-lg bg-parchment-100" />
+              <div key={i} className="h-24 rounded-2xl bg-brand-cream-2" />
             ))}
           </div>
         </div>
@@ -172,7 +172,7 @@ export default function AdminPage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-ink-900">Admin Dashboard</h1>
+          <h1 className="font-display text-2xl font-bold text-brand-navy">Admin Dashboard</h1>
           <p className="mt-1 text-sm text-ink-500">SafeReads platform overview</p>
         </div>
         {stats && (
@@ -241,8 +241,8 @@ export default function AdminPage() {
       {/* Verdict Breakdown with Visual Bar */}
       {stats?.verdictCounts && (
         <div className="mt-8">
-          <h2 className="font-serif text-lg font-bold text-ink-900">Verdict Distribution</h2>
-          <div className="mt-3 rounded-lg border border-parchment-200 bg-white p-4">
+          <h2 className="font-display text-lg font-bold text-brand-navy">Verdict Distribution</h2>
+          <div className="mt-3 rounded-2xl border border-brand-cream-2 bg-white p-4">
             <div className="flex flex-wrap gap-4 sm:gap-6">
               <VerdictStat
                 label="Safe"
@@ -266,12 +266,12 @@ export default function AdminPage() {
                 label="No Verdict"
                 count={stats.verdictCounts.no_verdict}
                 total={stats.analysisCount}
-                color="bg-parchment-400"
+                color="bg-verdict-none"
               />
             </div>
             {/* Visual bar */}
             {stats.analysisCount > 0 && (
-              <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-parchment-100">
+              <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-brand-cream-2">
                 <div
                   className="bg-verdict-safe transition-all"
                   style={{ width: `${(stats.verdictCounts.safe / stats.analysisCount) * 100}%` }}
@@ -285,7 +285,7 @@ export default function AdminPage() {
                   style={{ width: `${(stats.verdictCounts.warning / stats.analysisCount) * 100}%` }}
                 />
                 <div
-                  className="bg-parchment-400 transition-all"
+                  className="bg-verdict-none transition-all"
                   style={{ width: `${(stats.verdictCounts.no_verdict / stats.analysisCount) * 100}%` }}
                 />
               </div>
@@ -296,8 +296,8 @@ export default function AdminPage() {
 
       {/* Engagement Summary */}
       <div className="mt-8">
-        <h2 className="font-serif text-lg font-bold text-ink-900">Engagement</h2>
-        <div className="mt-3 rounded-lg border border-parchment-200 bg-white p-4">
+        <h2 className="font-display text-lg font-bold text-brand-navy">Engagement</h2>
+        <div className="mt-3 rounded-2xl border border-brand-cream-2 bg-white p-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <EngagementMetric
               label="Users with Analyses"
@@ -324,7 +324,7 @@ export default function AdminPage() {
       {/* Users Table */}
       <div className="mt-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="font-serif text-lg font-bold text-ink-900">
+          <h2 className="font-display text-lg font-bold text-brand-navy">
             Users ({filteredUsers.length}{users && filteredUsers.length !== users.length ? ` of ${users.length}` : ""})
           </h2>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -336,14 +336,14 @@ export default function AdminPage() {
                 placeholder="Search users..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border border-parchment-200 bg-white py-2 pl-9 pr-4 text-sm text-ink-900 placeholder:text-ink-400 focus:border-parchment-400 focus:outline-none focus:ring-1 focus:ring-parchment-400 sm:w-48"
+                className="w-full rounded-lg border border-brand-cream-2 bg-white py-2 pl-9 pr-4 text-sm text-brand-navy placeholder:text-ink-400 focus:border-accent-400 focus:outline-none focus:ring-1 focus:ring-accent-400 sm:w-48"
               />
             </div>
             {/* Filter */}
             <select
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value as FilterStatus)}
-              className="rounded-lg border border-parchment-200 bg-white px-3 py-2 text-sm text-ink-700 focus:border-parchment-400 focus:outline-none focus:ring-1 focus:ring-parchment-400"
+              className="rounded-lg border border-brand-cream-2 bg-white px-3 py-2 text-sm text-ink-700 focus:border-accent-400 focus:outline-none focus:ring-1 focus:ring-accent-400"
             >
               <option value="all">All Users</option>
               <option value="pro">Pro Only</option>
@@ -353,9 +353,9 @@ export default function AdminPage() {
         </div>
 
         {/* Desktop Table */}
-        <div className="mt-3 hidden overflow-x-auto rounded-lg border border-parchment-200 md:block">
-          <table className="min-w-full divide-y divide-parchment-200">
-            <thead className="bg-parchment-50">
+        <div className="mt-3 hidden overflow-x-auto rounded-2xl border border-brand-cream-2 md:block">
+          <table className="min-w-full divide-y divide-brand-cream-2">
+            <thead className="bg-brand-cream">
               <tr>
                 <th
                   className="cursor-pointer px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-ink-500 hover:text-ink-700"
@@ -389,9 +389,9 @@ export default function AdminPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-parchment-100 bg-white">
+            <tbody className="divide-y divide-brand-cream-2 bg-white">
               {filteredUsers.map(user => (
-                <tr key={user._id} className="hover:bg-parchment-50">
+                <tr key={user._id} className="hover:bg-brand-cream-2">
                   <td className="whitespace-nowrap px-4 py-3">
                     <div className="flex items-center gap-3">
                       {user.image ? (
@@ -402,12 +402,12 @@ export default function AdminPage() {
                           className="h-8 w-8 rounded-full"
                         />
                       ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-parchment-200 text-xs font-medium text-parchment-600">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-100 text-xs font-medium text-accent-700">
                           {user.name?.charAt(0) || "?"}
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-medium text-ink-900">{user.name || "No name"}</p>
+                        <p className="text-sm font-medium text-brand-navy">{user.name || "No name"}</p>
                         <p className="text-xs text-ink-400">{user.email || "No email"}</p>
                       </div>
                     </div>
@@ -419,7 +419,7 @@ export default function AdminPage() {
                           Pro
                         </span>
                       ) : (
-                        <span className="inline-flex rounded-full bg-parchment-100 px-2 py-0.5 text-xs font-medium text-ink-600">
+                        <span className="inline-flex rounded-full bg-brand-cream-2 px-2 py-0.5 text-xs font-medium text-ink-600">
                           Free
                         </span>
                       )}
@@ -457,7 +457,7 @@ export default function AdminPage() {
           {filteredUsers.map(user => (
             <div
               key={user._id}
-              className="rounded-lg border border-parchment-200 bg-white p-4"
+              className="rounded-2xl border border-brand-cream-2 bg-white p-4"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -469,12 +469,12 @@ export default function AdminPage() {
                       className="h-10 w-10 rounded-full"
                     />
                   ) : (
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-parchment-200 text-sm font-medium text-parchment-600">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-100 text-sm font-medium text-accent-700">
                       {user.name?.charAt(0) || "?"}
                     </div>
                   )}
                   <div>
-                    <p className="font-medium text-ink-900">{user.name || "No name"}</p>
+                    <p className="font-medium text-brand-navy">{user.name || "No name"}</p>
                     <p className="text-xs text-ink-400">{user.email || "No email"}</p>
                   </div>
                 </div>
@@ -484,7 +484,7 @@ export default function AdminPage() {
                       Pro
                     </span>
                   ) : (
-                    <span className="inline-flex rounded-full bg-parchment-100 px-2 py-0.5 text-xs font-medium text-ink-600">
+                    <span className="inline-flex rounded-full bg-brand-cream-2 px-2 py-0.5 text-xs font-medium text-ink-600">
                       Free
                     </span>
                   )}
@@ -506,7 +506,7 @@ export default function AdminPage() {
             </div>
           ))}
           {filteredUsers.length === 0 && (
-            <div className="rounded-lg border border-parchment-200 bg-white p-8 text-center text-sm text-ink-400">
+            <div className="rounded-2xl border border-brand-cream-2 bg-white p-8 text-center text-sm text-ink-400">
               No users found matching your criteria
             </div>
           )}
@@ -531,17 +531,17 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-lg border p-4 ${
+      className={`rounded-2xl border p-4 ${
         highlight
-          ? "border-parchment-400 bg-parchment-100"
-          : "border-parchment-200 bg-white"
+          ? "border-accent-300 bg-accent-100"
+          : "border-brand-cream-2 bg-white"
       }`}
     >
       <div className="flex items-center gap-2 text-ink-500">
         {icon}
         <span className="text-xs font-medium uppercase tracking-wider">{label}</span>
       </div>
-      <p className="mt-2 text-2xl font-bold text-ink-900">{value}</p>
+      <p className="mt-2 text-2xl font-bold text-brand-navy">{value}</p>
       {subtext && <p className="mt-0.5 text-xs text-ink-400">{subtext}</p>}
     </div>
   );
@@ -588,12 +588,12 @@ function EngagementMetric({
     <div>
       <p className="text-sm text-ink-500">{label}</p>
       <div className="mt-1 flex items-baseline gap-2">
-        <span className="text-xl font-bold text-ink-900">{value}</span>
+        <span className="text-xl font-bold text-brand-navy">{value}</span>
         <span className="text-sm text-ink-400">/ {total}</span>
       </div>
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-parchment-100">
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-brand-cream-2">
         <div
-          className="h-full bg-parchment-500 transition-all"
+          className="h-full bg-accent-500 transition-all"
           style={{ width: `${percentage}%` }}
         />
       </div>

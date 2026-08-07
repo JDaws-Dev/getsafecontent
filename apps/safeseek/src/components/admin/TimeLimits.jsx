@@ -23,7 +23,7 @@ function getColorClass(color) {
     cyan: 'bg-cyan-500',
     teal: 'bg-teal-500',
   };
-  return colors[color] || 'bg-blue-500';
+  return colors[color] || 'bg-accent-500';
 }
 
 // Search limit presets (number of searches per day)
@@ -149,7 +149,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
   if (!timeLimitsData) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent-500 border-t-transparent"></div>
       </div>
     );
   }
@@ -172,7 +172,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
             onClick={() => setSelectedKid(kid.kidProfileId)}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition ${
               selectedKid === kid.kidProfileId
-                ? 'border-blue-500 bg-blue-50'
+                ? 'border-accent-500 bg-accent-50'
                 : 'border-gray-200 bg-white hover:border-gray-300'
             }`}
           >
@@ -191,7 +191,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
             </span>
             {/* Today's usage */}
             {kid.searchesToday > 0 && (
-              <span className="text-xs text-blue-600 mt-0.5">
+              <span className="text-xs text-accent-600 mt-0.5">
                 {kid.searchesToday} searches today
               </span>
             )}
@@ -218,7 +218,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                   onClick={() => setFormState(s => ({ ...s, dailyLimitSearches: preset.value, _dailyCustom: false }))}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
                     formState.dailyLimitSearches === preset.value && !formState._dailyCustom
-                      ? 'bg-blue-500 text-white'
+                      ? 'bg-accent-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -229,7 +229,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                 onClick={() => setFormState(s => ({ ...s, _dailyCustom: true, dailyLimitSearches: isCustomValue(s.dailyLimitSearches) ? s.dailyLimitSearches : 75 }))}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
                   formState._dailyCustom || isCustomValue(formState.dailyLimitSearches)
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-accent-500 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -247,7 +247,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                     const val = Math.max(1, Math.min(999, parseInt(e.target.value) || 1));
                     setFormState(s => ({ ...s, dailyLimitSearches: val, _dailyCustom: true }));
                   }}
-                  className="w-24 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="w-24 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-accent-500 focus:border-accent-500"
                 />
                 <span className="text-sm text-gray-500">searches per day</span>
               </div>
@@ -264,7 +264,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                   ...s,
                   weekendLimitSearches: e.target.checked ? s.dailyLimitSearches : undefined,
                 }))}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-accent-500 border-gray-300 rounded focus:ring-accent-500"
               />
               <span className="text-sm font-medium text-gray-700">Different limit on weekends</span>
             </label>
@@ -277,7 +277,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                       onClick={() => setFormState(s => ({ ...s, weekendLimitSearches: preset.value, _weekendCustom: false }))}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
                         formState.weekendLimitSearches === preset.value && !formState._weekendCustom
-                          ? 'bg-cyan-500 text-white'
+                          ? 'bg-accent-500 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -288,7 +288,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                     onClick={() => setFormState(s => ({ ...s, _weekendCustom: true, weekendLimitSearches: isCustomValue(s.weekendLimitSearches) ? s.weekendLimitSearches : 75 }))}
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
                       formState._weekendCustom || isCustomValue(formState.weekendLimitSearches)
-                        ? 'bg-cyan-500 text-white'
+                        ? 'bg-accent-500 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -306,7 +306,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                         const val = Math.max(1, Math.min(999, parseInt(e.target.value) || 1));
                         setFormState(s => ({ ...s, weekendLimitSearches: val, _weekendCustom: true }));
                       }}
-                      className="w-24 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-24 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-accent-500 focus:border-accent-500"
                     />
                     <span className="text-sm text-gray-500">searches per day</span>
                   </div>
@@ -327,7 +327,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                     setFormState(s => ({ ...s, allowedStartHour: 8, allowedEndHour: 20 }));
                   }
                 }}
-                className="w-4 h-4 text-blue-500 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-accent-500 border-gray-300 rounded focus:ring-accent-500"
               />
               <span className="text-sm font-medium text-gray-700">Restrict to specific hours</span>
             </label>
@@ -336,7 +336,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                 <select
                   value={formState.allowedStartHour ?? 8}
                   onChange={(e) => setFormState(s => ({ ...s, allowedStartHour: parseInt(e.target.value) }))}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-accent-500 focus:border-accent-500"
                 >
                   {HOURS.map((h) => (
                     <option key={h.value} value={h.value}>{h.label}</option>
@@ -346,7 +346,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                 <select
                   value={formState.allowedEndHour ?? 20}
                   onChange={(e) => setFormState(s => ({ ...s, allowedEndHour: parseInt(e.target.value) }))}
-                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg px-3 py-2 text-sm focus:ring-accent-500 focus:border-accent-500"
                 >
                   {HOURS.map((h) => (
                     <option key={h.value} value={h.value}>{h.label}</option>
@@ -361,7 +361,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-300 disabled:to-gray-400 text-white py-2.5 rounded-lg font-medium transition"
+              className="flex-1 bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 disabled:from-gray-300 disabled:to-gray-400 text-white py-2.5 rounded-lg font-medium transition"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>

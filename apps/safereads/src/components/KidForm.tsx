@@ -78,7 +78,7 @@ export function KidForm({
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Emma"
           required
-          className="mt-1 w-full rounded-lg border border-parchment-300 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-parchment-500 focus:outline-none focus:ring-1 focus:ring-parchment-500"
+          className="mt-1 w-full rounded-lg border border-brand-cream-2 bg-white px-3 py-2 text-sm text-brand-navy placeholder:text-ink-400 focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
         />
       </div>
 
@@ -98,7 +98,7 @@ export function KidForm({
           value={age}
           onChange={(e) => setAge(e.target.value)}
           placeholder="e.g. 10"
-          className="mt-1 w-full rounded-lg border border-parchment-300 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-parchment-500 focus:outline-none focus:ring-1 focus:ring-parchment-500"
+          className="mt-1 w-full rounded-lg border border-brand-cream-2 bg-white px-3 py-2 text-sm text-brand-navy placeholder:text-ink-400 focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
         />
       </div>
 
@@ -115,7 +115,7 @@ export function KidForm({
               onClick={() => setColor(c.id)}
               className={`h-8 w-8 rounded-full ${c.class} transition-all ${
                 color === c.id
-                  ? "ring-2 ring-parchment-700 ring-offset-2 scale-110"
+                  ? "ring-2 ring-accent-700 ring-offset-2 scale-110"
                   : "hover:scale-105 opacity-60"
               }`}
               title={c.label}
@@ -138,7 +138,7 @@ export function KidForm({
           id="kid-reading-level"
           value={readingLevel}
           onChange={(e) => setReadingLevel(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-parchment-300 bg-white px-3 py-2 text-sm text-ink-900 focus:border-parchment-500 focus:outline-none focus:ring-1 focus:ring-parchment-500"
+          className="mt-1 w-full rounded-lg border border-brand-cream-2 bg-white px-3 py-2 text-sm text-brand-navy focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
         >
           <option value="">Select reading level</option>
           {READING_LEVELS.map((level) => (
@@ -168,7 +168,7 @@ export function KidForm({
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, "").slice(0, 4))}
           placeholder="e.g. 1234"
-          className="mt-1 w-32 rounded-lg border border-parchment-300 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-parchment-500 focus:outline-none focus:ring-1 focus:ring-parchment-500"
+          className="mt-1 w-32 rounded-lg border border-brand-cream-2 bg-white px-3 py-2 text-sm text-brand-navy placeholder:text-ink-400 focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
         />
         {pin.length > 0 && pin.length < 4 && (
           <p className="mt-1 text-xs text-ink-400">Must be exactly 4 digits</p>
@@ -178,7 +178,7 @@ export function KidForm({
       <button
         type="submit"
         disabled={loading || !name.trim()}
-        className="w-full rounded-lg bg-parchment-700 px-4 py-2 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800 disabled:opacity-50"
+        className="w-full rounded-lg bg-accent-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-800 disabled:opacity-50"
       >
         {loading ? "Saving..." : submitLabel}
       </button>

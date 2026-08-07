@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 
 function ApprovedAlbumsList() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   // Fetch approved albums from Convex
   const albums = useQuery(api.albums.getApprovedAlbums,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   // Mutation for removing albums

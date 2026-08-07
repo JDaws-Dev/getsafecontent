@@ -76,8 +76,12 @@ export const createCheckoutSession = action({
         ],
         success_url: `${process.env.SITE_URL || 'https://getsafetunes.com'}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.SITE_URL || 'https://getsafetunes.com'}/signup?canceled=true`,
+        // `apps` lets every shared-account webhook tell which app a purchase is
+        // for, so only SafeTunes acts on a SafeTunes checkout (no cross-wired
+        // confirmation emails). Keep in sync with subscription_data.metadata below.
         metadata: {
           email: args.email,
+          apps: "safetunes",
         },
       };
 
@@ -94,6 +98,7 @@ export const createCheckoutSession = action({
           trial_period_days: 7,
           metadata: {
             email: args.email,
+            apps: "safetunes",
           },
         };
         console.log("Adding 7-day trial for new customer");
@@ -101,6 +106,7 @@ export const createCheckoutSession = action({
         sessionOptions.subscription_data = {
           metadata: {
             email: args.email,
+            apps: "safetunes",
           },
         };
         console.log("Skipping trial for returning customer");

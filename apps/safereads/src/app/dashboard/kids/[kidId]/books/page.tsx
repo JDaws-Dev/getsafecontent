@@ -145,7 +145,7 @@ export default function ManageBooksPage({
   if (kid === undefined || approvedBooks === undefined) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-parchment-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-accent-400" />
       </div>
     );
   }
@@ -156,7 +156,7 @@ export default function ManageBooksPage({
         <p className="text-lg text-ink-500">Child not found.</p>
         <Link
           href="/dashboard/kids"
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-parchment-700 hover:text-parchment-800"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accent-700 hover:text-accent-800"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to kids
@@ -177,7 +177,7 @@ export default function ManageBooksPage({
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-serif text-2xl font-bold text-ink-900">
+          <h1 className="font-display text-2xl font-bold text-brand-navy">
             {kid.name}&apos;s Bookshelf
           </h1>
           <p className="mt-1 text-sm text-ink-500">
@@ -186,7 +186,7 @@ export default function ManageBooksPage({
         </div>
         <Link
           href="/dashboard/search"
-          className="flex items-center gap-2 rounded-lg bg-parchment-700 px-4 py-2 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+          className="flex items-center gap-2 rounded-lg bg-accent-700 px-4 py-2 text-sm font-medium text-accent-50 transition-colors hover:bg-accent-800"
         >
           <Plus className="h-4 w-4" />
           Add Book
@@ -202,28 +202,28 @@ export default function ManageBooksPage({
             value={searchFilter}
             onChange={(e) => setSearchFilter(e.target.value)}
             placeholder="Filter books..."
-            className="w-full rounded-lg border border-parchment-200 bg-white py-2 pl-9 pr-4 text-sm text-ink-900 placeholder-ink-400 outline-none focus:border-parchment-400 focus:ring-1 focus:ring-parchment-400"
+            className="w-full rounded-lg border border-brand-cream-2 bg-white py-2 pl-9 pr-4 text-sm text-brand-navy placeholder-ink-400 outline-none focus:border-accent-400 focus:ring-1 focus:ring-accent-400"
           />
         </div>
       )}
 
       {/* Approved books list */}
       {sortedBooks.length === 0 && !searchFilter ? (
-        <div className="rounded-lg border border-parchment-200 bg-white p-8 text-center">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-8 text-center">
           <BookOpen className="mx-auto mb-3 h-10 w-10 text-ink-300" />
           <p className="text-ink-600">
             No approved books yet. Search for books to add to {kid.name}&apos;s shelf.
           </p>
           <Link
             href="/dashboard/search"
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-parchment-700 px-4 py-2 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent-700 px-4 py-2 text-sm font-medium text-accent-50 transition-colors hover:bg-accent-800"
           >
             <Search className="h-4 w-4" />
             Search Books
           </Link>
         </div>
       ) : sortedBooks.length === 0 && searchFilter ? (
-        <div className="rounded-lg border border-parchment-200 bg-white p-6 text-center">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-6 text-center">
           <p className="text-sm text-ink-500">No books match &quot;{searchFilter}&quot;</p>
         </div>
       ) : (
@@ -240,7 +240,7 @@ export default function ManageBooksPage({
             return (
               <div
                 key={book._id}
-                className={`rounded-lg border border-parchment-200 bg-white px-4 py-3 transition-opacity ${
+                className={`rounded-2xl border border-brand-cream-2 bg-white px-4 py-3 transition-opacity ${
                   isRemoving ? "opacity-50" : ""
                 }`}
               >
@@ -257,7 +257,7 @@ export default function ManageBooksPage({
                         unoptimized
                       />
                     ) : (
-                      <div className="flex h-[72px] w-[48px] items-center justify-center rounded bg-parchment-100">
+                      <div className="flex h-[72px] w-[48px] items-center justify-center rounded bg-brand-cream-2">
                         <BookOpen className="h-5 w-5 text-ink-300" />
                       </div>
                     )}
@@ -265,7 +265,7 @@ export default function ManageBooksPage({
 
                   {/* Info */}
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-ink-900 line-clamp-1">{book.title}</p>
+                    <p className="font-display font-medium text-brand-navy line-clamp-1">{book.title}</p>
                     <p className="text-sm text-ink-500 line-clamp-1">{book.author}</p>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${source.color}`}>
@@ -311,7 +311,7 @@ export default function ManageBooksPage({
       {/* Excluded Pre-Approved Classics */}
       {excludedBooks.length > 0 && (
         <section className="mt-8">
-          <h2 className="mb-3 flex items-center gap-2 font-serif text-lg font-bold text-ink-700">
+          <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-bold text-brand-navy">
             <RotateCcw className="h-4 w-4 text-ink-400" />
             Excluded Classics
           </h2>
@@ -322,7 +322,7 @@ export default function ManageBooksPage({
             {excludedBooks.map((gutenbergId: string) => (
               <div
                 key={gutenbergId}
-                className="flex items-center justify-between rounded-lg border border-parchment-200 bg-parchment-50 px-4 py-2.5"
+                className="flex items-center justify-between rounded-lg border border-brand-cream-2 bg-brand-cream px-4 py-2.5"
               >
                 <span className="text-sm text-ink-600">
                   Classic #{gutenbergId}
@@ -330,7 +330,7 @@ export default function ManageBooksPage({
                 <button
                   onClick={() => handleRestore(gutenbergId)}
                   disabled={restoring === gutenbergId}
-                  className="flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-medium text-parchment-700 shadow-sm transition-colors hover:bg-parchment-100 disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-medium text-accent-700 shadow-sm transition-colors hover:bg-brand-cream-2 disabled:opacity-50"
                 >
                   {restoring === gutenbergId ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -351,13 +351,13 @@ export default function ManageBooksPage({
         onOpenChange={(open) => { if (!open) setConfirmDialog(null); }}
       >
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-ink-900/40 data-[state=open]:animate-in data-[state=open]:fade-in" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl bg-parchment-50 p-6 shadow-xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95">
+          <Dialog.Overlay className="fixed inset-0 bg-brand-navy/40 data-[state=open]:animate-in data-[state=open]:fade-in" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl bg-brand-cream p-6 shadow-xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95">
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
                 <AlertTriangle className="h-5 w-5 text-red-500" />
               </div>
-              <Dialog.Title className="font-serif text-lg font-bold text-ink-900">
+              <Dialog.Title className="font-display text-lg font-bold text-brand-navy">
                 Remove Book?
               </Dialog.Title>
             </div>
@@ -369,7 +369,7 @@ export default function ManageBooksPage({
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDialog(null)}
-                className="rounded-lg border border-parchment-300 px-4 py-2 text-sm font-medium text-ink-600 transition-colors hover:bg-parchment-100"
+                className="rounded-lg border border-brand-cream-2 px-4 py-2 text-sm font-medium text-ink-600 transition-colors hover:bg-brand-cream-2"
               >
                 Cancel
               </button>

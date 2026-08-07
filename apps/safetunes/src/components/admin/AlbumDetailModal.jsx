@@ -376,7 +376,7 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 sm:p-4 overflow-hidden" onClick={handleClose}>
-      <div className="bg-white rounded-t-xl sm:rounded-xl shadow-xl sm:max-w-4xl w-full h-[95vh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden box-border" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl sm:max-w-4xl w-full h-[95vh] sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden box-border" onClick={(e) => e.stopPropagation()}>
         {/* Mobile drag handle */}
         <div className="sm:hidden flex justify-center py-2">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
@@ -400,8 +400,8 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
                 className="w-20 h-20 sm:w-28 sm:h-28 rounded-lg shadow-md object-cover"
               />
             ) : (
-              <div className="w-20 h-20 sm:w-28 sm:h-28 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg shadow-md flex items-center justify-center">
-                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-20 h-20 sm:w-28 sm:h-28 bg-accent-100 rounded-lg shadow-md flex items-center justify-center">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                 </svg>
               </div>
@@ -410,13 +410,13 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
 
           {/* Album Info */}
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 truncate">{displayAlbum?.albumName}</h2>
+            <h2 className="font-display text-lg sm:text-xl font-bold text-brand-navy mb-1 truncate">{displayAlbum?.albumName}</h2>
             <p className="text-sm sm:text-base text-gray-600 mb-2 truncate">{displayAlbum?.artistName}</p>
             <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 flex-wrap">
               {displayAlbum?.releaseYear && <span>{displayAlbum.releaseYear}</span>}
               <span>{tracks.length} tracks</span>
               {displayAlbum?.genres && displayAlbum.genres.length > 0 && (
-                <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">
+                <span className="px-2 py-0.5 bg-accent-100 text-accent-700 rounded-full text-xs">
                   {displayAlbum.genres[0]}
                 </span>
               )}
@@ -452,7 +452,7 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
                   onClick={() => setActiveKidId(String(kid._id))}
                   className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition ${
                     isActive
-                      ? 'border-purple-500 bg-purple-50'
+                      ? 'border-accent-500 bg-accent-50'
                       : 'border-gray-200 bg-white hover:border-gray-300'
                   }`}
                 >
@@ -466,7 +466,7 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
                     </div>
                   </div>
                   {isActive && (
-                    <svg className="w-4 h-4 text-purple-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 text-accent-600 ml-1" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   )}
@@ -483,7 +483,7 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <button
                 onClick={handleSelectAll}
-                className="text-sm font-medium text-purple-600 hover:text-purple-700"
+                className="text-sm font-medium text-accent-600 hover:text-accent-700"
               >
                 {currentKidTracks.size === tracks.length ? 'Deselect All' : 'Select All'}
               </button>
@@ -519,7 +519,7 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
           <div className="p-3 sm:p-4">
             {isLoadingTracks ? (
               <div className="text-center py-12 text-gray-500">
-                <svg className="w-12 h-12 mx-auto mb-4 animate-spin text-purple-500" fill="none" viewBox="0 0 24 24">
+                <svg className="w-12 h-12 mx-auto mb-4 animate-spin text-accent-500" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -558,7 +558,7 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
                       key={track.appleSongId}
                       className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg cursor-pointer transition ${
                         isSelected
-                          ? 'bg-purple-50 hover:bg-purple-100'
+                          ? 'bg-accent-50 hover:bg-accent-100'
                           : 'hover:bg-gray-50'
                       }`}
                     >
@@ -566,7 +566,7 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleTrackToggle(track.appleSongId)}
-                        className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 flex-shrink-0"
+                        className="w-5 h-5 text-accent-600 rounded focus:ring-accent-500 flex-shrink-0"
                       />
                       <div className="w-6 sm:w-8 text-xs sm:text-sm text-gray-500 text-center flex-shrink-0">
                         {track.trackNumber || index + 1}
@@ -610,7 +610,7 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
                             artistName: track.artistName,
                           });
                         }}
-                        className="p-1.5 rounded-full bg-gray-100 text-purple-600 hover:bg-purple-100 transition flex-shrink-0"
+                        className="p-1.5 rounded-full bg-gray-100 text-accent-600 hover:bg-accent-100 transition flex-shrink-0"
                         title="AI Lyrics Review"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -671,7 +671,7 @@ function AlbumDetailModal({ isOpen, onClose, albumId, userId, mode = 'library', 
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className={`px-4 py-2.5 sm:py-2 ${saveSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-purple-600 hover:bg-purple-700'} text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2 active:bg-purple-800`}
+                className={`px-4 py-2.5 sm:py-2 ${saveSuccess ? 'bg-green-600 hover:bg-green-700' : 'bg-accent-500 hover:bg-accent-600'} text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2 active:bg-accent-700`}
               >
                 {isSaving ? (
                   <>

@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import stripeWebhook from "./stripe";
+import syncFamilyCode from "./syncFamilyCode";
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
@@ -80,7 +81,7 @@ const adminDashboard = httpAction(async (ctx, request) => {
     }
 
     // Fetch all users with kid counts
-    const users = await ctx.runQuery(api.admin.getAllUsersWithKids);
+    const users = await ctx.runQuery(internal.admin.getAllUsersWithKids);
 
     // Return JSON for API access (marketing site admin dashboard)
     if (format === "json") {
@@ -666,6 +667,13 @@ http.route({
   path: "/warmCache",
   method: "GET",
   handler: warmCache,
+});
+
+// Sync family code (admin - reads or sets familyCode by email)
+http.route({
+  path: "/syncFamilyCode",
+  method: "GET",
+  handler: syncFamilyCode,
 });
 
 export default http;

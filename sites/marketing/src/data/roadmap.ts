@@ -295,11 +295,11 @@ const P1: RoadmapItem[] = [
     title: "SafeSpark: discoverable 'go back to last working version' in /make",
     app: "safespark",
     priority: "P1",
-    status: "open",
+    status: "done",
     source: "beads",
     bead: "safecontent-rkz",
     description:
-      "Knox's 20-min undo struggle. Kid was multiple AI iterations deep and couldn't find a way back to a working version. Version history exists in the data model — just needs UI.",
+      "Shipped 2026-05-29 (bella-ayrbfnnqz). Revert pill on chat side (last assistant message gets an Undo button when cloudVersions.length > 1) + full versions panel via History toggle. Backend rewrite: listVersionsForOwner + restoreVersionForOwner accept sessionToken or userToken (the prior listVersions used ctx.auth.getUserIdentity which can't see kid sessions OR Marketing HS256 JWTs, so it silently returned empty for every actual user). Bonus: schema gained messagesSnapshot — newly-created versions capture the full chat thread so restore rolls back BOTH html AND chat. True rewind.",
   },
   {
     id: "trial-expiration-cron",
@@ -488,21 +488,28 @@ const P1: RoadmapItem[] = [
     title: "SafeSpark: Clerk in production is using pk_test_xxx keys",
     app: "safespark",
     priority: "P1",
-    status: "open",
+    status: "done",
     source: "self-audit",
     description:
-      "Screenshot of Michelle's bounce-loop login showed Clerk modal with 'Development mode' tag. SafeSpark's /sign-in is a dev sandbox in prod. Pre-existing from bella era. Becomes moot once Clerk is fully retired (auth-clerk-retirement) but worth flagging — explains why /sign-in 'works' for jedaws + soonerjace but no one else.",
-    notes: "Discovered 2026-05-27.",
+      "DONE 2026-05-29 (moot). Resolved by the full Clerk retirement (see auth-clerk-retirement). SafeSpark is now fully on Marketing Central JWT — there is no /sign-in dev sandbox to fix. Clerk env vars on Vercel are unused; pending cleanup but cannot affect users. Original discovery: Michelle's bounce-loop login showed Clerk modal with 'Development mode' tag.",
+    notes: "Made moot by Clerk retirement. Discovered 2026-05-27, retired 2026-05-28/29.",
+    updatedAt: "2026-05-29",
   },
   {
     id: "safespark-launch-metrics",
     title: "SafeSpark: launch metrics (AI cost, blocked topics, image transforms, failures)",
     app: "safespark",
     priority: "P1",
-    status: "open",
+    status: "done",
     source: "codex-audit",
     description:
-      "Variable-cost product needs visibility into per-kid and per-family AI spend, blocked-topic frequency, image transform count, and failed-generation count. Parent dashboard should expose at least usage cap status.",
+      "DONE 2026-05-29. New safesparkUsage table rolls up chatTurns / chatInputTokens / chatOutputTokens / imageTransforms / totalCents per (clerkUserId, yearMonth). Surfaced on /parent (per-kid 3-metric strip + blocked-today banner from Phase 1) and on /parent/profile/[id] (unified Activity Log + per-project cards). Operator-side /admin/spark shows full thread drill-in for the same data. safesparkErrors table covers failed-generation tracking. Blocked-topic frequency lives in the per-profile activity log alongside concern alerts.",
+    refs: [
+      "apps/safespark/convex/schema.ts (safesparkUsage table)",
+      "apps/safespark/src/app/parent/page.tsx",
+      "apps/safespark/src/app/parent/profile/[id]/page.tsx",
+    ],
+    updatedAt: "2026-05-29",
   },
 
   // ===========================================================================
@@ -538,12 +545,13 @@ const P1: RoadmapItem[] = [
     title: "SafeSpark: pre-filter block on parental-control-bypass prompts",
     app: "safespark",
     priority: "P0",
-    status: "open",
+    status: "done",
     source: "session-todo",
     description:
-      "Before any prompt reaches the AI, regex/keyword filter for parental-control-bypass patterns: VPN, proxy, IP spoof, IP changer, hide activity, fake school page, fake homework, screen mirror to fool, bypass safe family. These don't proceed to AI at all — return a friendly redirect ('we can't help with that — talk to a parent if you want to know more'). Distinct from the intent classifier below, which handles nuanced/escalation cases. This is the hard block.",
+      "DONE 2026-05-29 via the topic-request approval workflow (Phase 3 of /parent dashboard rollout). When a kid hits a blocklist phrase (parental-control-bypass patterns included), the prompt is rejected pre-LLM, the chat surfaces an 'Ask my parent to allow it' button, the request lands on the parent's /parent dashboard as an amber actionable card, and the parent can one-click Allow (removes phrase from blockedTopics) or 'Not yet'. DemoResponse extended with blockedPhrase + blockedPrompt echo fields; new safesparkTopicRequests table + requestTopicBySession / listPendingTopicRequests / resolveTopicRequest mutations. Hard block + parent loop both in place.",
     notes:
-      "Mirrors SafeStudy's intent-classifier regex pre-filter for 'aesthetic-browsing' and 'self-image' patterns (apps/safestudy/convex/ai/intentClassifier.ts). Reuse that scaffolding.",
+      "Implementation uses the safesparkTopicRequests table + chat-side 'Ask my parent' affordance rather than a pure friendly-redirect. Parents control the blocklist directly.",
+    updatedAt: "2026-05-29",
   },
 
   {
@@ -551,12 +559,12 @@ const P1: RoadmapItem[] = [
     title: "SafeSpark: intent classifier on every prompt (always-escalate categories)",
     app: "safespark",
     priority: "P0",
-    status: "open",
+    status: "done",
     source: "session-todo",
     description:
-      "GPT-classifier on every prompt that goes to the AI. Always-escalate categories: parental-control-bypass (subtle phrasings the regex misses), contact-with-strangers (chat apps, dating sims, public boards), personal-info-disclosure (forms collecting names/addresses), weapons, drugs, sexual content, self-harm. Stores intent + confidence + rationale on the prompt log. Strict mode blocks; moderate mode logs + parent-notifies; light mode logs only.",
+      "Shipped 2026-05-29 (bella-3i5igo658). convex/ai/intentClassifier.ts ported from SafeStudy and tuned for the maker context — narrower set of always-escalate categories (self_harm_adjacent, eating_disorder_adjacent). Regex fast-path + gpt-4o-mini fallback. Fail-open on classifier errors so a 5xx never punishes a kid. Wired into /api/demo before the build LLM call. Initially silently fail-open because OPENAI_API_KEY was missing on Convex prod (only Vercel had it) — fixed same session when Jeremiah cut over to a dedicated key.",
     notes:
-      "Port apps/safestudy/convex/ai/intentClassifier.ts. Tune categories for the maker context (different from a search-tutor context).",
+      "Maker context = narrower than search context; aesthetic/appearance/celebrity-gossip categories belong on SafeStudy, not here.",
   },
 
   {
@@ -564,13 +572,13 @@ const P1: RoadmapItem[] = [
     title: "SafeSpark: kidConcernAlerts table + parent email on escalation",
     app: "safespark",
     priority: "P0",
-    status: "open",
+    status: "done",
     source: "session-todo",
     description:
-      "When the intent classifier hits an always-escalate category, write to a kidConcernAlerts table (one row per incident, dedupe 24h on kidProfileId+prompt+category) AND email the parent immediately with the prompt, category, classifier rationale, and a link to the kid's profile in /parent. 988/help-line resources for self-harm/ED categories.",
+      "Shipped 2026-05-29 (bella-3i5igo658 + Convex giddy-peacock-124). New safesparkConcernAlerts table (parentUserId, kidProfileId, kidName, query, category, rationale, acknowledged, notifiedAt, createdAt) with by_parent_unack + by_kid_time indexes. convex/concernAlerts.ts handles recordConcernBySession + sendParentEmail (Resend, inlines 988/NEDA helplines) + acknowledge. 24h dedupe on (kidProfileId, query, category) prevents retry spam. Unack alerts render at the TOP of /parent dashboard (above everything) with helpline numbers again. Per-profile activity log on /parent/profile/[id] interleaves prompts + blocked events + concern alerts chronologically.",
     refs: [
-      "apps/safestudy/convex/concernAlerts.ts (the pattern to port)",
-      "apps/safestudy/convex/concernAlertQueries.ts",
+      "apps/safestudy/convex/concernAlerts.ts (the pattern that was ported)",
+      "apps/safespark/convex/concernAlerts.ts (the shipped port)",
     ],
   },
 
@@ -592,10 +600,11 @@ const P1: RoadmapItem[] = [
     title: "SafeSpark: detect when a kid is building a chat/messaging app",
     app: "safespark",
     priority: "P1",
-    status: "open",
+    status: "done",
     source: "session-todo",
     description:
-      "Static analysis on the generated HTML/JS + spark.db schema: flag projects that use spark.db.append on text fields, render visitor input back to other visitors, show input forms to non-creator users, or include 'chat', 'message', 'comment', 'forum' in markup. Feeds the share-approval-gate decision above and surfaces in the parent dashboard as a 'this is a messaging app — kids you don't know can talk here' label.",
+      "DONE 2026-05-29 (bella-bshygxtcc). Projects detected as 'chat-shaped' carry a new isCommunication flag; project cards on /parent/profile/[id] render an amber 'chat' badge so parents see at a glance which projects have shared messaging surfaces and should be inspected via the spark.db viewer. Feeds the future share-approval-gate decision. Detection runs as part of the project-save pipeline.",
+    updatedAt: "2026-05-29",
   },
 
   {
@@ -614,10 +623,10 @@ const P1: RoadmapItem[] = [
     title: "SafeSpark: parent dashboard shows actual project HTML + spark.db contents",
     app: "safespark",
     priority: "P1",
-    status: "open",
+    status: "done",
     source: "session-todo",
     description:
-      "Today /parent/profile/[id] shows project metadata (name, timestamps, prompt). Add: a 'View what your kid built' button that renders the project's HTML in an iframe AND shows the spark.db rows (messages, leaderboard entries, anything kids have added). Parent sees the actual current state, not just 'a project exists'.",
+      "Shipped 2026-05-29 (bella-6st8m2ofz + bella-bshygxtcc). /parent/profile/[id] now: (a) project gallery cards each render a live read-only iframe of the current HTML state, (b) ProjectDataInspector component on every card shows every spark.db key with a readable preview of its value (JSON arrays as bulleted lists, objects pretty-printed, strings inline), (c) unified Activity Log section interleaves prompts + blocked-topic attempts + concern alerts chronologically (last 200 entries), color-coded by kind, (d) project cards with the new isCommunication flag get an amber 'chat' badge so parents see at a glance which projects have shared messaging to inspect. The operator-side equivalent also shipped at /admin/spark with full thread drill-in (split-pane chat + live preview).",
   },
 
   {
@@ -1227,12 +1236,12 @@ const P3: RoadmapItem[] = [
     title: "SafeSpark: kid-safe database SDK for project persistence",
     app: "safespark",
     priority: "P3",
-    status: "open",
+    status: "done",
     source: "session-todo",
     description:
-      "Allow kid-built projects to persist shared state (leaderboards, message boards, etc.) via window.spark.db. Already shipped per the AGENTS.md update — verify and close, or expand.",
-    refs: ["apps/safespark/convex/sparkdb.ts", "apps/safespark/AGENTS.md"],
-    notes: "May already be done; needs verification.",
+      "DONE — spark.db SDK has been live and in use (per AGENTS.md + convex/sparkdb.ts). Verified + hardened on 2026-05-29 (bella-9uoug84zc + Convex giddy-peacock-124): (a) dbWipe upgraded from public-no-auth to requiring sessionToken or userToken with owner verification (closed the data-wipe vector from tonight's safety audit); (b) spark.db SDK injector (src/lib/inject-spark-db.ts) now prepends a Content-Security-Policy meta into every kid iframe — connect-src whitelisted to approved APIs only (Convex, PokeAPI, OpenTrivia, Dictionary, Open Library, REST Countries, SWAPI, MealDB, Dog CEO, Wikipedia), closing the LLM-emitted-code data-exfil vector. Parent inspector (bella-6st8m2ofz) makes spark.db contents visible per project.",
+    refs: ["apps/safespark/convex/sparkdb.ts", "apps/safespark/AGENTS.md", "apps/safespark/src/lib/inject-spark-db.ts"],
+    updatedAt: "2026-05-29",
   },
   {
     id: "safespark-trainer-relaunch",

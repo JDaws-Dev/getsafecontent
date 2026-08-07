@@ -9,7 +9,7 @@ import BlockedSearches from './BlockedSearches';
 // Get color class from color name
 function getColorClass(color) {
   const colors = {
-    red: 'bg-red-500',
+    red: 'bg-accent-500',
     orange: 'bg-orange-500',
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
@@ -18,7 +18,7 @@ function getColorClass(color) {
     pink: 'bg-pink-500',
     gray: 'bg-gray-500',
   };
-  return colors[color] || 'bg-red-500';
+  return colors[color] || 'bg-accent-500';
 }
 
 export default function KidsDashboard({ userId, kidProfiles }) {
@@ -57,7 +57,7 @@ export default function KidsDashboard({ userId, kidProfiles }) {
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
           <button
             onClick={() => setActiveSection('profiles')}
-            className="bg-white hover:bg-gray-50 rounded-xl p-5 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-red-200"
+            className="bg-white hover:bg-gray-50 rounded-xl p-5 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-accent-200"
           >
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mb-3">
               <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,7 +69,7 @@ export default function KidsDashboard({ userId, kidProfiles }) {
           </button>
           <button
             onClick={() => setActiveSection('limits')}
-            className="bg-white hover:bg-gray-50 rounded-xl p-5 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-red-200"
+            className="bg-white hover:bg-gray-50 rounded-xl p-5 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-accent-200"
           >
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
               <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +81,7 @@ export default function KidsDashboard({ userId, kidProfiles }) {
           </button>
           <button
             onClick={() => setActiveSection('history')}
-            className="bg-white hover:bg-gray-50 rounded-xl p-5 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-red-200"
+            className="bg-white hover:bg-gray-50 rounded-xl p-5 text-left transition shadow-sm border border-gray-100 hover:shadow-md hover:border-accent-200"
           >
             <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-3">
               <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,19 +95,19 @@ export default function KidsDashboard({ userId, kidProfiles }) {
           <button
             onClick={() => setActiveSection('blocked')}
             className={`bg-white hover:bg-gray-50 rounded-xl p-5 text-left transition shadow-sm border hover:shadow-md relative ${
-              todayBlockedCount > 0 ? 'border-red-200 hover:border-red-300' : 'border-gray-100 hover:border-red-200'
+              todayBlockedCount > 0 ? 'border-accent-200 hover:border-accent-300' : 'border-gray-100 hover:border-accent-200'
             }`}
           >
             {/* Alert badge for today's blocked searches */}
             {todayBlockedCount > 0 && (
-              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+              <div className="absolute -top-2 -right-2 bg-accent-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
                 {todayBlockedCount > 99 ? '99+' : todayBlockedCount}
               </div>
             )}
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
-              todayBlockedCount > 0 ? 'bg-red-100' : 'bg-red-50'
+              todayBlockedCount > 0 ? 'bg-accent-100' : 'bg-accent-50'
             }`}>
-              <svg className={`w-5 h-5 ${todayBlockedCount > 0 ? 'text-red-600' : 'text-red-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-5 h-5 ${todayBlockedCount > 0 ? 'text-accent-600' : 'text-accent-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
@@ -130,7 +130,7 @@ export default function KidsDashboard({ userId, kidProfiles }) {
               <p className="text-gray-500 text-sm mb-4">Create a profile for each of your kids</p>
               <button
                 onClick={() => setActiveSection('profiles')}
-                className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-medium transition"
+                className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-4 py-2 rounded-lg font-medium transition"
               >
                 Add First Kid
               </button>
@@ -152,7 +152,7 @@ export default function KidsDashboard({ userId, kidProfiles }) {
                 return (
                   <div
                     key={kid._id}
-                    className={`bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition ${isLimitReached ? 'border-red-300' : 'border-gray-100'}`}
+                    className={`bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition ${isLimitReached ? 'border-accent-300' : 'border-gray-100'}`}
                   >
                     <div className="flex items-start gap-3 sm:gap-4">
                       {/* Avatar */}
@@ -166,11 +166,11 @@ export default function KidsDashboard({ userId, kidProfiles }) {
 
                         {/* Time Remaining Status */}
                         <div className="mt-1 sm:mt-2 flex items-center gap-2">
-                          <svg className={`w-4 h-4 flex-shrink-0 ${isLimitReached ? 'text-red-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className={`w-4 h-4 flex-shrink-0 ${isLimitReached ? 'text-accent-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           {dailyLimit > 0 ? (
-                            <span className={`text-xs sm:text-sm ${isLimitReached ? 'text-red-600 font-medium' : 'text-gray-600'}`}>
+                            <span className={`text-xs sm:text-sm ${isLimitReached ? 'text-accent-600 font-medium' : 'text-gray-600'}`}>
                               {isLimitReached ? (
                                 'Limit reached!'
                               ) : (
@@ -252,7 +252,7 @@ export default function KidsDashboard({ userId, kidProfiles }) {
               <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
               <button
                 onClick={() => setActiveSection('history')}
-                className="text-sm text-red-600 hover:text-red-700 font-medium"
+                className="text-sm text-accent-600 hover:text-accent-700 font-medium"
               >
                 View All
               </button>

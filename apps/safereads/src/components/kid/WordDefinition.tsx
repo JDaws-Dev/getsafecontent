@@ -129,10 +129,10 @@ export function WordDefinition({ word, position, onClose }: WordDefinitionProps)
 
   return (
     <div ref={popupRef} style={style} className="animate-in fade-in slide-in-from-bottom-2 duration-200">
-      <div className="rounded-2xl border border-emerald-200 bg-white shadow-xl">
+      <div className="rounded-2xl border border-accent-200 bg-white shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-emerald-100 px-4 py-2.5">
-          <span className="text-xs font-medium text-emerald-600">
+        <div className="flex items-center justify-between border-b border-accent-100 px-4 py-2.5">
+          <span className="text-xs font-medium text-accent-600">
             Word Lookup
           </span>
           <button
@@ -147,7 +147,7 @@ export function WordDefinition({ word, position, onClose }: WordDefinitionProps)
         <div className="px-4 py-3">
           {isLoading && (
             <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-5 w-5 animate-spin text-emerald-400" />
+              <Loader2 className="h-5 w-5 animate-spin text-accent-400" />
             </div>
           )}
 
@@ -161,13 +161,13 @@ export function WordDefinition({ word, position, onClose }: WordDefinitionProps)
             <div>
               {/* Word + pronunciation */}
               <div className="flex items-center gap-2">
-                <h4 className="text-lg font-bold text-gray-900">
+                <h4 className="font-display text-lg font-bold text-brand-navy">
                   {definition.word}
                 </h4>
                 {audioUrl && (
                   <button
                     onClick={playAudio}
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-50 text-accent-600 hover:bg-accent-100"
                     title="Listen to pronunciation"
                   >
                     <Volume2 className="h-3.5 w-3.5" />
@@ -182,7 +182,7 @@ export function WordDefinition({ word, position, onClose }: WordDefinitionProps)
               )}
 
               {/* Part of speech */}
-              <span className="mt-2 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+              <span className="mt-2 inline-block rounded-full bg-accent-50 px-2 py-0.5 text-[10px] font-semibold text-accent-700">
                 {definition.partOfSpeech}
               </span>
 
@@ -193,7 +193,7 @@ export function WordDefinition({ word, position, onClose }: WordDefinitionProps)
 
               {/* Example */}
               {definition.example && (
-                <p className="mt-2 border-l-2 border-emerald-200 pl-3 text-xs italic text-gray-500">
+                <p className="mt-2 border-l-2 border-accent-200 pl-3 text-xs italic text-gray-500">
                   &ldquo;{definition.example}&rdquo;
                 </p>
               )}

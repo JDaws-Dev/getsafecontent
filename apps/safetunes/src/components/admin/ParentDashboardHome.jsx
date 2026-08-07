@@ -3,6 +3,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { COLORS } from '../../constants/avatars';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   Music,
   ChevronRight,
@@ -16,7 +17,13 @@ import {
   Moon,
   X,
   ShieldAlert,
-  Settings
+  Settings,
+  Clock,
+  Shield,
+  Ban,
+  Play,
+  Mail,
+  Activity as ActivityIcon
 } from 'lucide-react';
 
 
@@ -233,7 +240,7 @@ function KidCard({ kid, onPauseToggle, onManageProfile }) {
           <div className="mt-4 flex items-center gap-3 text-sm">
             {/* Metric 1: Time Today with Late Night indicator */}
             <div className="flex items-center gap-1.5 text-gray-600">
-              <span className="text-base">🕒</span>
+              <Clock className="w-4 h-4 flex-shrink-0" />
               <span className="font-medium">{formatTime(timeToday)}</span>
               {hasLateNightActivity && isMusicEnabled && (
                 <Moon className="w-3.5 h-3.5 text-orange-500" title="Late night activity" />
@@ -244,7 +251,7 @@ function KidCard({ kid, onPauseToggle, onManageProfile }) {
 
             {/* Metric 2: Safety Status */}
             <div className={`flex items-center gap-1.5 ${blockedCount > 0 ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
-              <span className="text-base">{blockedCount > 0 ? '🛑' : '🛡️'}</span>
+              {blockedCount > 0 ? <Ban className="w-4 h-4 flex-shrink-0" /> : <Shield className="w-4 h-4 flex-shrink-0" />}
               <span>{blockedCount > 0 ? `${blockedCount} Blocked` : 'Safe'}</span>
             </div>
 
@@ -254,7 +261,7 @@ function KidCard({ kid, onPauseToggle, onManageProfile }) {
             <div className="flex items-center gap-1.5 text-gray-600 min-w-0 flex-1">
               {isListening && nowPlaying ? (
                 <>
-                  <span className="text-base flex-shrink-0">▶️</span>
+                  <Play className="w-4 h-4 flex-shrink-0 text-green-600" fill="currentColor" />
                   <span className="truncate text-green-600 font-medium">{nowPlaying.songName}</span>
                 </>
               ) : (
@@ -291,8 +298,9 @@ function KidCard({ kid, onPauseToggle, onManageProfile }) {
                 <div className="space-y-1.5">
                   {blockedEvents.slice(0, 3).map((event, index) => (
                     <div key={event._id || index} className="flex items-center justify-between text-sm">
-                      <span className="text-red-700">
-                        🛑 Search for "<span className="font-medium">{event.searchQuery}</span>"
+                      <span className="text-red-700 flex items-center gap-1.5 min-w-0">
+                        <Ban className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="truncate">Search for "<span className="font-medium">{event.searchQuery}</span>"</span>
                       </span>
                       <span className="text-red-400 text-xs flex-shrink-0">
                         {getRelativeTime(event.searchedAt)}
@@ -305,10 +313,10 @@ function KidCard({ kid, onPauseToggle, onManageProfile }) {
 
             {/* SECTION 2: Quick Stats Row */}
             {(totalPlays > 0 || topArtists.length > 0) && (
-              <div className="flex items-center gap-4 py-2 px-3 bg-purple-50/50 rounded-xl">
+              <div className="flex items-center gap-4 py-2 px-3 bg-accent-50/50 rounded-xl">
                 {totalPlays > 0 && (
                   <div className="text-center">
-                    <div className="text-lg font-bold text-purple-600">{totalPlays}</div>
+                    <div className="text-lg font-bold text-accent-600">{totalPlays}</div>
                     <div className="text-xs text-gray-500">plays</div>
                   </div>
                 )}
@@ -319,7 +327,7 @@ function KidCard({ kid, onPauseToggle, onManageProfile }) {
                       {topArtists.map((artist, index) => (
                         <span
                           key={artist.name || index}
-                          className="px-2 py-0.5 bg-white text-purple-700 rounded-full text-xs font-medium border border-purple-100 truncate max-w-[120px]"
+                          className="px-2 py-0.5 bg-white text-accent-700 rounded-full text-xs font-medium border border-accent-100 truncate max-w-[120px]"
                         >
                           {artist.name}
                         </span>
@@ -399,14 +407,14 @@ function KidCard({ kid, onPauseToggle, onManageProfile }) {
   );
 }
 
-// Activity Feed Item with emoji icons and late night indicator
+// Activity Feed Item with icons and late night indicator
 function ActivityItem({ activity }) {
-  const getEmoji = () => {
+  const getIcon = () => {
     switch (activity.type) {
-      case 'played': return '🎵';
-      case 'blocked': return '🛑';
-      case 'request': return '📩';
-      default: return '📋';
+      case 'played': return <Music className="w-4 h-4 text-accent-600" />;
+      case 'blocked': return <Ban className="w-4 h-4 text-red-600" />;
+      case 'request': return <Mail className="w-4 h-4 text-blue-600" />;
+      default: return <ActivityIcon className="w-4 h-4 text-gray-600" />;
     }
   };
 
@@ -431,15 +439,15 @@ function ActivityItem({ activity }) {
     switch (activity.type) {
       case 'blocked': return 'bg-red-100 text-red-700';
       case 'request': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-purple-100 text-purple-700';
+      default: return 'bg-accent-100 text-accent-700';
     }
   };
 
   return (
     <div className="flex items-center gap-3 py-3 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition">
-      {/* Emoji Icon */}
-      <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 text-lg">
-        {getEmoji()}
+      {/* Type Icon */}
+      <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+        {getIcon()}
       </div>
 
       {/* Content */}
@@ -479,7 +487,7 @@ function FloatingActionBar({ onAddMusic }) {
       <div className="max-w-md mx-auto">
         <button
           onClick={onAddMusic}
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl px-6 py-4 flex items-center justify-center gap-2 font-semibold transition shadow-xl shadow-purple-300/50 pointer-events-auto"
+          className="w-full bg-accent-500 hover:bg-accent-600 text-white rounded-2xl px-6 py-4 flex items-center justify-center gap-2 font-semibold transition shadow-xl shadow-accent-300/50 pointer-events-auto"
         >
           <Plus className="w-5 h-5" />
           <span>Add Music</span>
@@ -495,6 +503,7 @@ function FloatingActionBar({ onAddMusic }) {
 
 export default function ParentDashboardHome({ user, onNavigateToTab }) {
   const { showToast } = useToast();
+  const { token } = useAuth();
   const [dismissedAlert, setDismissedAlert] = useState(false);
 
   // Mutation to pause/unpause music for a kid
@@ -502,7 +511,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
 
   // Convex Queries - Real data
   const kidProfiles = useQuery(api.kidProfiles.getKidProfiles,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const fullUser = useQuery(api.users.getUser,
@@ -510,11 +519,11 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
   );
 
   const pendingRequests = useQuery(api.albumRequests.getPendingRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const pendingSongRequests = useQuery(api.songRequests.getPendingSongRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   const unreadBlockedSearchesCount = useQuery(api.blockedSearches.getUnreadBlockedSearchesCount,
@@ -602,7 +611,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
   // Handlers
   const handlePauseToggle = async (kidId, isPaused) => {
     try {
-      await setMusicPaused({ profileId: kidId, paused: isPaused });
+      await setMusicPaused({ profileId: kidId, paused: isPaused, userToken: token ?? undefined });
       showToast(
         isPaused ? 'Music access paused' : 'Music access restored',
         isPaused ? 'info' : 'success'
@@ -640,7 +649,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -652,7 +661,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
       {/* ================================================================== */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-brand-navy">
             {getGreeting()}, {parentName}
           </h1>
           <p className="text-gray-500 mt-1">Here's what's happening with your family's music</p>
@@ -663,11 +672,11 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
           <div className="flex flex-col items-end gap-1 flex-shrink-0">
             <button
               onClick={handleCopyFamilyCode}
-              className="flex items-center gap-2 px-3 py-2 bg-purple-100 hover:bg-purple-200 border border-purple-200 rounded-lg transition group"
+              className="flex items-center gap-2 px-3 py-2 bg-accent-100 hover:bg-accent-200 border border-accent-200 rounded-lg transition group"
               title="Copy family code - share with your kids"
             >
-              <span className="text-sm font-mono font-bold text-purple-700">{familyCode}</span>
-              <Copy className="w-4 h-4 text-purple-400 group-hover:text-purple-600" />
+              <span className="text-sm font-mono font-bold text-accent-700">{familyCode}</span>
+              <Copy className="w-4 h-4 text-accent-400 group-hover:text-accent-600" />
             </button>
             <span className="text-xs text-gray-500">Your kid's login code</span>
           </div>
@@ -689,7 +698,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
       {kids.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <Users className="w-5 h-5 text-purple-600" />
+            <Users className="w-5 h-5 text-accent-600" />
             Your Kids
           </h2>
 
@@ -708,7 +717,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
 
       {/* Empty State - No Kids */}
       {kids.length === 0 && kidProfiles.length === 0 && (
-        <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 rounded-2xl p-6 text-white">
+        <div className="bg-accent-500 rounded-2xl p-6 text-white">
           <div className="flex items-start gap-4 mb-4">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
               <Users className="w-6 h-6" />
@@ -735,7 +744,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-100">
             <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-purple-600" />
+              <Activity className="w-4 h-4 text-accent-600" />
               Live Family Activity
             </h2>
           </div>

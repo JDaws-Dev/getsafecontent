@@ -20,6 +20,7 @@ import {
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
+import { SafeFamilyParentSwitcher } from '@/components/SafeFamilySwitcher';
 
 export default function ParentDashboard() {
   // Marketing Central JWT is the sole identity surface post-Clerk-retirement
@@ -129,11 +130,11 @@ export default function ParentDashboard() {
       <main className="flex min-h-screen items-center justify-center px-6 text-center">
         <div className="space-y-3">
           <h1 className="text-2xl font-black text-slate-800">Sign in to open your dashboard</h1>
-          <Link href="/login" className="inline-block rounded-2xl bg-violet-600 px-5 py-2 text-sm font-black text-white hover:bg-violet-700">
+          <Link href="/login" className="inline-block rounded-2xl bg-accent-600 px-5 py-2 text-sm font-black text-brand-navy hover:bg-accent-700">
             Sign in with Safe Family
           </Link>
           <div>
-            <Link href="/" className="text-sm font-bold text-violet-600 hover:text-violet-800">Back to home</Link>
+            <Link href="/" className="text-sm font-bold text-accent-600 hover:text-accent-800">Back to home</Link>
           </div>
         </div>
       </main>
@@ -143,15 +144,25 @@ export default function ParentDashboard() {
   const code = family?.family?.code;
 
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-6 sm:px-8">
+    <main className="min-h-screen bg-brand-cream px-4 py-6 sm:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <Link href="/" className="text-xs font-bold uppercase tracking-widest text-violet-500 hover:text-violet-700">
+            <Link href="/" className="text-xs font-bold uppercase tracking-widest text-accent-500 hover:text-accent-700">
               SafeSpark
             </Link>
             <h1 className="text-2xl font-black text-slate-900">Parent dashboard</h1>
             <p className="text-sm text-slate-600">Signed in as {displayEmail}</p>
+          </div>
+          {/* Cross-app Safe Family switcher — parent side. Carries the family
+              code + Marketing JWT so a parent hops to a sibling app's admin
+              without re-authenticating. Desktop; a mobile row sits below. */}
+          <div className="hidden lg:flex">
+            <SafeFamilyParentSwitcher
+              current="safespark"
+              familyCode={code}
+              parentToken={marketing.token ?? undefined}
+            />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {/*
@@ -170,18 +181,29 @@ export default function ParentDashboard() {
                 marketing.logout();
                 window.location.href = '/login';
               }}
-              className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-brand-cream"
             >
               <LogOut className="h-3.5 w-3.5" /> Sign out
             </button>
           </div>
         </header>
 
+        {/* Cross-app switcher — mobile row, always visible under 1024px where
+            the desktop switcher in the header is hidden. */}
+        <div className="lg:hidden flex justify-center -mt-2">
+          <SafeFamilyParentSwitcher
+            current="safespark"
+            familyCode={code}
+            parentToken={marketing.token ?? undefined}
+            tile={40}
+          />
+        </div>
+
         {usage && (
           <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-violet-500">
+                <p className="text-xs font-bold uppercase tracking-widest text-accent-500">
                   This month · {usage.yearMonth}
                 </p>
                 <h2 className="text-lg font-black text-slate-900">Family usage</h2>
@@ -209,7 +231,7 @@ export default function ParentDashboard() {
                 </summary>
                 <div className="mt-2 space-y-1.5">
                   {usage.perMember.map((m) => (
-                    <div key={m.clerkUserId} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs">
+                    <div key={m.clerkUserId} className="flex items-center justify-between rounded-xl bg-brand-cream px-3 py-2 text-xs">
                       <span className="font-bold text-slate-700">{m.email || m.clerkUserId}</span>
                       <span className="font-mono font-black text-slate-500">
                         {m.turns} turns · {m.images} images
@@ -222,11 +244,11 @@ export default function ParentDashboard() {
           </section>
         )}
 
-        <section className="rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-500 via-pink-500 to-amber-500 p-[1.5px] shadow-lg">
+        <section className="rounded-3xl border border-accent-100 bg-gradient-to-br from-accent-500 via-brand-peach-start to-brand-peach-end p-[1.5px] shadow-lg">
           <div className="rounded-[22px] bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-violet-500">Family code</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-accent-500">Family code</p>
                 <h2 className="text-lg font-black text-slate-900">Share this with your kids to let them in</h2>
               </div>
               {!code ? (
@@ -236,7 +258,7 @@ export default function ParentDashboard() {
                     if (me?._id) void ensureFamily({ parentUserId: me._id, userToken: marketing.token ?? undefined });
                   }}
                   disabled={!me?._id}
-                  className="rounded-2xl bg-violet-600 px-5 py-2.5 text-sm font-black text-white hover:bg-violet-700 disabled:opacity-50"
+                  className="rounded-2xl bg-accent-600 px-5 py-2.5 text-sm font-black text-brand-navy hover:bg-accent-700 disabled:opacity-50"
                 >
                   <Plus className="mr-1 inline h-4 w-4" />
                   Create my family code
@@ -257,7 +279,7 @@ export default function ParentDashboard() {
                         /* ignore */
                       }
                     }}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-brand-cream"
                   >
                     <Copy className="mr-1 inline h-3.5 w-3.5" />
                     {codeCopied ? 'Copied!' : 'Copy'}
@@ -275,7 +297,7 @@ export default function ParentDashboard() {
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
                   Want to try it yourself?{' '}
-                  <Link href="/make" className="font-bold text-violet-500 underline underline-offset-2 hover:text-violet-700">
+                  <Link href="/make" className="font-bold text-accent-500 underline underline-offset-2 hover:text-accent-700">
                     Open the maker as a parent →
                   </Link>
                 </p>
@@ -451,7 +473,7 @@ export default function ParentDashboard() {
                           console.error('deny share failed', err);
                         }
                       }}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-50"
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-brand-cream"
                     >
                       Not yet
                     </button>
@@ -527,7 +549,7 @@ export default function ParentDashboard() {
                           console.error('deny failed', err);
                         }
                       }}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-slate-50"
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-600 hover:bg-brand-cream"
                     >
                       Not yet
                     </button>
@@ -544,11 +566,11 @@ export default function ParentDashboard() {
             show up here once kids start building. */}
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-600">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-accent-100 text-accent-600">
               <ActivityIcon className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold uppercase tracking-widest text-violet-500">Recent activity</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-accent-500">Recent activity</p>
               <h2 className="text-lg font-black text-slate-900">
                 {activity?.events.length
                   ? `${activity.events.length} recent ${activity.events.length === 1 ? 'event' : 'events'}`
@@ -557,11 +579,11 @@ export default function ParentDashboard() {
             </div>
           </div>
           {!activity ? (
-            <p className="rounded-2xl bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-400">
+            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-400">
               Loading activity…
             </p>
           ) : activity.events.length === 0 ? (
-            <p className="rounded-2xl bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500">
+            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-500">
               Nothing yet. When your kids build something with Spark, it&apos;ll show up here.
             </p>
           ) : (
@@ -576,14 +598,14 @@ export default function ParentDashboard() {
         <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-violet-500">Profiles in your family</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-accent-500">Profiles in your family</p>
               <h2 className="text-lg font-black text-slate-900">
                 {family?.kids.length ?? 0} profile{family?.kids.length === 1 ? '' : 's'}
               </h2>
             </div>
             <Link
               href="/parent/setup"
-              className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center gap-1 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-brand-cream"
             >
               <Users className="h-4 w-4" />
               Add a profile
@@ -591,7 +613,7 @@ export default function ParentDashboard() {
           </div>
 
           {!family?.kids.length ? (
-            <p className="rounded-2xl bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500">
+            <p className="rounded-2xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-500">
               No profiles yet. Add yourself or a kid in setup, then everyone in the family signs in with the code above.
             </p>
           ) : (
@@ -665,7 +687,7 @@ function KidRow({ kid, stats }: { kid: Kid; stats?: KidStats }) {
       className={
         effectivePaused
           ? 'rounded-2xl border-2 border-amber-300 bg-amber-50 p-4'
-          : 'rounded-2xl border border-slate-200 bg-slate-50 p-4'
+          : 'rounded-2xl border border-slate-200 bg-brand-cream p-4'
       }
     >
       <div className="flex items-center gap-3">
@@ -717,8 +739,12 @@ function KidRow({ kid, stats }: { kid: Kid; stats?: KidStats }) {
         </button>
       </div>
       {effectivePaused && (
-        <p className="mt-2 rounded-xl bg-amber-100 px-3 py-1.5 text-xs font-bold text-amber-800">
-          ⏸ Paused — Spark is refusing new builds for {kid.displayName} until you toggle this back on.
+        <p className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-amber-100 px-3 py-1.5 text-xs font-bold text-amber-800">
+          <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="6" y="4" width="4" height="16" rx="1" />
+            <rect x="14" y="4" width="4" height="16" rx="1" />
+          </svg>
+          Paused — Spark is refusing new builds for {kid.displayName} until you toggle this back on.
         </p>
       )}
       {/* 3-metric strip — today's prompt count, safety status, last
@@ -841,7 +867,7 @@ function ActivityRow({
               Blocked
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-violet-700">
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-accent-700">
               <MessageSquare className="h-3 w-3" />
               Asked Spark
             </span>
@@ -937,9 +963,9 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
   };
 
   return (
-    <div className="mt-3 space-y-4 rounded-2xl border border-violet-100 bg-white p-4">
+    <div className="mt-3 space-y-4 rounded-2xl border border-accent-100 bg-white p-4">
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-widest text-violet-500">Allowed for this profile</p>
+        <p className="text-[11px] font-bold uppercase tracking-widest text-accent-500">Allowed for this profile</p>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           <ToggleRow
             label="AI image restyle"
@@ -968,7 +994,7 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
           Custom values still work via setKidDailyBudget (clamped to
           [1, 500] server-side). "No cap" sets it to undefined. */}
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-widest text-violet-500">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-accent-500">
           Daily prompt budget
         </p>
         <p className="mt-1 text-xs text-slate-500">
@@ -993,8 +1019,8 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
                 onClick={() => setBudget(opt.value)}
                 className={
                   isActive
-                    ? 'rounded-xl bg-violet-600 px-3 py-1.5 text-xs font-black text-white shadow'
-                    : 'rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50'
+                    ? 'rounded-xl bg-accent-600 px-3 py-1.5 text-xs font-black text-brand-navy shadow'
+                    : 'rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-brand-cream'
                 }
               >
                 {opt.label}
@@ -1004,7 +1030,7 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
         </div>
       </div>
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-widest text-violet-500">Topics Spark won&apos;t build</p>
+        <p className="text-[11px] font-bold uppercase tracking-widest text-accent-500">Topics Spark won&apos;t build</p>
         <p className="mt-1 text-xs text-slate-500">
           Add words or phrases. Spark refuses to build projects whose prompt contains any of these.
         </p>
@@ -1042,14 +1068,14 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
               }
             }}
             placeholder="e.g. guns, dating, gambling"
-            className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 focus:border-violet-400 focus:bg-white focus:outline-none"
+            className="flex-1 rounded-xl border border-slate-200 bg-brand-cream px-3 py-2 text-sm text-slate-800 focus:border-accent-400 focus:bg-white focus:outline-none"
             maxLength={80}
           />
           <button
             type="button"
             onClick={() => void addTopic()}
             disabled={!topicInput.trim()}
-            className="rounded-xl bg-violet-600 px-3 py-2 text-xs font-black text-white hover:bg-violet-700 disabled:opacity-50"
+            className="rounded-xl bg-accent-600 px-3 py-2 text-xs font-black text-brand-navy hover:bg-accent-700 disabled:opacity-50"
           >
             Add
           </button>
@@ -1069,7 +1095,7 @@ function ToggleRow({
   onChange: (next: boolean) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2">
+    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-brand-cream px-3 py-2">
       <span className="text-sm font-bold text-slate-700">{label}</span>
       <button
         type="button"
@@ -1077,7 +1103,7 @@ function ToggleRow({
         aria-checked={on}
         onClick={() => onChange(!on)}
         className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-          on ? 'bg-violet-600' : 'bg-slate-300'
+          on ? 'bg-accent-600' : 'bg-slate-300'
         }`}
       >
         <span

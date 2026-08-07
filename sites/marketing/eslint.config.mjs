@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Added 2026-05-29 — Vercel build artifacts and agent worktrees
+    // were producing ~2,300 false warnings (minified JS in
+    // .vercel/output, duplicate src trees in .claude/worktrees).
+    ".vercel/**",
+    ".claude/worktrees/**",
   ]),
 ]);
 

@@ -26,9 +26,9 @@ export function BookCard({ book }: BookCardProps) {
   return (
     <Link
       href={`/dashboard/book/${book._id}`}
-      className="group flex gap-4 rounded-lg border border-parchment-200 bg-white p-4 transition-colors hover:border-parchment-300 hover:shadow-sm"
+      className="group flex gap-4 rounded-2xl border border-brand-cream-2 bg-white p-4 transition-colors hover:border-accent-300 hover:shadow-sm"
     >
-      <div className="relative h-32 w-20 flex-shrink-0 overflow-hidden rounded bg-parchment-100">
+      <div className="relative h-32 w-20 flex-shrink-0 overflow-hidden rounded bg-brand-cream-2">
         {book.coverUrl ? (
           <Image
             src={book.coverUrl}
@@ -39,13 +39,13 @@ export function BookCard({ book }: BookCardProps) {
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <BookOpen className="h-8 w-8 text-parchment-300" />
+            <BookOpen className="h-8 w-8 text-accent-300" />
           </div>
         )}
       </div>
 
       <div className="min-w-0 flex-1">
-        <h3 className="font-serif text-base font-bold text-ink-900 group-hover:text-parchment-700">
+        <h3 className="font-display text-base font-bold text-brand-navy group-hover:text-accent-700">
           {book.title}
         </h3>
         <p className="mt-0.5 text-sm text-ink-500">
@@ -65,7 +65,7 @@ export function BookCard({ book }: BookCardProps) {
             {book.categories.slice(0, 3).map((cat: string) => (
               <span
                 key={cat}
-                className="rounded-full bg-parchment-100 px-2 py-0.5 text-xs text-ink-500"
+                className="rounded-full bg-brand-cream-2 px-2 py-0.5 text-xs text-ink-500"
               >
                 {cat}
               </span>

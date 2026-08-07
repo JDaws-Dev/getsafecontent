@@ -19,7 +19,7 @@ function formatTimeAgo(timestamp) {
 // Get Tailwind color class from color name
 function getColorClass(color) {
   const colors = {
-    red: 'bg-red-500',
+    red: 'bg-accent-500',
     orange: 'bg-orange-500',
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
@@ -56,7 +56,7 @@ export default function WatchHistory({ userId, kidProfiles, defaultKidId }) {
   if (!watchHistory) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-red-500 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent-500 border-t-transparent"></div>
       </div>
     );
   }
@@ -160,7 +160,7 @@ export default function WatchHistory({ userId, kidProfiles, defaultKidId }) {
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <div className="w-full aspect-video bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
+                    <div className="w-full aspect-video bg-gradient-to-br from-accent-500 to-accent-600 rounded-lg flex items-center justify-center">
                       <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

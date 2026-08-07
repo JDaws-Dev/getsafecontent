@@ -48,7 +48,10 @@ bd ready  # Shows only Phase 0 (safecontent-8as.8) as unblocked
 
 ## Admin Key
 
-All apps use: `IscYPRsiaDdpuN378QS5tEvp2uCT+UHPyHpZG6lVko4=`
+Do NOT commit the admin key. It lives in the password manager and in each
+deployment's Convex env (`ADMIN_KEY`). A previously committed key was removed
+2026-07-12 — if it was ever live, rotate it and purge it from git history
+(`git filter-repo`), since it remains recoverable from history.
 
 ## Landing the Plane (Session Completion)
 

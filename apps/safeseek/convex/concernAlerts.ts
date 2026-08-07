@@ -27,7 +27,7 @@ export const sendParentEmail = internalAction({
       return;
     }
 
-    const user = await ctx.runQuery(api.users.getUserById, { userId: args.userId });
+    const user = await ctx.runQuery(internal.users.getUserById, { userId: args.userId });
     const kid = await ctx.runQuery(api.kidProfiles.getProfile, {
       kidProfileId: args.kidProfileId,
     });

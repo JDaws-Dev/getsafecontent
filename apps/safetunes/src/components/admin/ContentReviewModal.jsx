@@ -174,11 +174,11 @@ function ContentReviewModal({ isOpen, onClose, content, onApprove, onDeny }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-start p-6 border-b border-gray-200">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">AI Content Review</h2>
+            <h2 className="font-display text-2xl font-bold text-brand-navy mb-1">AI Content Review</h2>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span className="font-medium">
                 {content.songName || content.trackName || content.albumName}
@@ -205,13 +205,13 @@ function ContentReviewModal({ isOpen, onClose, content, onApprove, onDeny }) {
 
               {/* Overall Rating */}
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Overall Rating</h3>
+                <h3 className="font-display font-semibold text-brand-navy mb-2">Overall Rating</h3>
                 <div className="flex items-center gap-3">
                   <span className={`px-4 py-2 rounded-lg border font-medium ${getRatingColor(review.overallRating)}`}>
                     {review.overallRating?.toUpperCase().replace('-', ' ')}
                   </span>
                   {review.ageRecommendation && (
-                    <span className="px-4 py-2 rounded-lg border bg-purple-100 text-purple-800 border-purple-200 font-medium">
+                    <span className="px-4 py-2 rounded-lg border bg-accent-100 text-accent-800 border-accent-200 font-medium">
                       Ages {review.ageRecommendation}
                     </span>
                   )}
@@ -221,11 +221,11 @@ function ContentReviewModal({ isOpen, onClose, content, onApprove, onDeny }) {
               {/* Summary */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900">Summary</h3>
+                  <h3 className="font-display font-semibold text-brand-navy">Summary</h3>
                   {lyrics && (
                     <button
                       onClick={() => setShowLyricsModal(true)}
-                      className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1"
+                      className="text-sm text-accent-600 hover:text-accent-700 font-medium flex items-center gap-1"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -240,7 +240,7 @@ function ContentReviewModal({ isOpen, onClose, content, onApprove, onDeny }) {
               {/* Positive Aspects */}
               {review.positiveAspects && review.positiveAspects.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">
+                  <h3 className="font-display font-semibold text-brand-navy mb-2">
                     Positive Elements {review.positiveAspects.length > 0 && `(${review.positiveAspects.length})`}
                   </h3>
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -260,7 +260,7 @@ function ContentReviewModal({ isOpen, onClose, content, onApprove, onDeny }) {
 
               {/* Inappropriate Content */}
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">
+                <h3 className="font-display font-semibold text-brand-navy mb-2">
                   Content Concerns {review.inappropriateContent?.length > 0 && `(${review.inappropriateContent.length})`}
                 </h3>
                 {review.inappropriateContent && review.inappropriateContent.length > 0 ? (
@@ -352,7 +352,7 @@ function ContentReviewModal({ isOpen, onClose, content, onApprove, onDeny }) {
                       onChange={(e) => setLyrics(e.target.value)}
                       placeholder="Paste the song lyrics here..."
                       rows={12}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent font-mono text-sm"
                     />
                   </div>
                 </>
@@ -382,7 +382,7 @@ function ContentReviewModal({ isOpen, onClose, content, onApprove, onDeny }) {
                   key={loading ? 'loading' : 'ready'}
                   onClick={handleReview}
                   disabled={loading || (!lyrics.trim() && !cachedReview)}
-                  className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:from-purple-700 hover:to-pink-600 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md"
+                  className="px-6 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-xl transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md"
                 >
                   {loading && (
                     <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
@@ -442,11 +442,11 @@ function ContentReviewModal({ isOpen, onClose, content, onApprove, onDeny }) {
       {/* Lyrics Modal */}
       {showLyricsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col">
             {/* Header */}
             <div className="flex justify-between items-start p-6 border-b border-gray-200">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Lyrics</h2>
+                <h2 className="font-display text-xl font-bold text-brand-navy">Lyrics</h2>
                 <p className="text-sm text-gray-600 mt-1">
                   {content.songName || content.trackName} • {content.artistName}
                 </p>

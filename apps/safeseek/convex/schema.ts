@@ -23,6 +23,11 @@ export default defineSchema({
     // Weekly parent digest opt-out (Apr 2026)
     weeklyDigestOptOut: v.optional(v.boolean()),
     lastDigestSentAt: v.optional(v.number()),
+
+    // Central subscription sync (see userSync.ts) — timestamp until which the
+    // last /verifyAppAccess answer is trusted, so a page-load storm doesn't
+    // hammer central. Unset/past = re-verify on next check.
+    centralAccessCacheExpiry: v.optional(v.number()),
   })
     .index("email", ["email"])
     .index("by_familyCode", ["familyCode"])

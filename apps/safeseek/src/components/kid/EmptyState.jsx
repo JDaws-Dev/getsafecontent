@@ -13,7 +13,7 @@ export default function EmptyState({
     <div className="text-center pt-12">
       {/* First-time walkthrough */}
       {showIntro && (
-        <div className="max-w-lg mx-auto mb-8 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-5 text-left relative">
+        <div className="max-w-lg mx-auto mb-8 bg-gradient-to-br from-accent-50 to-accent-50 dark:from-accent-900/20 dark:to-accent-900/20 border border-accent-100 dark:border-accent-800 rounded-2xl p-5 text-left relative">
           <button
             onClick={() => {
               localStorage.setItem(`safestudy_kid_intro_${selectedProfile?._id}`, 'true');
@@ -27,7 +27,7 @@ export default function EmptyState({
           <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-3">Welcome to SafeStudy! Here's how it works:</h3>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="flex items-start gap-2">
-              <div className="w-6 h-6 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-6 h-6 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Search className="w-3 h-3 text-white" />
               </div>
               <div>
@@ -36,7 +36,7 @@ export default function EmptyState({
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <div className="w-6 h-6 bg-cyan-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-6 h-6 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                 <ImageIcon className="w-3 h-3 text-white" />
               </div>
               <div>
@@ -54,7 +54,7 @@ export default function EmptyState({
               </div>
             </div>
             <div className="flex items-start gap-2">
-              <div className="w-6 h-6 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-6 h-6 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
                 <GraduationCap className="w-3 h-3 text-white" />
               </div>
               <div>

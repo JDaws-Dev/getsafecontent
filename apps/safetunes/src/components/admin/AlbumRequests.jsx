@@ -10,22 +10,24 @@ import musicKitService from '../../config/musickit';
 import { useToast } from '../common/Toast';
 import EmptyState from '../common/EmptyState';
 import { useConvex } from 'convex/react';
+import { useAuth } from '../../contexts/AuthContext';
 
 function AlbumRequests({ user }) {
   const { showToast, ToastContainer } = useToast();
   const convex = useConvex();
+  const { token } = useAuth();
 
   const pendingAlbumRequests = useQuery(api.albumRequests.getPendingRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
   const pendingSongRequests = useQuery(api.songRequests.getPendingSongRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
   const deniedAlbumRequests = useQuery(api.albumRequests.getDeniedRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
   const deniedSongRequests = useQuery(api.songRequests.getDeniedSongRequests,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
   const kidProfiles = useQuery(api.kidProfiles.getKidProfiles,
     user ? { userId: user._id } : 'skip'
@@ -60,7 +62,7 @@ function AlbumRequests({ user }) {
 
   // Get all approved albums to check if request album has hidden artwork
   const approvedAlbums = useQuery(api.albums.getApprovedAlbums,
-    user ? { userId: user._id } : 'skip'
+    user ? { userId: user._id, userToken: token ?? undefined } : 'skip'
   ) || [];
 
   // Track artwork visibility for unapproved albums locally
@@ -349,9 +351,9 @@ function AlbumRequests({ user }) {
               }
             }
 
-            await approveAlbumRequest({ requestId, tracks });
+            await approveAlbumRequest({ requestId, tracks, userToken: token ?? undefined });
           } else {
-            await approveSongRequest({ requestId });
+            await approveSongRequest({ requestId, userToken: token ?? undefined });
           }
           successCount++;
         } catch (err) {
@@ -419,12 +421,14 @@ function AlbumRequests({ user }) {
           if (activeRequestTab === 'albums') {
             await denyAlbumRequest({
               requestId,
-              denialReason: reason.trim() || undefined
+              denialReason: reason.trim() || undefined,
+              userToken: token ?? undefined
             });
           } else {
             await denySongRequest({
               requestId,
-              denialReason: reason.trim() || undefined
+              denialReason: reason.trim() || undefined,
+              userToken: token ?? undefined
             });
           }
           successCount++;
@@ -491,16 +495,16 @@ function AlbumRequests({ user }) {
           if (lastBatchAction.action === 'approve') {
             // Undo approval = use undoApproval mutation
             if (lastBatchAction.type === 'albums') {
-              await undoAlbumApproval({ requestId });
+              await undoAlbumApproval({ requestId, userToken: token ?? undefined });
             } else {
-              await undoSongApproval({ requestId });
+              await undoSongApproval({ requestId, userToken: token ?? undefined });
             }
           } else {
             // Undo denial = use undoDenial mutation
             if (lastBatchAction.type === 'albums') {
-              await undoAlbumDenial({ requestId });
+              await undoAlbumDenial({ requestId, userToken: token ?? undefined });
             } else {
-              await undoSongDenial({ requestId });
+              await undoSongDenial({ requestId, userToken: token ?? undefined });
             }
           }
           successCount++;
@@ -698,7 +702,7 @@ function AlbumRequests({ user }) {
         }
 
         // Approve the request with tracks
-        await approveAlbumRequest({ requestId, tracks });
+        await approveAlbumRequest({ requestId, tracks, userToken: token ?? undefined });
 
         // If artwork was set to hidden before approval, apply it now
         if (request && unapprovedArtworkHidden[request.appleAlbumId]) {
@@ -722,7 +726,7 @@ function AlbumRequests({ user }) {
         }
       } else {
         // Song request
-        await approveSongRequest({ requestId });
+        await approveSongRequest({ requestId, userToken: token ?? undefined });
       }
 
       // Show success toast with undo option
@@ -731,9 +735,9 @@ function AlbumRequests({ user }) {
         undoAction: async () => {
           try {
             if (requestType === 'album') {
-              await undoAlbumApproval({ requestId });
+              await undoAlbumApproval({ requestId, userToken: token ?? undefined });
             } else {
-              await undoSongApproval({ requestId });
+              await undoSongApproval({ requestId, userToken: token ?? undefined });
             }
             showToast('Approval undone', 'info');
           } catch (err) {
@@ -795,12 +799,14 @@ function AlbumRequests({ user }) {
       if (requestType === 'album') {
         await denyAlbumRequest({
           requestId,
-          denialReason: denialReason.trim() || undefined
+          denialReason: denialReason.trim() || undefined,
+          userToken: token ?? undefined
         });
       } else {
         await denySongRequest({
           requestId,
-          denialReason: denialReason.trim() || undefined
+          denialReason: denialReason.trim() || undefined,
+          userToken: token ?? undefined
         });
       }
 
@@ -815,9 +821,9 @@ function AlbumRequests({ user }) {
         undoAction: async () => {
           try {
             if (requestType === 'album') {
-              await undoAlbumDenial({ requestId });
+              await undoAlbumDenial({ requestId, userToken: token ?? undefined });
             } else {
-              await undoSongDenial({ requestId });
+              await undoSongDenial({ requestId, userToken: token ?? undefined });
             }
             showToast('Denial undone', 'info');
           } catch (err) {
@@ -862,9 +868,9 @@ function AlbumRequests({ user }) {
           }
         }
 
-        await approveDeniedAlbum({ requestId, tracks });
+        await approveDeniedAlbum({ requestId, tracks, userToken: token ?? undefined });
       } else {
-        await approveDeniedSong({ requestId });
+        await approveDeniedSong({ requestId, userToken: token ?? undefined });
       }
 
       showToast(`${requestName || 'Request'} approved`, 'success');
@@ -893,6 +899,7 @@ function AlbumRequests({ user }) {
       await markAsPartiallyApproved({
         requestId: partialApprovalData.requestId,
         partialApprovalNote: partialApprovalNote.trim() || undefined,
+        userToken: token ?? undefined,
       });
 
       // Close modal

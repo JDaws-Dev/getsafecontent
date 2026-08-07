@@ -107,4 +107,21 @@ export function useSubscriptionSync() {
   };
 }
 
+/**
+ * Mountable wrapper for useSubscriptionSync.
+ *
+ * Renders nothing. This used to be called only from AdminDashboard, so a
+ * subscription change made centrally (a comp, a Stripe update) only reached
+ * this app if the parent happened to open the dashboard — a customer who
+ * couldn't get that far stayed locked out while central insisted they had
+ * access. Mounting at the root syncs on any authenticated page.
+ *
+ * Must be rendered inside AuthProvider. The hook no-ops unless there's an
+ * authenticated user with an email.
+ */
+export function SubscriptionSync() {
+  useSubscriptionSync();
+  return null;
+}
+
 export default useSubscriptionSync;

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
-import SafeFamilySwitcher from '../SafeFamilySwitcher';
+import SafeFamilySwitcher, { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
 import { formatDuration, getChannelVideos, searchVideos, searchChannels, formatSubscribers } from '../../config/youtube';
 import { validateSearchQuery, filterVideoResults, filterChannelResults } from '../../utils/contentFilter';
 
@@ -54,6 +54,35 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
 
   // Mutation for adding videos to playlists
   const addVideoToPlaylistMutation = useMutation(api.kidPlaylists.addVideoToPlaylist);
+
+  // Cross-app kid pass: mint a short-lived token for the current kid so the
+  // header switcher can hand it to a sibling app (one-tap, no PIN re-entry).
+  // Refreshed well inside the token TTL so the links never go stale.
+  const [kidToken, setKidToken] = useState(null);
+  const mintKidPass = useMutation(api.kidPass.mintKidPass);
+  useEffect(() => {
+    if (!familyCode || !profile?.name) return undefined;
+    let active = true;
+    const refresh = async () => {
+      try {
+        const res = await mintKidPass({
+          familyCode,
+          kidName: profile.name,
+          avatar: profile.icon || profile.avatar,
+          color: profile.color,
+        });
+        if (active && res?.token) setKidToken(res.token);
+      } catch {
+        // non-fatal — the switcher still works; the destination just asks for the PIN
+      }
+    };
+    refresh();
+    const id = setInterval(refresh, 4 * 60 * 1000);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
+  }, [familyCode, profile?.name, profile?.icon, profile?.avatar, profile?.color, mintKidPass]);
 
   const handleAddVideoToPlaylist = async (playlistId, video) => {
     if (!profile?._id) return;
@@ -203,9 +232,9 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
   // Guard: if profile is not available, show loading state
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-cream flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
+          <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -246,7 +275,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
   // Channel detail view
   if (selectedChannel) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50">
+      <div className="min-h-screen bg-brand-cream">
         {/* Header */}
         <header className="px-4 py-3 flex items-center gap-4 bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
           <button
@@ -270,8 +299,8 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 rounded-full bg-accent-100 flex items-center justify-center">
+                <svg className="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </div>
@@ -298,7 +327,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
               value={channelSearchQuery}
               onChange={(e) => setChannelSearchQuery(e.target.value)}
               placeholder={`Search ${selectedChannel.channelTitle} videos...`}
-              className="w-full bg-gray-50 border border-gray-200 rounded-full pl-10 pr-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full bg-gray-50 border border-gray-200 rounded-full pl-10 pr-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
             />
             {channelSearchQuery && (
               <button
@@ -317,8 +346,8 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
         <main className="p-4">
           {isLoadingChannelVideos ? (
             <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100">
-              <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center animate-pulse">
-                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 mx-auto mb-4 bg-accent-100 rounded-full flex items-center justify-center animate-pulse">
+                <svg className="w-8 h-8 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </div>
@@ -374,7 +403,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                     {shorts.length > 0 && (
                       <section>
                         <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                          <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                          <svg className="w-5 h-5 text-accent-500" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M17.77 10.32c-.77-.32-1.2-.5-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07.97 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25z"/>
                           </svg>
                           Shorts
@@ -413,7 +442,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                       <section>
                         {shorts.length > 0 && (
                           <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
                             Videos
@@ -457,7 +486,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                   <button
                     onClick={handleLoadMoreVideos}
                     disabled={isLoadingMore}
-                    className="px-6 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-medium hover:from-red-600 hover:to-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                    className="px-6 py-3 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-xl font-medium hover:from-accent-600 hover:to-accent-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
                   >
                     {isLoadingMore ? (
                       <span className="flex items-center gap-2">
@@ -482,7 +511,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
               {/* Video preview header */}
-              <div className="relative bg-gradient-to-br from-cyan-500 to-teal-500 p-4">
+              <div className="relative bg-gradient-to-br from-accent-500 to-accent-600 p-4">
                 <button
                   onClick={() => setShowAddToPlaylistModal(null)}
                   className="absolute top-3 right-3 p-1.5 bg-black/30 hover:bg-black/50 rounded-full text-white transition"
@@ -530,13 +559,13 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                       purple: 'from-purple-400 to-purple-600',
                       pink: 'from-pink-400 to-pink-600',
                     };
-                    const colorClass = colorMap[playlist.emoji] || 'from-cyan-400 to-teal-600';
+                    const colorClass = colorMap[playlist.emoji] || 'from-accent-400 to-accent-600';
 
                     return (
                       <button
                         key={playlist._id}
                         onClick={() => handleAddVideoToPlaylist(playlist._id, showAddToPlaylistModal)}
-                        className="w-full flex items-center gap-3 p-3 bg-gray-50 hover:bg-cyan-50 hover:border-cyan-300 border-2 border-transparent rounded-xl transition text-left group active:scale-[0.98]"
+                        className="w-full flex items-center gap-3 p-3 bg-gray-50 hover:bg-accent-50 hover:border-accent-300 border-2 border-transparent rounded-xl transition text-left group active:scale-[0.98]"
                       >
                         <div className={`w-10 h-10 bg-gradient-to-br ${colorClass} rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition`}>
                           <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -544,10 +573,10 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                           </svg>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-gray-900 block group-hover:text-cyan-700 transition">{playlist.name}</span>
+                          <span className="font-medium text-gray-900 block group-hover:text-accent-700 transition">{playlist.name}</span>
                           <span className="text-gray-400 text-xs">{playlist.videoCount} videos</span>
                         </div>
-                        <svg className="w-5 h-5 text-gray-300 group-hover:text-cyan-500 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-gray-300 group-hover:text-accent-500 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                       </button>
@@ -586,28 +615,33 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
   const isTimeLow = canWatchStatus?.remainingMinutes !== null && canWatchStatus?.remainingMinutes <= 15;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-brand-cream flex flex-col lg:flex-row">
       {/* Desktop Sidebar - Hidden on mobile */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 shadow-sm z-20">
         {/* Logo/Brand */}
         <div className="px-6 py-5 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+            <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-md">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <span className="font-bold text-gray-900 text-xl">SafeTube</span>
+            <span className="font-display font-bold text-brand-navy text-xl">SafeTube</span>
           </div>
+        </div>
+
+        {/* Safe Family cross-app switcher (desktop) */}
+        <div className="hidden lg:flex justify-center px-4 py-3 border-b border-gray-100">
+          <SafeFamilyHeaderSwitcher current="safetube" familyCode={familyCode} kidToken={kidToken} showLabel={false} tile={40} />
         </div>
 
         {/* Profile Card */}
         <div className="px-4 py-4 border-b border-gray-100">
-          <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl">
+          <div className="flex items-center gap-3 p-3 bg-accent-50 rounded-xl">
             <div
               className="w-10 h-10 rounded-full shadow-sm flex-shrink-0"
-              style={{ backgroundColor: profile?.color || '#ef4444' }}
+              style={{ backgroundColor: profile?.color || '#F0603A' }}
             />
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-gray-900 truncate">{profile?.name}</p>
@@ -634,7 +668,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition ${
                 activeTab === item.id
-                  ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -642,7 +676,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
               <span>{item.label}</span>
               {item.badge > 0 && (
                 <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${
-                  activeTab === item.id ? 'bg-white/20 text-white' : 'bg-red-500 text-white'
+                  activeTab === item.id ? 'bg-white/20 text-white' : 'bg-accent-500 text-white'
                 }`}>
                   {item.badge}
                 </span>
@@ -691,7 +725,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
           <div className="flex items-center gap-2">
             <div
               className="w-8 h-8 rounded-full shadow-sm flex-shrink-0"
-              style={{ backgroundColor: profile?.color || '#ef4444' }}
+              style={{ backgroundColor: profile?.color || '#F0603A' }}
             />
             <span className="text-gray-900 font-semibold">{profile?.name}</span>
             {/* Time remaining badge */}
@@ -773,6 +807,11 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
             )}
           </div>
         </header>
+
+        {/* Safe Family cross-app switcher (mobile) */}
+        <div className="lg:hidden flex justify-center py-2 bg-white border-b border-gray-200">
+          <SafeFamilyHeaderSwitcher current="safetube" familyCode={familyCode} kidToken={kidToken} tile={40} />
+        </div>
 
         {/* Content - with bottom padding for mobile nav, no padding on desktop */}
         {/* Max-width container prevents content from stretching too wide on large screens */}
@@ -867,14 +906,14 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
               onClick={() => setActiveTab(tab.id)}
               className={`flex flex-col items-center py-2 px-1 transition relative ${
                 activeTab === tab.id
-                  ? 'text-red-600'
+                  ? 'text-accent-600'
                   : 'text-gray-400 hover:text-gray-600'
               }`}
             >
               <div className="relative">
                 {tab.icon}
                 {tab.badge > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-medium">
                     {tab.badge > 9 ? '9+' : tab.badge}
                   </span>
                 )}
@@ -956,7 +995,7 @@ function TopicFilterPills({ selectedFilter, onFilterChange }) {
   };
 
   return (
-    <div className="sticky top-0 z-10 bg-gradient-to-br from-red-50 via-white to-orange-50 pt-4 pb-2">
+    <div className="sticky top-0 z-10 bg-brand-cream pt-4 pb-2">
       <div className="relative flex items-center px-4">
         {/* Left Arrow */}
         {showLeftArrow && (
@@ -1287,11 +1326,11 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
                   <img
                     src={channel.thumbnailUrl}
                     alt={channel.channelTitle}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-red-500 shadow-md"
+                    className="w-14 h-14 rounded-full object-cover border-2 border-accent-500 shadow-md"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center border-2 border-red-500 shadow-md">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center border-2 border-accent-500 shadow-md">
                     <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
@@ -1371,7 +1410,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+                      <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
                         <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                         </svg>
@@ -1442,7 +1481,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+                      <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                         </svg>
@@ -1510,7 +1549,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+                      <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                         </svg>
@@ -1558,7 +1597,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
       {filteredShorts.length > 0 && (
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+            <svg className="w-5 h-5 text-accent-500" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17.77 10.32c-.77-.32-1.2-.5-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07.97 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25z"/>
             </svg>
             Shorts
@@ -1596,7 +1635,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
       {isLoadingFeed && channels.length > 0 && (
         <div className="flex items-center justify-center py-8">
           <div className="flex items-center gap-3 text-gray-500">
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-red-500 border-t-transparent"></div>
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-accent-500 border-t-transparent"></div>
             <span className="text-sm">Loading latest videos...</span>
           </div>
         </div>
@@ -1689,7 +1728,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
           </p>
           <button
             onClick={() => setSelectedFilter('all')}
-            className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-5 py-2 rounded-full font-medium text-sm transition"
+            className="bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-5 py-2 rounded-full font-medium text-sm transition"
           >
             Show All Videos
           </button>
@@ -1702,7 +1741,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             {/* Video preview header */}
-            <div className="relative bg-gradient-to-br from-cyan-500 to-teal-500 p-4">
+            <div className="relative bg-gradient-to-br from-accent-500 to-accent-600 p-4">
               <button
                 onClick={() => setShowAddToPlaylist(null)}
                 className="absolute top-3 right-3 p-1.5 bg-black/30 hover:bg-black/50 rounded-full text-white transition"
@@ -1750,13 +1789,13 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
                     purple: 'from-purple-400 to-purple-600',
                     pink: 'from-pink-400 to-pink-600',
                   };
-                  const colorClass = colorMap[playlist.emoji] || 'from-cyan-400 to-teal-600';
+                  const colorClass = colorMap[playlist.emoji] || 'from-accent-400 to-accent-600';
 
                   return (
                     <button
                       key={playlist._id}
                       onClick={() => handleAddToPlaylist(playlist._id, showAddToPlaylist)}
-                      className="w-full flex items-center gap-3 p-3 bg-gray-50 hover:bg-cyan-50 hover:border-cyan-300 border-2 border-transparent rounded-xl transition text-left group active:scale-[0.98]"
+                      className="w-full flex items-center gap-3 p-3 bg-gray-50 hover:bg-accent-50 hover:border-accent-300 border-2 border-transparent rounded-xl transition text-left group active:scale-[0.98]"
                     >
                       <div className={`w-10 h-10 bg-gradient-to-br ${colorClass} rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition`}>
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1764,10 +1803,10 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
                         </svg>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <span className="font-medium text-gray-900 block group-hover:text-cyan-700 transition">{playlist.name}</span>
+                        <span className="font-medium text-gray-900 block group-hover:text-accent-700 transition">{playlist.name}</span>
                         <span className="text-gray-400 text-xs">{playlist.videoCount} videos</span>
                       </div>
-                      <svg className="w-5 h-5 text-gray-300 group-hover:text-cyan-500 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-gray-300 group-hover:text-accent-500 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </button>
@@ -1804,7 +1843,7 @@ function ShortsCard({ video, onPlay }) {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1817,7 +1856,7 @@ function ShortsCard({ video, onPlay }) {
         </div>
         {/* Play overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition">
-          <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center shadow-lg">
             <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
@@ -1954,7 +1993,7 @@ function ChannelsTab({ channels, onChannelClick, onPlayVideo }) {
   return (
     <div className="flex flex-col h-full">
       {/* Search Bar - Sticky */}
-      <div className="sticky top-0 z-10 bg-gradient-to-br from-red-50 via-white to-orange-50 px-4 pt-4 pb-2">
+      <div className="sticky top-0 z-10 bg-brand-cream px-4 pt-4 pb-2">
         <div className="relative">
           <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -1964,7 +2003,7 @@ function ChannelsTab({ channels, onChannelClick, onPlayVideo }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search videos across all channels..."
-            className="w-full bg-white border border-gray-200 rounded-full pl-10 pr-10 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
+            className="w-full bg-white border border-gray-200 rounded-full pl-10 pr-10 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent shadow-sm"
           />
           {searchQuery && (
             <button
@@ -1986,7 +2025,7 @@ function ChannelsTab({ channels, onChannelClick, onPlayVideo }) {
       {isSearching && (
         <div className="px-4 py-3">
           <div className="flex items-center gap-3 text-gray-500">
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-red-500 border-t-transparent"></div>
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-accent-500 border-t-transparent"></div>
             <span className="text-sm">
               {loadingProgress.total > 0 && !allVideosCache
                 ? `Loading channels (${loadingProgress.current}/${loadingProgress.total})...`
@@ -2036,7 +2075,7 @@ function ChannelsTab({ channels, onChannelClick, onPlayVideo }) {
             <button
               key={channel.channelId}
               onClick={() => onChannelClick(channel)}
-              className="flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-red-200 transition text-left"
+              className="flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-accent-200 transition text-left"
             >
               {channel.thumbnailUrl ? (
                 <img
@@ -2046,7 +2085,7 @@ function ChannelsTab({ channels, onChannelClick, onPlayVideo }) {
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-sm">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center shadow-sm">
                   <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
@@ -2222,7 +2261,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
           </div>
           <button
             onClick={() => handleDeletePlaylist(selectedPlaylist._id)}
-            className="p-2 text-gray-400 hover:text-red-500 transition"
+            className="p-2 text-gray-400 hover:text-accent-500 transition"
             title="Delete playlist"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2242,7 +2281,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
             <p className="text-gray-500 mb-4">No videos in this playlist yet</p>
             <button
               onClick={() => setActiveView('all')}
-              className="text-red-500 font-medium hover:text-red-600"
+              className="text-accent-500 font-medium hover:text-accent-600"
             >
               Add videos from your list →
             </button>
@@ -2286,7 +2325,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
           onClick={() => setActiveView('playlists')}
           className={`px-4 py-2 rounded-full font-medium transition ${
             activeView === 'playlists'
-              ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+              ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -2296,7 +2335,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
           onClick={() => setActiveView('all')}
           className={`px-4 py-2 rounded-full font-medium transition ${
             activeView === 'all'
-              ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+              ? 'bg-gradient-to-r from-accent-500 to-accent-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -2310,7 +2349,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
           {/* Create playlist button */}
           <button
             onClick={() => setShowCreatePlaylist(true)}
-            className="w-full mb-6 p-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-red-400 hover:text-red-500 transition flex items-center justify-center gap-2"
+            className="w-full mb-6 p-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-accent-400 hover:text-accent-500 transition flex items-center justify-center gap-2"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -2376,7 +2415,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
               {requestsEnabled && (
                 <button
                   onClick={onGoToRequests}
-                  className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-2 rounded-full font-medium"
+                  className="bg-gradient-to-r from-accent-500 to-accent-600 text-white px-6 py-2 rounded-full font-medium"
                 >
                   Find Videos
                 </button>
@@ -2430,7 +2469,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
                 value={newPlaylistName}
                 onChange={(e) => setNewPlaylistName(e.target.value)}
                 placeholder="My Favorites"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500"
                 autoFocus
               />
             </div>
@@ -2465,7 +2504,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
               <button
                 onClick={handleCreatePlaylist}
                 disabled={!newPlaylistName.trim() || isCreating}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 {isCreating ? 'Creating...' : 'Create'}
               </button>
@@ -2479,7 +2518,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl">
             {/* Video preview header */}
-            <div className="relative bg-gradient-to-br from-red-500 to-orange-500 p-4">
+            <div className="relative bg-gradient-to-br from-accent-500 to-accent-600 p-4">
               <button
                 onClick={() => setShowAddToPlaylist(null)}
                 className="absolute top-3 right-3 p-1.5 bg-black/30 hover:bg-black/50 rounded-full text-white transition"
@@ -2517,7 +2556,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
                   <button
                     key={playlist._id}
                     onClick={() => handleAddToPlaylist(playlist._id, showAddToPlaylist)}
-                    className="w-full flex items-center gap-3 p-3 bg-gray-50 hover:bg-red-50 hover:border-red-300 border-2 border-transparent rounded-xl transition text-left group active:scale-[0.98]"
+                    className="w-full flex items-center gap-3 p-3 bg-gray-50 hover:bg-accent-50 hover:border-accent-300 border-2 border-transparent rounded-xl transition text-left group active:scale-[0.98]"
                   >
                     <div className={`w-10 h-10 bg-gradient-to-br ${getPlaylistColorClass(playlist.emoji)} rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition`}>
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2525,10 +2564,10 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className="font-medium text-gray-900 block group-hover:text-red-600 transition">{playlist.name}</span>
+                      <span className="font-medium text-gray-900 block group-hover:text-accent-600 transition">{playlist.name}</span>
                       <span className="text-gray-400 text-xs">{playlist.videoCount} videos</span>
                     </div>
-                    <svg className="w-5 h-5 text-gray-300 group-hover:text-red-500 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-gray-300 group-hover:text-accent-500 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                   </button>
@@ -2543,7 +2582,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
                       setShowAddToPlaylist(null);
                       setShowCreatePlaylist(true);
                     }}
-                    className="mt-2 text-red-500 font-medium text-sm hover:text-red-600"
+                    className="mt-2 text-accent-500 font-medium text-sm hover:text-accent-600"
                   >
                     Create your first playlist
                   </button>
@@ -2582,8 +2621,8 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
 
             {/* Confirmation content */}
             <div className="p-4 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 mx-auto mb-3 bg-accent-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </div>
@@ -2601,7 +2640,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
                 </button>
                 <button
                   onClick={() => handleRemoveFromPlaylist(showRemoveConfirm)}
-                  className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition"
+                  className="flex-1 px-4 py-3 bg-accent-500 text-white rounded-xl font-medium hover:bg-accent-600 transition"
                 >
                   Remove
                 </button>
@@ -2763,7 +2802,7 @@ function RequestsTab({ requests, profileId, userId }) {
           onClick={() => setActiveView('search')}
           className={`flex-1 py-3 text-sm font-medium transition border-b-2 ${
             activeView === 'search'
-              ? 'text-red-600 border-red-600'
+              ? 'text-accent-600 border-accent-600'
               : 'text-gray-500 border-transparent hover:text-gray-700'
           }`}
         >
@@ -2773,7 +2812,7 @@ function RequestsTab({ requests, profileId, userId }) {
           onClick={() => setActiveView('history')}
           className={`flex-1 py-3 text-sm font-medium transition border-b-2 relative ${
             activeView === 'history'
-              ? 'text-red-600 border-red-600'
+              ? 'text-accent-600 border-accent-600'
               : 'text-gray-500 border-transparent hover:text-gray-700'
           }`}
         >
@@ -2800,12 +2839,12 @@ function RequestsTab({ requests, profileId, userId }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search videos or channels..."
-                className="w-full bg-gray-50 border border-gray-200 rounded-full pl-10 pr-16 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full bg-gray-50 border border-gray-200 rounded-full pl-10 pr-16 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
               />
               <button
                 type="submit"
                 disabled={isSearching || !searchQuery.trim()}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white px-4 py-1.5 rounded-full text-sm font-medium transition"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white px-4 py-1.5 rounded-full text-sm font-medium transition"
               >
                 {isSearching ? '...' : 'Search'}
               </button>
@@ -2814,16 +2853,16 @@ function RequestsTab({ requests, profileId, userId }) {
 
           {/* Search Error (blocked query) */}
           {searchError && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <div className="mb-4 p-4 bg-accent-50 border border-accent-200 rounded-xl">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-red-800 font-medium text-sm">Oops!</p>
-                  <p className="text-red-600 text-xs">{searchError}</p>
+                  <p className="text-accent-800 font-medium text-sm">Oops!</p>
+                  <p className="text-accent-600 text-xs">{searchError}</p>
                 </div>
               </div>
             </div>
@@ -2832,7 +2871,7 @@ function RequestsTab({ requests, profileId, userId }) {
           {/* Search Results */}
           {isSearching ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-red-500 border-t-transparent"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent-500 border-t-transparent"></div>
             </div>
           ) : (videoResults.length > 0 || channelResults.length > 0) ? (
             <div className="space-y-6">
@@ -2842,7 +2881,7 @@ function RequestsTab({ requests, profileId, userId }) {
                   onClick={() => setSearchType('videos')}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
                     searchType === 'videos'
-                      ? 'bg-red-500 text-white'
+                      ? 'bg-accent-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -2852,7 +2891,7 @@ function RequestsTab({ requests, profileId, userId }) {
                   onClick={() => setSearchType('channels')}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
                     searchType === 'channels'
-                      ? 'bg-red-500 text-white'
+                      ? 'bg-accent-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -2875,7 +2914,7 @@ function RequestsTab({ requests, profileId, userId }) {
                           className="flex gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm items-center"
                         >
                           {/* Generic play icon instead of thumbnail */}
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center flex-shrink-0">
                             <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                               <path d="M8 5v14l11-7z" />
                             </svg>
@@ -2899,7 +2938,7 @@ function RequestsTab({ requests, profileId, userId }) {
                               <button
                                 onClick={() => handleRequestVideo(video)}
                                 disabled={isRequesting}
-                                className="bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white px-3 py-1.5 rounded-full text-xs font-medium transition"
+                                className="bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white px-3 py-1.5 rounded-full text-xs font-medium transition"
                               >
                                 {isRequesting ? '...' : 'Request'}
                               </button>
@@ -2927,7 +2966,7 @@ function RequestsTab({ requests, profileId, userId }) {
                           className="flex gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm"
                         >
                           {/* Generic channel icon - don't show actual thumbnails to avoid inappropriate content */}
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center flex-shrink-0">
                             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
@@ -2954,7 +2993,7 @@ function RequestsTab({ requests, profileId, userId }) {
                                 <button
                                   onClick={() => handleRequestChannel(channel)}
                                   disabled={isRequesting}
-                                  className="bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white px-4 py-1.5 rounded-full text-xs font-medium transition"
+                                  className="bg-accent-500 hover:bg-accent-600 disabled:bg-gray-300 text-white px-4 py-1.5 rounded-full text-xs font-medium transition"
                                 >
                                   {isRequesting ? 'Requesting...' : 'Request Channel'}
                                 </button>
@@ -2975,8 +3014,8 @@ function RequestsTab({ requests, profileId, userId }) {
             </div>
           ) : (
             <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 mx-auto mb-4 bg-accent-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
@@ -3092,7 +3131,7 @@ function RequestCard({ request }) {
           />
         ) : (
           <div className={`w-full aspect-video rounded-lg flex items-center justify-center ${
-            request.status === 'denied' ? 'bg-gray-300' : 'bg-gradient-to-br from-red-500 to-orange-500'
+            request.status === 'denied' ? 'bg-gray-300' : 'bg-gradient-to-br from-accent-500 to-accent-600'
           }`}>
             <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -3158,7 +3197,7 @@ function ChannelRequestCard({ request }) {
         />
       ) : (
         <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-          request.status === 'denied' ? 'bg-gray-300' : 'bg-gradient-to-br from-red-500 to-orange-500'
+          request.status === 'denied' ? 'bg-gray-300' : 'bg-gradient-to-br from-accent-500 to-accent-600'
         }`}>
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -3216,7 +3255,7 @@ function VideoCard({ video, onPlay, showChannel = true }) {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center">
             <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -3231,7 +3270,7 @@ function VideoCard({ video, onPlay, showChannel = true }) {
         )}
         {/* Play overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition">
-          <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+          <div className="w-14 h-14 bg-accent-600 rounded-full flex items-center justify-center shadow-lg">
             <svg className="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>

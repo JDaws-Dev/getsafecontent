@@ -20,7 +20,7 @@ function formatTimeAgo(timestamp) {
 // Get Tailwind color class from color name
 function getColorClass(color) {
   const colors = {
-    red: 'bg-red-500',
+    red: 'bg-accent-500',
     orange: 'bg-orange-500',
     yellow: 'bg-yellow-500',
     green: 'bg-green-500',
@@ -227,7 +227,7 @@ export default function VideoRequests({ userId }) {
   if (!pendingVideoRequests && !pendingChannelRequests) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-red-500 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-accent-500 border-t-transparent"></div>
       </div>
     );
   }
@@ -248,7 +248,7 @@ export default function VideoRequests({ userId }) {
               }`}
             >
               Pending {totalPending > 0 && (
-                <span className="ml-1 bg-red-500 text-white px-1.5 py-0.5 rounded-full text-xs">
+                <span className="ml-1 bg-accent-500 text-white px-1.5 py-0.5 rounded-full text-xs">
                   {totalPending}
                 </span>
               )}
@@ -282,7 +282,7 @@ export default function VideoRequests({ userId }) {
             onClick={() => setRequestType('videos')}
             className={`px-3 py-1.5 text-xs font-medium rounded-full transition flex items-center gap-1 ${
               requestType === 'videos'
-                ? 'bg-red-500 text-white'
+                ? 'bg-accent-500 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -392,7 +392,7 @@ export default function VideoRequests({ userId }) {
                   href={`https://www.youtube.com/watch?v=${playingVideoId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-red-400 transition"
+                  className="flex items-center gap-1 hover:text-accent-400 transition"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
@@ -466,7 +466,7 @@ export default function VideoRequests({ userId }) {
                       <div className={`w-full aspect-video rounded-lg flex items-center justify-center ${
                         request.status === 'denied'
                           ? 'bg-gray-300'
-                          : 'bg-gradient-to-br from-red-500 to-orange-500'
+                          : 'bg-gradient-to-br from-accent-500 to-accent-600'
                       }`}>
                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -490,7 +490,7 @@ export default function VideoRequests({ userId }) {
                   <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium ${
                     request.type === 'channel'
                       ? 'bg-purple-100 text-purple-700'
-                      : 'bg-red-100 text-red-700'
+                      : 'bg-accent-100 text-accent-700'
                   }`}>
                     {request.type === 'channel' ? (
                       <>
@@ -586,7 +586,7 @@ export default function VideoRequests({ userId }) {
                     durationSeconds: request.durationSeconds,
                   });
                 }}
-                className="w-full py-2 text-sm font-medium border-t border-gray-100 text-red-600 hover:bg-red-50 transition flex items-center justify-center gap-2"
+                className="w-full py-2 text-sm font-medium border-t border-gray-100 text-accent-600 hover:bg-accent-50 transition flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
@@ -677,7 +677,7 @@ export default function VideoRequests({ userId }) {
                     <div className="flex items-start gap-3">
                       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                         channelReview.recommendation === 'Recommended' ? 'bg-green-100' :
-                        channelReview.recommendation === 'Not Recommended' ? 'bg-red-100' :
+                        channelReview.recommendation === 'Not Recommended' ? 'bg-accent-100' :
                         'bg-yellow-100'
                       }`}>
                         {channelReview.recommendation === 'Recommended' ? (
@@ -685,7 +685,7 @@ export default function VideoRequests({ userId }) {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         ) : channelReview.recommendation === 'Not Recommended' ? (
-                          <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         ) : (
@@ -698,7 +698,7 @@ export default function VideoRequests({ userId }) {
                         <div className="flex items-center gap-2 mb-1">
                           <span className={`font-semibold text-sm ${
                             channelReview.recommendation === 'Recommended' ? 'text-green-700' :
-                            channelReview.recommendation === 'Not Recommended' ? 'text-red-700' :
+                            channelReview.recommendation === 'Not Recommended' ? 'text-accent-700' :
                             'text-yellow-700'
                           }`}>
                             {channelReview.recommendation}
@@ -712,7 +712,7 @@ export default function VideoRequests({ userId }) {
                             <div className="flex flex-wrap gap-1">
                               {channelReview.concerns.map((concern, idx) => (
                                 <span key={idx} className={`text-xs px-2 py-0.5 rounded-full ${
-                                  concern.severity === 'significant' ? 'bg-red-100 text-red-700' :
+                                  concern.severity === 'significant' ? 'bg-accent-100 text-accent-700' :
                                   concern.severity === 'moderate' ? 'bg-yellow-100 text-yellow-700' :
                                   'bg-gray-100 text-gray-600'
                                 }`}>
@@ -729,7 +729,7 @@ export default function VideoRequests({ userId }) {
 
                 {/* Video Error */}
                 {videoError && (
-                  <div className="px-3 py-4 text-center text-red-600 text-sm">
+                  <div className="px-3 py-4 text-center text-accent-600 text-sm">
                     {videoError}
                   </div>
                 )}
@@ -772,7 +772,7 @@ export default function VideoRequests({ userId }) {
                               </div>
                             )}
                             {video.ageRestricted && (
-                              <div className="absolute top-1 left-1 bg-red-500 px-1 py-0.5 rounded text-white text-[9px] font-medium">
+                              <div className="absolute top-1 left-1 bg-accent-500 px-1 py-0.5 rounded text-white text-[9px] font-medium">
                                 18+
                               </div>
                             )}

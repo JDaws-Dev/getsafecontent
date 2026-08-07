@@ -70,11 +70,18 @@ function isKidFriendly(book: GutendexBook): boolean {
 }
 
 function getGutenbergCoverUrl(book: GutendexBook): string | undefined {
-  return (
-    book.formats["image/jpeg"] ||
-    book.formats["image/png"] ||
-    undefined
-  );
+  // Skip Project Gutenberg's auto-generated placeholder covers (colored abstract
+  // patterns with "Project Gutenberg" watermark). They read as "broken" to
+  // tweens. Let the cover waterfall fall through to Open Library → Google Books
+  // → StylizedCover, all of which look better than the Gutenberg defaults.
+  const jpeg = book.formats["image/jpeg"];
+  const png = book.formats["image/png"];
+  const url = jpeg || png;
+  if (!url) return undefined;
+  if (/\/cache\/epub\/\d+\/pg\d+\.cover\.(medium|small)\.(jpg|png)$/i.test(url)) {
+    return undefined;
+  }
+  return url;
 }
 
 function getGutenbergFormats(book: GutendexBook) {
@@ -106,6 +113,20 @@ function parseGutenbergBook(book: GutendexBook) {
     downloadCount: book.download_count,
     source: "gutenberg" as const,
   };
+}
+
+// Collapse Gutendex results that are the same book in different editions/formats
+// (e.g., "Adventures of Huckleberry Finn" appearing twice with different IDs).
+function dedupeBooks<T extends { title: string; authors: string[] }>(books: T[]): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const b of books) {
+    const key = `${b.title.trim().toLowerCase()}::${b.authors.map((a) => a.toLowerCase()).join(",")}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(b);
+  }
+  return out;
 }
 
 /**
@@ -140,11 +161,12 @@ export const searchFreeBooks = action({
 
     const data = (await response.json()) as GutendexResponse;
 
-    const books = data.results
-      .filter(isKidFriendly)
-      .filter((b) => b.languages.includes("en"))
-      .slice(0, 20)
-      .map(parseGutenbergBook);
+    const books = dedupeBooks(
+      data.results
+        .filter(isKidFriendly)
+        .filter((b) => b.languages.includes("en"))
+        .map(parseGutenbergBook)
+    ).slice(0, 20);
 
     return books;
   },
@@ -293,6 +315,11 @@ function stripGutenbergBoilerplate(html: string): string {
     /<[^>]*>[^<]*Character set encoding[^<]*<\/[^>]*>/gi,
     // "Produced by" credits that may remain
     /<[^>]*>[^<]*Produced by[^<]*<\/[^>]*>/gi,
+    // Page number markers (Gutenberg HTML sometimes leaks these as raw text)
+    // Examples: <span class="pagenum">[page i]</span>, <span class="pageno">[Pg 100]</span>
+    /<span[^>]*class="(?:pagenum|pageno)"[^>]*>[\s\S]*?<\/span>/gi,
+    // Inline bracketed page markers like [page i], [page 10], [Pg 100]
+    /\[(?:page|pg)\s+[ivxlcdm0-9]+\]/gi,
   ];
 
   for (const pattern of metadataPatterns) {
@@ -372,11 +399,12 @@ export const browseByGenre = action({
 
       const data = (await response.json()) as GutendexResponse;
 
-      const results = data.results
-        .filter(isKidFriendly)
-        .filter((b) => b.languages.includes("en"))
-        .slice(0, 20)
-        .map(parseGutenbergBook);
+      const results = dedupeBooks(
+        data.results
+          .filter(isKidFriendly)
+          .filter((b) => b.languages.includes("en"))
+          .map(parseGutenbergBook)
+      ).slice(0, 20);
 
       // Cache the results
       await ctx.runMutation(api.freeBooks.saveToCache, {
@@ -531,11 +559,12 @@ export const getCuratedFreeBooks = action({
 
       const data = (await response.json()) as GutendexResponse;
 
-      const results = data.results
-        .filter(isKidFriendly)
-        .filter((b) => b.languages.includes("en"))
-        .slice(0, 8)
-        .map(parseGutenbergBook);
+      const results = dedupeBooks(
+        data.results
+          .filter(isKidFriendly)
+          .filter((b) => b.languages.includes("en"))
+          .map(parseGutenbergBook)
+      ).slice(0, 8);
 
       // Cache the results
       await ctx.runMutation(api.freeBooks.saveToCache, {

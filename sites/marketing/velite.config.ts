@@ -18,6 +18,7 @@ const posts = defineCollection({
       category: s.enum(["SafeTunes", "SafeTube", "SafeReads", "General"]),
       tags: s.array(s.string()).default([]),
       body: s.mdx(),
+      toc: s.toc(),
     })
     .transform((data) => ({
       ...data,

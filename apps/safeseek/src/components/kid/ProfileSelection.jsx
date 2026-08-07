@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Search, Sun, Moon, ArrowLeft, Lock } from 'lucide-react';
-import { getColorClass } from './utils';
+import { getColorClass, getAvatarIcon } from './utils';
 
 export default function ProfileSelection({
   familyCode,
@@ -18,11 +18,11 @@ export default function ProfileSelection({
   pinRefs,
 }) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-brand-cream dark:bg-gray-900 flex flex-col">
       {/* Header */}
       <header className="px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="w-9 h-9 bg-accent-600 rounded-lg flex items-center justify-center">
             <Search className="w-5 h-5 text-white" />
           </div>
           <span className="font-semibold text-gray-900 dark:text-white text-lg">SafeStudy</span>
@@ -50,8 +50,8 @@ export default function ProfileSelection({
         {pinProfile ? (
           /* PIN Entry Screen */
           <div className="text-center">
-            <div className={`w-24 h-24 mx-auto mb-4 rounded-full ${getColorClass(pinProfile.color)} flex items-center justify-center text-white text-3xl font-bold shadow-lg`}>
-              {pinProfile.name.charAt(0).toUpperCase()}
+            <div className={`w-24 h-24 mx-auto mb-4 rounded-full ${getColorClass(pinProfile.color)} flex items-center justify-center shadow-lg`}>
+              <span className="text-4xl drop-shadow-sm" aria-hidden="true">{getAvatarIcon(pinProfile.color)}</span>
             </div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">{pinProfile.name}</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Enter your 4-digit PIN</p>
@@ -70,7 +70,7 @@ export default function ProfileSelection({
                   className={`w-14 h-14 text-center text-2xl font-bold text-gray-900 dark:text-white border-2 rounded-xl focus:outline-none focus:ring-2 transition ${
                     pinError
                       ? 'border-red-300 bg-red-50 dark:bg-red-900/20 focus:ring-red-200 focus:border-red-500'
-                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-blue-200 focus:border-blue-500'
+                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-accent-200 focus:border-accent-500'
                   }`}
                   autoComplete="off"
                 />
@@ -100,12 +100,12 @@ export default function ProfileSelection({
                   <button
                     key={profile._id}
                     onClick={() => onProfileClick(profile)}
-                    className="flex flex-col items-center gap-3 p-5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 active:scale-[0.98]"
+                    className="flex flex-col items-center gap-3 p-5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-accent-300 dark:hover:border-accent-600 transition-all duration-200 active:scale-[0.98]"
                   >
                     <div
-                      className={`w-20 h-20 rounded-full shadow-md flex items-center justify-center text-white text-2xl font-bold ${getColorClass(profile.color)}`}
+                      className={`w-20 h-20 rounded-full shadow-md flex items-center justify-center ${getColorClass(profile.color)}`}
                     >
-                      {profile.name.charAt(0).toUpperCase()}
+                      <span className="text-3xl drop-shadow-sm" aria-hidden="true">{getAvatarIcon(profile.color)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-gray-900 dark:text-white font-semibold text-lg">{profile.name}</span>
@@ -118,8 +118,8 @@ export default function ProfileSelection({
               </div>
             ) : (
               <div className="text-center bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 max-w-sm">
-                <div className="w-20 h-20 mx-auto mb-4 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center">
-                  <Search className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+                <div className="w-20 h-20 mx-auto mb-4 bg-accent-100 dark:bg-accent-900/40 rounded-full flex items-center justify-center">
+                  <Search className="w-10 h-10 text-accent-600 dark:text-accent-400" />
                 </div>
                 <p className="text-gray-700 dark:text-gray-200 font-medium mb-2">No profiles found for this family code.</p>
                 <p className="text-gray-500 dark:text-gray-400 text-sm">Ask your parent to create a profile for you.</p>
@@ -136,7 +136,7 @@ export default function ProfileSelection({
             <div className="mt-8 pt-8 border-t border-gray-200/60 dark:border-gray-700/60">
               <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
                 Are you a parent?{' '}
-                <a href="/login" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                <a href="/login" className="text-accent-500 hover:text-accent-600 dark:text-accent-400 dark:hover:text-accent-300 font-medium">
                   Log in here &rarr;
                 </a>
               </p>

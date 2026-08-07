@@ -9,9 +9,9 @@ export default function TimeLimitModal({ canSearchStatus, onDismiss }) {
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full text-center shadow-xl">
         {/* Icon */}
         <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 ${
-          isOutsideHours ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-orange-100 dark:bg-orange-900/40'
+          isOutsideHours ? 'bg-accent-100 dark:bg-accent-900/40' : 'bg-orange-100 dark:bg-orange-900/40'
         }`}>
-          <Clock className={`w-8 h-8 ${isOutsideHours ? 'text-blue-500' : 'text-orange-500'}`} />
+          <Clock className={`w-8 h-8 ${isOutsideHours ? 'text-accent-500' : 'text-orange-500'}`} />
         </div>
 
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -25,7 +25,7 @@ export default function TimeLimitModal({ canSearchStatus, onDismiss }) {
         </p>
 
         {isOutsideHours && canSearchStatus?.allowedHoursStart !== undefined && canSearchStatus?.allowedHoursEnd !== undefined && (
-          <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-6">
+          <p className="text-sm text-accent-600 dark:text-accent-400 font-medium mb-6">
             Come back between {formatHour(canSearchStatus.allowedHoursStart)} and {formatHour(canSearchStatus.allowedHoursEnd)}!
           </p>
         )}
@@ -42,7 +42,7 @@ export default function TimeLimitModal({ canSearchStatus, onDismiss }) {
 
         <button
           onClick={onDismiss}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium text-lg transition-all duration-200 active:scale-[0.98]"
+          className="w-full bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-medium text-lg transition-all duration-200 active:scale-[0.98]"
         >
           Got it
         </button>

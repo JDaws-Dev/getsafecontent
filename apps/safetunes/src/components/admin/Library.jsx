@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
 import AppleMusicAuth from './AppleMusicAuth';
 import PlaylistImport from './PlaylistImport';
@@ -10,7 +10,7 @@ import { useToast } from '../common/Toast';
 import { backfillAlbumTracks } from '../../utils/backfillAlbumTracks';
 
 function Library() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const { showToast, ToastContainer } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [showImport, setShowImport] = useState(false);
@@ -27,7 +27,7 @@ function Library() {
   });
 
   // Fetch data
-  const albums = useQuery(api.albums.getApprovedAlbums, user ? { userId: user._id } : 'skip') || [];
+  const albums = useQuery(api.albums.getApprovedAlbums, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
   const songs = useQuery(api.songs.getApprovedSongs, user ? { userId: user._id } : 'skip') || [];
   const playlists = useQuery(api.playlists.getPlaylists, user ? { userId: user._id } : 'skip') || [];
   const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id } : 'skip') || [];

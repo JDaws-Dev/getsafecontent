@@ -103,16 +103,16 @@ export default function ChatPage() {
   if (!currentUser) {
     return (
       <div className="flex h-[calc(100vh-12rem)] items-center justify-center sm:h-[calc(100vh-8rem)]">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-parchment-300 border-t-parchment-700" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-300 border-t-accent-700" />
       </div>
     );
   }
 
   return (
     <div className="mx-auto h-[calc(100vh-12rem)] max-w-5xl px-4 py-4 sm:h-[calc(100vh-8rem)]">
-      <div className="flex h-full overflow-hidden rounded-xl border border-parchment-200 bg-white">
+      <div className="flex h-full overflow-hidden rounded-2xl border border-brand-cream-2 bg-white">
         {/* Desktop sidebar — always visible on sm+ */}
-        <div className="hidden shrink-0 border-r border-parchment-200 sm:block sm:w-72">
+        <div className="hidden shrink-0 border-r border-brand-cream-2 sm:block sm:w-72">
           <ConversationList
             conversations={(conversations ?? []) as Array<{
               _id: Id<"conversations">;
@@ -129,10 +129,10 @@ export default function ChatPage() {
         {/* Mobile: history list (only shown when user taps history button) */}
         {showHistory && (
           <div className="flex w-full flex-col sm:hidden">
-            <div className="flex items-center gap-2 border-b border-parchment-200 p-3">
+            <div className="flex items-center gap-2 border-b border-brand-cream-2 p-3">
               <button
                 onClick={() => setShowHistory(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-parchment-100"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-brand-cream-2"
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
@@ -164,7 +164,7 @@ export default function ChatPage() {
           {activeConversationId ? (
             <div className="flex h-full flex-col">
               {/* Mobile header with history button */}
-              <div className="flex items-center justify-between border-b border-parchment-200 p-3 sm:hidden">
+              <div className="flex items-center justify-between border-b border-brand-cream-2 p-3 sm:hidden">
                 <span className="truncate text-sm font-medium text-ink-700">
                   {(conversations ?? []).find(
                     (c: { _id: Id<"conversations"> }) =>
@@ -173,7 +173,7 @@ export default function ChatPage() {
                 </span>
                 <button
                   onClick={() => setShowHistory(true)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-parchment-100"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 hover:bg-brand-cream-2"
                 >
                   <History className="h-5 w-5" />
                 </button>
@@ -193,7 +193,7 @@ export default function ChatPage() {
                 <div className="flex items-center justify-end p-3 sm:hidden">
                   <button
                     onClick={() => setShowHistory(true)}
-                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink-500 hover:bg-parchment-100"
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-ink-500 hover:bg-brand-cream-2"
                   >
                     <History className="h-4 w-4" />
                     Past chats
@@ -201,9 +201,9 @@ export default function ChatPage() {
                 </div>
               )}
               <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
-                <Bot className="h-16 w-16 text-parchment-200" />
+                <Bot className="h-16 w-16 text-accent-200" />
                 <div>
-                  <p className="font-serif text-xl font-bold text-ink-700">
+                  <p className="font-display text-xl font-bold text-brand-navy">
                     Your Book Advisor
                   </p>
                   <p className="mt-1 text-sm text-ink-400">
@@ -218,7 +218,7 @@ export default function ChatPage() {
                       key={prompt}
                       onClick={() => handleWelcomeSend(prompt)}
                       disabled={isSending}
-                      className="rounded-full border border-parchment-300 bg-white px-4 py-2 text-xs font-medium text-ink-600 transition-colors hover:border-parchment-500 hover:bg-parchment-50 disabled:opacity-50"
+                      className="rounded-full border border-accent-300 bg-white px-4 py-2 text-xs font-medium text-ink-600 transition-colors hover:border-accent-500 hover:bg-brand-cream-2 disabled:opacity-50"
                     >
                       {prompt}
                     </button>

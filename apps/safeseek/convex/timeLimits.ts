@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireOwnerSoft, requireProfileOwnerSoft } from "./identity";
+import { requireOwnerSoft, requireProfileOwner } from "./identity";
 
 // Get time limit settings for a kid
 export const getTimeLimit = query({
@@ -26,7 +26,7 @@ export const setTimeLimit = mutation({
     userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireProfileOwnerSoft(ctx, args.userToken, args.kidProfileId, "timeLimits.setTimeLimit");
+    await requireProfileOwner(ctx, args.userToken, args.kidProfileId, "timeLimits.setTimeLimit");
     const existing = await ctx.db
       .query("timeLimits")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
@@ -60,7 +60,7 @@ export const setTimeLimit = mutation({
 export const deleteTimeLimit = mutation({
   args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    await requireProfileOwnerSoft(ctx, args.userToken, args.kidProfileId, "timeLimits.deleteTimeLimit");
+    await requireProfileOwner(ctx, args.userToken, args.kidProfileId, "timeLimits.deleteTimeLimit");
     const existing = await ctx.db
       .query("timeLimits")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))

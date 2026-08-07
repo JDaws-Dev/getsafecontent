@@ -115,6 +115,12 @@ export async function POST(request: NextRequest) {
       customer: customerId,
       mode: "subscription",
       metadata: { convexUserId: user._id },
+      // `apps` lets every shared-account webhook tell which app a purchase is
+      // for, so only SafeReads acts on a SafeReads checkout (the gate above
+      // reads subscription.metadata.apps).
+      subscription_data: {
+        metadata: { convexUserId: user._id, apps: "safereads" },
+      },
       line_items: [
         {
           price: stripePriceId,

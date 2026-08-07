@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="120" viewBox="0 0 640 120" fill="none">
+  <defs>
+    <linearGradient id="sf-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="sf-text-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <!-- Icon scaled to fit ~100px height -->
+  <g transform="translate(10, 5) scale(1.72)">
+    <path d="M32 10c-10 4-18 4-18 4v22c0 14 18 22 18 22s18-10 18-22V14s-8 0-18-4z" fill="none" stroke="url(#sf-grad)" stroke-width="3"/>
+    <path d="M24 32l6 6 12-12" fill="none" stroke="url(#sf-grad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- Brand text -->
+  <text x="130" y="78" font-family="Inter, -apple-system, system-ui, sans-serif" font-weight="700" font-size="64" fill="url(#sf-text-grad)">Safe Family</text>
+</svg>

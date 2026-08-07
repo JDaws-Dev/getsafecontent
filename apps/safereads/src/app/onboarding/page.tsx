@@ -48,7 +48,7 @@ export default function OnboardingPage() {
   if (currentUser === undefined) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-parchment-300 border-t-parchment-700" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-cream-2 border-t-accent-700" />
       </div>
     );
   }
@@ -108,10 +108,10 @@ export default function OnboardingPage() {
             key={i}
             className={`h-2 rounded-full transition-all ${
               i === step
-                ? "w-8 bg-parchment-700"
+                ? "w-8 bg-accent-600"
                 : i < step
-                  ? "w-2 bg-parchment-500"
-                  : "w-2 bg-parchment-300"
+                  ? "w-2 bg-accent-500"
+                  : "w-2 bg-accent-200"
             }`}
           />
         ))}
@@ -120,10 +120,10 @@ export default function OnboardingPage() {
       {/* Step 0: Welcome */}
       {step === 0 && (
         <div className="text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-parchment-100">
-            <BookOpen className="h-8 w-8 text-parchment-700" />
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-brand-cream-2">
+            <BookOpen className="h-8 w-8 text-accent-700" />
           </div>
-          <h1 className="font-serif text-3xl font-bold text-ink-900">
+          <h1 className="font-display text-3xl font-bold text-brand-navy">
             Welcome to SafeReads
           </h1>
           <p className="mt-4 text-ink-600">
@@ -136,7 +136,7 @@ export default function OnboardingPage() {
           </p>
           <button
             onClick={() => setStep(1)}
-            className="mt-8 inline-flex items-center gap-2 rounded-lg bg-parchment-700 px-6 py-3 font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+            className="mt-8 inline-flex items-center gap-2 rounded-lg bg-accent-600 px-6 py-3 font-medium text-white transition-colors hover:bg-accent-700"
           >
             Get Started
             <ArrowRight className="h-4 w-4" />
@@ -148,10 +148,10 @@ export default function OnboardingPage() {
       {step === 1 && (
         <div>
           <div className="text-center">
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-parchment-100">
-              <Users className="h-8 w-8 text-parchment-700" />
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-brand-cream-2">
+              <Users className="h-8 w-8 text-accent-700" />
             </div>
-            <h2 className="font-serif text-2xl font-bold text-ink-900">
+            <h2 className="font-display text-2xl font-bold text-brand-navy">
               Add Your Kids
             </h2>
             <p className="mt-2 text-sm text-ink-500">
@@ -166,7 +166,7 @@ export default function OnboardingPage() {
               {kids.map((kid, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between rounded-lg border border-parchment-200 bg-white px-4 py-3"
+                  className="flex items-center justify-between rounded-lg border border-brand-cream-2 bg-white px-4 py-3"
                 >
                   <div className="flex items-center gap-2">
                     <div className={`h-5 w-5 rounded-full ${
@@ -179,7 +179,7 @@ export default function OnboardingPage() {
                       kid.color === "yellow" ? "bg-yellow-400" :
                       "bg-purple-400"
                     }`} />
-                    <span className="font-medium text-ink-900">{kid.name}</span>
+                    <span className="font-medium text-brand-navy">{kid.name}</span>
                     {kid.age !== undefined && (
                       <span className="text-sm text-ink-400">
                         age {kid.age}
@@ -188,7 +188,7 @@ export default function OnboardingPage() {
                   </div>
                   <button
                     onClick={() => removeKid(i)}
-                    className="rounded p-1 text-ink-400 hover:bg-parchment-100 hover:text-ink-600"
+                    className="rounded p-1 text-ink-400 hover:bg-brand-cream-2 hover:text-ink-600"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -199,7 +199,7 @@ export default function OnboardingPage() {
 
           {/* Add kid form or button */}
           {showKidForm ? (
-            <div className="mt-4 rounded-lg border border-parchment-200 bg-white p-4">
+            <div className="mt-4 rounded-lg border border-brand-cream-2 bg-white p-4">
               <KidForm onSubmit={addKid} submitLabel="Add" />
               <button
                 onClick={() => setShowKidForm(false)}
@@ -211,7 +211,7 @@ export default function OnboardingPage() {
           ) : (
             <button
               onClick={() => setShowKidForm(true)}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-parchment-300 px-4 py-3 text-sm text-ink-500 transition-colors hover:border-parchment-500 hover:text-ink-700"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-brand-cream-2 px-4 py-3 text-sm text-ink-500 transition-colors hover:border-accent-300 hover:text-ink-700"
             >
               <Plus className="h-4 w-4" />
               Add a child
@@ -221,13 +221,13 @@ export default function OnboardingPage() {
           <div className="mt-8 flex gap-3">
             <button
               onClick={() => setStep(0)}
-              className="flex-1 rounded-lg border border-parchment-300 px-4 py-3 text-sm font-medium text-ink-600 transition-colors hover:bg-parchment-50"
+              className="flex-1 rounded-lg border border-brand-cream-2 px-4 py-3 text-sm font-medium text-ink-600 transition-colors hover:bg-brand-cream-2"
             >
               Back
             </button>
             <button
               onClick={() => setStep(2)}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-parchment-700 px-4 py-3 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-accent-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-700"
             >
               {kids.length > 0 ? "Continue" : "Skip for now"}
               <ArrowRight className="h-4 w-4" />
@@ -242,7 +242,7 @@ export default function OnboardingPage() {
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
             <Key className="h-8 w-8 text-emerald-600" />
           </div>
-          <h2 className="font-serif text-2xl font-bold text-ink-900">
+          <h2 className="font-display text-2xl font-bold text-brand-navy">
             Your Family Code
           </h2>
           <p className="mt-2 text-sm text-ink-500">
@@ -278,7 +278,7 @@ export default function OnboardingPage() {
             </div>
           ) : (
             <div className="mt-6">
-              <div className="mx-auto h-8 w-48 animate-pulse rounded-lg bg-parchment-200" />
+              <div className="mx-auto h-8 w-48 animate-pulse rounded-lg bg-brand-cream-2" />
               <p className="mt-3 text-xs text-ink-400">Loading your family code...</p>
             </div>
           )}
@@ -286,13 +286,13 @@ export default function OnboardingPage() {
           <div className="mt-8 flex gap-3">
             <button
               onClick={() => setStep(1)}
-              className="flex-1 rounded-lg border border-parchment-300 px-4 py-3 text-sm font-medium text-ink-600 transition-colors hover:bg-parchment-50"
+              className="flex-1 rounded-lg border border-brand-cream-2 px-4 py-3 text-sm font-medium text-ink-600 transition-colors hover:bg-brand-cream-2"
             >
               Back
             </button>
             <button
               onClick={() => setStep(3)}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-parchment-700 px-4 py-3 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-accent-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-700"
             >
               Continue
               <ArrowRight className="h-4 w-4" />
@@ -304,7 +304,7 @@ export default function OnboardingPage() {
       {/* Step 3: Content Preferences */}
       {step === 3 && (
         <div>
-          <h2 className="font-serif text-2xl font-bold text-ink-900">
+          <h2 className="font-display text-2xl font-bold text-brand-navy">
             Reading Comfort Level
           </h2>
           <p className="mt-2 text-ink-600">
@@ -349,11 +349,11 @@ export default function OnboardingPage() {
                 className={`w-full rounded-xl border-2 p-4 text-left transition-all ${
                   preApprovedLevel === option.level
                     ? `${option.border} ${option.bg} ring-2 ${option.ring}`
-                    : "border-parchment-200 bg-white hover:border-parchment-300"
+                    : "border-brand-cream-2 bg-white hover:border-accent-300"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-ink-900">{option.label}</span>
+                  <span className="font-semibold text-brand-navy">{option.label}</span>
                   {option.recommended && (
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
                       RECOMMENDED
@@ -372,13 +372,13 @@ export default function OnboardingPage() {
           <div className="mt-6 flex gap-3">
             <button
               onClick={() => setStep(2)}
-              className="flex-1 rounded-lg border border-parchment-300 px-4 py-3 text-sm font-medium text-ink-600 transition-colors hover:bg-parchment-50"
+              className="flex-1 rounded-lg border border-brand-cream-2 px-4 py-3 text-sm font-medium text-ink-600 transition-colors hover:bg-brand-cream-2"
             >
               Back
             </button>
             <button
               onClick={() => setStep(4)}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-parchment-700 px-4 py-3 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-accent-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-700"
             >
               Continue
               <ArrowRight className="h-4 w-4" />
@@ -393,7 +393,7 @@ export default function OnboardingPage() {
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-verdict-safe/10">
             <BookOpen className="h-8 w-8 text-verdict-safe" />
           </div>
-          <h2 className="font-serif text-2xl font-bold text-ink-900">
+          <h2 className="font-display text-2xl font-bold text-brand-navy">
             You&apos;re All Set
           </h2>
           <p className="mt-2 text-ink-600">
@@ -409,7 +409,7 @@ export default function OnboardingPage() {
             <button
               onClick={handleComplete}
               disabled={saving}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-parchment-700 px-6 py-3 font-medium text-parchment-50 transition-colors hover:bg-parchment-800 disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent-600 px-6 py-3 font-medium text-white transition-colors hover:bg-accent-700 disabled:opacity-50"
             >
               {saving ? "Setting up..." : "Start Searching"}
               {!saving && <ArrowRight className="h-4 w-4" />}

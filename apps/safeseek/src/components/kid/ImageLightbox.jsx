@@ -83,8 +83,8 @@ export default function ImageLightbox({ images, initialIndex, onClose }) {
             {image.source && (
               <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
                 image.source === 'wikipedia'
-                  ? 'bg-white/15 text-blue-200'
-                  : 'bg-white/15 text-cyan-200'
+                  ? 'bg-white/15 text-accent-200'
+                  : 'bg-white/15 text-accent-200'
               }`}>
                 {image.source === 'wikipedia' ? 'Wikipedia' : 'SafeStudy'}
               </span>

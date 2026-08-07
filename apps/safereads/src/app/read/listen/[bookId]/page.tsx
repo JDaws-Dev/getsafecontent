@@ -127,8 +127,8 @@ export default function ListenPage() {
   if (!bookMeta) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-        <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-violet-50">
-          <Headphones className="h-10 w-10 text-violet-300" />
+        <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-accent-50">
+          <Headphones className="h-10 w-10 text-accent-300" />
         </div>
         <p className="mt-5 text-xl font-bold text-gray-700">Audiobook not found</p>
         <p className="mt-2 text-sm text-gray-500">
@@ -136,7 +136,7 @@ export default function ListenPage() {
         </p>
         <Link
           href="/read/home"
-          className="kid-touch mt-5 rounded-full bg-gradient-to-r from-violet-500 to-purple-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-purple-200"
+          className="kid-touch mt-5 rounded-full bg-gradient-to-r from-accent-500 to-accent-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-accent-200"
         >
           Back to Home
         </Link>
@@ -157,7 +157,7 @@ export default function ListenPage() {
 
       {/* Book Header */}
       <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
-        <div className="relative h-52 w-36 flex-shrink-0 overflow-hidden rounded-2xl bg-violet-50 shadow-xl ring-1 ring-violet-200">
+        <div className="relative h-52 w-36 flex-shrink-0 overflow-hidden rounded-2xl bg-accent-50 shadow-xl ring-1 ring-accent-200">
           {bookMeta.coverUrl ? (
             <Image
               src={bookMeta.coverUrl}
@@ -175,24 +175,24 @@ export default function ListenPage() {
             />
           )}
           {/* Headphones badge */}
-          <div className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-violet-500 shadow-md">
+          <div className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-accent-500 shadow-md">
             <Headphones className="h-4 w-4 text-white" />
           </div>
         </div>
 
         <div className="flex flex-col justify-center text-center sm:text-left">
-          <h1 className="text-xl font-bold leading-tight text-gray-900 sm:text-2xl">
+          <h1 className="font-display text-xl font-bold leading-tight text-brand-navy sm:text-2xl">
             {bookMeta.title}
           </h1>
           <p className="mt-1.5 text-sm font-medium text-gray-400">
             {bookMeta.author}
           </p>
           {bookMeta.totalTime && (
-            <p className="mt-2 text-xs text-violet-600">
+            <p className="mt-2 text-xs text-accent-600">
               Total: {bookMeta.totalTime}
             </p>
           )}
-          <span className="mx-auto mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-50 to-purple-50 px-3 py-1.5 text-xs font-bold text-violet-700 ring-1 ring-violet-200 sm:mx-0">
+          <span className="mx-auto mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-gradient-to-r from-accent-50 to-accent-50 px-3 py-1.5 text-xs font-bold text-accent-700 ring-1 ring-accent-200 sm:mx-0">
             <Headphones className="h-3 w-3" />
             Free Audiobook
           </span>
@@ -202,9 +202,9 @@ export default function ListenPage() {
       {/* Audio Player */}
       <div className="mt-8">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl bg-violet-50 py-12 ring-1 ring-violet-200">
-            <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
-            <p className="mt-3 text-sm text-violet-600">Loading audiobook...</p>
+          <div className="flex flex-col items-center justify-center rounded-2xl bg-accent-50 py-12 ring-1 ring-accent-200">
+            <Loader2 className="h-8 w-8 animate-spin text-accent-400" />
+            <p className="mt-3 text-sm text-accent-600">Loading audiobook...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center rounded-2xl bg-red-50 py-12 ring-1 ring-red-200">

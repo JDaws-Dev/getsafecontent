@@ -96,7 +96,7 @@ export default function DashboardLayout({
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-parchment-300 border-t-parchment-700" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-cream-2 border-t-accent-600" />
         </div>
       </div>
     );
@@ -107,7 +107,7 @@ export default function DashboardLayout({
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-parchment-300 border-t-parchment-700" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-cream-2 border-t-accent-600" />
         </div>
       </div>
     );

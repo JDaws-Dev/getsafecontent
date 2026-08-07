@@ -67,12 +67,12 @@ export function AlternativesSuggestions({
 
   return (
     <div className="space-y-3">
-      <h3 className="font-serif text-lg font-bold text-ink-900">
+      <h3 className="font-display text-lg font-bold text-brand-navy">
         Similar Books
       </h3>
 
       {alternatives === null ? (
-        <div className="rounded-xl border border-parchment-200 bg-white p-5 text-center">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-5 text-center">
           <p className="mb-3 text-sm text-ink-500">
             Get AI-powered suggestions for similar books that may be more
             age-appropriate.
@@ -80,7 +80,7 @@ export function AlternativesSuggestions({
           <button
             onClick={handleSuggest}
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-lg bg-parchment-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-parchment-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-accent-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (
               <>
@@ -102,22 +102,22 @@ export function AlternativesSuggestions({
               key={`${alt.title}-${i}`}
               onClick={() => handleNavigate(alt, i)}
               disabled={navigatingIdx !== null}
-              className="w-full rounded-lg border border-parchment-200 bg-white p-4 text-left transition-colors hover:border-parchment-400 hover:bg-parchment-50 disabled:opacity-60"
+              className="w-full rounded-2xl border border-brand-cream-2 bg-white p-4 text-left transition-colors hover:border-accent-400 hover:bg-brand-cream-2 disabled:opacity-60"
             >
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-parchment-100">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-100">
                   {navigatingIdx === i ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-parchment-600" />
+                    <Loader2 className="h-4 w-4 animate-spin text-accent-600" />
                   ) : (
-                    <BookOpen className="h-4 w-4 text-parchment-600" />
+                    <BookOpen className="h-4 w-4 text-accent-600" />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
-                    <span className="font-serif font-semibold text-ink-900">
+                    <span className="font-display font-semibold text-brand-navy">
                       {alt.title}
                     </span>
-                    <span className="shrink-0 rounded bg-parchment-100 px-1.5 py-0.5 text-xs font-medium text-parchment-700">
+                    <span className="shrink-0 rounded bg-accent-100 px-1.5 py-0.5 text-xs font-medium text-accent-700">
                       {alt.ageRange}
                     </span>
                   </div>

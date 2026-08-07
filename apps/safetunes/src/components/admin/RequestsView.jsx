@@ -7,6 +7,7 @@ import { useToast } from '../common/Toast';
 import EmptyState from '../common/EmptyState';
 import { useConvex } from 'convex/react';
 import { SafeTunesLogo } from '../shared/SafeTunesLogo';
+import { useAuth } from '../../contexts/AuthContext';
 
 // ============================================================
 // ICONS (inline SVGs to avoid lucide-react dependency issues)
@@ -275,11 +276,11 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
 
       <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
         {/* Header */}
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-5">
+        <div className="bg-brand-navy text-white p-5">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0 pr-4">
               <p className="text-xs text-white/60 uppercase tracking-wide mb-1">AI Lyrics Review</p>
-              <h2 className="text-xl font-bold truncate">{track.name || track.songName}</h2>
+              <h2 className="font-display text-xl font-bold truncate">{track.name || track.songName}</h2>
               <p className="text-white/70 text-sm truncate">{track.artistName}</p>
             </div>
             <button
@@ -325,10 +326,10 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
               // Highlighted lyrics view
               <div className="p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900 text-sm">Lyrics with Highlights</h3>
+                  <h3 className="font-display font-semibold text-brand-navy text-sm">Lyrics with Highlights</h3>
                   <button
                     onClick={() => setShowHighlightedLyrics(false)}
-                    className="text-xs text-purple-600 font-medium hover:text-purple-700"
+                    className="text-xs text-accent-600 font-medium hover:text-accent-700"
                   >
                     Back to Summary
                   </button>
@@ -357,13 +358,13 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
               <div className="p-5 space-y-4">
                 {/* Overall Rating */}
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">Overall Rating</h3>
+                  <h3 className="font-display font-semibold text-brand-navy mb-2 text-sm">Overall Rating</h3>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`px-3 py-1.5 rounded-lg border font-semibold text-sm ${getRatingColor(review.overallRating)}`}>
                       {review.overallRating?.toUpperCase().replace('-', ' ')}
                     </span>
                     {review.ageRecommendation && (
-                      <span className="px-3 py-1.5 rounded-lg border bg-purple-100 text-purple-800 border-purple-200 font-semibold text-sm">
+                      <span className="px-3 py-1.5 rounded-lg border bg-accent-100 text-accent-800 border-accent-200 font-semibold text-sm">
                         Ages {review.ageRecommendation}
                       </span>
                     )}
@@ -373,7 +374,7 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
                 {/* Summary - improved contrast */}
                 {review.summary && (
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-2 text-sm">Summary</h3>
+                    <h3 className="font-display font-semibold text-brand-navy mb-2 text-sm">Summary</h3>
                     <p className="text-gray-800 bg-gray-50 p-3 rounded-lg text-sm leading-relaxed">{review.summary}</p>
                   </div>
                 )}
@@ -382,12 +383,12 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
                 {review.inappropriateContent?.length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900 text-sm">
+                      <h3 className="font-display font-semibold text-brand-navy text-sm">
                         Content Concerns ({review.inappropriateContent.length})
                       </h3>
                       <button
                         onClick={() => setShowHighlightedLyrics(true)}
-                        className="text-xs text-purple-600 font-medium hover:text-purple-700 flex items-center gap-1"
+                        className="text-xs text-accent-600 font-medium hover:text-accent-700 flex items-center gap-1"
                       >
                         <DocumentIcon className="w-3.5 h-3.5" />
                         View in Lyrics
@@ -416,7 +417,7 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
           ) : (
             !fetchingLyrics && (
               <div className="p-5">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Lyrics</h3>
+                <h3 className="font-display text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Lyrics</h3>
                 {flaggedLines.length > 0 ? (
                   <div className="font-mono text-sm text-gray-700 whitespace-pre-wrap">
                     {renderLyricsWithHighlights()}
@@ -427,7 +428,7 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
                     onChange={(e) => setLyrics(e.target.value)}
                     placeholder="Lyrics will appear here..."
                     rows={14}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm resize-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   />
                 )}
               </div>
@@ -442,7 +443,7 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
               key={reviewLoading ? 'loading' : 'ready'}
               onClick={handleRunReview}
               disabled={reviewLoading || !lyrics.trim()}
-              className="w-full py-3 rounded-xl font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl font-medium text-white bg-accent-600 hover:bg-accent-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
             >
               {reviewLoading && (
                 <LoaderIcon className="w-5 h-5 animate-spin" />
@@ -460,7 +461,7 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
           ) : (
             <button
               onClick={() => setReview(null)}
-              className="w-full py-3 rounded-xl font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 transition"
+              className="w-full py-3 rounded-xl font-medium text-accent-700 bg-accent-100 hover:bg-accent-200 transition"
             >
               View Lyrics Again
             </button>
@@ -679,7 +680,7 @@ function RequestInspectorModal({
   return (
     <div className="fixed inset-0 z-50 bg-white flex flex-col">
       {/* Header */}
-      <div className="relative bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+      <div className="relative bg-brand-navy text-white">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition"
@@ -697,8 +698,8 @@ function RequestInspectorModal({
           )}
 
           <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <p className="text-xs text-purple-300 font-medium mb-1">ALBUM REQUEST</p>
-            <h1 className="text-xl font-bold truncate">{request.albumName}</h1>
+            <p className="text-xs text-accent-300 font-medium mb-1">ALBUM REQUEST</p>
+            <h1 className="font-display text-xl font-bold truncate">{request.albumName}</h1>
             <p className="text-white/70 truncate">{request.artistName}</p>
             {kidProfile && (
               <p className="text-white/50 text-sm mt-1">
@@ -724,18 +725,20 @@ function RequestInspectorModal({
       {/* AI Scan Card - Auto-analyzing */}
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
         {(aiScanState === 'idle' || aiScanState === 'scanning') && (
-          <div className="flex items-center justify-center gap-3 py-3 px-4 bg-purple-50 rounded-xl border-2 border-purple-200">
-            <LoaderIcon className="w-5 h-5 text-purple-600 animate-spin" />
+          <div className="flex items-center justify-center gap-3 py-3 px-4 bg-accent-50 rounded-xl border-2 border-accent-200">
+            <LoaderIcon className="w-5 h-5 text-accent-600 animate-spin" />
             <div>
-              <p className="font-medium text-purple-700 text-sm">AI Safety Scan</p>
-              <p className="text-xs text-purple-500">Analyzing album automatically...</p>
+              <p className="font-medium text-accent-700 text-sm">AI Safety Scan</p>
+              <p className="text-xs text-accent-500">Analyzing album automatically...</p>
             </div>
           </div>
         )}
 
         {aiScanState === 'error' && (
           <div className="flex items-center justify-center gap-3 py-3 px-4 bg-gray-100 rounded-xl border-2 border-gray-200">
-            <span className="text-xl">❓</span>
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 1.875-2 3.272-2 1.933 0 3.5 1.343 3.5 3 0 1.4-1.124 2.575-2.65 2.907-.499.109-.85.554-.85 1.065V15m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             <div>
               <p className="font-medium text-gray-700 text-sm">Scan Unavailable</p>
               <p className="text-xs text-gray-500">Review tracks manually</p>
@@ -755,10 +758,19 @@ function RequestInspectorModal({
               albumOverview.recommendation === 'Likely Safe' ? 'bg-green-100' :
               albumOverview.recommendation === 'Review Recommended' ? 'bg-yellow-100' : 'bg-red-100'
             }`}>
-              <span className="text-xl">
-                {albumOverview.recommendation === 'Likely Safe' ? '✅' :
-                 albumOverview.recommendation === 'Review Recommended' ? '⚠️' : '🚨'}
-              </span>
+              {albumOverview.recommendation === 'Likely Safe' ? (
+                <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              ) : albumOverview.recommendation === 'Review Recommended' ? (
+                <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 5a1 1 0 012 0v5a1 1 0 01-2 0V5zm1 10a1.25 1.25 0 100-2.5A1.25 1.25 0 0010 15z" clipRule="evenodd" />
+                </svg>
+              )}
             </div>
             <div className="flex-1">
               <p className={`font-semibold text-sm ${
@@ -813,7 +825,7 @@ function RequestInspectorModal({
       <div className="flex-1 overflow-y-auto">
         {loadingTracks ? (
           <div className="flex items-center justify-center py-12">
-            <LoaderIcon className="w-8 h-8 text-purple-600" />
+            <LoaderIcon className="w-8 h-8 text-accent-600" />
           </div>
         ) : (
           tracks.map((track, index) => {
@@ -825,7 +837,7 @@ function RequestInspectorModal({
               <div
                 key={track.id}
                 className={`flex items-center gap-3 px-4 py-3 border-b border-gray-100 transition ${
-                  isSelected ? 'bg-purple-50/50' : isFlagged ? 'bg-red-50/30' : 'bg-white'
+                  isSelected ? 'bg-accent-50/50' : isFlagged ? 'bg-red-50/30' : 'bg-white'
                 }`}
               >
                 {/* Play Button */}
@@ -833,7 +845,7 @@ function RequestInspectorModal({
                   onClick={() => handlePlayTrack(track.id)}
                   className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition ${
                     isPlaying
-                      ? 'bg-purple-600 text-white'
+                      ? 'bg-accent-600 text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -863,7 +875,7 @@ function RequestInspectorModal({
                 {/* Lyrics Button */}
                 <button
                   onClick={() => setLyricsTrack(track)}
-                  className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-purple-100 flex items-center gap-1.5 transition text-xs font-medium text-gray-600 hover:text-purple-700"
+                  className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-accent-100 flex items-center gap-1.5 transition text-xs font-medium text-gray-600 hover:text-accent-700"
                 >
                   <DocumentIcon className="w-3.5 h-3.5" />
                   Lyrics
@@ -882,7 +894,7 @@ function RequestInspectorModal({
                   onClick={() => toggleTrack(track.id)}
                   className={`flex-shrink-0 w-6 h-6 rounded-md border-2 flex items-center justify-center transition ${
                     isSelected
-                      ? 'bg-purple-600 border-purple-600'
+                      ? 'bg-accent-600 border-accent-600'
                       : 'bg-white border-gray-300 hover:border-gray-400'
                   }`}
                 >
@@ -904,12 +916,12 @@ function RequestInspectorModal({
           }}
         >
           <div
-            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl p-5 mx-4 max-w-xs w-full animate-scale-in"
+            className="bg-brand-navy rounded-2xl shadow-2xl p-5 mx-4 max-w-xs w-full animate-scale-in"
             onClick={e => e.stopPropagation()}
           >
             {/* Track Info */}
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                 </svg>
@@ -931,7 +943,7 @@ function RequestInspectorModal({
                 onClick={handleSeek}
               >
                 <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all relative"
+                  className="h-full bg-accent-500 rounded-full transition-all relative"
                   style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
                 >
                   <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition" />
@@ -968,7 +980,7 @@ function RequestInspectorModal({
         <button
           onClick={handleApprove}
           disabled={selectedTracks.size === 0 || approving}
-          className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3.5 rounded-xl font-semibold text-white bg-accent-500 hover:bg-accent-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {approving ? (
             <>
@@ -1082,7 +1094,7 @@ function QuickDenySheet({ isOpen, onClose, onSelectReason, requestName, suggeste
 
         {/* Header */}
         <div className="px-5 pb-3 border-b border-gray-100">
-          <h3 className="text-lg font-bold text-gray-900">Why are you denying this?</h3>
+          <h3 className="font-display text-lg font-bold text-brand-navy">Why are you denying this?</h3>
           <p className="text-sm text-gray-500 truncate">"{requestName}"</p>
         </div>
 
@@ -1100,7 +1112,11 @@ function QuickDenySheet({ isOpen, onClose, onSelectReason, requestName, suggeste
                     : 'bg-gray-100 hover:bg-red-50 border-gray-200 hover:border-red-300 text-gray-700 hover:text-red-700'
                 }`}
               >
-                {isPreSelected && <span className="mr-1">→</span>}
+                {isPreSelected && (
+                  <svg className="w-3.5 h-3.5 mr-1 inline-block align-middle" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                )}
                 {reason.label}
               </button>
             );
@@ -1123,7 +1139,7 @@ function QuickDenySheet({ isOpen, onClose, onSelectReason, requestName, suggeste
             onChange={(e) => setCustomNote(e.target.value)}
             placeholder="Add a note for your child (optional)..."
             rows={2}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
           />
         </div>
 
@@ -1262,7 +1278,7 @@ function RequestCard({
   return (
     <>
       <div className={`bg-white rounded-2xl shadow-sm border p-4 hover:shadow-md transition-all ${
-        isSelected ? 'border-purple-400 ring-2 ring-purple-100' : 'border-gray-200'
+        isSelected ? 'border-accent-400 ring-2 ring-accent-100' : 'border-gray-200'
       }`}>
         <div className="flex gap-3">
           {/* Checkbox */}
@@ -1271,7 +1287,7 @@ function RequestCard({
               type="checkbox"
               checked={isSelected}
               onChange={() => onSelect(request._id)}
-              className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+              className="w-5 h-5 rounded border-gray-300 text-accent-600 focus:ring-accent-500 cursor-pointer"
             />
           </div>
 
@@ -1305,12 +1321,12 @@ function RequestCard({
               isPlaying ? 'scale-100' : 'scale-90 opacity-80 group-hover:scale-100 group-hover:opacity-100'
             }`}>
               <div className={`w-7 h-7 rounded-full flex items-center justify-center shadow-lg ${
-                isPlaying ? 'bg-purple-500' : 'bg-white/95'
+                isPlaying ? 'bg-accent-500' : 'bg-white/95'
               }`}>
                 {isPlaying ? (
                   <PauseIcon className="w-3.5 h-3.5 text-white" />
                 ) : (
-                  <PlayIcon className="w-3.5 h-3.5 text-purple-600 ml-0.5" />
+                  <PlayIcon className="w-3.5 h-3.5 text-accent-600 ml-0.5" />
                 )}
               </div>
             </div>
@@ -1322,7 +1338,7 @@ function RequestCard({
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-gray-900 text-base truncate">{name}</h3>
+                  <h3 className="font-display font-bold text-brand-navy text-base truncate">{name}</h3>
                   {isNew && (
                     <span className="flex-shrink-0 px-1.5 py-0.5 bg-blue-500 text-white text-[9px] font-bold rounded">NEW</span>
                   )}
@@ -1334,7 +1350,7 @@ function RequestCard({
               {isAlbum ? (
                 <button
                   onClick={() => onInspect(request)}
-                  className="flex-shrink-0 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition flex items-center gap-1.5 shadow-sm"
+                  className="flex-shrink-0 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-semibold text-sm transition flex items-center gap-1.5 shadow-sm"
                 >
                   <ShieldIcon className="w-4 h-4" />
                   Inspect
@@ -1368,7 +1384,7 @@ function RequestCard({
               {/* Left: Simplified meta info */}
               <div className="flex items-center gap-2 text-xs text-gray-500 min-w-0 flex-wrap">
                 <SafetyBadge status={aiSafetyStatus?.status} isExplicit={isExplicit} albumRecommendation={albumRecommendation} />
-                <span className={`font-medium ${isAlbum ? 'text-blue-600' : 'text-purple-600'}`}>
+                <span className={`font-medium ${isAlbum ? 'text-blue-600' : 'text-accent-600'}`}>
                   {isAlbum ? 'Album' : 'Song'}
                 </span>
                 {kidProfile && (
@@ -1417,7 +1433,7 @@ function RequestCard({
                 {!isAlbum && (
                   <button
                     onClick={() => onViewLyrics(request)}
-                    className="px-2 py-1.5 rounded-lg bg-gray-100 hover:bg-purple-100 transition text-xs font-medium text-gray-600 hover:text-purple-700 whitespace-nowrap"
+                    className="px-2 py-1.5 rounded-lg bg-gray-100 hover:bg-accent-100 transition text-xs font-medium text-gray-600 hover:text-accent-700 whitespace-nowrap"
                   >
                     Lyrics
                   </button>
@@ -1435,8 +1451,8 @@ function RequestCard({
 
         {/* Kid's Note */}
         {request.kidNote && (
-          <div className="mt-3 ml-[108px] bg-purple-50 rounded-lg px-3 py-1.5">
-            <p className="text-xs text-purple-700 italic">&ldquo;{request.kidNote}&rdquo;</p>
+          <div className="mt-3 ml-[108px] bg-accent-50 rounded-lg px-3 py-1.5">
+            <p className="text-xs text-accent-700 italic">&ldquo;{request.kidNote}&rdquo;</p>
           </div>
         )}
       </div>
@@ -1459,13 +1475,14 @@ function RequestCard({
 function RequestsView({ user }) {
   const { showToast, ToastContainer } = useToast();
   const convex = useConvex();
+  const { token } = useAuth();
 
   // Queries
-  const pendingAlbumRequests = useQuery(api.albumRequests.getPendingRequests, user ? { userId: user._id } : 'skip') || [];
-  const pendingSongRequests = useQuery(api.songRequests.getPendingSongRequests, user ? { userId: user._id } : 'skip') || [];
-  const deniedAlbumRequests = useQuery(api.albumRequests.getDeniedRequests, user ? { userId: user._id } : 'skip') || [];
-  const deniedSongRequests = useQuery(api.songRequests.getDeniedSongRequests, user ? { userId: user._id } : 'skip') || [];
-  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id } : 'skip') || [];
+  const pendingAlbumRequests = useQuery(api.albumRequests.getPendingRequests, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
+  const pendingSongRequests = useQuery(api.songRequests.getPendingSongRequests, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
+  const deniedAlbumRequests = useQuery(api.albumRequests.getDeniedRequests, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
+  const deniedSongRequests = useQuery(api.songRequests.getDeniedSongRequests, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
+  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
   const blockedSearches = useQuery(api.blockedSearches.getBlockedSearches, user ? { userId: user._id } : 'skip') || [];
   const unreadBlockedSearchesCount = useQuery(api.blockedSearches.getUnreadBlockedSearchesCount, user ? { userId: user._id } : 'skip') || 0;
 
@@ -1677,9 +1694,9 @@ function RequestsView({ user }) {
           }
         }
 
-        await approveAlbumRequest({ requestId, tracks, hideArtwork });
+        await approveAlbumRequest({ requestId, tracks, hideArtwork, userToken: token ?? undefined });
       } else {
-        await approveSongRequest({ requestId, hideArtwork });
+        await approveSongRequest({ requestId, hideArtwork, userToken: token ?? undefined });
       }
 
       showToast(`${requestName || 'Request'} approved ✓`, 'success');
@@ -1703,7 +1720,7 @@ function RequestsView({ user }) {
         isExplicit: track.isExplicit,
       }));
 
-      await approveAlbumRequest({ requestId: request._id, tracks, hideArtwork });
+      await approveAlbumRequest({ requestId: request._id, tracks, hideArtwork, userToken: token ?? undefined });
 
       if (skippedCount > 0) {
         showToast(`Approved ${selectedTracks.length} songs. ${skippedCount} restricted songs were skipped.`, 'success');
@@ -1721,12 +1738,14 @@ function RequestsView({ user }) {
       if (requestType === 'album') {
         await denyAlbumRequest({
           requestId,
-          denialReason: reason || undefined
+          denialReason: reason || undefined,
+          userToken: token ?? undefined
         });
       } else {
         await denySongRequest({
           requestId,
-          denialReason: reason || undefined
+          denialReason: reason || undefined,
+          userToken: token ?? undefined
         });
       }
 
@@ -1767,7 +1786,7 @@ function RequestsView({ user }) {
 
       try {
         if (request.requestType === 'song') {
-          await approveSongRequest({ requestId: request._id, hideArtwork });
+          await approveSongRequest({ requestId: request._id, hideArtwork, userToken: token ?? undefined });
           approved++;
         } else {
           // For albums, we need tracks - fetch them first
@@ -1781,7 +1800,7 @@ function RequestsView({ user }) {
             durationInMillis: track.attributes?.durationInMillis,
             isExplicit: track.attributes?.contentRating === 'explicit',
           }));
-          await approveAlbumRequest({ requestId: request._id, tracks, hideArtwork });
+          await approveAlbumRequest({ requestId: request._id, tracks, hideArtwork, userToken: token ?? undefined });
           approved++;
         }
       } catch (err) {
@@ -1813,9 +1832,9 @@ function RequestsView({ user }) {
 
       try {
         if (request.requestType === 'song') {
-          await denySongRequest({ requestId: request._id, denialReason: reason || undefined });
+          await denySongRequest({ requestId: request._id, denialReason: reason || undefined, userToken: token ?? undefined });
         } else {
-          await denyAlbumRequest({ requestId: request._id, denialReason: reason || undefined });
+          await denyAlbumRequest({ requestId: request._id, denialReason: reason || undefined, userToken: token ?? undefined });
         }
         denied++;
       } catch (err) {
@@ -1896,7 +1915,7 @@ function RequestsView({ user }) {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Music Requests</h2>
+            <h2 className="font-display text-2xl font-bold text-brand-navy">Music Requests</h2>
             <p className="text-gray-600 text-sm">Review and approve content from your kids</p>
           </div>
 
@@ -1923,7 +1942,7 @@ function RequestsView({ user }) {
                 <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                 </svg>
-                <h3 className="text-sm font-bold text-red-900">Denied History</h3>
+                <h3 className="font-display text-sm font-bold text-red-900">Denied History</h3>
               </div>
               <button
                 onClick={() => setShowDeniedArchive(false)}
@@ -1965,7 +1984,7 @@ function RequestsView({ user }) {
             <button
               onClick={() => { setActiveTab('albums'); setSelectedIds(new Set()); }}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                activeTab === 'albums' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                activeTab === 'albums' ? 'bg-accent-600 text-white' : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
               Albums ({pendingAlbumRequests.length})
@@ -1973,7 +1992,7 @@ function RequestsView({ user }) {
             <button
               onClick={() => { setActiveTab('songs'); setSelectedIds(new Set()); }}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                activeTab === 'songs' ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                activeTab === 'songs' ? 'bg-accent-600 text-white' : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
               Songs ({pendingSongRequests.length})
@@ -2001,7 +2020,7 @@ function RequestsView({ user }) {
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedIds(new Set(currentTabRequests.map(r => r._id)))}
-                className="px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition"
+                className="px-3 py-1.5 text-xs font-medium text-accent-700 bg-accent-50 hover:bg-accent-100 rounded-lg transition"
               >
                 Select All
               </button>
@@ -2045,7 +2064,7 @@ function RequestsView({ user }) {
                         <XIcon className="w-5 h-5 text-red-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 text-sm">"{search.searchQuery}"</h3>
+                        <h3 className="font-display font-semibold text-brand-navy text-sm">"{search.searchQuery}"</h3>
                         <p className="text-xs text-gray-600">{search.kidName}</p>
                         <p className="text-xs text-red-600 mt-1 bg-red-50 px-2 py-1 rounded">{search.blockedReason}</p>
                       </div>
@@ -2104,7 +2123,7 @@ function RequestsView({ user }) {
                 <p className="text-sm font-semibold text-gray-900">{selectedIds.size} selected</p>
                 <button
                   onClick={() => setSelectedIds(new Set())}
-                  className="text-xs text-gray-500 hover:text-purple-600"
+                  className="text-xs text-gray-500 hover:text-accent-600"
                 >
                   Clear
                 </button>
@@ -2122,7 +2141,7 @@ function RequestsView({ user }) {
                 <button
                   onClick={handleBatchApprove}
                   disabled={batchApproving || batchDenying}
-                  className="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold text-sm transition disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2.5 bg-accent-500 hover:bg-accent-600 text-white rounded-xl font-semibold text-sm transition disabled:opacity-50 flex items-center gap-2"
                 >
                   {batchApproving ? (
                     <>
@@ -2173,10 +2192,10 @@ function RequestsView({ user }) {
       {showAuthPrompt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 text-center">
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <SparklesIcon className="w-8 h-8 text-purple-600" />
+            <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <SparklesIcon className="w-8 h-8 text-accent-600" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Connect to Apple Music</h3>
+            <h3 className="font-display text-lg font-semibold text-brand-navy mb-2">Connect to Apple Music</h3>
             <p className="text-gray-600 mb-6">Sign in to preview songs.</p>
             <div className="flex gap-3">
               <button
@@ -2194,7 +2213,7 @@ function RequestsView({ user }) {
                     showToast('Auth failed', 'error');
                   }
                 }}
-                className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium"
+                className="flex-1 px-4 py-2 bg-accent-600 text-white rounded-lg font-medium"
               >
                 Sign In
               </button>
@@ -2224,12 +2243,12 @@ function RequestsView({ user }) {
           }}
         >
           <div
-            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl p-5 mx-4 max-w-xs w-full animate-scale-in"
+            className="bg-brand-navy rounded-2xl shadow-2xl p-5 mx-4 max-w-xs w-full animate-scale-in"
             onClick={e => e.stopPropagation()}
           >
             {/* Track Info */}
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                 </svg>
@@ -2251,7 +2270,7 @@ function RequestsView({ user }) {
                 onClick={handlePreviewSeek}
               >
                 <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all relative"
+                  className="h-full bg-accent-500 rounded-full transition-all relative"
                   style={{ width: `${previewDuration ? (previewCurrentTime / previewDuration) * 100 : 0}%` }}
                 >
                   <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition" />

@@ -4,9 +4,11 @@ import { api } from '../../../convex/_generated/api';
 import musicKitService from '../../config/musickit';
 import { useToast } from '../common/Toast';
 import PlaylistInspector from './PlaylistInspector';
+import { useAuth } from '../../contexts/AuthContext';
 
 function PlaylistImport({ user }) {
   const { showToast, ToastContainer } = useToast();
+  const { token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isMusicKitReady, setIsMusicKitReady] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -31,7 +33,7 @@ function PlaylistImport({ user }) {
   const [importing, setImporting] = useState(false);
 
   // Fetch kid profiles
-  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id } : 'skip') || [];
+  const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
 
   // Debug logging
   useEffect(() => {
@@ -746,7 +748,7 @@ function PlaylistImport({ user }) {
         <svg className="w-12 h-12 text-yellow-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h3 className="font-semibold text-yellow-900 mb-2">MusicKit Not Configured</h3>
+        <h3 className="font-display font-semibold text-yellow-900 mb-2">MusicKit Not Configured</h3>
         <p className="text-sm text-yellow-800">
           Configure MusicKit to import playlists from Apple Music.
         </p>
@@ -760,9 +762,9 @@ function PlaylistImport({ user }) {
       <div className="space-y-6">
         {/* Browse/Search for Playlists */}
         <div>
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Import Apple Music Playlists</h2>
+              <h2 className="font-display text-xl font-bold text-brand-navy mb-2">Import Apple Music Playlists</h2>
               <p className="text-sm text-gray-600">
                 Import songs from your library playlists or search the Apple Music catalog
               </p>
@@ -774,8 +776,8 @@ function PlaylistImport({ user }) {
                 onClick={() => setActiveTab('library')}
                 className={`px-4 py-2 font-medium text-sm border-b-2 transition ${
                   activeTab === 'library'
-                    ? 'border-purple-600 text-purple-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-accent-600 text-accent-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
                 }`}
               >
                 My Playlists
@@ -784,8 +786,8 @@ function PlaylistImport({ user }) {
                 onClick={() => setActiveTab('catalog')}
                 className={`px-4 py-2 font-medium text-sm border-b-2 transition ${
                   activeTab === 'catalog'
-                    ? 'border-purple-600 text-purple-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-accent-600 text-accent-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
                 }`}
               >
                 Search Catalog
@@ -797,22 +799,22 @@ function PlaylistImport({ user }) {
               <>
                 {!isAuthorized ? (
                   <div className="text-center py-12">
-                    <svg className="w-16 h-16 mx-auto mb-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-16 h-16 mx-auto mb-4 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                     </svg>
-                    <h3 className="font-semibold text-gray-900 mb-2">Connect to Apple Music</h3>
+                    <h3 className="font-display font-semibold text-brand-navy mb-2">Connect to Apple Music</h3>
                     <p className="text-gray-600 mb-4">Sign in to access your personal playlists</p>
                     <button
                       onClick={handleAuthorize}
                       disabled={loading}
-                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold transition shadow-lg disabled:opacity-50"
+                      className="px-6 py-3 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-semibold transition shadow-lg disabled:opacity-50"
                     >
                       {loading ? 'Connecting...' : 'Connect Apple Music'}
                     </button>
                   </div>
                 ) : loading ? (
                   <div className="text-center py-12">
-                    <svg className="animate-spin w-12 h-12 text-purple-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin w-12 h-12 text-accent-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -826,7 +828,7 @@ function PlaylistImport({ user }) {
                     <p>No playlists found in your library</p>
                     <button
                       onClick={loadLibraryPlaylists}
-                      className="mt-4 text-purple-600 hover:text-purple-700 font-medium"
+                      className="mt-4 text-accent-600 hover:text-accent-700 font-medium"
                     >
                       Refresh
                     </button>
@@ -837,7 +839,7 @@ function PlaylistImport({ user }) {
                       <button
                         key={playlist.id}
                         onClick={() => handleSelectPlaylist(playlist, true)}
-                        className="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 text-left transition border border-gray-200 hover:border-purple-300"
+                        className="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 text-left transition border border-gray-200 hover:border-accent-300"
                       >
                         <div className="flex items-start space-x-3">
                           {playlist.attributes.artwork?.url ? (
@@ -847,14 +849,14 @@ function PlaylistImport({ user }) {
                               className="w-16 h-16 rounded-lg flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <div className="w-16 h-16 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0">
                               <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                               </svg>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 truncate">{playlist.attributes.name}</h3>
+                            <h3 className="font-display font-semibold text-brand-navy truncate">{playlist.attributes.name}</h3>
                             <p className="text-sm text-gray-600">My Library</p>
                             {playlist.attributes.description?.standard && (
                               <p className="text-xs text-gray-500 mt-1 line-clamp-2">{playlist.attributes.description.standard}</p>
@@ -882,12 +884,12 @@ function PlaylistImport({ user }) {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search playlists..."
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-transparent"
                     />
                     <button
                       type="submit"
                       disabled={loading || !searchQuery.trim()}
-                      className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold transition shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-semibold transition shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <>
@@ -926,7 +928,7 @@ function PlaylistImport({ user }) {
                       <button
                         key={playlist.id}
                         onClick={() => handleSelectPlaylist(playlist, false)}
-                        className="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 text-left transition border border-gray-200 hover:border-purple-300"
+                        className="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 text-left transition border border-gray-200 hover:border-accent-300"
                       >
                         <div className="flex items-start space-x-3">
                           {playlist.attributes.artwork ? (
@@ -936,14 +938,14 @@ function PlaylistImport({ user }) {
                               className="w-16 h-16 rounded-lg flex-shrink-0"
                             />
                           ) : (
-                            <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <div className="w-16 h-16 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0">
                               <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                               </svg>
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 truncate">{playlist.attributes.name}</h3>
+                            <h3 className="font-display font-semibold text-brand-navy truncate">{playlist.attributes.name}</h3>
                             <p className="text-sm text-gray-600">{playlist.attributes.curatorName || 'Apple Music'}</p>
                             {playlist.attributes.description?.standard && (
                               <p className="text-xs text-gray-500 mt-1 line-clamp-2">{playlist.attributes.description.standard}</p>

@@ -119,7 +119,7 @@ export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="font-serif text-xl font-bold text-ink-900">
+      <h2 className="font-display text-xl font-bold text-brand-navy">
         Content Review
       </h2>
 
@@ -147,9 +147,9 @@ export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
           </div>
         </>
       ) : access && !access.hasAccess ? (
-        <div className="rounded-xl border border-parchment-200 bg-white p-6 text-center">
-          <Sparkles className="mx-auto h-8 w-8 text-parchment-400" />
-          <p className="mt-3 font-serif text-lg font-bold text-ink-900">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-6 text-center">
+          <Sparkles className="mx-auto h-8 w-8 text-accent-400" />
+          <p className="mt-3 font-display text-lg font-bold text-brand-navy">
             Your 7-day trial has expired
           </p>
           <p className="mt-1 text-sm text-ink-500">
@@ -163,7 +163,7 @@ export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
           </button>
         </div>
       ) : (
-        <div className="rounded-xl border border-parchment-200 bg-white p-6 text-center">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-6 text-center">
           <p className="mb-4 text-sm text-ink-600">
             Get an objective content review of this book.
           </p>

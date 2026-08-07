@@ -152,7 +152,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
           {/* Custom Instructions */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <MessageSquare className="w-4 h-4 text-blue-500" />
+              <MessageSquare className="w-4 h-4 text-accent-500" />
               <h3 className="font-semibold text-gray-900 text-sm">Instructions for SafeStudy</h3>
             </div>
             <p className="text-xs text-gray-500 mb-2">
@@ -162,7 +162,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
               value={customInstructions}
               onChange={(e) => { setCustomInstructions(e.target.value); setSaved(false); }}
               rows={3}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[16px] resize-none"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent text-[16px] resize-none"
               placeholder="e.g., She's homeschooled and studying biology this semester. She loves dinosaurs and space."
             />
           </div>
@@ -177,7 +177,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
               type="button"
               onClick={() => { setAllowImageSearch(!allowImageSearch); setSaved(false); }}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                allowImageSearch ? 'bg-blue-500' : 'bg-gray-300'
+                allowImageSearch ? 'bg-accent-500' : 'bg-gray-300'
               }`}
             >
               <span
@@ -191,7 +191,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
           {/* Lexile Reading Level */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <BookOpen className="w-4 h-4 text-purple-500" />
+              <BookOpen className="w-4 h-4 text-accent-500" />
               <h3 className="font-semibold text-gray-900 text-sm">Reading Level</h3>
             </div>
             <p className="text-xs text-gray-500 mb-2">
@@ -200,7 +200,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
             <select
               value={lexileLevel}
               onChange={(e) => { setLexileLevel(e.target.value); setSaved(false); }}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-[16px]"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent text-[16px]"
             >
               <option value="auto">Auto (based on age)</option>
               <option value="K">Kindergarten</option>
@@ -222,7 +222,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
           {/* Accessibility Needs */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Shield className="w-4 h-4 text-indigo-500" />
+              <Shield className="w-4 h-4 text-accent-500" />
               <h3 className="font-semibold text-gray-900 text-sm">Accessibility</h3>
             </div>
             <p className="text-xs text-gray-500 mb-3">
@@ -239,7 +239,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
                   key={need.id}
                   className={`flex items-start gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer transition ${
                     accessibilityNeeds.includes(need.id)
-                      ? 'bg-indigo-50 border border-indigo-200'
+                      ? 'bg-accent-50 border border-accent-200'
                       : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'
                   }`}
                 >
@@ -254,7 +254,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
                       );
                       setSaved(false);
                     }}
-                    className="w-4 h-4 mt-0.5 text-indigo-500 border-gray-300 rounded focus:ring-indigo-500"
+                    className="w-4 h-4 mt-0.5 text-accent-500 border-gray-300 rounded focus:ring-accent-500"
                   />
                   <div>
                     <span className="text-sm text-gray-900 font-medium">{need.label}</span>
@@ -272,7 +272,7 @@ export default function KidProfileCustomize({ profile, onClose }) {
             className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition active:scale-[0.98] ${
               saved
                 ? 'bg-green-500 text-white'
-                : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white'
+                : 'bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 text-white'
             } disabled:opacity-50`}
           >
             <Save className="w-4 h-4" />

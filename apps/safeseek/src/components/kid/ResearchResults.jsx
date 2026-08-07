@@ -31,7 +31,7 @@ export default function ResearchResults({
           </p>
           <button
             onClick={onSwitchToLearn}
-            className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline py-1 inline-flex items-center gap-1"
+            className="text-sm text-accent-600 dark:text-accent-400 font-medium hover:underline py-1 inline-flex items-center gap-1"
           >
             Switch to Learn mode <ChevronRight className="w-3.5 h-3.5" />
           </button>

@@ -54,7 +54,7 @@ export function KidSelector({ kidProfiles, selectedKidId, onSelectKid }) {
               onClick={() => setIsOpen(!isOpen)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-base transition-all ${
                 selectedKid
-                  ? 'bg-purple-600 text-white shadow-md hover:bg-purple-700'
+                  ? 'bg-accent-500 text-white shadow-md hover:bg-accent-600'
                   : 'bg-gray-200 text-gray-700'
               }`}
             >
@@ -85,7 +85,7 @@ export function KidSelector({ kidProfiles, selectedKidId, onSelectKid }) {
                         setIsOpen(false);
                       }}
                       className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
-                        kid._id === selectedKidId ? 'bg-purple-50' : ''
+                        kid._id === selectedKidId ? 'bg-accent-50' : ''
                       }`}
                     >
                       <div className={`w-10 h-10 rounded-full ${getColorClass(kid.color)} flex items-center justify-center p-2 shadow-sm`}>
@@ -93,7 +93,7 @@ export function KidSelector({ kidProfiles, selectedKidId, onSelectKid }) {
                       </div>
                       <span className="font-medium text-gray-900">{kid.name}</span>
                       {kid._id === selectedKidId && (
-                        <svg className="w-5 h-5 text-purple-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-5 h-5 text-accent-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       )}
@@ -159,8 +159,8 @@ export function SimpleRow({
           onClick={onPreview}
           className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
             isPlaying
-              ? 'bg-purple-600 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600'
+              ? 'bg-accent-600 text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-accent-100 hover:text-accent-600'
           }`}
           title="Preview"
         >
@@ -228,15 +228,15 @@ export function CollapsibleSection({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   const colorClasses = {
-    purple: 'bg-purple-600 hover:bg-purple-700',
-    pink: 'bg-pink-600 hover:bg-pink-700',
-    green: 'bg-green-600 hover:bg-green-700',
+    purple: 'bg-accent-500 hover:bg-accent-600',
+    pink: 'bg-accent-500 hover:bg-accent-600',
+    green: 'bg-accent-500 hover:bg-accent-600',
   };
 
   const isEmpty = count === 0;
 
   return (
-    <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200">
+    <div className="rounded-2xl overflow-hidden shadow-sm border border-gray-100">
       {/* Clickable Header */}
       <button
         onClick={() => !isEmpty && setIsExpanded(!isExpanded)}
@@ -245,7 +245,7 @@ export function CollapsibleSection({
         }`}
         disabled={isEmpty}
       >
-        <h2 className="text-white font-semibold text-base flex items-center gap-2">
+        <h2 className="font-display text-white font-semibold text-base flex items-center gap-2">
           {label}
           <span className="text-white/70 font-normal">({count})</span>
         </h2>
@@ -283,14 +283,14 @@ export function CollapsibleSection({
 // ============================================
 export function SectionHeader({ label, count, color = 'purple' }) {
   const colorClasses = {
-    purple: 'bg-purple-600',
-    pink: 'bg-pink-600',
-    green: 'bg-green-600',
+    purple: 'bg-accent-500',
+    pink: 'bg-accent-500',
+    green: 'bg-accent-500',
   };
 
   return (
-    <div className={`${colorClasses[color]} px-4 py-3 rounded-t-xl`}>
-      <h2 className="text-white font-semibold text-base">
+    <div className={`${colorClasses[color]} px-4 py-3 rounded-t-2xl`}>
+      <h2 className="font-display text-white font-semibold text-base">
         {label}
         {count !== undefined && (
           <span className="ml-2 text-white/70 font-normal">({count})</span>
@@ -305,8 +305,8 @@ export function SectionHeader({ label, count, color = 'purple' }) {
 // ============================================
 export function SimpleList({ children, hasHeader = true }) {
   return (
-    <div className={`bg-white shadow-sm border border-gray-200 divide-y divide-gray-100 overflow-hidden ${
-      hasHeader ? 'rounded-b-xl border-t-0' : 'rounded-xl'
+    <div className={`bg-white shadow-sm border border-gray-100 divide-y divide-gray-100 overflow-hidden ${
+      hasHeader ? 'rounded-b-2xl border-t-0' : 'rounded-2xl'
     }`}>
       {children}
     </div>
@@ -483,8 +483,8 @@ export function DiscoverList({
   if (totalItems === 0) {
     return (
       <div className="space-y-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-          <svg className="w-16 h-16 mx-auto text-pink-300 mb-4" fill="currentColor" viewBox="0 0 20 20">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+          <svg className="w-16 h-16 mx-auto text-accent-300 mb-4" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
           <p className="text-gray-500 font-medium">Discover Pool is Empty</p>
@@ -499,19 +499,19 @@ export function DiscoverList({
   return (
     <div className="space-y-4">
       {/* Artists Section */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <button
           onClick={() => setArtistsSectionExpanded(!artistsSectionExpanded)}
-          className="w-full p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-colors"
+          className="w-full p-4 sm:p-5 flex items-center justify-between bg-accent-50 hover:bg-accent-100 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
             <div className="text-left">
-              <h3 className="text-lg font-semibold text-gray-900">Artists</h3>
+              <h3 className="font-display text-lg font-semibold text-brand-navy">Artists</h3>
               <p className="text-sm text-gray-500">{artists.length} artists</p>
             </div>
           </div>
@@ -544,10 +544,10 @@ export function DiscoverList({
                       {/* Artist Row - Click to expand/collapse */}
                       <button
                         onClick={() => setExpandedArtist(isExpanded ? null : artist.name)}
-                        className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left ${isExpanded ? 'bg-purple-50' : ''}`}
+                        className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors text-left ${isExpanded ? 'bg-accent-50' : ''}`}
                       >
                         {/* Artist Avatar - Round like Library */}
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <div className="w-12 h-12 rounded-full bg-accent-400 flex items-center justify-center flex-shrink-0 overflow-hidden">
                           {artworkUrl ? (
                             <img src={artworkUrl} alt={artist.name} className="w-full h-full object-cover rounded-full" />
                           ) : (
@@ -574,7 +574,7 @@ export function DiscoverList({
 
                       {/* Expanded Albums Grid - inline below artist */}
                       {isExpanded && (
-                        <div className="bg-purple-50/50 p-4">
+                        <div className="bg-accent-50/50 p-4">
                           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                             {artist.albums.map((album) => {
                               const albumId = album.appleAlbumId || `${album.albumName}-${album.artistName}`;
@@ -598,8 +598,8 @@ export function DiscoverList({
                                         className="w-full h-full object-cover rounded-lg shadow-sm"
                                       />
                                     ) : (
-                                      <div className="w-full h-full bg-gradient-to-br from-pink-100 to-purple-100 rounded-lg flex items-center justify-center shadow-sm">
-                                        <svg className="w-10 h-10 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
+                                      <div className="w-full h-full bg-accent-100 rounded-lg flex items-center justify-center shadow-sm">
+                                        <svg className="w-10 h-10 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
                                           <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                                         </svg>
                                       </div>
@@ -662,19 +662,19 @@ export function DiscoverList({
       </div>
 
       {/* Albums Section - Shows all albums */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <button
           onClick={() => setAlbumsSectionExpanded(!albumsSectionExpanded)}
-          className="w-full p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 transition-colors"
+          className="w-full p-4 sm:p-5 flex items-center justify-between bg-accent-50 hover:bg-accent-100 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
               </svg>
             </div>
             <div className="text-left">
-              <h3 className="text-lg font-semibold text-gray-900">Albums</h3>
+              <h3 className="font-display text-lg font-semibold text-brand-navy">Albums</h3>
               <p className="text-sm text-gray-500">{albums?.length || 0} albums</p>
             </div>
           </div>
@@ -722,8 +722,8 @@ export function DiscoverList({
                             className="w-full h-full object-cover rounded-xl shadow-md group-hover:shadow-lg transition-shadow"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-pink-100 to-purple-100 rounded-xl flex items-center justify-center shadow-md">
-                            <svg className="w-12 h-12 text-pink-400" fill="currentColor" viewBox="0 0 20 20">
+                          <div className="w-full h-full bg-accent-100 rounded-xl flex items-center justify-center shadow-md">
+                            <svg className="w-12 h-12 text-accent-400" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                             </svg>
                           </div>
@@ -783,19 +783,19 @@ export function DiscoverList({
       </div>
 
       {/* Playlists Section - Matches Library tab style */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <button
           onClick={() => setPlaylistsSectionExpanded(!playlistsSectionExpanded)}
-          className="w-full p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 transition-colors"
+          className="w-full p-4 sm:p-5 flex items-center justify-between bg-accent-50 hover:bg-accent-100 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
             </div>
             <div className="text-left">
-              <h3 className="text-lg font-semibold text-gray-900">Playlists</h3>
+              <h3 className="font-display text-lg font-semibold text-brand-navy">Playlists</h3>
               <p className="text-sm text-gray-500">{playlists?.length || 0} playlists</p>
             </div>
           </div>
@@ -840,7 +840,7 @@ export function DiscoverList({
                             className="w-full h-full object-cover rounded-xl shadow-md group-hover:shadow-lg transition-shadow"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl flex items-center justify-center shadow-md">
+                          <div className="w-full h-full bg-accent-400 rounded-xl flex items-center justify-center shadow-md">
                             <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                             </svg>
@@ -1074,7 +1074,7 @@ export function LibraryArtistsList({
                 className="w-12 h-12 rounded-full object-cover shadow-sm flex-shrink-0"
               />
             ) : (
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
+              <div className="w-12 h-12 bg-accent-400 rounded-full flex items-center justify-center shadow-sm flex-shrink-0">
                 <span className="text-white font-bold text-lg">
                   {artist.name.charAt(0).toUpperCase()}
                 </span>

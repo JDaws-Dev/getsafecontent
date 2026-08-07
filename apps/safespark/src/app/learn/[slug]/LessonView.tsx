@@ -81,17 +81,17 @@ const TRACK_THEMES: Record<
   }
 > = {
   talk: {
-    heroGradient: 'bg-gradient-to-br from-violet-100 via-violet-50 to-white',
-    heroIconChip: 'bg-violet-600 text-white ring-4 ring-violet-100',
-    bleedIcon: 'text-violet-300',
-    accentText: 'text-violet-700',
-    accentRing: 'ring-violet-200',
-    accentBorderHover: 'hover:border-violet-300',
-    accentSideStripe: 'bg-violet-500',
-    listBullet: 'bg-violet-500',
-    ctaBg: 'bg-violet-600',
-    ctaBgHover: 'hover:bg-violet-700',
-    progressBar: 'bg-violet-500',
+    heroGradient: 'bg-gradient-to-br from-accent-100 via-accent-50 to-white',
+    heroIconChip: 'bg-accent-600 text-brand-navy ring-4 ring-accent-100',
+    bleedIcon: 'text-accent-300',
+    accentText: 'text-accent-700',
+    accentRing: 'ring-accent-200',
+    accentBorderHover: 'hover:border-accent-300',
+    accentSideStripe: 'bg-accent-500',
+    listBullet: 'bg-accent-500',
+    ctaBg: 'bg-accent-600',
+    ctaBgHover: 'hover:bg-accent-700',
+    progressBar: 'bg-accent-500',
   },
   think: {
     heroGradient: 'bg-gradient-to-br from-sky-100 via-sky-50 to-white',
@@ -153,15 +153,15 @@ export function LessonView({ slug }: { slug: string }) {
   const { previous, next, index } = getAdjacentLessons(slug);
 
   if (!mounted || !kidSessionToken) {
-    return <main className="min-h-screen bg-slate-50" />;
+    return <main className="min-h-screen bg-brand-cream" />;
   }
 
   // Shouldn't happen — page.tsx calls notFound() — but guard anyway.
   if (!lesson) {
     return (
-      <main className="min-h-screen bg-slate-50 px-6 py-16 text-center">
+      <main className="min-h-screen bg-brand-cream px-6 py-16 text-center">
         <p className="text-sm text-slate-500">Lesson not found.</p>
-        <Link href="/learn" className="mt-4 inline-block text-sm font-semibold text-violet-700">
+        <Link href="/learn" className="mt-4 inline-block text-sm font-semibold text-accent-700">
           ← Back to lessons
         </Link>
       </main>
@@ -180,13 +180,13 @@ export function LessonView({ slug }: { slug: string }) {
   const progressPct = (lessonNumber / totalLessons) * 100;
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-brand-cream text-slate-900">
       <KidHeader
         familyCode={familyCode}
         rightSlot={
           <Link
             href="/make"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 lg:hidden"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-brand-cream lg:hidden"
           >
             Skip to building
             <ArrowRight className="h-4 w-4" />
@@ -376,15 +376,15 @@ function SectionRenderer({
       // violet (lightbulb energy), warning is always amber (caution).
       // The left edge gets a thick colored stripe so callouts stand out
       // even when scanning.
-      const stripeCls = isWarning ? 'bg-amber-500' : 'bg-violet-500';
+      const stripeCls = isWarning ? 'bg-amber-500' : 'bg-accent-500';
       const bgCls = isWarning
         ? 'bg-amber-50 border-amber-200'
-        : 'bg-violet-50 border-violet-200';
+        : 'bg-accent-50 border-accent-200';
       const iconChipCls = isWarning
         ? 'bg-amber-500 text-white'
-        : 'bg-violet-500 text-white';
-      const textCls = isWarning ? 'text-amber-900' : 'text-violet-900';
-      const labelCls = isWarning ? 'text-amber-700' : 'text-violet-700';
+        : 'bg-accent-500 text-brand-navy';
+      const textCls = isWarning ? 'text-amber-900' : 'text-accent-900';
+      const labelCls = isWarning ? 'text-amber-700' : 'text-accent-700';
       const label = isWarning ? 'Heads up' : 'Tip';
 
       return (

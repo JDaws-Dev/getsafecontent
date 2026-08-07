@@ -1,34 +1,17 @@
 // Content filter to block inappropriate search queries and results
 // This helps protect kids from accessing or requesting inappropriate content
-
-// Whitelist of allowed terms that might contain blocked keywords
-const ALLOWED_TERMS = [
-  'harry potter',
-  'potter',
-  'potterhead',
-  'assassin',
-  'assassination',
-  'classic',
-  'classical',
-  'bass',
-  'bassist',
-  'brass',
-  'grass',
-  'glass',
-  'class',
-  'mass',
-  'pass',
-  'password',
-  'compass',
-  'fantastic',
-  'bombastic',
-];
+//
+// Matching is WHOLE-WORD (with common plural/tense suffixes) so that bad words
+// are not pulled out of innocent longer words — e.g. "kill" must not match
+// "Killarney", "butt" must not match "Butterflies", "hell" must not match
+// "Hello". Terms that legitimately need prefix matching (variants like
+// masturbate/masturbation) live in INAPPROPRIATE_STEMS below.
 
 const INAPPROPRIATE_KEYWORDS = [
   // Explicit sexual terms
   'sex', 'sexy', 'porn', 'xxx', 'nude', 'naked', 'erotic', 'nsfw',
-  'dildo', 'vibrator', 'orgasm', 'masturbat', 'horny', 'boner',
-  'stripper', 'strip', 'prostitut', 'hooker', 'pimp',
+  'dildo', 'vibrator', 'orgasm', 'horny', 'boner',
+  'stripper', 'strip', 'hooker', 'pimp',
 
   // Sexual body parts and variations
   'boob', 'breast', 'tit', 'nipple', 'areola',
@@ -58,6 +41,19 @@ const INAPPROPRIATE_KEYWORDS = [
   'demon', 'satanic', 'devil', '666', 'witch', 'occult'
 ];
 
+// Stems that intentionally match any continuation (prefix match). Only put a
+// term here when its variants can't be covered by the standard suffixes and
+// no innocent word shares the stem.
+const INAPPROPRIATE_STEMS = [
+  'masturbat',  // masturbate, masturbation, masturbating
+  'prostitut',  // prostitute, prostitution
+];
+
+// Common, low-false-positive suffixes appended to whole-word keyword matches.
+// Deliberately excludes "er"/"ers" — those would resurrect false positives
+// like "butt" -> "butter" (the BTS song) and "shoot" -> "shooter".
+const KEYWORD_SUFFIXES = '(?:s|es|ed|ing)?';
+
 /**
  * Check if text contains inappropriate content
  * @param {string} text - Text to check (song name, album name, artist name)
@@ -68,22 +64,23 @@ export function containsInappropriateContent(text) {
 
   const lowerText = text.toLowerCase();
 
-  // Check whitelist first - if text contains an allowed term, don't block it
-  for (const allowedTerm of ALLOWED_TERMS) {
-    if (lowerText.includes(allowedTerm)) {
-      console.log(`[ContentFilter] Allowed due to whitelist: "${allowedTerm}" in "${text}"`);
-      return null;
-    }
-  }
-
-  // Check for exact word matches (with word boundaries)
+  // Whole-word keyword matches (plus common plural/tense suffixes). Word
+  // boundaries on BOTH sides prevent matching inside larger words, so
+  // "Killarney", "Butterflies", "Hello", "Titanic", "Classy" are not blocked.
   for (const keyword of INAPPROPRIATE_KEYWORDS) {
-    // Use word boundary regex to avoid false positives
-    // e.g., "sass" shouldn't match "ass", "class" shouldn't match "ass"
-    const regex = new RegExp(`\\b${keyword}\\w*\\b`, 'i');
+    const regex = new RegExp(`\\b${keyword}${KEYWORD_SUFFIXES}\\b`, 'i');
     if (regex.test(lowerText)) {
       console.log(`[ContentFilter] Blocked due to keyword: "${keyword}" in "${text}"`);
       return { matched: true, keyword };
+    }
+  }
+
+  // Stem matches (prefix — matches any continuation of the stem).
+  for (const stem of INAPPROPRIATE_STEMS) {
+    const regex = new RegExp(`\\b${stem}\\w*`, 'i');
+    if (regex.test(lowerText)) {
+      console.log(`[ContentFilter] Blocked due to stem: "${stem}" in "${text}"`);
+      return { matched: true, keyword: stem };
     }
   }
 

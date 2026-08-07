@@ -6,6 +6,7 @@ import PlaylistImport from './PlaylistImport';
 import musicKitService from '../../config/musickit';
 import LyricsModal from './LyricsModal';
 import { useToast } from '../common/Toast';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Unified Music Management Component
@@ -15,6 +16,7 @@ import { useToast } from '../common/Toast';
  */
 function UnifiedMusicManagement({ user }) {
   const { showToast, ToastContainer } = useToast();
+  const { token } = useAuth();
 
   // ============================================
   // CONTEXT STATE: Library or Discover
@@ -81,7 +83,7 @@ function UnifiedMusicManagement({ user }) {
   const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id } : 'skip') || [];
 
   // Library data
-  const libraryAlbums = useQuery(api.albums.getApprovedAlbums, user && context === 'library' ? { userId: user._id } : 'skip') || [];
+  const libraryAlbums = useQuery(api.albums.getApprovedAlbums, user && context === 'library' ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
   const librarySongs = useQuery(api.songs.getApprovedSongs, user && context === 'library' ? { userId: user._id } : 'skip') || [];
   const playlists = useQuery(api.playlists.getPlaylists, user && context === 'library' ? { userId: user._id } : 'skip') || [];
 
@@ -90,12 +92,12 @@ function UnifiedMusicManagement({ user }) {
   const featuredSongs = useQuery(api.featured.getFeaturedSongs, user && context === 'discover' ? { userId: user._id } : 'skip') || [];
 
   // All approved data for search checks
-  const allApprovedAlbums = useQuery(api.albums.getApprovedAlbums, user ? { userId: user._id } : 'skip') || [];
+  const allApprovedAlbums = useQuery(api.albums.getApprovedAlbums, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
   const allApprovedSongs = useQuery(api.songs.getApprovedSongs, user ? { userId: user._id } : 'skip') || [];
 
   // Denied requests
-  const deniedAlbumRequests = useQuery(api.albumRequests.getDeniedRequests, user ? { userId: user._id } : 'skip') || [];
-  const deniedSongRequests = useQuery(api.songRequests.getDeniedSongRequests, user ? { userId: user._id } : 'skip') || [];
+  const deniedAlbumRequests = useQuery(api.albumRequests.getDeniedRequests, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
+  const deniedSongRequests = useQuery(api.songRequests.getDeniedSongRequests, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
 
   // ============================================
   // MUTATIONS

@@ -1,9 +1,11 @@
 import { v } from "convex/values";
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, query } from "./_generated/server";
 import { cascadeDeleteUser } from "./lib/cascadeDelete";
 
-// Get all users with kid counts for admin dashboard
-export const getAllUsersWithKids = query({
+// Get all users with kid counts for admin dashboard.
+// Internal-only: called solely by the key-gated /admin HTTP route (http.ts).
+// Was a public query dumping every family's PII (emails, family codes, counts).
+export const getAllUsersWithKids = internalQuery({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();

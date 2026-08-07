@@ -41,7 +41,7 @@ export function WishlistButton({ bookId }: { bookId: Id<"books"> }) {
     <>
       <button
         onClick={() => setDialogOpen(true)}
-        className="flex items-center gap-2 rounded-lg border border-parchment-300 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-parchment-50"
+        className="flex items-center gap-2 rounded-lg border border-brand-cream-2 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-cream-2"
       >
         <Heart className="h-4 w-4" />
         Add to Wishlist
@@ -49,10 +49,10 @@ export function WishlistButton({ bookId }: { bookId: Id<"books"> }) {
 
       <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-ink-900/40 data-[state=open]:animate-in data-[state=open]:fade-in" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl bg-parchment-50 p-6 shadow-xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95">
+          <Dialog.Overlay className="fixed inset-0 bg-brand-navy/40 data-[state=open]:animate-in data-[state=open]:fade-in" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 max-h-[85vh] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-brand-cream p-6 shadow-xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in data-[state=open]:zoom-in-95">
             <div className="mb-4 flex items-center justify-between">
-              <Dialog.Title className="font-serif text-lg font-bold text-ink-900">
+              <Dialog.Title className="font-display text-lg font-bold text-brand-navy">
                 Add to Wishlist
               </Dialog.Title>
               <Dialog.Close asChild>
@@ -126,7 +126,7 @@ function WishlistKidRow({
         className="flex w-full items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-left transition-colors hover:bg-emerald-100 disabled:opacity-50"
       >
         <div>
-          <span className="font-medium text-ink-900">{kid.name}</span>
+          <span className="font-medium text-brand-navy">{kid.name}</span>
           {kid.age !== undefined && (
             <span className="ml-2 text-xs text-ink-400">Age {kid.age}</span>
           )}
@@ -146,15 +146,15 @@ function WishlistKidRow({
   }
 
   return (
-    <div className="rounded-lg border border-parchment-200 bg-white transition-colors">
+    <div className="rounded-2xl border border-brand-cream-2 bg-white transition-colors">
       {!showStatusPicker ? (
         <button
           onClick={() => setShowStatusPicker(true)}
           disabled={loading || isOnWishlist === undefined}
-          className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-parchment-50 disabled:opacity-50"
+          className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-brand-cream-2 disabled:opacity-50"
         >
           <div>
-            <span className="font-medium text-ink-900">{kid.name}</span>
+            <span className="font-medium text-brand-navy">{kid.name}</span>
             {kid.age !== undefined && (
               <span className="ml-2 text-xs text-ink-400">Age {kid.age}</span>
             )}
@@ -172,7 +172,7 @@ function WishlistKidRow({
                 key={opt.value}
                 onClick={() => handleAdd(opt.value)}
                 disabled={loading}
-                className="flex items-center gap-1.5 rounded-md border border-parchment-200 px-2.5 py-2 text-xs font-medium text-ink-600 transition-colors hover:bg-parchment-50 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-md border border-brand-cream-2 px-2.5 py-2 text-xs font-medium text-ink-600 transition-colors hover:bg-brand-cream-2 disabled:opacity-50"
               >
                 {opt.icon}
                 {opt.label}

@@ -40,7 +40,7 @@ export default function ParentSetupPage() {
       <main className="flex-1 flex items-center justify-center p-6 text-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-700">Parent setup is for parents.</h1>
-          <Link href="/" className="inline-block mt-4 text-violet-600 hover:text-violet-800">
+          <Link href="/" className="inline-block mt-4 text-accent-600 hover:text-accent-800">
             ← back
           </Link>
         </div>
@@ -52,17 +52,17 @@ export default function ParentSetupPage() {
     return (
       <main className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-md w-full space-y-6 text-center">
-          <h1 className="text-3xl font-bold text-slate-800">Profile created 🎉</h1>
+          <h1 className="text-3xl font-bold text-slate-800">Profile created</h1>
           <p className="text-slate-600">
             This is your <strong>family code</strong>. Everyone in your family uses the same one
             to sign in on any device.
           </p>
-          <div className="rounded-3xl bg-gradient-to-br from-violet-500 via-pink-500 to-amber-500 text-white p-8 shadow-xl">
+          <div className="rounded-3xl bg-gradient-to-br from-accent-400 via-accent-500 to-brand-peach-start text-brand-navy p-8 shadow-xl">
             <p className="text-sm opacity-80 uppercase tracking-widest mb-2">Family code</p>
             <p className="text-6xl font-bold font-mono tracking-widest">{createdJoinCode}</p>
           </div>
           <p className="text-sm text-slate-500">
-            On {displayName}&apos;s device, go to <span className="font-mono text-violet-600">/start</span> →
+            On {displayName}&apos;s device, go to <span className="font-mono text-accent-600">/start</span> →
             enter the code → tap their tile → they&apos;re in.
           </p>
 
@@ -75,13 +75,13 @@ export default function ParentSetupPage() {
                 setInterests([]);
                 setCustomNote('');
               }}
-              className="px-5 py-2 rounded-2xl bg-white text-violet-600 border border-violet-200 font-medium hover:bg-violet-50"
+              className="px-5 py-2 rounded-2xl bg-white text-accent-600 border border-accent-200 font-medium hover:bg-accent-50"
             >
               Add another profile
             </button>
             <Link
               href="/parent"
-              className="px-5 py-3 rounded-2xl bg-violet-500 text-white font-semibold hover:bg-violet-600"
+              className="px-5 py-3 rounded-2xl bg-accent-500 text-brand-navy font-semibold hover:bg-accent-600"
             >
               Done — go to dashboard
             </Link>
@@ -119,7 +119,7 @@ export default function ParentSetupPage() {
     <main className="flex-1 overflow-y-auto px-4 sm:px-8 py-8">
       <div className="max-w-2xl mx-auto space-y-6">
         <header>
-          <p className="text-xs font-semibold uppercase tracking-widest text-violet-500">
+          <p className="text-xs font-semibold uppercase tracking-widest text-accent-500">
             Parent setup
           </p>
           <h1 className="text-3xl font-bold text-slate-800">Tell me about this profile</h1>
@@ -136,7 +136,7 @@ export default function ParentSetupPage() {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Bella, Theo, Maya…"
-              className="w-full px-4 py-3 rounded-xl border border-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="w-full px-4 py-3 rounded-xl border border-accent-200 focus:outline-none focus:ring-2 focus:ring-accent-400"
             />
           </Field>
 
@@ -149,7 +149,7 @@ export default function ParentSetupPage() {
                 value={age}
                 onChange={(e) => setAge(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
                 placeholder="12"
-                className="w-full px-4 py-3 rounded-xl border border-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                className="w-full px-4 py-3 rounded-xl border border-accent-200 focus:outline-none focus:ring-2 focus:ring-accent-400"
               />
             </Field>
             <Field label="Boy or girl" required>
@@ -159,8 +159,8 @@ export default function ParentSetupPage() {
                   onClick={() => setSex('girl')}
                   className={
                     sex === 'girl'
-                      ? 'flex-1 px-4 py-3 rounded-xl border-2 border-violet-500 bg-violet-50 text-violet-700 font-semibold'
-                      : 'flex-1 px-4 py-3 rounded-xl border border-violet-200 text-slate-600 hover:bg-violet-50'
+                      ? 'flex-1 px-4 py-3 rounded-xl border-2 border-accent-500 bg-accent-50 text-accent-700 font-semibold'
+                      : 'flex-1 px-4 py-3 rounded-xl border border-accent-200 text-slate-600 hover:bg-accent-50'
                   }
                 >
                   Girl
@@ -170,8 +170,8 @@ export default function ParentSetupPage() {
                   onClick={() => setSex('boy')}
                   className={
                     sex === 'boy'
-                      ? 'flex-1 px-4 py-3 rounded-xl border-2 border-violet-500 bg-violet-50 text-violet-700 font-semibold'
-                      : 'flex-1 px-4 py-3 rounded-xl border border-violet-200 text-slate-600 hover:bg-violet-50'
+                      ? 'flex-1 px-4 py-3 rounded-xl border-2 border-accent-500 bg-accent-50 text-accent-700 font-semibold'
+                      : 'flex-1 px-4 py-3 rounded-xl border border-accent-200 text-slate-600 hover:bg-accent-50'
                   }
                 >
                   Boy
@@ -187,7 +187,7 @@ export default function ParentSetupPage() {
                 <button
                   key={i}
                   onClick={() => setInterests(interests.filter((x) => x !== i))}
-                  className="px-3 py-1 rounded-full bg-violet-500 text-white text-sm"
+                  className="px-3 py-1 rounded-full bg-accent-500 text-brand-navy text-sm"
                 >
                   {i} ✕
                 </button>
@@ -198,7 +198,7 @@ export default function ParentSetupPage() {
                 <button
                   key={s}
                   onClick={() => setInterests([...interests, s])}
-                  className="px-3 py-1 rounded-full bg-violet-50 text-violet-700 text-sm hover:bg-violet-100 border border-violet-100"
+                  className="px-3 py-1 rounded-full bg-accent-50 text-accent-700 text-sm hover:bg-accent-100 border border-accent-100"
                 >
                   + {s}
                 </button>
@@ -214,7 +214,7 @@ export default function ParentSetupPage() {
                   e.preventDefault();
                 }
               }}
-              className="w-full mt-2 px-4 py-2 rounded-xl border border-violet-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+              className="w-full mt-2 px-4 py-2 rounded-xl border border-accent-200 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400"
             />
           </Field>
 
@@ -250,7 +250,7 @@ export default function ParentSetupPage() {
               onChange={(e) => setCustomNote(e.target.value)}
               rows={3}
               placeholder="They're in 7th grade homeschool. They tend to get discouraged when something doesn't work right away. They love when you ask about their dance routines."
-              className="w-full px-4 py-3 rounded-xl border border-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-400 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-accent-200 focus:outline-none focus:ring-2 focus:ring-accent-400 resize-none"
             />
           </Field>
         </div>
@@ -258,14 +258,14 @@ export default function ParentSetupPage() {
         <div className="flex gap-3 pt-4">
           <Link
             href="/parent"
-            className="px-5 py-3 rounded-2xl bg-white text-slate-500 border border-slate-200 hover:bg-slate-50"
+            className="px-5 py-3 rounded-2xl bg-white text-slate-500 border border-slate-200 hover:bg-brand-cream"
           >
             Cancel
           </Link>
           <button
             disabled={!displayName.trim() || age === '' || submitting}
             onClick={handleSubmit}
-            className="flex-1 px-5 py-3 rounded-2xl bg-violet-500 text-white font-semibold hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="flex-1 px-5 py-3 rounded-2xl bg-accent-500 text-brand-navy font-semibold hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             {submitting ? 'Creating…' : 'Create profile + get join code'}
           </button>

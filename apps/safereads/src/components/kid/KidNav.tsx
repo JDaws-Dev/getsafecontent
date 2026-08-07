@@ -211,7 +211,7 @@ export function KidNav() {
             >
               <X className="h-5 w-5" />
             </button>
-            <p className="mb-1 text-center text-lg font-bold text-gray-900">Jump to another app</p>
+            <p className="mb-1 text-center font-display text-lg font-bold text-brand-navy">Jump to another app</p>
             <p className="mb-5 text-center text-sm text-gray-500">
               Same family code — no need to type it again.
             </p>

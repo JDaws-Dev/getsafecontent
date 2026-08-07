@@ -460,3 +460,24 @@ export const syncOAuthUserStatusInternal = internalMutation({
     return { success: true };
   },
 });
+
+export const syncFamilyCodeByEmailInternal = internalMutation({
+  args: {
+    email: v.string(),
+    code: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .first();
+    if (!user) {
+      return { found: false, familyCode: null, updated: false };
+    }
+    if (args.code) {
+      await ctx.db.patch(user._id, { familyCode: args.code });
+      return { found: true, familyCode: args.code, updated: true };
+    }
+    return { found: true, familyCode: user.familyCode ?? null, updated: false };
+  },
+});

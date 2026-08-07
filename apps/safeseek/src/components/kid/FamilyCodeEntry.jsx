@@ -56,18 +56,18 @@ export default function FamilyCodeEntry({ codeInput, setCodeInput, error, codeSh
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center px-6">
+    <div className="relative min-h-screen overflow-hidden bg-brand-cream dark:bg-gray-900 flex items-center justify-center px-6">
       {/* Decorative background blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-gradient-to-br from-blue-200/40 to-cyan-200/40 dark:from-blue-500/10 dark:to-cyan-500/10 blur-3xl" />
-        <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-gradient-to-br from-cyan-200/40 to-sky-200/40 dark:from-cyan-500/10 dark:to-sky-500/10 blur-3xl" />
-        <Sparkles className="absolute top-[12%] right-[14%] w-6 h-6 text-cyan-300 dark:text-cyan-500/60 animate-pulse" aria-hidden="true" />
-        <Rocket className="absolute bottom-[18%] left-[10%] w-7 h-7 text-blue-300 dark:text-blue-500/60 rotate-12" aria-hidden="true" />
+        <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-gradient-to-br from-accent-200/40 to-accent-200/40 dark:from-accent-500/10 dark:to-accent-500/10 blur-3xl" />
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-gradient-to-br from-accent-200/40 to-accent-200/40 dark:from-accent-500/10 dark:to-accent-500/10 blur-3xl" />
+        <Sparkles className="absolute top-[12%] right-[14%] w-6 h-6 text-accent-300 dark:text-accent-500/60 animate-pulse" aria-hidden="true" />
+        <Rocket className="absolute bottom-[18%] left-[10%] w-7 h-7 text-accent-300 dark:text-accent-500/60 rotate-12" aria-hidden="true" />
       </div>
 
       <div className="relative w-full max-w-sm text-center">
         {/* Logo */}
-        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-blue-500/20">
+        <div className="w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-accent-500/20">
           <Search className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
@@ -101,7 +101,7 @@ export default function FamilyCodeEntry({ codeInput, setCodeInput, error, codeSh
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
                 onPaste={handlePaste}
-                className="w-11 h-14 sm:w-12 sm:h-16 text-center text-2xl font-mono font-bold bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900/40 focus:border-blue-500 uppercase transition-all duration-150 shadow-sm"
+                className="w-11 h-14 sm:w-12 sm:h-16 text-center text-2xl font-mono font-bold bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-accent-200 dark:focus:ring-accent-900/40 focus:border-accent-500 uppercase transition-all duration-150 shadow-sm"
                 aria-label={`Family code character ${i + 1}`}
               />
             ))}
@@ -110,7 +110,7 @@ export default function FamilyCodeEntry({ codeInput, setCodeInput, error, codeSh
           <button
             type="submit"
             disabled={codeInput.length < CODE_LENGTH}
-            className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-700 dark:disabled:to-gray-700 text-white py-3 rounded-xl font-bold text-lg shadow-md shadow-blue-500/20 transition-all duration-200 disabled:cursor-not-allowed disabled:shadow-none active:scale-[0.98]"
+            className="w-full bg-gradient-to-r from-accent-500 to-accent-500 hover:from-accent-600 hover:to-accent-600 disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-700 dark:disabled:to-gray-700 text-white py-3 rounded-xl font-bold text-lg shadow-md shadow-accent-500/20 transition-all duration-200 disabled:cursor-not-allowed disabled:shadow-none active:scale-[0.98]"
           >
             Let&rsquo;s Go! &rarr;
           </button>
@@ -118,7 +118,7 @@ export default function FamilyCodeEntry({ codeInput, setCodeInput, error, codeSh
 
         <div className="mt-8 rounded-2xl bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-100 dark:border-gray-700 p-4">
           <p className="flex items-start gap-2 text-left text-sm text-gray-600 dark:text-gray-300">
-            <HelpCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500 dark:text-blue-400" aria-hidden="true" />
+            <HelpCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-accent-500 dark:text-accent-400" aria-hidden="true" />
             <span>
               <span className="font-semibold">Don&rsquo;t have a code?</span> Ask your parent &mdash; it&rsquo;s 6 letters and numbers.
             </span>

@@ -33,13 +33,13 @@ export function SearchBar({ onSearch, loading, initialQuery = "", placeholder = 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="w-full rounded-lg border border-parchment-200 bg-white py-3 pl-10 pr-20 text-sm text-ink-900 placeholder:text-ink-400 focus:border-parchment-400 focus:outline-none focus:ring-2 focus:ring-parchment-300 sm:pr-24 sm:text-base"
+          className="w-full rounded-lg border border-brand-cream-2 bg-white py-3 pl-10 pr-20 text-sm text-brand-navy placeholder:text-ink-400 focus:border-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-300 sm:pr-24 sm:text-base"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={loading || !query.trim()}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-parchment-700 p-2 text-sm font-medium text-parchment-50 transition-colors hover:bg-parchment-800 disabled:opacity-50 sm:px-4 sm:py-1.5"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-accent-700 p-2 text-sm font-medium text-accent-50 transition-colors hover:bg-accent-800 disabled:opacity-50 sm:px-4 sm:py-1.5"
           aria-label="Search"
         >
           {loading ? (

@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { requireActor, requireKidProfileAccess, requireUserAccess } from './actors';
+import { hashPin } from './safeAuth';
 
 /**
  * Kid profiles — parent-owned, kid-claimed via join code.
@@ -40,6 +41,8 @@ export const create = mutation({
       throw new Error('Not authorized to create kid profiles for this parent');
     }
     const now = Date.now();
+    // Never store a kid PIN in the clear — hash before it touches the DB.
+    const pinToStore = args.pin ? await hashPin(args.pin) : undefined;
 
     // Resolve/auto-create the parent's family — every parent has one
     let family = await ctx.db
@@ -87,7 +90,7 @@ export const create = mutation({
         interests: args.interests,
         avoidTopics: args.avoidTopics ?? [],
         customNote: args.customNote,
-        pin: args.pin,
+        pin: pinToStore,
         familyId: family?._id,
         updatedAt: now,
       });
@@ -103,7 +106,7 @@ export const create = mutation({
       interests: args.interests,
       avoidTopics: args.avoidTopics ?? [],
       customNote: args.customNote,
-      pin: args.pin,
+      pin: pinToStore,
       avatarColor,
       personalityLayers: [],
       createdAt: now,

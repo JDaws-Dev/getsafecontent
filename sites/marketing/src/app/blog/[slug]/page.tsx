@@ -7,7 +7,7 @@ import SocialShare from "@/components/blog/SocialShare";
 import SignupCTA from "@/components/blog/SignupCTA";
 import EmailCapture from "@/components/blog/EmailCapture";
 import { posts } from "#site/content";
-import { Calendar, ArrowLeft, User } from "lucide-react";
+import { Calendar, ArrowLeft, ArrowRight, User, Clock } from "lucide-react";
 import { MDXContent } from "@/components/blog/MDXContent";
 
 interface PostPageProps {
@@ -167,6 +167,22 @@ export default async function PostPage({ params }: PostPageProps) {
     )
     .slice(0, 3);
 
+  // Previous / Next post (chronological, across all categories)
+  const chronological = posts
+    .filter((p) => p.published && new Date(p.date) <= now)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const currentIndex = chronological.findIndex((p) => p.slug === post.slug);
+  const newerPost = currentIndex > 0 ? chronological[currentIndex - 1] : null;
+  const olderPost =
+    currentIndex >= 0 && currentIndex < chronological.length - 1
+      ? chronological[currentIndex + 1]
+      : null;
+
+  // Rough reading-time estimate. `post.body` is compiled MDX, so this over-counts
+  // by whatever JSX overhead there is — still better than nothing for the sidebar.
+  const estimatedWords = (post.body || "").length / 6;
+  const readingMinutes = Math.max(1, Math.round(estimatedWords / 220));
+
   return (
     <>
       <Header />
@@ -181,7 +197,8 @@ export default async function PostPage({ params }: PostPageProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
         />
 
-        <article className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <article className="min-w-0">
           {/* Back link */}
           <Link
             href="/blog"
@@ -220,6 +237,10 @@ export default async function PostPage({ params }: PostPageProps) {
                   day: "numeric",
                   year: "numeric",
                 })}
+              </span>
+              <span className="flex items-center">
+                <Clock className="w-4 h-4 mr-1.5" />
+                {readingMinutes} min read
               </span>
             </div>
 
@@ -276,7 +297,143 @@ export default async function PostPage({ params }: PostPageProps) {
               }
             />
           </div>
-        </article>
+
+          {/* Previous / Next post navigation */}
+          {(olderPost || newerPost) && (
+            <nav
+              aria-label="Post navigation"
+              className="mt-12 grid gap-4 sm:grid-cols-2"
+            >
+              {olderPost ? (
+                <Link
+                  href={olderPost.permalink}
+                  className="group card-soft p-5 flex flex-col text-left hover:-translate-y-0.5 transition-transform"
+                >
+                  <span className="text-xs font-medium uppercase tracking-wider text-navy/40 flex items-center gap-1">
+                    <ArrowLeft className="w-3 h-3" />
+                    Previous
+                  </span>
+                  <span className="mt-2 font-semibold text-navy group-hover:text-indigo-600 transition-colors line-clamp-2">
+                    {olderPost.title}
+                  </span>
+                </Link>
+              ) : (
+                <div className="hidden sm:block" />
+              )}
+              {newerPost ? (
+                <Link
+                  href={newerPost.permalink}
+                  className="group card-soft p-5 flex flex-col text-right sm:text-right hover:-translate-y-0.5 transition-transform"
+                >
+                  <span className="text-xs font-medium uppercase tracking-wider text-navy/40 flex items-center justify-end gap-1">
+                    Next
+                    <ArrowRight className="w-3 h-3" />
+                  </span>
+                  <span className="mt-2 font-semibold text-navy group-hover:text-indigo-600 transition-colors line-clamp-2">
+                    {newerPost.title}
+                  </span>
+                </Link>
+              ) : (
+                <div className="hidden sm:block" />
+              )}
+            </nav>
+          )}
+          </article>
+
+          {/* Right rail sidebar (lg+) */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24 space-y-5">
+              {Array.isArray(post.toc) && post.toc.length > 0 && (
+                <nav
+                  aria-label="Table of contents"
+                  className="card-soft p-5"
+                >
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-navy/40 mb-3">
+                    On this page
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    {(post.toc as Array<{ title: string; url?: string; items?: unknown[] }>).map(
+                      (item, i) => (
+                        <li key={i}>
+                          <span className="text-navy/80 leading-snug">
+                            {item.title}
+                          </span>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </nav>
+              )}
+
+              <div className="card-soft p-5">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-navy/40 mb-3">
+                  About the author
+                </h3>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                    {post.author.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-navy text-sm">{post.author}</p>
+                    <p className="text-xs text-navy/60 leading-relaxed mt-1">
+                      Founder of Safe Family &mdash; a homeschool dad building
+                      parental controls he&rsquo;d actually use for his own kids.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card-soft p-5">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-navy/40 mb-3">
+                  Reading time
+                </h3>
+                <p className="text-navy flex items-center gap-2 text-sm">
+                  <Clock className="w-4 h-4 text-navy/60" />
+                  ~{readingMinutes} minute{readingMinutes === 1 ? "" : "s"}
+                </p>
+                <p className="mt-4 text-xs text-navy/60">
+                  Published{" "}
+                  {new Date(post.date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-5 text-white">
+                <h3 className="font-semibold text-sm mb-1">Get the newsletter</h3>
+                <p className="text-xs text-white/85 leading-relaxed mb-3">
+                  New posts + homeschool parenting ideas. No spam, ever.
+                </p>
+                <Link
+                  href="/#pricing"
+                  className="inline-flex items-center justify-center w-full bg-white/20 hover:bg-white/30 text-white text-sm font-semibold px-3 py-2 rounded-lg transition-colors"
+                >
+                  Try Safe Family free
+                </Link>
+              </div>
+
+              {post.tags.length > 0 && (
+                <div className="card-soft p-5">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-navy/40 mb-3">
+                    Tagged
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {post.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-xs bg-cream-dark text-navy/70 px-2.5 py-1 rounded-full"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
 
         {/* Related posts */}
         {relatedPosts.length > 0 && (

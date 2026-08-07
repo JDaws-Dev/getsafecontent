@@ -61,7 +61,7 @@ export default function KidSearchPage() {
   if (!kidId) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-200 border-t-purple-600" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-200 border-t-accent-600" />
       </div>
     );
   }
@@ -77,10 +77,10 @@ export default function KidSearchPage() {
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-gray-800">Find Books</h1>
+          <h1 className="text-xl font-bold font-display text-brand-navy">Find Books</h1>
           <p className="text-xs text-gray-400">Search, browse, or discover something new</p>
         </div>
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-purple-600 shadow-md">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-accent-400 to-accent-600 shadow-md">
           <BookOpen className="h-4 w-4 text-white" />
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function KidSearchPage() {
           onClick={() => setActiveTab("books")}
           className={`kid-touch min-h-[44px] flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
             activeTab === "books"
-              ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white shadow-md"
+              ? "bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md"
               : "text-gray-400 hover:text-gray-600"
           }`}
         >
@@ -130,7 +130,7 @@ export default function KidSearchPage() {
           onClick={() => setActiveTab("audio")}
           className={`kid-touch min-h-[44px] flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
             activeTab === "audio"
-              ? "bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-md"
+              ? "bg-gradient-to-r from-accent-500 to-accent-600 text-white shadow-md"
               : "text-gray-400 hover:text-gray-600"
           }`}
         >

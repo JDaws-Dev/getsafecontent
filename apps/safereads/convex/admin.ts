@@ -1,5 +1,6 @@
-import { query, mutation, internalMutation, QueryCtx, MutationCtx } from "./_generated/server";
+import { query, mutation, internalMutation, internalQuery, QueryCtx, MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
+import { resolveReaderIdentity } from "./identity";
 
 // Admin emails - add your email here
 const ADMIN_EMAILS = ["jedaws@gmail.com", "jeremiah@getsafefamily.com"];
@@ -139,7 +140,9 @@ export const isAdmin = query({
  * Get all users with stats for admin dashboard.
  * Called from HTTP endpoint (no auth check - endpoint handles auth).
  */
-export const getAllUsersWithStats = query({
+// Internal-only: called solely by the key-gated admin dashboard HTTP action
+// (adminDashboard.ts). Was a public query dumping all families' PII + stats.
+export const getAllUsersWithStats = internalQuery({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();
@@ -296,15 +299,16 @@ export const deleteUserByEmailInternal = internalMutation({
  * Uses the same deletion logic as deleteUserByEmailInternal.
  */
 export const deleteOwnAccount = mutation({
-  args: { email: v.string() },
+  args: { userToken: v.string() },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
-      .first();
+    // Resolve identity from the verified Marketing JWT — never trust a
+    // caller-supplied email. Previously this took { email } and deleted that
+    // account with no auth check: anyone could wipe any family's entire
+    // account (kids, wishlists, search history, chats) by passing their email.
+    const user = await resolveReaderIdentity(ctx, args.userToken);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new Error("Please sign in again.");
     }
 
     // Track deletion counts

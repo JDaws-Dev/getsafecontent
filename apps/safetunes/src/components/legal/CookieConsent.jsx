@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 // Check if running in native iOS app or Android TWA
 const isNativeApp = typeof window !== 'undefined' && (
@@ -21,9 +22,21 @@ const isNativeApp = typeof window !== 'undefined' && (
  *
  * Note: Hidden in native apps (iOS/Android TWA) where tracking is disabled
  */
+// Kid-facing routes. Kids can't legally consent and the banner is COPPA optics
+// + confusing to a 9-year-old.
+const KID_ROUTE = /^\/(play|player|child-login|kids)(\/|$)/;
+
 export function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+
+  // This component mounts once at the router root and never unmounts, so the
+  // kid-route check has to track navigation. Reading window.location.pathname
+  // once on mount only caught kids who DEEP-LINKED to the player — a parent who
+  // landed on "/" and then walked to the kid's player carried the pending
+  // banner with them and it fired over the kid's screen.
+  const { pathname } = useLocation();
+  const isKidRoute = KID_ROUTE.test(pathname);
 
   useEffect(() => {
     // Don't show cookie banner in native apps - tracking is disabled anyway
@@ -31,17 +44,44 @@ export function CookieConsent() {
       return;
     }
 
+    // Navigating onto a kid route also retracts a banner that's already up.
+    if (isKidRoute) {
+      setShowBanner(false);
+      return;
+    }
+
     // Check if user has already made a choice
     const consent = localStorage.getItem('cookie-consent');
-    if (!consent) {
-      // Show banner after a short delay for better UX
-      setTimeout(() => setShowBanner(true), 1000);
-    } else {
-      // Apply saved consent preferences
+    if (consent) {
       const consentData = JSON.parse(consent);
       applyConsent(consentData);
+      return;
     }
-  }, []);
+
+    // Don't cover the hero CTA on first paint. Trigger after the user scrolls
+    // past the fold OR after ~6s of dwell, whichever comes first.
+    let timerId;
+    const onScroll = () => {
+      if (window.scrollY > 400) {
+        setShowBanner(true);
+        cleanup();
+      }
+    };
+    const cleanup = () => {
+      window.removeEventListener('scroll', onScroll);
+      if (timerId) clearTimeout(timerId);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    timerId = setTimeout(() => {
+      setShowBanner(true);
+      cleanup();
+    }, 6000);
+    return cleanup;
+  }, [isKidRoute]);
+
+  // Belt-and-braces: never render over a kid screen, even if a race put the
+  // banner up in the same tick as the navigation.
+  if (isKidRoute) return null;
 
   const applyConsent = (consent) => {
     // Store consent data globally for other components to check

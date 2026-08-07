@@ -27,11 +27,11 @@ export function SubscriptionSuccessModal({ onClose }: SubscriptionSuccessModalPr
         </button>
 
         {/* Celebration icon */}
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-parchment-100 to-parchment-200">
-          <Sparkles className="h-10 w-10 text-parchment-700" />
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-accent-100 to-accent-200">
+          <Sparkles className="h-10 w-10 text-accent-700" />
         </div>
 
-        <h2 className="mt-6 text-center font-serif text-2xl font-bold text-ink-900">
+        <h2 className="mt-6 text-center font-display text-2xl font-bold text-brand-navy">
           Welcome to SafeReads!
         </h2>
 
@@ -42,20 +42,20 @@ export function SubscriptionSuccessModal({ onClose }: SubscriptionSuccessModalPr
         {/* Benefits reminder */}
         <div className="mt-6 space-y-3">
           <div className="flex items-center gap-3 text-sm text-ink-700">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-parchment-100">
-              <Infinity className="h-4 w-4 text-parchment-700" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-100">
+              <Infinity className="h-4 w-4 text-accent-700" />
             </div>
             <span>Unlimited book reviews</span>
           </div>
           <div className="flex items-center gap-3 text-sm text-ink-700">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-parchment-100">
-              <BookOpen className="h-4 w-4 text-parchment-700" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-100">
+              <BookOpen className="h-4 w-4 text-accent-700" />
             </div>
             <span>Full content breakdowns</span>
           </div>
           <div className="flex items-center gap-3 text-sm text-ink-700">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-parchment-100">
-              <Heart className="h-4 w-4 text-parchment-700" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-100">
+              <Heart className="h-4 w-4 text-accent-700" />
             </div>
             <span>Priority support</span>
           </div>

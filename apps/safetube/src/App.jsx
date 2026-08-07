@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SubscriptionSync } from './hooks/useSubscriptionSync';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -104,6 +105,7 @@ export default function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
+        <SubscriptionSync />
         <BrowserRouter>
           <AppRoutes />
         </BrowserRouter>

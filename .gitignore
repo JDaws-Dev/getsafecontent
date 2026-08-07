@@ -100,3 +100,9 @@ screenshots-archive/
 
 # Codex CLI scratch
 .codex/
+
+# Design-eval scratch screenshots
+eval/
+
+# Customer PII / revenue exports — never commit these (permanent in git history)
+docs/user-master-list-*.csv

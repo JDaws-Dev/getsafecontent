@@ -171,6 +171,9 @@ export const canWatch = query({
       const end = limit.allowedEndHour;
 
       // Handle overnight windows (e.g., 6-22 means 6am to 10pm)
+      // Field names mirror what the KidPlayer modal reads (allowedStartHour /
+      // allowedEndHour / minutesRemaining); the shorter aliases are kept for
+      // any older callers.
       if (start <= end) {
         // Normal window (e.g., 8am to 8pm)
         if (currentHour < start || currentHour >= end) {
@@ -179,7 +182,10 @@ export const canWatch = query({
             reason: "outside_hours",
             allowedStart: start,
             allowedEnd: end,
+            allowedStartHour: start,
+            allowedEndHour: end,
             remainingMinutes: null,
+            minutesRemaining: null,
           };
         }
       } else {
@@ -190,7 +196,10 @@ export const canWatch = query({
             reason: "outside_hours",
             allowedStart: start,
             allowedEnd: end,
+            allowedStartHour: start,
+            allowedEndHour: end,
             remainingMinutes: null,
+            minutesRemaining: null,
           };
         }
       }
@@ -224,8 +233,10 @@ export const canWatch = query({
         canWatch: false,
         reason: "limit_reached",
         dailyLimit,
+        dailyLimitMinutes: dailyLimit,
         watchedMinutes,
         remainingMinutes: 0,
+        minutesRemaining: 0,
       };
     }
 
@@ -233,8 +244,10 @@ export const canWatch = query({
       canWatch: true,
       reason: null,
       dailyLimit,
+      dailyLimitMinutes: dailyLimit,
       watchedMinutes,
       remainingMinutes,
+      minutesRemaining: remainingMinutes,
     };
   },
 });

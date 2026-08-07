@@ -1,29 +1,32 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Fonts */
-  --font-sans: var(--font-inter);
+  /* Fonts — Safe Family "glow-up": Quicksand (body) + Fredoka (display) */
+  --font-sans: var(--font-quicksand);
+  --font-display: var(--font-fredoka);
   --font-serif: var(--font-serif);
 
-  /* Safe Family brand colors (shared across all apps) */
-  --color-brand-cream: #FDF8F3;
-  --color-brand-cream-dark: #F5EDE4;
-  --color-brand-navy: #1a1a2e;
+  /* Safe Family brand colors (shared VERBATIM across all 5 apps) */
+  --color-brand-cream: #FBF6EF;
+  --color-brand-cream-2: #F3EADD;
+  --color-brand-cream-dark: #F3EADD;
+  --color-brand-navy: #221D2E;
   --color-brand-navy-light: #2d2d44;
+  --color-brand-ink-soft: #6A6275;
   --color-brand-peach-start: #F5A962;
   --color-brand-peach-end: #E88B6A;
 
-  /* Parchment palette (SafeReads accent - amber/brown for books) */
-  --color-parchment-50: #fdf8f0;
-  --color-parchment-100: #f9eedd;
-  --color-parchment-200: #f3dcba;
-  --color-parchment-300: #e9c48e;
-  --color-parchment-400: #dea760;
-  --color-parchment-500: #d6903f;
-  --color-parchment-600: #c87a34;
-  --color-parchment-700: #a6602c;
-  --color-parchment-800: #854d2a;
-  --color-parchment-900: #6c4025;
+  /* SafeReads signature accent — leaf green (books). 500 = #3AA06B. */
+  --color-accent-50: #ECF7F1;
+  --color-accent-100: #D3ECDE;
+  --color-accent-200: #A9DCC1;
+  --color-accent-300: #78C6A0;
+  --color-accent-400: #52B285;
+  --color-accent-500: #3AA06B;
+  --color-accent-600: #2E8656;
+  --color-accent-700: #256B45;
+  --color-accent-800: #205639;
+  --color-accent-900: #1B4630;
 
   /* Ink (dark text tones) */
   --color-ink-50: #f6f5f4;
@@ -44,10 +47,16 @@
   --color-verdict-none: #718096;
 }
 
-/* Base styles */
+/* Base styles — Safe Family glow-up: cream ground, navy ink, Quicksand body */
 body {
+  font-family: var(--font-quicksand), ui-rounded, system-ui, -apple-system, sans-serif;
   background-color: var(--color-brand-cream);
-  color: var(--color-ink-900);
+  color: var(--color-brand-navy);
+}
+
+/* Headings + .font-display → Fredoka (display face) */
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
 }
 
 /* Brand CTA button - peach gradient (shared across Safe Family) */
@@ -159,10 +168,10 @@ body {
   opacity: 0;
 }
 
-/* Pulse-glow for active nav indicator */
+/* Pulse-glow for active nav indicator (leaf-green accent) */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(124, 58, 237, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(58, 160, 107, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(58, 160, 107, 0); }
 }
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
@@ -201,24 +210,24 @@ body {
   padding-bottom: 16px;
 }
 
-/* Subtle dot pattern background for kid pages */
+/* Subtle dot pattern background for kid pages (cream ground) */
 .kid-bg-pattern {
-  background-color: #FEF7EE;
-  background-image: radial-gradient(circle, #F0DCC4 1px, transparent 1px);
+  background-color: #FBF6EF;
+  background-image: radial-gradient(circle, #E7DCCB 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-/* Gradient progress bar */
+/* Gradient progress bar (leaf-green accent) */
 .progress-gradient {
-  background: linear-gradient(90deg, #818CF8, #A78BFA, #C084FC);
+  background: linear-gradient(90deg, #52B285, #3AA06B, #2E8656);
 }
 
-/* Nav active dot indicator */
+/* Nav active dot indicator (leaf-green accent) */
 .nav-active-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7C3AED, #A78BFA);
+  background: linear-gradient(135deg, #2E8656, #52B285);
   margin-top: 2px;
 }
 
@@ -265,11 +274,11 @@ body {
 .progress-shimmer {
   background: linear-gradient(
     90deg,
-    #818CF8 0%,
-    #A78BFA 25%,
-    #C084FC 50%,
-    #A78BFA 75%,
-    #818CF8 100%
+    #52B285 0%,
+    #3AA06B 25%,
+    #2E8656 50%,
+    #3AA06B 75%,
+    #52B285 100%
   );
   background-size: 200% 100%;
   animation: shimmer 3s ease-in-out infinite;
@@ -288,4 +297,18 @@ body {
 /* Bottom nav glass effect */
 nav.fixed {
   box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* ----------------------------------------------------------------
+ * Accessibility globals (added by UX audit round 6)
+ * ---------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

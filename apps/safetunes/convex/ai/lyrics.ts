@@ -234,7 +234,90 @@ function calculateSimilarity(str1: string, str2: string): number {
   return Math.round((1 - distance / maxLen) * 100);
 }
 
-// Action to fetch lyrics from Musixmatch API with caching
+// ---------------------------------------------------------------------------
+// FREE lyrics providers (no API key, no cost). Tried BEFORE Musixmatch so
+// SafeTunes runs at $0 for lyrics. Musixmatch stays only as a free-tier backup,
+// and the whole pipeline keeps working even if the Musixmatch key is removed.
+// ---------------------------------------------------------------------------
+
+const LYRICS_UA = "SafeTunes/1.0 (kid-safe music; lyrics content review)";
+
+// LRCLIB (lrclib.net): free, open, full plain lyrics. No key. Exact-get across
+// name variations, then a fuzzy /search fallback scored by track+artist match.
+async function fetchFromLrclib(trackName: string, artistName: string): Promise<string | null> {
+  const clean = (s: string) => (s || "").replace(/\r/g, "").trim();
+  const TIMEOUT = 5000;
+
+  const tryGet = async (track: string, artist: string): Promise<string | null> => {
+    // /get matches BOTH artist_name and track_name server-side, so any hit is
+    // the correct song — safe to accept directly.
+    const url = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(track)}`;
+    const res = await fetch(url, { headers: { "User-Agent": LYRICS_UA }, signal: AbortSignal.timeout(TIMEOUT) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const lyrics = clean(data?.plainLyrics);
+    return lyrics.length >= 10 ? lyrics : null;
+  };
+
+  const tracks = generateTrackNameAlternatives(trackName).slice(0, 2);
+  const artists = generateArtistNameAlternatives(artistName).slice(0, 2);
+  for (const t of tracks) {
+    for (const a of artists) {
+      try {
+        const hit = await tryGet(t, a);
+        if (hit) return hit;
+      } catch { /* try next combination */ }
+    }
+  }
+
+  // Fuzzy /search fallback — STRICT gate: title AND artist must EACH match
+  // strongly and independently. A blended score could accept a right-title /
+  // wrong-artist result, feeding the content filter the WRONG song's lyrics and
+  // letting an inappropriate track pass. Better to return nothing than the
+  // wrong song, so we reject anything below the per-field thresholds.
+  try {
+    const searchUrl = `https://lrclib.net/api/search?q=${encodeURIComponent(`${trackName} ${artistName}`)}`;
+    const res = await fetch(searchUrl, { headers: { "User-Agent": LYRICS_UA }, signal: AbortSignal.timeout(TIMEOUT) });
+    if (res.ok) {
+      const results = await res.json();
+      if (Array.isArray(results)) {
+        for (const r of results.slice(0, 10)) {
+          const lyrics = clean(r?.plainLyrics);
+          if (lyrics.length < 10) continue;
+          const trackSim = calculateSimilarity(trackName, r?.trackName || r?.name || "");
+          const artistSim = calculateSimilarity(artistName, r?.artistName || "");
+          if (trackSim >= 75 && artistSim >= 65) return lyrics;
+        }
+      }
+    }
+  } catch { /* ignore */ }
+
+  return null;
+}
+
+// lyrics.ovh: free, no key. Plain lyrics by artist/title.
+async function fetchFromLyricsOvh(trackName: string, artistName: string): Promise<string | null> {
+  const tracks = generateTrackNameAlternatives(trackName).slice(0, 2);
+  const artists = generateArtistNameAlternatives(artistName).slice(0, 2);
+  for (const t of tracks) {
+    for (const a of artists) {
+      try {
+        // The artist+title are in the URL path, so lyrics.ovh returns that exact
+        // song or a 404 — a hit is the correct track.
+        const url = `https://api.lyrics.ovh/v1/${encodeURIComponent(a)}/${encodeURIComponent(t)}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (!res.ok) continue;
+        const data = await res.json();
+        const lyrics = (data?.lyrics || "").replace(/\r/g, "").trim();
+        if (lyrics.length >= 10) return lyrics;
+      } catch { /* try next combination */ }
+    }
+  }
+  return null;
+}
+
+// Action to fetch lyrics: free sources first (LRCLIB, lyrics.ovh), then
+// Musixmatch free-tier as an optional backup. Caches every hit.
 export const fetchLyrics = action({
   args: {
     trackName: v.string(),
@@ -259,12 +342,66 @@ export const fetchLyrics = action({
       };
     }
 
-    console.log(`[Lyrics Fetch] ⚠️ CACHE MISS - Fetching from Musixmatch API`);
+    console.log(`[Lyrics Fetch] ⚠️ CACHE MISS - trying free sources first`);
 
+    // --- FREE SOURCE #1: LRCLIB (full lyrics, no key, no cost) ---
+    try {
+      const lrclibLyrics = await fetchFromLrclib(args.trackName, args.artistName);
+      if (lrclibLyrics) {
+        console.log(`[Lyrics Fetch] ✅ LRCLIB hit (${lrclibLyrics.length} chars)`);
+        await ctx.runMutation(internal.ai.lyrics.saveLyricsToCache, {
+          trackName: args.trackName,
+          artistName: args.artistName,
+          lyrics: lrclibLyrics,
+          source: "lrclib",
+        });
+        return {
+          success: true,
+          lyrics: lrclibLyrics,
+          source: "lrclib",
+          trackInfo: { trackName: args.trackName, artistName: args.artistName },
+        };
+      }
+    } catch (e) {
+      console.error(`[Lyrics Fetch] LRCLIB error:`, e);
+    }
+
+    // --- FREE SOURCE #2: lyrics.ovh (full lyrics, no key, no cost) ---
+    try {
+      const ovhLyrics = await fetchFromLyricsOvh(args.trackName, args.artistName);
+      if (ovhLyrics) {
+        console.log(`[Lyrics Fetch] ✅ lyrics.ovh hit (${ovhLyrics.length} chars)`);
+        await ctx.runMutation(internal.ai.lyrics.saveLyricsToCache, {
+          trackName: args.trackName,
+          artistName: args.artistName,
+          lyrics: ovhLyrics,
+          source: "lyrics.ovh",
+        });
+        return {
+          success: true,
+          lyrics: ovhLyrics,
+          source: "lyrics.ovh",
+          trackInfo: { trackName: args.trackName, artistName: args.artistName },
+        };
+      }
+    } catch (e) {
+      console.error(`[Lyrics Fetch] lyrics.ovh error:`, e);
+    }
+
+    // --- BACKUP: Musixmatch free tier (OPTIONAL). If the key is gone (e.g. the
+    // paid plan was cancelled), skip gracefully — the app still works on the
+    // free sources above rather than throwing.
     const apiKey = process.env.MUSIXMATCH_API_KEY;
     if (!apiKey) {
-      throw new Error("MUSIXMATCH_API_KEY environment variable not set");
+      console.log(`[Lyrics Fetch] Free sources missed and no MUSIXMATCH_API_KEY set — returning not-found.`);
+      return {
+        success: false,
+        lyrics: null,
+        source: null,
+        error: `Lyrics not found for "${args.trackName}" by "${args.artistName}". The song may be instrumental, too new, or not in the lyrics databases.`,
+      };
     }
+    console.log(`[Lyrics Fetch] Free sources missed — trying Musixmatch free-tier backup`);
 
     const artistAlternatives = generateArtistNameAlternatives(args.artistName);
     const trackAlternatives = generateTrackNameAlternatives(args.trackName);

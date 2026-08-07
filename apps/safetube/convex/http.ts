@@ -5,6 +5,7 @@ import setSubscriptionStatus from "./setSubscriptionStatus";
 import provisionUser from "./provisionUser";
 import deleteUser from "./deleteUser";
 import setupOnboarding from "./setupOnboarding";
+import syncFamilyCode from "./syncFamilyCode";
 import { extensionAddVideo, extensionGetKids } from "./extensionApi";
 
 const http = httpRouter();
@@ -81,6 +82,13 @@ http.route({
   path: "/extension/get-kids",
   method: "OPTIONS",
   handler: extensionGetKids,
+});
+
+// Sync family code route (admin - reads or sets familyCode by email)
+http.route({
+  path: "/syncFamilyCode",
+  method: "GET",
+  handler: syncFamilyCode,
 });
 
 export default http;

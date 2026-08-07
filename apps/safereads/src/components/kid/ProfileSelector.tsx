@@ -176,10 +176,10 @@ export function ProfileSelector({
           <span className="text-5xl">{"\uD83D\uDCDA"}</span>
           <span className="absolute -right-2 -top-1 animate-float text-lg" style={{ animationDelay: "0.5s" }}>{"✨"}</span>
         </div>
-        <h1 className="text-center font-serif text-2xl font-bold text-gray-900">
+        <h1 className="text-center font-display text-2xl font-bold text-brand-navy">
           {familyName}&apos;s Library
         </h1>
-        <p className="mt-2 text-center text-lg font-medium text-purple-600">
+        <p className="mt-2 text-center text-lg font-medium text-accent-600">
           Who&apos;s reading today?
         </p>
       </div>
@@ -194,7 +194,7 @@ export function ProfileSelector({
             <button
               key={kid._id}
               onClick={() => handleProfileSelect(kid)}
-              className="animate-bounce-in group flex min-h-[140px] flex-col items-center gap-3 rounded-3xl border-2 border-transparent bg-white p-5 shadow-md transition-all duration-200 hover:border-purple-200 hover:shadow-xl hover:-translate-y-1.5 active:scale-95 sm:p-6"
+              className="animate-bounce-in group flex min-h-[140px] flex-col items-center gap-3 rounded-3xl border-2 border-transparent bg-white p-5 shadow-md transition-all duration-200 hover:border-accent-200 hover:shadow-xl hover:-translate-y-1.5 active:scale-95 sm:p-6"
             >
               {/* Avatar with gradient + icon */}
               <div className={`relative flex h-[84px] w-[84px] items-center justify-center rounded-full bg-gradient-to-br ${gradientClass} ring-4 ${ringClass} shadow-lg transition-transform duration-200 group-hover:scale-110 sm:h-24 sm:w-24`}>
@@ -206,7 +206,7 @@ export function ProfileSelector({
                 )}
               </div>
               <div className="text-center">
-                <span className="text-lg font-bold text-gray-800">
+                <span className="text-lg font-bold text-brand-navy">
                   {kid.name}
                 </span>
                 {kid.age !== undefined && (
@@ -215,7 +215,7 @@ export function ProfileSelector({
                   </p>
                 )}
                 {kid.readingLevel && (
-                  <p className="mt-1 inline-block rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-500">
+                  <p className="mt-1 inline-block rounded-full bg-accent-50 px-2 py-0.5 text-[10px] font-bold text-accent-500">
                     {kid.readingLevel}
                   </p>
                 )}
@@ -233,7 +233,7 @@ export function ProfileSelector({
               <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${COLOR_GRADIENTS[selectedKid.color] || COLOR_GRADIENTS.purple}`}>
                 <span className="text-3xl">{AVATAR_ICONS[selectedKid.color] || "\u2B50"}</span>
               </div>
-              <h2 className="mt-3 text-lg font-bold text-gray-900">
+              <h2 className="mt-3 font-display text-lg font-bold text-brand-navy">
                 Hi, {selectedKid.name}!
               </h2>
               <p className="mt-1 text-sm text-gray-500">
@@ -248,7 +248,7 @@ export function ProfileSelector({
                   key={i}
                   className={`h-5 w-5 rounded-full transition-all duration-200 ${
                     i < pin.length
-                      ? "scale-110 bg-gradient-to-br from-purple-500 to-violet-500 shadow-md shadow-purple-200"
+                      ? "scale-110 bg-gradient-to-br from-accent-500 to-accent-600 shadow-md shadow-accent-200"
                       : "bg-gray-200"
                   }`}
                 />
@@ -279,7 +279,7 @@ export function ProfileSelector({
                     <button
                       key={key}
                       onClick={() => handlePinDigit(key)}
-                      className="kid-touch flex min-h-[48px] items-center justify-center rounded-2xl bg-gray-50 text-xl font-bold text-gray-800 transition-all hover:bg-purple-50 hover:text-purple-600 active:bg-purple-100 active:scale-95"
+                      className="kid-touch flex min-h-[48px] items-center justify-center rounded-2xl bg-gray-50 text-xl font-bold text-gray-800 transition-all hover:bg-accent-50 hover:text-accent-600 active:bg-accent-100 active:scale-95"
                     >
                       {key}
                     </button>
@@ -303,7 +303,7 @@ export function ProfileSelector({
               <button
                 onClick={handlePinSubmit}
                 disabled={pin.length !== 4 || pinChecking}
-                className="kid-touch flex-1 rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 py-3 text-sm font-bold text-white shadow-md transition-all hover:from-violet-600 hover:to-purple-700 disabled:opacity-40"
+                className="kid-touch flex-1 rounded-2xl bg-gradient-to-r from-accent-500 to-accent-600 py-3 text-sm font-bold text-white shadow-md transition-all hover:from-accent-600 hover:to-accent-700 disabled:opacity-40"
               >
                 {pinChecking ? "Checking..." : "Enter"}
               </button>

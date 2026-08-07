@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1200px;
+    height: 630px;
+    display: flex;
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    overflow: hidden;
+  }
+
+  .left {
+    width: 380px;
+    height: 630px;
+    background: linear-gradient(160deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .shield {
+    opacity: 0.9;
+  }
+
+  .right {
+    flex: 1;
+    background: #faf9f7;
+    padding: 60px 60px 40px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  h1 {
+    font-size: 72px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+  }
+
+  .subtitle {
+    font-size: 30px;
+    color: #4a4a5a;
+    line-height: 1.4;
+    margin-bottom: 36px;
+  }
+
+  .apps {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .app-pill {
+    padding: 10px 22px;
+    border-radius: 100px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #555;
+    background: #e8e6e3;
+  }
+
+  .app-pill.tunes { background: #f3e8ff; color: #7c3aed; }
+  .app-pill.tube { background: #fee2e2; color: #dc2626; }
+  .app-pill.reads { background: #fef3c7; color: #d97706; }
+  .app-pill.study { background: #dbeafe; color: #2563eb; }
+
+  .cta {
+    display: inline-block;
+    padding: 16px 40px;
+    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 700;
+    border-radius: 100px;
+    width: fit-content;
+  }
+
+  .domain {
+    position: absolute;
+    bottom: 28px;
+    right: 48px;
+    font-size: 18px;
+    color: #9ca3af;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+  <div class="left">
+    <svg class="shield" width="180" height="180" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M32 10c-10 4-18 4-18 4v22c0 14 18 22 18 22s18-10 18-22V14s-8 0-18-4z" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2.5"/>
+      <path d="M24 32l6 6 12-12" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="right">
+    <h1>Safe Family</h1>
+    <div class="subtitle">
+      Music. Video. Books. Search.<br/>
+      All Parent-Approved.
+    </div>
+    <div class="apps">
+      <span class="app-pill tunes">SafeTunes</span>
+      <span class="app-pill tube">SafeTube</span>
+      <span class="app-pill reads">SafeReads</span>
+      <span class="app-pill study">SafeStudy</span>
+    </div>
+    <div class="cta">All 4 for $9.99/month</div>
+  </div>
+  <div class="domain">getsafefamily.com</div>
+</body>
+</html>

@@ -63,6 +63,7 @@ export const createCheckoutSession = action({
         cancel_url: `${process.env.SITE_URL || "https://getsafestudy.com"}/admin?canceled=true`,
         metadata: {
           email: args.email,
+          apps: "safestudy",
         },
       };
 
@@ -78,6 +79,7 @@ export const createCheckoutSession = action({
       sessionOptions.subscription_data = {
         metadata: {
           email: args.email,
+          apps: "safestudy",
         },
       };
       console.log("Creating subscription with immediate billing (no Stripe trial)");

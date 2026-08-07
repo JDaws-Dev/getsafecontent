@@ -171,7 +171,7 @@ export default function SearchPage() {
 
   return (
     <div>
-      <h1 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+      <h1 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
         Search Books
       </h1>
       <p className="mt-2 text-sm text-ink-500 sm:text-base">
@@ -181,12 +181,12 @@ export default function SearchPage() {
       <div className="mt-6 space-y-4">
         {/* Search mode toggle - FIRST because it controls search behavior */}
         <div className="flex justify-center sm:justify-start">
-          <div className="inline-flex rounded-lg border border-parchment-200 bg-white p-1">
+          <div className="inline-flex rounded-lg border border-brand-cream-2 bg-white p-1">
             <button
               onClick={() => setSearchMode("title")}
               className={`flex items-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
                 searchMode === "title"
-                  ? "bg-parchment-100 text-ink-900"
+                  ? "bg-accent-100 text-accent-700"
                   : "text-ink-500 hover:text-ink-700"
               }`}
             >
@@ -197,7 +197,7 @@ export default function SearchPage() {
               onClick={() => setSearchMode("author")}
               className={`flex items-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
                 searchMode === "author"
-                  ? "bg-parchment-100 text-ink-900"
+                  ? "bg-accent-100 text-accent-700"
                   : "text-ink-500 hover:text-ink-700"
               }`}
             >
@@ -230,7 +230,7 @@ export default function SearchPage() {
 
       {searched && !loading && results.length === 0 && !error && (
         <div className="mt-12 text-center">
-          <BookOpen className="mx-auto h-12 w-12 text-parchment-300" />
+          <BookOpen className="mx-auto h-12 w-12 text-accent-300" />
           <p className="mt-3 text-ink-500">
             No books found. Try a different search term.
           </p>
@@ -273,9 +273,9 @@ export default function SearchPage() {
               <button
                 key={entry._id}
                 onClick={() => handleSearch(entry.query)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-parchment-200 bg-white px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-parchment-300 hover:bg-parchment-50"
+                className="inline-flex items-center gap-1.5 rounded-full border border-brand-cream-2 bg-white px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-accent-300 hover:bg-brand-cream-2"
               >
-                <Search className="h-3 w-3 text-parchment-400" />
+                <Search className="h-3 w-3 text-accent-400" />
                 {entry.query}
               </button>
             ))}

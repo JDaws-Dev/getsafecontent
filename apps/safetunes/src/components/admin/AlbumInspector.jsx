@@ -342,7 +342,7 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0 pr-4">
               <p className="text-xs text-white/60 uppercase tracking-wide mb-1">AI Lyrics Review</p>
-              <h2 className="text-xl font-bold truncate">{track.name}</h2>
+              <h2 className="text-xl font-bold font-display truncate">{track.name}</h2>
               <p className="text-white/70 text-sm truncate">{track.artistName}</p>
             </div>
             <button
@@ -397,10 +397,10 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
               // Highlighted lyrics view
               <div className="p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900 text-sm">Lyrics with Highlights</h3>
+                  <h3 className="font-semibold font-display text-brand-navy text-sm">Lyrics with Highlights</h3>
                   <button
                     onClick={() => setShowHighlightedLyrics(false)}
-                    className="text-xs text-purple-600 font-medium hover:text-purple-700"
+                    className="text-xs text-accent-600 font-medium hover:text-accent-700"
                   >
                     Back to Summary
                   </button>
@@ -429,13 +429,13 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
               <div className="p-5 space-y-4">
                 {/* Overall Rating */}
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">Overall Rating</h3>
+                  <h3 className="font-semibold font-display text-brand-navy mb-2 text-sm">Overall Rating</h3>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`px-3 py-1.5 rounded-lg border font-semibold text-sm ${getRatingColor(review.overallRating)}`}>
                       {review.overallRating?.toUpperCase().replace('-', ' ')}
                     </span>
                     {review.ageRecommendation && (
-                      <span className="px-3 py-1.5 rounded-lg border bg-purple-100 text-purple-800 border-purple-200 font-semibold text-sm">
+                      <span className="px-3 py-1.5 rounded-lg border bg-accent-100 text-accent-800 border-accent-200 font-semibold text-sm">
                         Ages {review.ageRecommendation}
                       </span>
                     )}
@@ -445,7 +445,7 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
                 {/* Summary - improved contrast */}
                 {review.summary && (
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-2 text-sm">Summary</h3>
+                    <h3 className="font-semibold font-display text-brand-navy mb-2 text-sm">Summary</h3>
                     <p className="text-gray-800 bg-gray-50 p-3 rounded-lg text-sm leading-relaxed">{review.summary}</p>
                   </div>
                 )}
@@ -454,12 +454,12 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
                 {review.inappropriateContent?.length > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900 text-sm">
+                      <h3 className="font-semibold font-display text-brand-navy text-sm">
                         Content Concerns ({review.inappropriateContent.length})
                       </h3>
                       <button
                         onClick={() => setShowHighlightedLyrics(true)}
-                        className="text-xs text-purple-600 font-medium hover:text-purple-700 flex items-center gap-1"
+                        className="text-xs text-accent-600 font-medium hover:text-accent-700 flex items-center gap-1"
                       >
                         <FileText className="w-3.5 h-3.5" />
                         View in Lyrics
@@ -507,7 +507,7 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
                     onChange={(e) => setLyrics(e.target.value)}
                     placeholder="Lyrics will appear here..."
                     rows={14}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm resize-none focus:ring-2 focus:ring-accent-500 focus:border-transparent"
                   />
                 )}
               </div>
@@ -522,7 +522,7 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
               key={reviewLoading ? 'loading' : 'ready'}
               onClick={handleRunReview}
               disabled={reviewLoading || !lyrics.trim()}
-              className="w-full py-3 rounded-xl font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50 transition flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl font-medium text-white bg-accent-500 hover:bg-accent-600 disabled:opacity-50 transition flex items-center justify-center gap-2"
             >
               {reviewLoading && (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -540,7 +540,7 @@ function LyricsInspector({ isOpen, onClose, track, albumId, flaggedLines = [] })
           ) : (
             <button
               onClick={() => setReview(null)}
-              className="w-full py-3 rounded-xl font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 transition"
+              className="w-full py-3 rounded-xl font-medium text-accent-700 bg-accent-100 hover:bg-accent-200 transition"
             >
               View Lyrics Again
             </button>
@@ -577,26 +577,42 @@ function AlbumSafetyReport({ isOpen, onClose, album, overview, loading, error, o
   const getRecommendationIcon = (recommendation) => {
     switch (recommendation) {
       case 'Likely Safe':
-        return '✅';
+        return (
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
       case 'Review Recommended':
-        return '⚠️';
+        return (
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+        );
       case 'Detailed Review Required':
-        return '🚨';
+        return (
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M4.93 4.93l14.14 14.14M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
       default:
-        return '📋';
+        return (
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+        );
     }
   };
 
   const getHeaderGradient = (recommendation) => {
     switch (recommendation) {
       case 'Likely Safe':
-        return 'from-green-500 to-emerald-500';
+        return 'bg-gradient-to-r from-green-500 to-emerald-500';
       case 'Review Recommended':
-        return 'from-amber-500 to-orange-500';
+        return 'bg-gradient-to-r from-amber-500 to-orange-500';
       case 'Detailed Review Required':
-        return 'from-red-500 to-rose-500';
+        return 'bg-gradient-to-r from-red-500 to-rose-500';
       default:
-        return 'from-purple-500 to-pink-500';
+        return 'bg-accent-500';
     }
   };
 
@@ -611,13 +627,13 @@ function AlbumSafetyReport({ isOpen, onClose, album, overview, loading, error, o
       {/* Modal */}
       <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-scale-in max-h-[85vh] flex flex-col">
         {/* Header */}
-        <div className={`bg-gradient-to-r ${overview ? getHeaderGradient(overview.recommendation) : 'from-purple-500 to-pink-500'} text-white p-6`}>
+        <div className={`${overview ? getHeaderGradient(overview.recommendation) : 'bg-accent-500'} text-white p-6`}>
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
               <Shield className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Album Overview</h2>
+              <h2 className="text-xl font-bold font-display">Album Overview</h2>
               <p className="text-white/80 text-sm">{album?.name || album?.attributes?.name}</p>
             </div>
           </div>
@@ -627,7 +643,7 @@ function AlbumSafetyReport({ isOpen, onClose, album, overview, loading, error, o
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="w-10 h-10 text-purple-600 animate-spin mb-4" />
+              <Loader2 className="w-10 h-10 text-accent-600 animate-spin mb-4" />
               <p className="text-gray-600">Analyzing album...</p>
               <p className="text-sm text-gray-500 mt-2">Reviewing track titles and artist profile</p>
             </div>
@@ -638,7 +654,7 @@ function AlbumSafetyReport({ isOpen, onClose, album, overview, loading, error, o
               <p className="text-gray-600 text-sm text-center">{error}</p>
               <button
                 onClick={onRetry}
-                className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition"
+                className="mt-4 px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white rounded-lg font-medium transition"
               >
                 Try Again
               </button>
@@ -648,9 +664,9 @@ function AlbumSafetyReport({ isOpen, onClose, album, overview, loading, error, o
               {/* Recommendation Badge */}
               <div className={`p-4 rounded-lg border-2 ${getRecommendationColor(overview.recommendation)}`}>
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{getRecommendationIcon(overview.recommendation)}</span>
+                  <span className="flex-shrink-0">{getRecommendationIcon(overview.recommendation)}</span>
                   <div>
-                    <h3 className="font-bold text-lg">{overview.recommendation}</h3>
+                    <h3 className="font-bold font-display text-lg">{overview.recommendation}</h3>
                     <p className="text-sm mt-1">{overview.suggestedAction}</p>
                   </div>
                 </div>
@@ -687,7 +703,7 @@ function AlbumSafetyReport({ isOpen, onClose, album, overview, loading, error, o
         <div className="p-4 bg-gray-50 border-t border-gray-100">
           <button
             onClick={onClose}
-            className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition"
+            className="w-full py-3 rounded-xl font-semibold text-white bg-accent-500 hover:bg-accent-600 transition"
           >
             Got It
           </button>
@@ -746,14 +762,14 @@ function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfir
         {/* Step Indicator */}
         <div className="px-6 pb-2">
           <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold">2</span>
+            <span className="w-5 h-5 rounded-full bg-accent-600 text-white flex items-center justify-center font-bold">2</span>
             <span>Step 2 of 2: Choose destination</span>
           </div>
         </div>
 
         <div className="px-6 pb-8">
           {/* Title */}
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Where should these go?</h2>
+          <h2 className="text-xl font-bold font-display text-brand-navy mb-1">Where should these go?</h2>
           <p className="text-sm text-gray-500 mb-5">{selectedCount} {selectedCount === 1 ? 'song' : 'songs'} selected</p>
 
           {/* Segmented Control */}
@@ -762,7 +778,7 @@ function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfir
               onClick={() => setDestination('library')}
               className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all ${
                 destination === 'library'
-                  ? 'bg-white text-purple-700 shadow-sm'
+                  ? 'bg-white text-accent-700 shadow-sm'
                   : 'text-gray-600'
               }`}
             >
@@ -773,7 +789,7 @@ function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfir
               onClick={() => setDestination('discover')}
               className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all ${
                 destination === 'discover'
-                  ? 'bg-white text-pink-700 shadow-sm'
+                  ? 'bg-white text-accent-700 shadow-sm'
                   : 'text-gray-600'
               }`}
             >
@@ -784,8 +800,8 @@ function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfir
           <div className="bg-gray-50 rounded-xl p-3 mb-6">
             {destination === 'library' ? (
               <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 rounded-full bg-accent-100 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                   </svg>
                 </div>
@@ -797,8 +813,8 @@ function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfir
               </div>
             ) : (
               <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 rounded-full bg-accent-100 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
@@ -832,19 +848,19 @@ function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfir
                     onClick={() => toggleKid(kid._id)}
                     className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${
                       isSelected
-                        ? 'bg-purple-50 ring-2 ring-purple-500'
+                        ? 'bg-accent-50 ring-2 ring-accent-500'
                         : 'bg-gray-50 hover:bg-gray-100'
                     }`}
                   >
                     <div className={`relative w-14 h-14 rounded-full ${bgColor} flex items-center justify-center text-white text-xl font-bold`}>
                       {kid.name?.[0]?.toUpperCase() || '?'}
                       {isSelected && (
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-accent-600 rounded-full flex items-center justify-center shadow-lg">
                           <Check className="w-4 h-4 text-white" strokeWidth={3} />
                         </div>
                       )}
                     </div>
-                    <span className={`text-sm font-medium ${isSelected ? 'text-purple-700' : 'text-gray-700'}`}>
+                    <span className={`text-sm font-medium ${isSelected ? 'text-accent-700' : 'text-gray-700'}`}>
                       {kid.name}
                     </span>
                   </button>
@@ -867,7 +883,7 @@ function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfir
             <button
               onClick={() => setHideArtwork(!hideArtwork)}
               className={`w-12 h-7 rounded-full transition-all relative ${
-                hideArtwork ? 'bg-purple-600' : 'bg-gray-300'
+                hideArtwork ? 'bg-accent-600' : 'bg-gray-300'
               }`}
             >
               <div className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow transition-all ${
@@ -880,7 +896,7 @@ function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfir
           <button
             onClick={handleConfirm}
             disabled={selectedKids.length === 0}
-            className="w-full mt-4 py-4 rounded-2xl font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/25"
+            className="w-full mt-4 py-4 rounded-2xl font-semibold text-white bg-accent-500 hover:bg-accent-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent-500/25"
           >
             {selectedKids.length === 0
               ? 'Select at least one kid'
@@ -1185,7 +1201,7 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
 
           {/* Album Info */}
           <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <h1 className="text-2xl font-bold truncate">
+            <h1 className="text-2xl font-bold font-display truncate">
               {displayAlbum?.name || displayAlbum?.attributes?.name}
             </h1>
             <p className="text-white/70 text-lg truncate">
@@ -1213,18 +1229,20 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
       {/* AI Safety Card - Auto-analyzing (like RequestsView) */}
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
         {(aiScanState === 'idle' || aiScanState === 'scanning') && (
-          <div className="flex items-center justify-center gap-3 py-3 px-4 bg-purple-50 rounded-xl border-2 border-purple-200">
-            <Loader2 className="w-5 h-5 text-purple-600 animate-spin" />
+          <div className="flex items-center justify-center gap-3 py-3 px-4 bg-accent-50 rounded-xl border-2 border-accent-200">
+            <Loader2 className="w-5 h-5 text-accent-600 animate-spin" />
             <div>
-              <p className="font-medium text-purple-700 text-sm">AI Safety Scan</p>
-              <p className="text-xs text-purple-500">Analyzing album automatically...</p>
+              <p className="font-medium text-accent-700 text-sm">AI Safety Scan</p>
+              <p className="text-xs text-accent-500">Analyzing album automatically...</p>
             </div>
           </div>
         )}
 
         {aiScanState === 'error' && (
           <div className="flex items-center justify-center gap-3 py-3 px-4 bg-gray-100 rounded-xl border-2 border-gray-200">
-            <span className="text-xl">❓</span>
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             <div>
               <p className="font-medium text-gray-700 text-sm">Scan Unavailable</p>
               <p className="text-xs text-gray-500">Review tracks manually</p>
@@ -1247,10 +1265,19 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
               albumOverview.recommendation === 'Likely Safe' ? 'bg-green-100' :
               albumOverview.recommendation === 'Review Recommended' ? 'bg-yellow-100' : 'bg-red-100'
             }`}>
-              <span className="text-xl">
-                {albumOverview.recommendation === 'Likely Safe' ? '✅' :
-                 albumOverview.recommendation === 'Review Recommended' ? '⚠️' : '🚨'}
-              </span>
+              {albumOverview.recommendation === 'Likely Safe' ? (
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ) : albumOverview.recommendation === 'Review Recommended' ? (
+                <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M4.93 4.93l14.14 14.14M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
             </div>
             <div className="flex-1 text-left">
               <p className={`font-semibold text-sm ${
@@ -1300,7 +1327,7 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
             <div
               key={track.id}
               className={`flex items-center gap-3 px-4 py-3 border-b border-gray-100 transition ${
-                isSelected ? 'bg-purple-50/50' : 'bg-white'
+                isSelected ? 'bg-accent-50/50' : 'bg-white'
               }`}
             >
               {/* Play Button */}
@@ -1308,7 +1335,7 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
                 onClick={() => togglePlay(track)}
                 className={`flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition ${
                   isPlaying
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-accent-600 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -1323,7 +1350,7 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-400 w-5">{index + 1}</span>
-                  <p className="font-medium text-gray-900 truncate">{track.name}</p>
+                  <p className="font-medium text-brand-navy truncate">{track.name}</p>
                   {track.isExplicit && (
                     <span className="flex-shrink-0 px-1.5 py-0.5 bg-gray-200 rounded text-[10px] font-bold text-gray-600">E</span>
                   )}
@@ -1360,7 +1387,7 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
                 onClick={() => toggleTrack(track.id)}
                 className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition ${
                   isSelected
-                    ? 'bg-purple-600 border-purple-600'
+                    ? 'bg-accent-600 border-accent-600'
                     : 'bg-white border-gray-300 hover:border-gray-400'
                 }`}
               >
@@ -1380,7 +1407,7 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
         <button
           onClick={() => setShowAssignment(true)}
           disabled={selectedTracks.size === 0}
-          className="w-full py-4 rounded-2xl font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2"
+          className="w-full py-4 rounded-2xl font-semibold text-white bg-accent-500 hover:bg-accent-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent-500/25 flex items-center justify-center gap-2"
         >
           {selectedTracks.size === 0 ? (
             'Select Songs to Continue'
@@ -1444,7 +1471,7 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
                   className="w-14 h-14 rounded-lg shadow-md"
                 />
               ) : (
-                <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-lg bg-accent-500 flex items-center justify-center">
                   <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                   </svg>
@@ -1464,7 +1491,7 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
                   onClick={handlePreviewSeek}
                 >
                   <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all"
+                    className="h-full bg-accent-500 rounded-full transition-all"
                     style={{ width: `${(previewCurrentTime / previewDuration) * 100}%` }}
                   />
                   {/* Scrubber thumb */}

@@ -28,7 +28,7 @@ export function BookHeader({ book, actions }: BookHeaderProps) {
 
   return (
     <div className="flex flex-col gap-6 sm:flex-row">
-      <div className="relative h-64 w-44 flex-shrink-0 self-center overflow-hidden rounded-lg bg-parchment-100 shadow-md sm:self-start">
+      <div className="relative h-64 w-44 flex-shrink-0 self-center overflow-hidden rounded-lg bg-brand-cream-2 shadow-md sm:self-start">
         {book.coverUrl ? (
           <Image
             src={book.coverUrl}
@@ -40,13 +40,13 @@ export function BookHeader({ book, actions }: BookHeaderProps) {
           />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <BookOpen className="h-12 w-12 text-parchment-300" />
+            <BookOpen className="h-12 w-12 text-accent-300" />
           </div>
         )}
       </div>
 
       <div className="min-w-0 flex-1">
-        <h1 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+        <h1 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
           {book.title}
         </h1>
         <p className="mt-1 text-lg text-ink-600">
@@ -81,7 +81,7 @@ export function BookHeader({ book, actions }: BookHeaderProps) {
             {book.categories.map((cat: string) => (
               <span
                 key={cat}
-                className="rounded-full bg-parchment-100 px-2.5 py-0.5 text-xs text-ink-600"
+                className="rounded-full bg-brand-cream-2 px-2.5 py-0.5 text-xs text-ink-600"
               >
                 {cat}
               </span>

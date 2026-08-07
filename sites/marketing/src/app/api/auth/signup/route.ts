@@ -216,6 +216,21 @@ export async function POST(req: Request) {
 
     console.log("[signup] Provisioning results:", provisionResults);
 
+    // Persist the unified family code on Marketing Central so future provisions
+    // (bundle upgrades, Stripe webhooks) can pull it without drift.
+    if (sharedFamilyCode) {
+      try {
+        await fetch(
+          `${CONVEX_ENDPOINT}/syncFamilyCode?key=${encodeURIComponent(ADMIN_KEY)}` +
+          `&email=${encodeURIComponent(normalizedEmail)}` +
+          `&code=${encodeURIComponent(sharedFamilyCode)}`,
+          { signal: AbortSignal.timeout(5000) }
+        );
+      } catch (err) {
+        console.warn("[signup] Failed to cache familyCode on Marketing Central:", err);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       email: normalizedEmail,

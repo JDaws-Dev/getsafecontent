@@ -81,19 +81,19 @@ export function BookSearch({ kidId }: BookSearchProps) {
   return (
     <div>
       {/* Search Bar */}
-      <div className="sticky top-0 z-10 bg-gradient-to-b from-[#FEF7EE] via-[#FEF7EE] to-transparent pb-4 pt-2">
+      <div className="sticky top-0 z-10 bg-gradient-to-b from-brand-cream via-brand-cream to-transparent pb-4 pt-2">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-purple-400" />
+          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent-400" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="What do you want to read about?"
-            className="w-full rounded-2xl border-2 border-purple-100 bg-white py-4 pl-12 pr-4 text-base font-medium text-gray-900 shadow-md shadow-purple-50 placeholder:text-gray-400 focus:border-purple-300 focus:outline-none focus:ring-3 focus:ring-purple-100"
+            className="w-full rounded-2xl border-2 border-accent-100 bg-white py-4 pl-12 pr-4 text-base font-medium text-brand-navy shadow-md shadow-accent-50 placeholder:text-gray-400 focus:border-accent-300 focus:outline-none focus:ring-3 focus:ring-accent-100"
             autoFocus
           />
           {isSearching && (
-            <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-purple-500" />
+            <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-accent-500" />
           )}
         </div>
       </div>
@@ -101,9 +101,9 @@ export function BookSearch({ kidId }: BookSearchProps) {
       {/* Results */}
       {isSearching && results.length === 0 && (
         <div className="flex flex-col items-center py-12">
-          <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-100 to-violet-200">
-            <Loader2 className="h-9 w-9 animate-spin text-purple-500" />
-            <div className="absolute inset-0 animate-pulse rounded-full bg-purple-200/30" />
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-accent-100 to-accent-200">
+            <Loader2 className="h-9 w-9 animate-spin text-accent-500" />
+            <div className="absolute inset-0 animate-pulse rounded-full bg-accent-200/30" />
           </div>
           <p className="mt-4 text-sm font-bold text-gray-600">Searching for books...</p>
           <p className="mt-1 text-xs text-gray-400">Finding the best matches for you</p>
@@ -125,12 +125,12 @@ export function BookSearch({ kidId }: BookSearchProps) {
       )}
 
       {!hasSearched && !isSearching && (
-        <div className="flex flex-col items-center rounded-3xl bg-gradient-to-b from-violet-50 to-purple-50/50 px-6 py-12 text-center shadow-sm ring-1 ring-purple-100">
-          <div className="animate-float relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-violet-200 to-purple-300 shadow-lg shadow-purple-100">
+        <div className="flex flex-col items-center rounded-3xl bg-gradient-to-b from-accent-50 to-accent-50/50 px-6 py-12 text-center shadow-sm ring-1 ring-accent-100">
+          <div className="animate-float relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-accent-200 to-accent-300 shadow-lg shadow-accent-100">
             <BookOpen className="h-12 w-12 text-white" />
             <span className="absolute -right-1 -top-1 text-2xl">{"✨"}</span>
           </div>
-          <p className="mt-6 text-xl font-bold text-gray-800">
+          <p className="mt-6 text-xl font-bold text-brand-navy">
             Find your next adventure!
           </p>
           <p className="mt-2 max-w-xs text-sm text-gray-500">
@@ -141,7 +141,7 @@ export function BookSearch({ kidId }: BookSearchProps) {
               <button
                 key={suggestion}
                 onClick={() => setQuery(suggestion)}
-                className="kid-touch rounded-full bg-white px-3.5 py-2 text-xs font-bold text-purple-600 shadow-sm ring-1 ring-purple-100 transition-all hover:shadow-md active:scale-95"
+                className="kid-touch rounded-full bg-white px-3.5 py-2 text-xs font-bold text-accent-600 shadow-sm ring-1 ring-accent-100 transition-all hover:shadow-md active:scale-95"
               >
                 {suggestion}
               </button>
@@ -161,7 +161,7 @@ export function BookSearch({ kidId }: BookSearchProps) {
         {results.map((book, index) => (
           <div
             key={book.googleBooksId || book._id}
-            className="animate-fade-up flex gap-3.5 rounded-2xl border-2 border-transparent bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:border-purple-100 hover:shadow-lg active:scale-[0.99]"
+            className="animate-fade-up flex gap-3.5 rounded-2xl border-2 border-transparent bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:border-accent-100 hover:shadow-lg active:scale-[0.99]"
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             {/* Cover */}
@@ -176,9 +176,9 @@ export function BookSearch({ kidId }: BookSearchProps) {
                   unoptimized
                 />
               ) : (
-                <div className="flex h-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-violet-50 to-purple-100 p-2">
-                  <BookOpen className="h-5 w-5 text-purple-300" />
-                  <span className="text-[8px] font-medium text-purple-400">No Cover</span>
+                <div className="flex h-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-accent-50 to-accent-100 p-2">
+                  <BookOpen className="h-5 w-5 text-accent-300" />
+                  <span className="text-[8px] font-medium text-accent-400">No Cover</span>
                 </div>
               )}
               {/* Page count badge */}
@@ -192,7 +192,7 @@ export function BookSearch({ kidId }: BookSearchProps) {
             {/* Info */}
             <div className="flex min-w-0 flex-1 flex-col justify-between">
               <div>
-                <h3 className="line-clamp-2 text-sm font-bold text-gray-900">
+                <h3 className="line-clamp-2 text-sm font-bold text-brand-navy">
                   {book.title}
                 </h3>
                 <p className="mt-0.5 text-xs font-medium text-gray-400">

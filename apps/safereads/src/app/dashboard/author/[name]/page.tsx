@@ -31,7 +31,7 @@ const VERDICT_BADGE: Record<Verdict, { label: string; className: string }> = {
   },
   no_verdict: {
     label: "Not Reviewed",
-    className: "bg-parchment-300 text-ink-600",
+    className: "bg-brand-cream-2 text-ink-600",
   },
 };
 
@@ -144,11 +144,11 @@ export default function AuthorDetailPage({
 
       {/* Author header */}
       <div className="flex items-start gap-4">
-        <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-parchment-200">
-          <User className="h-8 w-8 text-parchment-500" />
+        <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-accent-100">
+          <User className="h-8 w-8 text-accent-500" />
         </div>
         <div>
-          <h1 className="font-serif text-2xl font-bold text-ink-900 sm:text-3xl">
+          <h1 className="font-display text-2xl font-bold text-brand-navy sm:text-3xl">
             {authorName}
           </h1>
           {!loading && (
@@ -163,8 +163,8 @@ export default function AuthorDetailPage({
       {/* AI Overview section */}
       <div className="mt-6">
         {overviewLoading && (
-          <div className="flex items-center gap-2 rounded-lg border border-parchment-200 bg-white p-4">
-            <Sparkles className="h-4 w-4 animate-pulse text-parchment-400" />
+          <div className="flex items-center gap-2 rounded-lg border border-brand-cream-2 bg-white p-4">
+            <Sparkles className="h-4 w-4 animate-pulse text-accent-400" />
             <span className="text-sm text-ink-500">
               Generating author overview…
             </span>
@@ -172,14 +172,14 @@ export default function AuthorDetailPage({
         )}
 
         {overview && (
-          <div className="rounded-lg border border-parchment-200 bg-white p-5">
+          <div className="rounded-lg border border-brand-cream-2 bg-white p-5">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-parchment-500" />
+              <Sparkles className="h-4 w-4 text-accent-500" />
               <h2 className="text-sm font-semibold text-ink-700">
                 AI Author Overview
               </h2>
               {overview.typicalAgeRange && (
-                <span className="rounded-full bg-parchment-100 px-2 py-0.5 text-xs font-medium text-ink-600">
+                <span className="rounded-full bg-brand-cream-2 px-2 py-0.5 text-xs font-medium text-ink-600">
                   Typical: {overview.typicalAgeRange}
                 </span>
               )}
@@ -198,7 +198,7 @@ export default function AuthorDetailPage({
                   {overview.commonThemes.map((theme) => (
                     <span
                       key={theme}
-                      className="rounded-full bg-parchment-100 px-2 py-0.5 text-xs text-ink-600"
+                      className="rounded-full bg-brand-cream-2 px-2 py-0.5 text-xs text-ink-600"
                     >
                       {theme}
                     </span>
@@ -243,14 +243,14 @@ export default function AuthorDetailPage({
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-parchment-400" />
+          <Loader2 className="h-8 w-8 animate-spin text-accent-400" />
         </div>
       )}
 
       {/* Empty state */}
       {!loading && books.length === 0 && !error && (
         <div className="mt-12 text-center">
-          <BookOpen className="mx-auto h-12 w-12 text-parchment-300" />
+          <BookOpen className="mx-auto h-12 w-12 text-accent-300" />
           <p className="mt-3 text-ink-500">
             No books found for this author. Try searching with a different
             spelling.
@@ -261,7 +261,7 @@ export default function AuthorDetailPage({
       {/* Book catalog */}
       {books.length > 0 && (
         <div className="mt-6">
-          <h2 className="mb-3 font-serif text-lg font-bold text-ink-900">
+          <h2 className="mb-3 font-display text-lg font-bold text-brand-navy">
             Books by {authorName}
           </h2>
           <div className="space-y-3">

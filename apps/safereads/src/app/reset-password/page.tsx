@@ -148,19 +148,19 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-parchment-50">
+    <div className="min-h-screen bg-brand-cream">
       <div className="mx-auto max-w-md px-4 py-12 sm:py-20">
         {/* Logo */}
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
-            <BookOpen className="h-10 w-10 text-parchment-600" />
-            <span className="font-serif text-2xl font-bold text-ink-900">
+            <BookOpen className="h-10 w-10 text-accent-600" />
+            <span className="font-display text-2xl font-bold text-brand-navy">
               SafeReads
             </span>
           </Link>
         </div>
 
-        <div className="rounded-xl border border-parchment-200 bg-white p-8 shadow-sm">
+        <div className="rounded-xl border border-brand-cream-2 bg-white p-8 shadow-sm">
           {success ? (
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
@@ -179,7 +179,7 @@ export default function ResetPasswordPage() {
                 </svg>
               </div>
 
-              <h2 className="mb-2 font-serif text-xl font-bold text-ink-900">
+              <h2 className="mb-2 font-display text-xl font-bold text-brand-navy">
                 Password Reset Successful!
               </h2>
               <p className="mb-6 text-sm text-ink-500">
@@ -188,7 +188,7 @@ export default function ResetPasswordPage() {
 
               <Link
                 href="/dashboard"
-                className="inline-block rounded-lg bg-parchment-700 px-6 py-2 font-semibold text-parchment-50 transition hover:bg-parchment-800"
+                className="inline-block rounded-lg bg-accent-600 px-6 py-2 font-semibold text-white transition hover:bg-accent-700"
               >
                 Go to Dashboard
               </Link>
@@ -200,7 +200,7 @@ export default function ResetPasswordPage() {
           ) : (
             <>
               <div className="mb-6 text-center">
-                <h1 className="font-serif text-2xl font-bold text-ink-900">
+                <h1 className="font-display text-2xl font-bold text-brand-navy">
                   Enter Reset Code
                 </h1>
                 <p className="mt-1 text-sm text-ink-500">
@@ -237,7 +237,7 @@ export default function ResetPasswordPage() {
                         value={digit}
                         onChange={(e) => handleCodeChange(index, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(index, e)}
-                        className="h-14 w-12 rounded-lg border border-parchment-300 text-center text-2xl font-bold focus:border-transparent focus:ring-2 focus:ring-parchment-600"
+                        className="h-14 w-12 rounded-lg border border-brand-cream-2 text-center text-2xl font-bold focus:border-transparent focus:ring-2 focus:ring-accent-500"
                         autoFocus={index === 0}
                       />
                     ))}
@@ -259,7 +259,7 @@ export default function ResetPasswordPage() {
                     minLength={8}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border border-parchment-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-parchment-600"
+                    className="w-full rounded-lg border border-brand-cream-2 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-accent-500"
                     placeholder="At least 8 characters"
                   />
                 </div>
@@ -278,7 +278,7 @@ export default function ResetPasswordPage() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full rounded-lg border border-parchment-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-parchment-600"
+                    className="w-full rounded-lg border border-brand-cream-2 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-accent-500"
                     placeholder="Confirm your password"
                   />
                 </div>
@@ -286,7 +286,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full rounded-lg bg-parchment-700 px-4 py-3 font-semibold text-parchment-50 transition hover:bg-parchment-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-lg bg-accent-600 px-4 py-3 font-semibold text-white transition hover:bg-accent-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? "Resetting Password..." : "Reset Password"}
                 </button>
@@ -297,7 +297,7 @@ export default function ResetPasswordPage() {
                   Didn&apos;t receive the code?{" "}
                   <Link
                     href="/forgot-password"
-                    className="font-medium text-parchment-600 hover:text-parchment-700"
+                    className="font-medium text-accent-600 hover:text-accent-700"
                   >
                     Request new code
                   </Link>

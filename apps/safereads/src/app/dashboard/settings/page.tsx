@@ -31,7 +31,7 @@ import {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { logout, user: authUser } = useAuth();
+  const { logout, user: authUser, token } = useAuth();
   const user = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
   const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
   const familyCode = useQuery(api.familyCodes.getByUser, userId ? { userId } : "skip");
@@ -116,10 +116,10 @@ export default function SettingsPage() {
     setDeleteError("");
 
     try {
-      if (!authUser?.email) {
+      if (!token) {
         throw new Error("Not authenticated");
       }
-      await deleteOwnAccount({ email: authUser.email });
+      await deleteOwnAccount({ userToken: token });
       await logout();
       router.push("/");
     } catch (error) {
@@ -151,30 +151,30 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="font-serif text-2xl font-bold text-ink-900">Settings</h1>
+      <h1 className="font-display text-2xl font-bold text-brand-navy">Settings</h1>
 
       {/* Account Information Section */}
-      <div className="rounded-xl border border-parchment-200 bg-white p-6">
-        <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">
+      <div className="rounded-2xl border border-brand-cream-2 bg-white p-6">
+        <h2 className="mb-4 font-display text-lg font-bold text-brand-navy">
           Account
         </h2>
 
         {!user ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-parchment-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-accent-400" />
           </div>
         ) : (
           <div className="space-y-4">
             {/* Email */}
             <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-parchment-100">
-                <Mail className="h-4 w-4 text-parchment-600" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-100">
+                <Mail className="h-4 w-4 text-accent-600" />
               </div>
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
                   Email
                 </p>
-                <p className="text-sm font-medium text-ink-900">
+                <p className="text-sm font-medium text-brand-navy">
                   {user.email || "Not set"}
                 </p>
               </div>
@@ -182,14 +182,14 @@ export default function SettingsPage() {
 
             {/* Member Since */}
             <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-parchment-100">
-                <Calendar className="h-4 w-4 text-parchment-600" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-100">
+                <Calendar className="h-4 w-4 text-accent-600" />
               </div>
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
                   Member Since
                 </p>
-                <p className="text-sm font-medium text-ink-900">
+                <p className="text-sm font-medium text-brand-navy">
                   {memberSinceDate || "Unknown"}
                 </p>
               </div>
@@ -197,14 +197,14 @@ export default function SettingsPage() {
 
             {/* Total Reviews */}
             <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-parchment-100">
-                <BookOpen className="h-4 w-4 text-parchment-600" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-100">
+                <BookOpen className="h-4 w-4 text-accent-600" />
               </div>
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
                   Total Book Reviews
                 </p>
-                <p className="text-sm font-medium text-ink-900">
+                <p className="text-sm font-medium text-brand-navy">
                   {details?.analysisCount ?? 0}
                 </p>
               </div>
@@ -214,13 +214,13 @@ export default function SettingsPage() {
       </div>
 
       {/* Family Code Section — for kid-side login */}
-      <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-6">
+      <div className="rounded-2xl border border-accent-200 bg-gradient-to-br from-accent-50 to-white p-6">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500">
             <Users className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h2 className="font-serif text-lg font-bold text-ink-900">
+            <h2 className="font-display text-lg font-bold text-brand-navy">
               Kid Login
             </h2>
             <p className="text-sm text-ink-500">
@@ -231,8 +231,8 @@ export default function SettingsPage() {
 
         {familyCode ? (
           <div className="space-y-3">
-            <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-white p-4">
-              <p className="flex-1 font-mono text-2xl font-bold tracking-[0.3em] text-emerald-700">
+            <div className="flex items-center gap-3 rounded-lg border border-accent-200 bg-white p-4">
+              <p className="flex-1 font-mono text-2xl font-bold tracking-[0.3em] text-accent-700">
                 {familyCode.code}
               </p>
               <button
@@ -241,7 +241,7 @@ export default function SettingsPage() {
                   setCodeCopied(true);
                   setTimeout(() => setCodeCopied(false), 2000);
                 }}
-                className="flex items-center gap-1 rounded-lg border border-emerald-200 px-3 py-2 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+                className="flex items-center gap-1 rounded-lg border border-accent-200 px-3 py-2 text-xs font-medium text-accent-700 transition-colors hover:bg-accent-50"
               >
                 {codeCopied ? (
                   <>
@@ -294,7 +294,7 @@ export default function SettingsPage() {
               }
             }}
             disabled={codeGenerating || !userId}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-600 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent-500 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-600 disabled:opacity-50"
           >
             {codeGenerating ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -307,13 +307,13 @@ export default function SettingsPage() {
       </div>
 
       {/* Pre-Approved Library Classics Section */}
-      <div className="rounded-xl border border-parchment-200 bg-white p-6">
+      <div className="rounded-2xl border border-brand-cream-2 bg-white p-6">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100">
-            <Library className="h-5 w-5 text-amber-700" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-100">
+            <Library className="h-5 w-5 text-accent-700" />
           </div>
           <div>
-            <h2 className="font-serif text-lg font-bold text-ink-900">
+            <h2 className="font-display text-lg font-bold text-brand-navy">
               Pre-Approved Library Classics
             </h2>
             <p className="text-sm text-ink-500">
@@ -324,7 +324,7 @@ export default function SettingsPage() {
 
         {!user ? (
           <div className="flex items-center justify-center py-4">
-            <Loader2 className="h-5 w-5 animate-spin text-parchment-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-accent-400" />
           </div>
         ) : (
           <div className="space-y-3">
@@ -367,11 +367,11 @@ export default function SettingsPage() {
                   className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-all ${
                     isSelected
                       ? `${option.ring} ring-1`
-                      : "border-parchment-200 hover:border-parchment-300 hover:bg-parchment-50"
+                      : "border-brand-cream-2 hover:border-accent-300 hover:bg-brand-cream-2"
                   }`}
                 >
                   <div className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
-                    isSelected ? "border-parchment-700 bg-parchment-700" : "border-parchment-300"
+                    isSelected ? "border-accent-700 bg-accent-700" : "border-accent-300"
                   }`}>
                     {isSelected && (
                       <div className="h-2 w-2 rounded-full bg-white" />
@@ -383,7 +383,7 @@ export default function SettingsPage() {
                         {option.label}
                       </p>
                       {option.isDefault && (
-                        <span className="rounded-full bg-parchment-100 px-1.5 py-0.5 text-[10px] font-medium text-parchment-600">
+                        <span className="rounded-full bg-brand-cream-2 px-1.5 py-0.5 text-[10px] font-medium text-accent-700">
                           Default
                         </span>
                       )}
@@ -404,15 +404,15 @@ export default function SettingsPage() {
       </div>
 
       {/* Safe Family Account Section */}
-      <div className="rounded-xl border border-parchment-300 bg-gradient-to-br from-parchment-50 to-amber-50 p-6">
+      <div className="rounded-2xl border border-brand-cream-2 bg-gradient-to-br from-brand-cream to-brand-cream-2 p-6">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-parchment-700">
-            <svg className="h-5 w-5 text-parchment-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-700">
+            <svg className="h-5 w-5 text-accent-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
           <div>
-            <h2 className="font-serif text-lg font-bold text-ink-900">
+            <h2 className="font-display text-lg font-bold text-brand-navy">
               Safe Family Account
             </h2>
             <p className="text-sm text-ink-600">
@@ -421,8 +421,8 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-parchment-200 bg-white p-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-parchment-100 px-2.5 py-1 text-xs font-medium text-parchment-700">
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-brand-cream-2 bg-white p-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-100 px-2.5 py-1 text-xs font-medium text-accent-700">
             <BookOpen className="h-3.5 w-3.5" />
             SafeReads
           </span>
@@ -445,21 +445,21 @@ export default function SettingsPage() {
       </div>
 
       {/* Subscription Section */}
-      <div className="rounded-xl border border-parchment-200 bg-white p-6">
-        <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">
+      <div className="rounded-2xl border border-brand-cream-2 bg-white p-6">
+        <h2 className="mb-4 font-display text-lg font-bold text-brand-navy">
           Subscription
         </h2>
 
         {!details ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-parchment-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-accent-400" />
           </div>
         ) : details.isSubscribed ? (
           /* Subscribed state */
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-amber-500" />
-              <span className="text-sm font-semibold text-ink-900">
+              <Crown className="h-5 w-5 text-accent-500" />
+              <span className="text-sm font-semibold text-brand-navy">
                 SafeReads
               </span>
               <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
@@ -470,7 +470,7 @@ export default function SettingsPage() {
             <div className="space-y-2 text-sm text-ink-600">
               <p>
                 Status:{" "}
-                <span className="font-medium capitalize text-ink-900">
+                <span className="font-medium capitalize text-brand-navy">
                   {details.status}
                 </span>
               </p>
@@ -479,14 +479,14 @@ export default function SettingsPage() {
                   {details.status === "canceled"
                     ? "Access until: "
                     : "Renews: "}
-                  <span className="font-medium text-ink-900">
+                  <span className="font-medium text-brand-navy">
                     {renewalDate}
                   </span>
                 </p>
               )}
               <p>
                 Total reviews:{" "}
-                <span className="font-medium text-ink-900">
+                <span className="font-medium text-brand-navy">
                   {details.analysisCount}
                 </span>
               </p>
@@ -495,7 +495,7 @@ export default function SettingsPage() {
             <button
               onClick={handleManage}
               disabled={portalLoading}
-              className="inline-flex items-center gap-2 rounded-lg border border-parchment-300 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-parchment-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-accent-300 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-cream-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <CreditCard className="h-4 w-4" />
               {portalLoading
@@ -507,11 +507,11 @@ export default function SettingsPage() {
           /* Lifetime state */
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-purple-500" />
-              <span className="text-sm font-semibold text-ink-900">
+              <Crown className="h-5 w-5 text-accent-500" />
+              <span className="text-sm font-semibold text-brand-navy">
                 SafeReads Lifetime
               </span>
-              <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+              <span className="rounded-full bg-accent-100 px-2 py-0.5 text-xs font-medium text-accent-700">
                 Lifetime
               </span>
             </div>
@@ -519,13 +519,13 @@ export default function SettingsPage() {
             <div className="space-y-2 text-sm text-ink-600">
               <p>
                 Status:{" "}
-                <span className="font-medium text-ink-900">
+                <span className="font-medium text-brand-navy">
                   Lifetime Access
                 </span>
               </p>
               <p>
                 Total reviews:{" "}
-                <span className="font-medium text-ink-900">
+                <span className="font-medium text-brand-navy">
                   {details.analysisCount}
                 </span>
               </p>
@@ -537,20 +537,20 @@ export default function SettingsPage() {
             <div className="space-y-2 text-sm text-ink-600">
               <p>
                 Plan:{" "}
-                <span className="font-medium text-ink-900">Free Trial</span>
+                <span className="font-medium text-brand-navy">Free Trial</span>
               </p>
               {details.trialDaysRemaining > 0 ? (
                 <>
                   <p>
                     Time remaining:{" "}
-                    <span className="font-medium text-ink-900">
+                    <span className="font-medium text-brand-navy">
                       {details.trialDaysRemaining} {details.trialDaysRemaining === 1 ? "day" : "days"}
                     </span>
                   </p>
                   {details.trialExpiresAt && (
                     <p>
                       Expires:{" "}
-                      <span className="font-medium text-ink-900">
+                      <span className="font-medium text-brand-navy">
                         {new Date(details.trialExpiresAt).toLocaleDateString("en-US", {
                           month: "long",
                           day: "numeric",
@@ -570,21 +570,21 @@ export default function SettingsPage() {
               )}
               <p>
                 Reviews completed:{" "}
-                <span className="font-medium text-ink-900">
+                <span className="font-medium text-brand-navy">
                   {details.analysisCount}
                 </span>
               </p>
             </div>
 
             {/* Pricing card */}
-            <div className="rounded-lg border border-parchment-200 bg-parchment-50 p-4">
+            <div className="rounded-2xl border border-brand-cream-2 bg-brand-cream p-4">
               <div className="mb-3 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-parchment-700" />
-                <span className="font-semibold text-ink-900">
+                <Sparkles className="h-5 w-5 text-accent-700" />
+                <span className="font-semibold text-brand-navy">
                   Subscribe to SafeReads
                 </span>
               </div>
-              <p className="mb-3 text-lg font-semibold text-ink-900">
+              <p className="mb-3 text-lg font-semibold text-brand-navy">
                 $4.99
                 <span className="text-sm font-normal text-ink-500">
                   /month
@@ -592,15 +592,15 @@ export default function SettingsPage() {
               </p>
               <ul className="mb-4 space-y-2 text-sm text-ink-700">
                 <li className="flex items-center gap-2">
-                  <Infinity className="h-4 w-4 text-parchment-700" />
+                  <Infinity className="h-4 w-4 text-accent-700" />
                   Unlimited book reviews
                 </li>
                 <li className="flex items-center gap-2">
-                  <HeadphonesIcon className="h-4 w-4 text-parchment-700" />
+                  <HeadphonesIcon className="h-4 w-4 text-accent-700" />
                   Priority support
                 </li>
                 <li className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-parchment-700" />
+                  <BookOpen className="h-4 w-4 text-accent-700" />
                   Full content breakdowns
                 </li>
               </ul>
@@ -624,26 +624,26 @@ export default function SettingsPage() {
           await logout();
           router.push("/");
         }}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-parchment-200 bg-white px-4 py-3 text-sm font-medium text-ink-700 transition-colors hover:bg-parchment-50"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-brand-cream-2 bg-white px-4 py-3 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-cream-2"
       >
         <LogOut className="h-4 w-4" />
         Log Out
       </button>
 
       {/* Help & Support Section */}
-      <div className="rounded-xl border border-parchment-200 bg-white p-6">
-        <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">
+      <div className="rounded-2xl border border-brand-cream-2 bg-white p-6">
+        <h2 className="mb-4 font-display text-lg font-bold text-brand-navy">
           Help & Support
         </h2>
         <a
           href="mailto:jeremiah@getsafefamily.com"
-          className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-parchment-50"
+          className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-brand-cream-2"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-parchment-100">
-            <MessageCircle className="h-4 w-4 text-parchment-600" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-100">
+            <MessageCircle className="h-4 w-4 text-accent-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-ink-900">Contact Support</p>
+            <p className="text-sm font-medium text-brand-navy">Contact Support</p>
             <p className="text-xs text-ink-500">jeremiah@getsafefamily.com</p>
           </div>
           <ExternalLink className="h-4 w-4 text-ink-400" />
@@ -651,31 +651,31 @@ export default function SettingsPage() {
       </div>
 
       {/* Legal Section */}
-      <div className="rounded-xl border border-parchment-200 bg-white p-6">
-        <h2 className="mb-4 font-serif text-lg font-bold text-ink-900">
+      <div className="rounded-2xl border border-brand-cream-2 bg-white p-6">
+        <h2 className="mb-4 font-display text-lg font-bold text-brand-navy">
           Legal
         </h2>
         <div className="space-y-1">
           <a
             href="/privacy"
-            className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-parchment-50"
+            className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-brand-cream-2"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-parchment-100">
-              <Shield className="h-4 w-4 text-parchment-600" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-100">
+              <Shield className="h-4 w-4 text-accent-600" />
             </div>
-            <span className="flex-1 text-sm font-medium text-ink-900">
+            <span className="flex-1 text-sm font-medium text-brand-navy">
               Privacy Policy
             </span>
             <ExternalLink className="h-4 w-4 text-ink-400" />
           </a>
           <a
             href="/terms"
-            className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-parchment-50"
+            className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-brand-cream-2"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-parchment-100">
-              <FileText className="h-4 w-4 text-parchment-600" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-100">
+              <FileText className="h-4 w-4 text-accent-600" />
             </div>
-            <span className="flex-1 text-sm font-medium text-ink-900">
+            <span className="flex-1 text-sm font-medium text-brand-navy">
               Terms of Service
             </span>
             <ExternalLink className="h-4 w-4 text-ink-400" />
@@ -684,10 +684,10 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger Zone Section */}
-      <div className="rounded-xl border border-red-200 bg-white p-6">
+      <div className="rounded-2xl border border-red-200 bg-white p-6">
         <div className="mb-4 flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-red-600" />
-          <h2 className="font-serif text-lg font-bold text-red-900">
+          <h2 className="font-display text-lg font-bold text-red-900">
             Danger Zone
           </h2>
         </div>
@@ -710,7 +710,7 @@ export default function SettingsPage() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
-            <h3 className="mb-2 text-center font-serif text-xl font-bold text-ink-900">
+            <h3 className="mb-2 text-center font-display text-xl font-bold text-brand-navy">
               Delete Account?
             </h3>
             <p className="mb-4 text-center text-sm text-ink-600">
@@ -730,7 +730,7 @@ export default function SettingsPage() {
                 setDeleteError("");
               }}
               placeholder="Type DELETE"
-              className="mb-4 w-full rounded-lg border border-parchment-300 px-4 py-2 text-center font-mono tracking-wider focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="mb-4 w-full rounded-lg border border-brand-cream-2 px-4 py-2 text-center font-mono tracking-wider focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-500"
               disabled={deleteLoading}
             />
             {deleteError && (
@@ -746,7 +746,7 @@ export default function SettingsPage() {
                   setDeleteError("");
                 }}
                 disabled={deleteLoading}
-                className="flex-1 rounded-lg bg-parchment-100 px-4 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-parchment-200 disabled:opacity-50"
+                className="flex-1 rounded-lg bg-brand-cream-2 px-4 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-cream disabled:opacity-50"
               >
                 Cancel
               </button>

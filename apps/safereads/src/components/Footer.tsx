@@ -16,7 +16,7 @@ const legalLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-[#1a1a2e] text-white">
+    <footer className="bg-brand-navy text-white">
       <div className="mx-auto max-w-5xl px-4 py-10">
         {/* App Links */}
         <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
@@ -30,7 +30,7 @@ export function Footer() {
             >
               {app.name}
               {app.isNew && (
-                <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a2e]">
+                <span className="rounded-full bg-accent-500 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-navy">
                   New
                 </span>
               )}

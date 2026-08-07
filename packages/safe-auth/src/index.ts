@@ -89,6 +89,120 @@ export function newSessionToken(): string {
 /** Default kid-session lifetime: 30 days (refresh on use at the call site). */
 export const KID_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
+// ───────────────────────── Kid: cross-app "kid pass" (one-tap switching) ──────
+// A short-lived HS256 token minted by the app the kid is ALREADY signed into and
+// carried via ?kt= to a sibling app, which verifies it and drops the kid straight
+// onto their dashboard — no re-typing the family code, no re-entering the PIN.
+//
+// Why name-matched, not id-matched: every app has its OWN kidProfiles table in
+// its OWN Convex deployment, so profile IDs are not portable. The only keys that
+// are stable across all five apps are the Central-synced familyCode and the kid's
+// display name — so the pass carries those, and the destination resolves its own
+// local profile row (familyCode → user → kid by name).
+//
+// Threat model = the household. The pass lets a kid already authenticated as
+// Bella in one app continue as Bella in a sibling app without re-entering Bella's
+// PIN. It does NOT replace the PIN as the cold-start gate: a kid opening a sibling
+// app directly still picks a profile and enters the PIN. TTL is deliberately short
+// (5 min) so a copied link is not a durable bypass, and the token is signed with
+// the shared MARKETING_JWT_SECRET (same secret already on every app), namespaced
+// by a distinct issuer so it can never be confused with a parent Marketing JWT.
+export interface KidPassClaims {
+  fc: string; // family code (6 chars)
+  kid: string; // kid display name — the cross-app match key
+  av?: string; // avatar hint (optional; lets the destination render the tile)
+  col?: string; // color hint (optional)
+}
+
+/** Kid-pass lifetime: short on purpose — it only has to survive one hop. */
+export const KID_PASS_TTL_SEC = 5 * 60;
+const KID_PASS_ISS = "safefamily-kidpass";
+
+/** Mint a signed kid pass. Server-only (needs the shared secret). Throws if no secret. */
+export async function signKidPass(
+  claims: KidPassClaims,
+  secret: string | undefined,
+  nowMs: number = Date.now(),
+): Promise<string> {
+  if (!secret) throw new Error("kid pass signing requires MARKETING_JWT_SECRET");
+  if (!claims.fc || !claims.kid) throw new Error("kid pass requires fc + kid");
+  const iat = Math.floor(nowMs / 1000);
+  const header = { alg: "HS256", typ: "JWT" };
+  const payload: Record<string, unknown> = {
+    iss: KID_PASS_ISS,
+    fc: claims.fc,
+    kid: claims.kid,
+    iat,
+    exp: iat + KID_PASS_TTL_SEC,
+  };
+  if (claims.av) payload.av = claims.av;
+  if (claims.col) payload.col = claims.col;
+  const headerB64 = toBase64url(new TextEncoder().encode(JSON.stringify(header)));
+  const payloadB64 = toBase64url(new TextEncoder().encode(JSON.stringify(payload)));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(`${headerB64}.${payloadB64}`),
+  );
+  return `${headerB64}.${payloadB64}.${toBase64url(new Uint8Array(sig))}`;
+}
+
+/** Verify a kid pass. Returns the claims, or null on any failure (bad sig, wrong issuer, expired). Never throws. */
+export async function verifyKidPass(
+  token: string | undefined,
+  secret: string | undefined,
+  nowMs: number = Date.now(),
+): Promise<KidPassClaims | null> {
+  if (!token || !secret) return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [headerB64, payloadB64, sigB64] = parts;
+  try {
+    const header = JSON.parse(textDecode(fromBase64url(headerB64))) as { alg?: string };
+    if (header.alg !== "HS256") return null;
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"],
+    );
+    const valid = await crypto.subtle.verify(
+      "HMAC",
+      key,
+      fromBase64url(sigB64) as BufferSource,
+      new TextEncoder().encode(`${headerB64}.${payloadB64}`),
+    );
+    if (!valid) return null;
+    const p = JSON.parse(textDecode(fromBase64url(payloadB64))) as {
+      iss?: string;
+      fc?: string;
+      kid?: string;
+      av?: string;
+      col?: string;
+      exp?: number;
+    };
+    if (p.iss !== KID_PASS_ISS) return null;
+    if (typeof p.exp === "number" && nowMs / 1000 > p.exp) return null;
+    if (typeof p.fc !== "string" || typeof p.kid !== "string") return null;
+    return {
+      fc: p.fc,
+      kid: p.kid,
+      av: typeof p.av === "string" ? p.av : undefined,
+      col: typeof p.col === "string" ? p.col : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ───────────────────────── PIN hashing (PBKDF2-SHA256) ───────────────────────
 // 4-digit PINs are low-entropy, so the per-kid lockout (pinFailedAttempts /
 // pinLockedUntil) is the real defense; hashing removes the at-rest plaintext

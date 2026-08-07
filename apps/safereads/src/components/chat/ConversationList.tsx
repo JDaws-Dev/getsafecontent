@@ -29,11 +29,11 @@ export function ConversationList({
   return (
     <div className="flex h-full flex-col">
       {!hideHeader && (
-        <div className="flex items-center justify-between border-b border-parchment-200 p-3">
-          <h2 className="font-serif text-lg font-bold text-ink-900">Chats</h2>
+        <div className="flex items-center justify-between border-b border-brand-cream-2 p-3">
+          <h2 className="font-display text-lg font-bold text-brand-navy">Chats</h2>
           <button
             onClick={onNew}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition-colors hover:bg-parchment-100 hover:text-ink-700"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-500 transition-colors hover:bg-brand-cream-2 hover:text-ink-700"
           >
             <Plus className="h-5 w-5" />
           </button>
@@ -48,8 +48,8 @@ export function ConversationList({
           conversations.map((conv) => (
             <div
               key={conv._id}
-              className={`group flex cursor-pointer items-center gap-2 border-b border-parchment-100 px-3 py-3 transition-colors hover:bg-parchment-100 ${
-                activeId === conv._id ? "bg-parchment-100" : ""
+              className={`group flex cursor-pointer items-center gap-2 border-b border-brand-cream-2 px-3 py-3 transition-colors hover:bg-brand-cream-2 ${
+                activeId === conv._id ? "bg-brand-cream-2" : ""
               }`}
               onClick={() => onSelect(conv._id)}
             >
@@ -62,7 +62,7 @@ export function ConversationList({
                   e.stopPropagation();
                   onDelete(conv._id);
                 }}
-                className="hidden h-6 w-6 shrink-0 items-center justify-center rounded text-ink-400 transition-colors hover:bg-parchment-200 hover:text-red-600 group-hover:flex"
+                className="hidden h-6 w-6 shrink-0 items-center justify-center rounded text-ink-400 transition-colors hover:bg-brand-cream-2 hover:text-red-600 group-hover:flex"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>

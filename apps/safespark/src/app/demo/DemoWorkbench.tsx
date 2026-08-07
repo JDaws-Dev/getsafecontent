@@ -224,7 +224,8 @@ const STARTER_HTML = `<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SafeSpark</title>
   <style>
-    :root { --v: #7c3aed; --p: #ec4899; --a: #f59e0b; }
+    /* Safe Family glow-up: amber accent + peach umbrella on a cream ground */
+    :root { --v: #F2A413; --p: #F5A962; --a: #E88B6A; }
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -232,10 +233,10 @@ const STARTER_HTML = `<!doctype html>
       display: grid;
       place-items: center;
       background:
-        radial-gradient(circle at 10% 20%, rgba(124,58,237,.08), transparent 50%),
-        radial-gradient(circle at 90% 80%, rgba(236,72,153,.08), transparent 50%),
-        linear-gradient(135deg, #eef2ff, #fff7ed);
-      color: #1f2937;
+        radial-gradient(circle at 10% 20%, rgba(242,164,19,.10), transparent 50%),
+        radial-gradient(circle at 90% 80%, rgba(232,139,106,.10), transparent 50%),
+        linear-gradient(135deg, #FBF6EF, #F3EADD);
+      color: #221D2E;
       font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
       padding: 20px;
     }
@@ -248,16 +249,15 @@ const STARTER_HTML = `<!doctype html>
       margin: 0 auto 18px;
       border-radius: 22px;
       background: linear-gradient(135deg, var(--v), var(--p), var(--a));
-      box-shadow: 0 16px 60px rgba(124,58,237,.35);
+      box-shadow: 0 16px 60px rgba(242,164,19,.35);
       display: grid; place-items: center;
       color: white; font-size: 44px; font-weight: 900;
       animation: float 4s ease-in-out infinite;
     }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
     h1 {
-      margin: 0 0 10px; font-size: clamp(32px, 6vw, 52px); font-weight: 900;
-      background: linear-gradient(135deg, var(--v), var(--p), var(--a));
-      -webkit-background-clip: text; background-clip: text; color: transparent;
+      margin: 0 0 10px; font-size: clamp(32px, 6vw, 52px); font-weight: 800;
+      color: #221D2E;
       letter-spacing: -0.02em;
     }
     p.lead { margin: 0 0 22px; font-size: 17px; line-height: 1.55; color: #475569; }
@@ -321,11 +321,11 @@ const TEMPLATES: Template[] = [
 ];
 const STARTER_MESSAGE = "Ask me anything, or tell me what to build.";
 const ACTION_BUTTON_CLASS =
-  'inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50';
+  'inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-brand-cream';
 const PRIMARY_ACTION_BUTTON_CLASS =
-  'inline-flex items-center gap-2 rounded-xl bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-violet-700';
+  'inline-flex items-center gap-2 rounded-xl bg-accent-600 px-3 py-2 text-sm font-semibold text-brand-navy shadow-sm hover:bg-accent-700';
 const UTILITY_BUTTON_CLASS =
-  'inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50';
+  'inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-brand-cream';
 
 export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: string }) {
   const initialProjects = useMemo(() => loadDemoProjects(), []);
@@ -1596,12 +1596,12 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
 
   if (!hasIdentity) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+      <main className="flex min-h-screen items-center justify-center bg-brand-cream px-4 py-10">
         <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-white">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-600 text-brand-navy">
             <Wand2 className="h-7 w-7" />
           </div>
-          <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-violet-500">SafeSpark</p>
+          <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-accent-500">SafeSpark</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Sign up to start building</h1>
           <p className="mt-3 text-sm leading-relaxed text-slate-600">
             Your projects save under your account and you can come back any time, on any device.
@@ -1609,13 +1609,13 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
           <div className="mt-5 flex flex-col gap-2">
             <Link
               href="https://getsafefamily.com/signup?plan=unified"
-              className="inline-flex w-full items-center justify-center rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-violet-700"
+              className="inline-flex w-full items-center justify-center rounded-xl bg-accent-600 px-5 py-3 text-sm font-semibold text-brand-navy shadow-sm hover:bg-accent-700"
             >
               Create an account
             </Link>
             <Link
               href="/login"
-              className="inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-brand-cream"
             >
               I already have an account
             </Link>
@@ -1625,7 +1625,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
           </p>
           <p className="mt-3 text-xs leading-relaxed text-slate-500">
             Kids on a shared device? Have the parent sign up first, then kids log in with the family code at{' '}
-            <Link href="/start" className="font-semibold text-violet-700 underline">
+            <Link href="/start" className="font-semibold text-accent-700 underline">
               /start
             </Link>
             .
@@ -1643,8 +1643,8 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
   // neutral placeholder and let the client decide on mount.
   if (!mounted) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50">
-        <div className="text-sm font-semibold uppercase tracking-widest text-violet-400">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-brand-cream">
+        <div className="text-sm font-semibold uppercase tracking-widest text-accent-400">
           SafeSpark
         </div>
       </main>
@@ -1656,11 +1656,11 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
   // Show a banner pointing parents there if they're Clerk-signed-in.
   if (shouldShowGate) {
     return (
-      <main className="flex min-h-screen flex-col bg-slate-50">
+      <main className="flex min-h-screen flex-col bg-brand-cream">
         {isSignedIn && (
-          <div className="border-b border-violet-200 bg-violet-50 px-4 py-2 text-center text-xs font-semibold text-violet-900">
+          <div className="border-b border-accent-200 bg-accent-50 px-4 py-2 text-center text-xs font-semibold text-accent-900">
             Looking for the parent admin?{' '}
-            <Link href="/parent" className="underline underline-offset-2 hover:text-violet-700">
+            <Link href="/parent" className="underline underline-offset-2 hover:text-accent-700">
               Go to /parent
             </Link>
           </div>
@@ -1671,7 +1671,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
   }
 
   return (
-    <main className="flex h-screen flex-col overflow-hidden overflow-x-hidden bg-slate-50 text-slate-900 pb-[72px] lg:pb-0">
+    <main className="flex h-screen flex-col overflow-hidden overflow-x-hidden bg-brand-cream text-slate-900 pb-[72px] lg:pb-0">
       {/* Use the shared KidHeader directly — was previously duplicating
         its markup which kept drifting (the "nav still jumps when you
         switch to /make" complaints). Now /make is guaranteed byte-
@@ -1705,7 +1705,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 }}
                 className={
                   sortedProjects.length > 0
-                    ? 'inline-flex items-center gap-2 rounded-xl bg-violet-50 px-3 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100'
+                    ? 'inline-flex items-center gap-2 rounded-xl bg-accent-50 px-3 py-2 text-sm font-semibold text-accent-700 hover:bg-accent-100'
                     : ACTION_BUTTON_CLASS
                 }
                 title="My projects"
@@ -1714,7 +1714,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 <FolderOpen className="h-4 w-4" />
                 <span className="hidden sm:inline">My projects</span>
                 {sortedProjects.length > 0 && (
-                  <span className="rounded-full bg-violet-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  <span className="rounded-full bg-accent-600 px-1.5 py-0.5 text-[10px] font-semibold text-brand-navy">
                     {sortedProjects.length}
                   </span>
                 )}
@@ -1748,8 +1748,8 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                     className="absolute left-0 top-full z-50 mt-2 hidden w-96 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg lg:block"
                     role="menu"
                   >
-                    <div className="border-b border-slate-100 bg-slate-50 px-3 py-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-violet-500">
+                    <div className="border-b border-slate-100 bg-brand-cream px-3 py-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-accent-500">
                         My projects
                       </p>
                       <p className="text-xs font-semibold text-slate-500">
@@ -1764,10 +1764,10 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                         startNewProject();
                         setShowProjects(false);
                       }}
-                      className="flex w-full items-center gap-2 border-b border-slate-100 bg-violet-50/60 px-3 py-2.5 text-left text-sm font-semibold text-violet-700 hover:bg-violet-100"
+                      className="flex w-full items-center gap-2 border-b border-slate-100 bg-accent-50/60 px-3 py-2.5 text-left text-sm font-semibold text-accent-700 hover:bg-accent-100"
                       role="menuitem"
                     >
-                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-600 text-white">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-600 text-brand-navy">
                         <Plus className="h-4 w-4" />
                       </div>
                       <span>New project</span>
@@ -1824,7 +1824,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 <History className="h-4 w-4" />
                 <span className="hidden sm:inline">History</span>
                 {cloudVersions && cloudVersions.length > 0 && (
-                  <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700">
+                  <span className="rounded-full bg-accent-100 px-1.5 py-0.5 text-[10px] font-semibold text-accent-700">
                     {cloudVersions.length}
                   </span>
                 )}
@@ -1841,7 +1841,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
               onClick={toggleAutoSpeak}
               className={
                 autoSpeak
-                  ? 'inline-flex items-center gap-2 rounded-xl bg-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-violet-700'
+                  ? 'inline-flex items-center gap-2 rounded-xl bg-accent-600 px-3 py-2 text-sm font-semibold text-brand-navy shadow-sm hover:bg-accent-700'
                   : ACTION_BUTTON_CLASS
               }
               title={autoSpeak ? 'Spark reads replies aloud' : 'Spark stays silent (tap to enable read-aloud)'}
@@ -1879,7 +1879,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
               <button
                 type="button"
                 onClick={() => setShowAccountMenu((v) => !v)}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-brand-cream"
                 title="Account menu"
                 aria-haspopup="menu"
                 aria-expanded={showAccountMenu}
@@ -1906,7 +1906,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                         setKidSessionToken(null);
                         setShowAccountMenu(false);
                       }}
-                      className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
                       role="menuitem"
                     >
                       <UserRound className="h-4 w-4 text-slate-400" />
@@ -1918,7 +1918,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                       <Link
                         href="/parent"
                         onClick={() => setShowAccountMenu(false)}
-                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
                         role="menuitem"
                         title="Parent admin"
                       >
@@ -1929,7 +1929,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                       <Link
                         href="/login"
                         onClick={() => setShowAccountMenu(false)}
-                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
                         role="menuitem"
                       >
                         <UserRound className="h-4 w-4 text-slate-400" />
@@ -2001,7 +2001,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
         <section className="flex-1 overflow-y-auto px-3 pt-3 pb-20 lg:hidden">
           <div className="mx-auto max-w-md space-y-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-violet-500">My projects</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-accent-500">My projects</p>
               <h2 className="text-2xl font-bold tracking-tight text-slate-900">
                 {sortedProjects.length === 0
                   ? 'Tap + New to start'
@@ -2010,12 +2010,12 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             </div>
             {sortedProjects.length === 0 ? (
               <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-white">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-600 text-brand-navy">
                   <Plus className="h-6 w-6" />
                 </div>
                 <p className="text-sm font-semibold text-slate-700">Nothing here yet.</p>
                 <p className="mt-1 text-xs text-slate-500">
-                  Tap <span className="font-semibold text-violet-700">New</span> at the bottom to make your first project.
+                  Tap <span className="font-semibold text-accent-700">New</span> at the bottom to make your first project.
                 </p>
               </div>
             ) : (
@@ -2026,12 +2026,12 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                     startNewProject();
                     setMobileTab('chat');
                   }}
-                  className="group flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/40 p-4 text-center"
+                  className="group flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-accent-200 bg-accent-50/40 p-4 text-center"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-600 text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-600 text-brand-navy">
                     <Plus className="h-5 w-5" />
                   </div>
-                  <p className="text-xs font-semibold text-violet-700">New project</p>
+                  <p className="text-xs font-semibold text-accent-700">New project</p>
                 </button>
                 {sortedProjects.map((project) => (
                   <ProjectCard
@@ -2066,7 +2066,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             <h2 className="text-base font-bold tracking-tight text-slate-900">Ask Spark anything</h2>
             {inflightCount > 0 && (
               <span
-                className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-violet-700"
+                className="inline-flex items-center gap-1.5 rounded-full bg-accent-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-accent-700"
                 title={`${inflightCount} build${inflightCount === 1 ? '' : 's'} running in the background — type your next idea while Spark cooks`}
               >
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -2075,13 +2075,13 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             )}
           </div>
 
-          <div ref={chatScrollRef} className="flex-1 space-y-3 overflow-y-auto bg-slate-50 px-3 pt-4 pb-6">
+          <div ref={chatScrollRef} className="flex-1 space-y-3 overflow-y-auto bg-brand-cream px-3 pt-4 pb-6">
             {messages.map((message, index) => {
               const isUser = message.role === 'user';
               return (
                 <div key={`${message.role}-${index}`} className={`flex gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
                   {!isUser && (
-                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-violet-600 text-white">
+                    <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-accent-600 text-brand-navy">
                       <Bot className="h-4 w-4" />
                     </div>
                   )}
@@ -2090,7 +2090,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                       isUser
                         ? 'max-w-[82%] rounded-2xl bg-slate-900 px-3 py-2 text-sm font-semibold leading-relaxed text-white'
                         : message.status === 'working'
-                        ? 'max-w-[82%] rounded-2xl border border-violet-200 bg-violet-50 px-3 py-2 text-sm font-semibold leading-relaxed text-violet-700'
+                        ? 'max-w-[82%] rounded-2xl border border-accent-200 bg-accent-50 px-3 py-2 text-sm font-semibold leading-relaxed text-accent-700'
                         : 'max-w-[82%] rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold leading-relaxed text-slate-700'
                     }
                   >
@@ -2116,12 +2116,12 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                         return (
                           <span className="inline-flex items-center gap-2">
                             <span className="relative flex h-2 w-2">
-                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75"></span>
-                              <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-600"></span>
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-400 opacity-75"></span>
+                              <span className="relative inline-flex h-2 w-2 rounded-full bg-accent-600"></span>
                             </span>
                             <span>{label}</span>
                             {message.startedAt ? (
-                              <span className="font-mono text-[11px] tabular-nums text-violet-500/80">
+                              <span className="font-mono text-[11px] tabular-nums text-accent-500/80">
                                 {timeStr}
                               </span>
                             ) : null}
@@ -2284,11 +2284,11 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
           <div className="border-t border-slate-200 bg-white p-3 pt-4">
             {showQuickPrompts && (
               <div className="mb-3 space-y-3">
-                <div className="rounded-xl border border-violet-200 bg-violet-50 p-3 text-center">
-                  <p className="text-xs font-semibold text-violet-700">
+                <div className="rounded-xl border border-accent-200 bg-accent-50 p-3 text-center">
+                  <p className="text-xs font-semibold text-accent-700">
                     Typing is hard — just talk!
                   </p>
-                  <p className="mt-0.5 text-[11px] font-medium text-violet-600">
+                  <p className="mt-0.5 text-[11px] font-medium text-accent-600">
                     Tap the mic below and tell Spark what to make. Tap again when you&apos;re done.
                   </p>
                 </div>
@@ -2301,7 +2301,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                         type="button"
                         onClick={() => sendPrompt(t.prompt)}
                         disabled={busy}
-                        className="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-3 text-center text-[11px] font-semibold text-slate-700 transition hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 disabled:opacity-50"
+                        className="flex flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-3 text-center text-[11px] font-semibold text-slate-700 transition hover:border-accent-300 hover:bg-accent-50 hover:text-accent-700 disabled:opacity-50"
                       >
                         {t.label}
                       </button>
@@ -2313,13 +2313,13 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
 
             {error && <p className="mb-3 text-sm font-semibold text-rose-600">{error}</p>}
             {voiceStatus && (
-              <p className="mb-3 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-800">
+              <p className="mb-3 rounded-xl border border-accent-200 bg-accent-50 px-3 py-2 text-xs font-semibold text-accent-800">
                 {voiceStatus}
               </p>
             )}
 
             {pendingImageUrl && (
-              <div className="mb-3 flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-800">
+              <div className="mb-3 flex items-center gap-3 rounded-xl border border-accent-200 bg-accent-50 px-3 py-2 text-xs font-semibold text-accent-800">
                 {/* User-uploaded thumbnail from Convex storage — variable host, skip next/image. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={pendingImageUrl} alt="Attached" className="h-10 w-10 rounded-lg object-cover" />
@@ -2327,7 +2327,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 <button
                   type="button"
                   onClick={() => setPendingImageUrl(null)}
-                  className="rounded-full p-1 text-violet-700 hover:bg-violet-200"
+                  className="rounded-full p-1 text-accent-700 hover:bg-accent-200"
                   aria-label="Remove image"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -2336,7 +2336,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             )}
 
             {imageUploading && (
-              <p className="mb-3 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-800">
+              <p className="mb-3 rounded-xl border border-accent-200 bg-accent-50 px-3 py-2 text-xs font-semibold text-accent-800">
                 Uploading image…
               </p>
             )}
@@ -2470,7 +2470,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                   }
                 }}
                 rows={2}
-                className="min-h-16 flex-1 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-violet-400"
+                className="min-h-16 flex-1 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-accent-400"
                 placeholder="What do you want to make?"
               />
               {/* Auxiliary actions: smaller (h-10 w-10) to give the
@@ -2481,7 +2481,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={busy || imageUploading}
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700 shadow-sm hover:bg-violet-200 disabled:opacity-50"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-100 text-accent-700 shadow-sm hover:bg-accent-200 disabled:opacity-50"
                 aria-label="Attach image"
                 title={isSignedIn ? 'Attach an image' : 'Sign in to attach an image'}
               >
@@ -2514,7 +2514,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 <button
                   type="submit"
                   disabled={!canSend}
-                  className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white shadow-sm hover:bg-violet-700 disabled:opacity-50"
+                  className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-600 text-brand-navy shadow-sm hover:bg-accent-700 disabled:opacity-50"
                   aria-label="Send to Spark"
                   title="Send to Spark"
                 >
@@ -2540,7 +2540,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-violet-500">Design log</p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-accent-500">Design log</p>
                   <h2 className="text-base font-bold tracking-tight text-slate-900">Every version of this project</h2>
                 </div>
                 <button type="button" onClick={() => setShowHistory(false)} className="text-sm font-semibold text-slate-500 hover:text-slate-900">
@@ -2548,17 +2548,17 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                 </button>
               </div>
               {!cloudVersions || cloudVersions.length === 0 ? (
-                <p className="rounded-xl bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500">
+                <p className="rounded-xl bg-brand-cream px-4 py-6 text-center text-sm font-semibold text-slate-500">
                   No versions yet. Your next build becomes v1.
                 </p>
               ) : (
-                <ol className="relative space-y-3 border-l-2 border-violet-100 pl-5">
+                <ol className="relative space-y-3 border-l-2 border-accent-100 pl-5">
                   {cloudVersions.map((version, index) => (
                     <li key={version.id} className="relative">
-                      <span className="absolute -left-[27px] top-2 flex h-4 w-4 items-center justify-center rounded-full bg-violet-600 text-[9px] font-semibold text-white shadow-sm">
+                      <span className="absolute -left-[27px] top-2 flex h-4 w-4 items-center justify-center rounded-full bg-accent-600 text-[9px] font-semibold text-brand-navy shadow-sm">
                         {cloudVersions.length - index}
                       </span>
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <div className="rounded-xl border border-slate-200 bg-brand-cream p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <p className="text-sm font-bold tracking-tight text-slate-900">{version.label}</p>
@@ -2568,7 +2568,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                             )}
                             {version.prompt && (
                               <p className="mt-2 rounded-lg bg-white px-3 py-2 text-xs leading-relaxed text-slate-600">
-                                <span className="font-semibold text-violet-600">Ask: </span>
+                                <span className="font-semibold text-accent-600">Ask: </span>
                                 {version.prompt}
                               </p>
                             )}
@@ -2599,7 +2599,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                                   setError(`Couldn't restore: ${text}`);
                                 }
                               }}
-                              className="shrink-0 rounded-lg border border-violet-200 bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50"
+                              className="shrink-0 rounded-lg border border-accent-200 bg-white px-3 py-1.5 text-xs font-semibold text-accent-700 hover:bg-accent-50"
                             >
                               Restore
                             </button>
@@ -2744,7 +2744,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                               downloadHtml();
                               setShowResultOverflow(false);
                             }}
-                            className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
                             role="menuitem"
                           >
                             <Download className="h-4 w-4 text-slate-400" />
@@ -2756,7 +2756,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                               printProject();
                               setShowResultOverflow(false);
                             }}
-                            className="flex w-full items-center gap-2.5 border-t border-slate-100 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            className="flex w-full items-center gap-2.5 border-t border-slate-100 px-3.5 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-brand-cream"
                             role="menuitem"
                             title="Print or save as PDF"
                           >
@@ -2789,7 +2789,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
               {busy && (
                 <div className="pointer-events-none absolute inset-3 flex items-center justify-center rounded-xl bg-slate-900/30 backdrop-blur-sm">
                   <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 px-5 py-3 shadow-lg backdrop-blur">
-                    <Loader2 className="h-5 w-5 animate-spin text-violet-600" />
+                    <Loader2 className="h-5 w-5 animate-spin text-accent-600" />
                     <span className="text-sm font-semibold text-slate-900">
                       Spark is thinking…{' '}
                       <span className="font-mono tabular-nums text-slate-500">
@@ -2980,7 +2980,7 @@ function ImageResult({
         type="button"
         onClick={download}
         disabled={busy}
-        className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-violet-700 disabled:opacity-50"
+        className="inline-flex items-center gap-2 rounded-xl bg-accent-600 px-6 py-3 text-base font-semibold text-brand-navy shadow-sm hover:bg-accent-700 disabled:opacity-50"
       >
         <Download className="h-5 w-5" />
         {busy ? 'Saving…' : 'Download image'}
@@ -3053,7 +3053,7 @@ function SegmentedTab({
     >
       {label}
       {badge !== undefined && badge > 0 && (
-        <span className={`inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold ${active ? 'bg-violet-600 text-white' : 'bg-slate-300 text-slate-700'}`}>
+        <span className={`inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold ${active ? 'bg-accent-600 text-brand-navy' : 'bg-slate-300 text-slate-700'}`}>
           {badge}
         </span>
       )}
@@ -3079,13 +3079,13 @@ function MobileNavButton({
       type="button"
       onClick={onClick}
       className={`relative flex flex-1 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider ${
-        active ? 'bg-violet-50 text-violet-700' : 'text-slate-500 hover:text-slate-800'
+        active ? 'bg-accent-50 text-accent-700' : 'text-slate-500 hover:text-slate-800'
       }`}
     >
       {icon}
       {label}
       {badge !== undefined && badge > 0 && (
-        <span className="absolute right-3 top-0.5 rounded-full bg-violet-600 px-1 text-[9px] font-semibold text-white">
+        <span className="absolute right-3 top-0.5 rounded-full bg-accent-600 px-1 text-[9px] font-semibold text-brand-navy">
           {badge}
         </span>
       )}
@@ -3113,8 +3113,8 @@ function ProjectRow({
     <div
       className={
         isActive
-          ? 'group flex items-center gap-2.5 border-b border-slate-100 bg-violet-50 px-2.5 py-2 last:border-b-0'
-          : 'group flex items-center gap-2.5 border-b border-slate-100 px-2.5 py-2 last:border-b-0 hover:bg-slate-50'
+          ? 'group flex items-center gap-2.5 border-b border-slate-100 bg-accent-50 px-2.5 py-2 last:border-b-0'
+          : 'group flex items-center gap-2.5 border-b border-slate-100 px-2.5 py-2 last:border-b-0 hover:bg-brand-cream'
       }
     >
       <button
@@ -3183,8 +3183,8 @@ function ProjectCard({
     <article
       className={
         isActive
-          ? 'group overflow-hidden rounded-2xl border-2 border-violet-400 bg-white shadow-sm'
-          : 'group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-violet-300 hover:shadow-sm'
+          ? 'group overflow-hidden rounded-2xl border-2 border-accent-400 bg-white shadow-sm'
+          : 'group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-accent-300 hover:shadow-sm'
       }
     >
       <button
@@ -3203,7 +3203,7 @@ function ProjectCard({
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
-          <div className="absolute bottom-2 right-2 rounded-full bg-violet-600 px-3 py-1 text-[11px] font-semibold text-white opacity-0 shadow-sm transition group-hover:opacity-100">
+          <div className="absolute bottom-2 right-2 rounded-full bg-accent-600 px-3 py-1 text-[11px] font-semibold text-brand-navy opacity-0 shadow-sm transition group-hover:opacity-100">
             Open
           </div>
           {isActive && (
@@ -3217,11 +3217,11 @@ function ProjectCard({
           <p className="mt-0.5 text-[11px] font-medium text-slate-400">{formatDate(project.updatedAt)}</p>
         </div>
       </button>
-      <div className="flex gap-1 border-t border-slate-100 bg-slate-50 px-2 py-1.5">
+      <div className="flex gap-1 border-t border-slate-100 bg-brand-cream px-2 py-1.5">
         <button
           type="button"
           onClick={onShare}
-          className="flex-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-white hover:text-violet-700"
+          className="flex-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-600 hover:bg-white hover:text-accent-700"
         >
           <Copy className="mr-1 inline h-3 w-3" />
           Share

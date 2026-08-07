@@ -2,8 +2,9 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAction, useQuery } from "convex/react";
+import Link from "next/link";
 import { api } from "../../../convex/_generated/api";
-import { Search, Loader2, Sparkles, Headphones } from "lucide-react";
+import { Search, Loader2, Sparkles, Headphones, BookOpen } from "lucide-react";
 import { FreeBookRequestButton } from "./FreeBookRequestButton";
 import { StylizedCover } from "./StylizedCover";
 import { AudioIndicator } from "./SourceBadge";
@@ -83,6 +84,7 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
   // Get approved books to check status
   const approvedBooks = useQuery(api.approvedBooks.listForKid, { kidId });
   const kidRequests = useQuery(api.bookRequests.listByKid, { kidId });
+  const preApprovedBooks = useQuery(api.preApprovedBooks.getPreApprovedBooks, { kidId });
 
   // Build lookup maps using gutenbergId
   const approvedGutenbergIds = new Set(
@@ -94,6 +96,9 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
     (kidRequests || [])
       .filter((r) => r.gutenbergId)
       .map((r) => [r.gutenbergId, r.status])
+  );
+  const preApprovedGutenbergIds = new Set(
+    (preApprovedBooks || []).map((b) => b.gutenbergId)
   );
 
   // Debounce
@@ -152,12 +157,12 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
   return (
     <div>
       {/* Search Bar */}
-      <div className="sticky top-0 z-10 bg-gradient-to-b from-[#FEF7EE] via-[#FEF7EE] to-transparent pb-4 pt-2">
+      <div className="sticky top-0 z-10 bg-gradient-to-b from-brand-cream via-brand-cream to-transparent pb-4 pt-2">
         <div className="relative">
           {audioOnly ? (
-            <Headphones className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-violet-400" />
+            <Headphones className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent-400" />
           ) : (
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-purple-400" />
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-accent-400" />
           )}
           <input
             type="text"
@@ -168,10 +173,10 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
                 ? "Search audiobooks..."
                 : "Search free books from all sources..."
             }
-            className="w-full rounded-2xl border-2 border-purple-100 bg-white py-4 pl-12 pr-4 text-base font-medium text-gray-900 shadow-md shadow-purple-50 placeholder:text-gray-400 focus:border-purple-300 focus:outline-none focus:ring-3 focus:ring-purple-100"
+            className="w-full rounded-2xl border-2 border-accent-100 bg-white py-4 pl-12 pr-4 text-base font-medium text-brand-navy shadow-md shadow-accent-50 placeholder:text-gray-400 focus:border-accent-300 focus:outline-none focus:ring-3 focus:ring-accent-100"
           />
           {isSearching && (
-            <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-purple-500" />
+            <Loader2 className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-accent-500" />
           )}
         </div>
       </div>
@@ -179,8 +184,8 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
       {/* Results */}
       {isSearching && results.length === 0 && (
         <div className="flex flex-col items-center py-12">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-50">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-50">
+            <Loader2 className="h-8 w-8 animate-spin text-accent-400" />
           </div>
           <p className="mt-4 text-sm font-medium text-gray-500">
             {audioOnly ? "Searching audiobooks..." : "Searching all sources..."}
@@ -204,14 +209,14 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
 
       {!hasSearched && !isSearching && (
         <div className="flex flex-col items-center py-12 text-center">
-          <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-teal-200">
+          <div className="animate-float flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-accent-100 to-accent-200">
             {audioOnly ? (
-              <Headphones className="h-10 w-10 text-violet-500" />
+              <Headphones className="h-10 w-10 text-accent-500" />
             ) : (
-              <Sparkles className="h-10 w-10 text-emerald-500" />
+              <Sparkles className="h-10 w-10 text-accent-500" />
             )}
           </div>
-          <p className="mt-5 text-xl font-bold text-gray-800">
+          <p className="mt-5 text-xl font-bold text-brand-navy">
             {audioOnly ? "Audiobooks" : "Find Books"}
           </p>
           <p className="mt-2 max-w-xs text-sm text-gray-400">
@@ -228,7 +233,7 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
           return (
             <div
               key={book.id}
-              className="flex gap-3.5 rounded-2xl border-2 border-transparent bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:border-purple-100 hover:shadow-lg"
+              className="flex gap-3.5 rounded-2xl border-2 border-transparent bg-white p-3.5 shadow-md ring-1 ring-black/5 transition-all duration-200 hover:border-accent-100 hover:shadow-lg"
             >
               {/* Cover */}
               <div className="relative h-28 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100 shadow-sm">
@@ -258,7 +263,7 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
                 {/* Audio indicator overlay */}
                 {(book.hasAudio || book.source === "librivox" || book.source === "lit2go") && (
                   <div className="absolute right-1 top-1">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-[8px] text-white shadow-sm">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-500 text-[8px] text-white shadow-sm">
                       {"\uD83C\uDFA7"}
                     </span>
                   </div>
@@ -268,7 +273,7 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
               {/* Info */}
               <div className="flex min-w-0 flex-1 flex-col justify-between">
                 <div>
-                  <h3 className="line-clamp-2 text-sm font-bold text-gray-900">
+                  <h3 className="line-clamp-2 text-sm font-bold text-brand-navy">
                     {book.title}
                   </h3>
                   <p className="mt-0.5 text-xs font-medium text-gray-400">
@@ -295,17 +300,29 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
 
                 <div className="mt-2.5 flex items-center justify-end">
 
-                  {/* Only show request button for Gutenberg books (others need different handling) */}
+                  {/* Pre-approved classics skip the "Ask Parent" flow — kid can
+                      read them directly. Only unapproved Gutenberg books show
+                      the request button. */}
                   {book.source === "gutenberg" && (
-                    <FreeBookRequestButton
-                      kidId={kidId}
-                      gutenbergId={rawId}
-                      title={book.title}
-                      author={book.authors.join(", ") || "Unknown Author"}
-                      coverUrl={book.coverUrl}
-                      requestStatus={requestStatusByGutenberg.get(rawId) || null}
-                      isApproved={approvedGutenbergIds.has(rawId)}
-                    />
+                    preApprovedGutenbergIds.has(rawId) ? (
+                      <Link
+                        href={`/read/book/gutenberg:${rawId}`}
+                        className="kid-touch flex min-h-[44px] items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-200 transition-all duration-200 hover:from-emerald-600 hover:to-teal-600 hover:shadow-lg active:scale-95"
+                      >
+                        <BookOpen className="h-3.5 w-3.5" />
+                        Read Now
+                      </Link>
+                    ) : (
+                      <FreeBookRequestButton
+                        kidId={kidId}
+                        gutenbergId={rawId}
+                        title={book.title}
+                        author={book.authors.join(", ") || "Unknown Author"}
+                        coverUrl={book.coverUrl}
+                        requestStatus={requestStatusByGutenberg.get(rawId) || null}
+                        isApproved={approvedGutenbergIds.has(rawId)}
+                      />
+                    )
                   )}
                 </div>
               </div>

@@ -53,7 +53,7 @@ export function ParentInsightsCard({ insights }: ParentInsightsCardProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="font-serif text-lg font-bold text-ink-900">
+      <h3 className="font-display text-lg font-bold text-brand-navy">
         Parent Insights
       </h3>
 
@@ -83,11 +83,11 @@ export function ParentInsightsCard({ insights }: ParentInsightsCardProps) {
 
       {/* Series Context */}
       {seriesContext && (
-        <div className="rounded-xl border border-parchment-200 bg-white p-4">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-4">
           <div className="flex items-start gap-3">
-            <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-parchment-600" />
+            <BookOpen className="mt-0.5 h-5 w-5 shrink-0 text-accent-600" />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-ink-900">
+              <p className="text-sm font-semibold text-brand-navy">
                 {seriesContext.seriesName}
                 {seriesContext.bookNumber && (
                   <span className="ml-2 text-xs font-normal text-ink-500">
@@ -105,11 +105,11 @@ export function ParentInsightsCard({ insights }: ParentInsightsCardProps) {
 
       {/* Parent Community Notes */}
       {parentCommunityNotes && (
-        <div className="rounded-xl border border-parchment-200 bg-white p-4">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-4">
           <div className="flex items-start gap-3">
-            <Users className="mt-0.5 h-5 w-5 shrink-0 text-parchment-600" />
+            <Users className="mt-0.5 h-5 w-5 shrink-0 text-accent-600" />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-ink-900">
+              <p className="text-sm font-semibold text-brand-navy">
                 What Parents Say
               </p>
               <p className="mt-1 text-sm leading-relaxed text-ink-600">
@@ -122,11 +122,11 @@ export function ParentInsightsCard({ insights }: ParentInsightsCardProps) {
 
       {/* Comparable Books */}
       {comparableBooks && (
-        <div className="rounded-xl border border-parchment-200 bg-white p-4">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-4">
           <div className="flex items-start gap-3">
-            <MessageCircle className="mt-0.5 h-5 w-5 shrink-0 text-parchment-600" />
+            <MessageCircle className="mt-0.5 h-5 w-5 shrink-0 text-accent-600" />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-ink-900">
+              <p className="text-sm font-semibold text-brand-navy">
                 How It Compares
               </p>
               <p className="mt-1 text-sm leading-relaxed text-ink-600">
@@ -139,11 +139,11 @@ export function ParentInsightsCard({ insights }: ParentInsightsCardProps) {
 
       {/* Parent Talking Points */}
       {parentTalkingPoints && parentTalkingPoints.length > 0 && (
-        <div className="rounded-xl border border-parchment-200 bg-white p-4">
+        <div className="rounded-2xl border border-brand-cream-2 bg-white p-4">
           <div className="flex items-start gap-3">
-            <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-parchment-600" />
+            <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-accent-600" />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-ink-900">
+              <p className="text-sm font-semibold text-brand-navy">
                 Talking Points
               </p>
               <ul className="mt-2 space-y-2">
@@ -152,7 +152,7 @@ export function ParentInsightsCard({ insights }: ParentInsightsCardProps) {
                     key={i}
                     className="text-sm leading-relaxed text-ink-600"
                   >
-                    <span className="mr-1.5 text-parchment-400">&bull;</span>
+                    <span className="mr-1.5 text-accent-400">&bull;</span>
                     {point}
                   </li>
                 ))}
