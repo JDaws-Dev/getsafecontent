@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { cascadeDeleteKidProfile, cascadeDeleteUser } from "./lib/cascadeDelete";
 
 // Generate a random 6-character family code
@@ -135,7 +135,7 @@ export const createOrUpdateUser = mutation({
     });
 
     // Schedule welcome emails from backend
-    await ctx.scheduler.runAfter(0, api.emails.sendTrialSignupEmails, {
+    await ctx.scheduler.runAfter(0, internal.emails.sendTrialSignupEmails, {
       userEmail: args.email,
       userName: args.name || "there",
     });

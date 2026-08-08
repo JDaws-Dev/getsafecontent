@@ -1,8 +1,8 @@
-import { mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 // Cleanup function to remove broken Star Wars song approvals
-export const removeStarWarsSongs = mutation({
+export const removeStarWarsSongs = internalMutation({
   args: {
     userId: v.id("users"),
   },

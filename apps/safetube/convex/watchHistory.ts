@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { evaluateTimeLimit } from "./timeLimits";
 
 // Record a video watch
@@ -241,7 +241,7 @@ export const getRecentHistory = query({
 });
 
 // Remove watch history entries with "Unknown Channel" (cleanup bad data)
-export const removeUnknownChannelHistory = mutation({
+export const removeUnknownChannelHistory = internalMutation({
   args: {
     kidProfileId: v.id("kidProfiles"),
   },
@@ -261,7 +261,7 @@ export const removeUnknownChannelHistory = mutation({
 });
 
 // Remove watch history for a specific video (called when video is removed from library)
-export const removeVideoFromHistory = mutation({
+export const removeVideoFromHistory = internalMutation({
   args: {
     kidProfileId: v.id("kidProfiles"),
     videoId: v.string(),
@@ -284,7 +284,7 @@ export const removeVideoFromHistory = mutation({
 });
 
 // Clear old watch history (optional - for cleanup)
-export const clearOldHistory = mutation({
+export const clearOldHistory = internalMutation({
   args: {
     kidProfileId: v.id("kidProfiles"),
     daysToKeep: v.number(),

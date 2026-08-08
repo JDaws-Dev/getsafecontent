@@ -1,8 +1,8 @@
-import { mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 // MIGRATION: Fix null kidProfileId songs by copying to all kids
-export const fixSongs = mutation({
+export const fixSongs = internalMutation({
   args: {
     userEmail: v.string(),
   },
@@ -103,7 +103,7 @@ export const fixSongs = mutation({
 });
 
 // MIGRATION: Fix null kidProfileId albums by copying to all kids
-export const fixAlbums = mutation({
+export const fixAlbums = internalMutation({
   args: {
     userEmail: v.string(),
   },

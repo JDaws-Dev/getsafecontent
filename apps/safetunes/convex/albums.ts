@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { requireOwner } from "./identity";
 
 // ============================================================================
@@ -1304,7 +1304,7 @@ export const addDiscoverAlbumToKidLibrary = mutation({
 // NOTE: approvedSongs already track per-kid access, so we don't lose that data
 // ============================================================================
 
-export const migrateToUnifiedAlbumModel = mutation({
+export const migrateToUnifiedAlbumModel = internalMutation({
   args: {},
   handler: async (ctx) => {
     console.log('[MIGRATION] Starting unified album model migration...');
@@ -1389,7 +1389,7 @@ export const migrateToUnifiedAlbumModel = mutation({
 });
 
 // Remove an album by appleAlbumId (deletes album and all its approved songs)
-export const removeAlbumByAppleId = mutation({
+export const removeAlbumByAppleId = internalMutation({
   args: {
     userId: v.id("users"),
     appleAlbumId: v.string(),
@@ -1429,7 +1429,7 @@ export const removeAlbumByAppleId = mutation({
 });
 
 // Remove an album by NAME (fallback when no appleAlbumId)
-export const removeAlbumByName = mutation({
+export const removeAlbumByName = internalMutation({
   args: {
     userId: v.id("users"),
     albumName: v.string(),

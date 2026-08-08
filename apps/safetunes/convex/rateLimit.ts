@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, MutationCtx } from "./_generated/server";
+import { MutationCtx, internalMutation, mutation } from "./_generated/server";
 
 /**
  * Rate Limiting Configuration
@@ -111,7 +111,7 @@ export async function checkRateLimit(
 /**
  * Clean up expired rate limit records (can be called periodically)
  */
-export const cleanupExpiredRateLimits = mutation({
+export const cleanupExpiredRateLimits = internalMutation({
   args: {},
   handler: async (ctx) => {
     const now = Date.now();
@@ -135,7 +135,7 @@ export const cleanupExpiredRateLimits = mutation({
 /**
  * Reset rate limit for a specific identifier/action (admin use)
  */
-export const resetRateLimit = mutation({
+export const resetRateLimit = internalMutation({
   args: {
     identifier: v.string(),
     action: v.string(),

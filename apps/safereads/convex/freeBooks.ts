@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { action, query, mutation, internalMutation } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 // ============================================================================
 // Project Gutenberg Integration (via Gutendex API)
@@ -407,7 +407,7 @@ export const browseByGenre = action({
       ).slice(0, 20);
 
       // Cache the results
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });
@@ -567,7 +567,7 @@ export const getCuratedFreeBooks = action({
       ).slice(0, 8);
 
       // Cache the results
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });
@@ -604,7 +604,7 @@ export const getFromCache = query({
 /**
  * Save free book results to cache. Overwrites existing entry for same key.
  */
-export const saveToCache = mutation({
+export const saveToCache = internalMutation({
   args: {
     cacheKey: v.string(),
     results: v.string(),
@@ -759,7 +759,7 @@ export const searchAllSources = action({
     finalResults = finalResults.slice(0, 30);
 
     // Cache
-    await ctx.runMutation(api.freeBooks.saveToCache, {
+    await ctx.runMutation(internal.freeBooks.saveToCache, {
       cacheKey,
       results: JSON.stringify(finalResults),
     });
@@ -948,7 +948,7 @@ export const getLibraryBooks = action({
     };
 
     // Cache
-    await ctx.runMutation(api.freeBooks.saveToCache, {
+    await ctx.runMutation(internal.freeBooks.saveToCache, {
       cacheKey,
       results: JSON.stringify(result),
     });
@@ -995,7 +995,7 @@ export const getCuratedAudiobooks = action({
         if (allResults.length >= 16) break; // Show more audiobooks
       }
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(allResults),
       });

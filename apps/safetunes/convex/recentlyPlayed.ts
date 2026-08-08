@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 
 // Get recently played items for a kid profile (filtered to only show approved songs)
 export const getRecentlyPlayed = query({
@@ -249,7 +249,7 @@ export const getMostPlayed = query({
 });
 
 // Clear recently played for a kid profile
-export const clearRecentlyPlayed = mutation({
+export const clearRecentlyPlayed = internalMutation({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
     const items = await ctx.db

@@ -149,7 +149,7 @@ export const sendTrialSignupEmails = action({
 /**
  * Send subscription confirmation email (when user pays)
  */
-export const sendSubscriptionConfirmation = action({
+export const sendSubscriptionConfirmation = internalAction({
   args: {
     email: v.string(),
     name: v.string(),
@@ -240,7 +240,7 @@ export const sendSubscriptionConfirmation = action({
 /**
  * Send cancellation confirmation email
  */
-export const sendCancellationConfirmation = action({
+export const sendCancellationConfirmation = internalAction({
   args: {
     email: v.string(),
     name: v.string(),
@@ -291,7 +291,7 @@ export const sendCancellationConfirmation = action({
 /**
  * Send payment failed email
  */
-export const sendPaymentFailedEmail = action({
+export const sendPaymentFailedEmail = internalAction({
   args: {
     email: v.string(),
     name: v.string(),
@@ -402,7 +402,7 @@ export const sendCancellationReasonEmail = action({
  * Send batched channel/video request notification email
  * This email summarizes multiple requests from kids to prevent spam
  */
-export const sendBatchedRequestNotification = action({
+export const sendBatchedRequestNotification = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.optional(v.string()),
@@ -530,7 +530,7 @@ export const sendBatchedRequestNotification = action({
 /**
  * Send admin notification when someone signs up via Stripe
  */
-export const sendAdminNotification = action({
+export const sendAdminNotification = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.string(),

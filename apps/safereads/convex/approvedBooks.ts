@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 
 /**
  * Add a book to a kid's approved shelf.
@@ -74,7 +74,7 @@ export const removeForKid = mutation({
 /**
  * Remove an approved book by its ID.
  */
-export const removeById = mutation({
+export const removeById = internalMutation({
   args: { approvedBookId: v.id("approvedBooks") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.approvedBookId);

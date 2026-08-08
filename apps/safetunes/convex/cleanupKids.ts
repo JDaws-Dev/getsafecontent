@@ -1,8 +1,8 @@
-import { mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 // Delete all music data for specific kid profiles
-export const deleteAllMusicForKids = mutation({
+export const deleteAllMusicForKids = internalMutation({
   args: {
     userEmail: v.string(),
     kidNames: v.array(v.string()),
@@ -114,7 +114,7 @@ export const deleteAllMusicForKids = mutation({
 });
 
 // MIGRATION: Fix null kidProfileId songs by copying to all kids
-export const fixNullKidProfileSongs = mutation({
+export const fixNullKidProfileSongs = internalMutation({
   args: {
     userEmail: v.string(),
   },
@@ -215,7 +215,7 @@ export const fixNullKidProfileSongs = mutation({
 });
 
 // MIGRATION: Fix null kidProfileId albums by copying to all kids
-export const fixNullKidProfileAlbums = mutation({
+export const fixNullKidProfileAlbums = internalMutation({
   args: {
     userEmail: v.string(),
   },
@@ -315,7 +315,7 @@ export const fixNullKidProfileAlbums = mutation({
 });
 
 // Also delete orphaned songs/albums (those without a kidProfileId)
-export const deleteOrphanedMusic = mutation({
+export const deleteOrphanedMusic = internalMutation({
   args: {
     userEmail: v.string(),
   },

@@ -8,7 +8,7 @@ import { Resend } from "resend";
  * Send notification emails when a new trial user signs up
  * Sends both admin notification and user welcome email
  */
-export const sendTrialSignupEmails = action({
+export const sendTrialSignupEmails = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.string(),

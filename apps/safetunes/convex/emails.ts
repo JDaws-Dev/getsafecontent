@@ -5,7 +5,7 @@ import { v } from "convex/values";
 import { Resend } from "resend";
 
 // Send subscription confirmation email
-export const sendSubscriptionConfirmation = action({
+export const sendSubscriptionConfirmation = internalAction({
   args: {
     email: v.string(),
     name: v.string(),
@@ -101,7 +101,7 @@ export const sendSubscriptionConfirmation = action({
 });
 
 // Send cancellation confirmation email
-export const sendCancellationConfirmation = action({
+export const sendCancellationConfirmation = internalAction({
   args: {
     email: v.string(),
     name: v.string(),
@@ -150,7 +150,7 @@ export const sendCancellationConfirmation = action({
 });
 
 // Send payment failed email
-export const sendPaymentFailedEmail = action({
+export const sendPaymentFailedEmail = internalAction({
   args: {
     email: v.string(),
     name: v.string(),
@@ -202,7 +202,7 @@ export const sendPaymentFailedEmail = action({
 });
 
 // Send admin notification when someone signs up
-export const sendAdminNotification = action({
+export const sendAdminNotification = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.string(),
@@ -320,7 +320,7 @@ export const sendCancellationReasonEmail = action({
  * Send batched music request notification email
  * This email summarizes multiple requests from kids to prevent spam
  */
-export const sendBatchedRequestNotification = action({
+export const sendBatchedRequestNotification = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.optional(v.string()),
@@ -448,7 +448,7 @@ export const sendBatchedRequestNotification = action({
  * Send notification emails when a new trial user signs up (no Stripe required)
  * This sends both admin notification and user welcome email
  */
-export const sendTrialSignupEmails = action({
+export const sendTrialSignupEmails = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.string(),

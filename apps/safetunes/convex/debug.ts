@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 // DEBUG: Analyze songs/albums with null kidProfileId
@@ -62,7 +62,7 @@ export const analyzeNullKidProfiles = mutation({
 });
 
 // ONE-TIME MIGRATION: Fix songs with null kidProfileId
-export const fixNullKidProfileSongs = mutation({
+export const fixNullKidProfileSongs = internalMutation({
   args: {},
   handler: async (ctx) => {
     const songs = await ctx.db.query("approvedSongs").collect();
@@ -135,7 +135,7 @@ export const fixNullKidProfileSongs = mutation({
 });
 
 // ONE-TIME MIGRATION: Fix albums with null kidProfileId
-export const fixNullKidProfileAlbums = mutation({
+export const fixNullKidProfileAlbums = internalMutation({
   args: {},
   handler: async (ctx) => {
     const albums = await ctx.db.query("approvedAlbums").collect();
@@ -295,7 +295,7 @@ export const findContentByName = query({
 
 // Clean up bad "cached-lyrics-only" entries from contentReviewCache
 // These are fake review entries created by the lyrics caching that pollute the AI review cache
-export const cleanupBadCacheEntries = mutation({
+export const cleanupBadCacheEntries = internalMutation({
   args: {},
   handler: async (ctx) => {
     const allCache = await ctx.db.query("contentReviewCache").collect();

@@ -420,7 +420,7 @@ export const updateLastLogin = mutation({
  * Soft-deletes the account by removing personal data but keeping audit trail.
  * Logs the deletion event for compliance.
  */
-export const deleteAccount = mutation({
+export const deleteAccount = internalMutation({
   args: {
     userId: v.id("users"),
     reason: v.optional(v.string()), // User-provided reason for deletion

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 // ============================================================================
 // Book Dash Integration (via Global Digital Library)
@@ -167,7 +167,7 @@ export const searchBookDash = action({
         publisher: book.publisher,
       }));
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });
@@ -234,7 +234,7 @@ export const browseBookDash = action({
         publisher: book.publisher,
       }));
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });

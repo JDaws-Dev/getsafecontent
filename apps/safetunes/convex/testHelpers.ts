@@ -1,5 +1,5 @@
 // Test helper functions for manual testing
-import { query, mutation } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 // Get first user for testing
@@ -46,7 +46,7 @@ export const analyzeNullKidProfiles = mutation({
 });
 
 // MIGRATION: Fix null kidProfileId songs by copying to all kids
-export const fixNullSongs = mutation({
+export const fixNullSongs = internalMutation({
   args: {
     userEmail: v.string(),
   },
@@ -138,7 +138,7 @@ export const fixNullSongs = mutation({
 });
 
 // MIGRATION: Fix null kidProfileId albums by copying to all kids
-export const fixNullAlbums = mutation({
+export const fixNullAlbums = internalMutation({
   args: {
     userEmail: v.string(),
   },

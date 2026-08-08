@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 // ============================================================================
 // LibriVox Integration (Free Audiobooks)
@@ -184,7 +184,7 @@ export const searchLibriVox = action({
         .slice(0, 20)
         .map(parseLibriVoxBook);
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });
@@ -255,7 +255,7 @@ export const getLibriVoxChapters = action({
 
       const result = { chapters };
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(result),
       });
@@ -324,7 +324,7 @@ export const browseLibriVox = action({
         .slice(0, 20)
         .map(parseLibriVoxBook);
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });
@@ -384,7 +384,7 @@ export const findAudioMatch = action({
       const book = data.books[0];
       const result = parseLibriVoxBook(book);
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(result),
       });
@@ -475,7 +475,7 @@ export const browseLibriVoxChildren = action({
         .slice(0, limit)
         .map(parseLibriVoxBook);
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });
@@ -608,7 +608,7 @@ export const browseLibriVoxByGenre = action({
         .slice(0, limit)
         .map(parseLibriVoxBook);
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });

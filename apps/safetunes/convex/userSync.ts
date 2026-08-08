@@ -146,7 +146,7 @@ export const ensureSafeTunesUser = mutation({
     });
 
     // Send welcome email since they probably didn't get one
-    await ctx.scheduler.runAfter(0, api.emails.sendTrialSignupEmails, {
+    await ctx.scheduler.runAfter(0, internal.emails.sendTrialSignupEmails, {
       userEmail: args.email,
       userName: args.name,
     });

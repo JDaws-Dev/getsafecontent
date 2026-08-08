@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 
 // DEBUG: Analyze songs/albums with null kidProfileId
 export const analyze = mutation({
@@ -72,7 +72,7 @@ export const analyze = mutation({
 
 // ONE-TIME MIGRATION: Fix songs with null kidProfileId
 // Creates a copy of each song for EACH kid profile of that user, then deletes the original
-export const fixSongs = mutation({
+export const fixSongs = internalMutation({
   args: {},
   handler: async (ctx) => {
     const songs = await ctx.db.query("approvedSongs").collect();
@@ -163,7 +163,7 @@ export const fixSongs = mutation({
 
 // ONE-TIME MIGRATION: Fix albums with null kidProfileId
 // Creates a copy of each album for EACH kid profile of that user, then deletes the original
-export const fixAlbums = mutation({
+export const fixAlbums = internalMutation({
   args: {},
   handler: async (ctx) => {
     const albums = await ctx.db.query("approvedAlbums").collect();

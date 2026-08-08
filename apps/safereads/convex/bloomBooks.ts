@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 // ============================================================================
 // Bloom Library Integration (OPDS Catalog)
@@ -150,7 +150,7 @@ export const searchBloom = action({
       }));
 
       // Cache results
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });
@@ -215,7 +215,7 @@ export const browseBloom = action({
         ageRange: "3-9",
       }));
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });

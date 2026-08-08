@@ -72,7 +72,7 @@ export const sendPushNotificationInternal = internalAction({
 
         // If subscription is expired or invalid (410 Gone, 404 Not Found), remove it
         if (err.statusCode === 410 || err.statusCode === 404) {
-          await ctx.runMutation(api.pushSubscriptions.removeInvalidSubscription, {
+          await ctx.runMutation(internal.pushSubscriptions.removeInvalidSubscription, {
             subscriptionId: subscription._id,
           });
           console.log(`Removed expired subscription ${subscription._id}`);

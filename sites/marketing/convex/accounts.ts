@@ -419,7 +419,7 @@ export const updateAccount = mutation({
  *
  * Called when user logs into any app.
  */
-export const updateLastLogin = mutation({
+export const updateLastLogin = internalMutation({
   args: {
     userId: v.id("users"),
   },

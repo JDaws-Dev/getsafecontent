@@ -8,7 +8,7 @@ import { Resend } from "resend";
 /**
  * Send welcome email to a new user who just signed up for a trial
  */
-export const sendWelcomeEmail = action({
+export const sendWelcomeEmail = internalAction({
   args: {
     email: v.string(),
     name: v.optional(v.string()),
@@ -96,7 +96,7 @@ export const sendWelcomeEmail = action({
  * Send admin notification when a new user signs up for SafeReads,
  * and also send the user a welcome email.
  */
-export const sendTrialSignupNotification = action({
+export const sendTrialSignupNotification = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.optional(v.string()),
@@ -231,7 +231,7 @@ export const sendWelcomeEmailInternal = internalAction({
 /**
  * Send cancellation confirmation email to user
  */
-export const sendCancellationConfirmation = action({
+export const sendCancellationConfirmation = internalAction({
   args: {
     email: v.string(),
     name: v.string(),
@@ -318,7 +318,7 @@ export const sendCancellationConfirmation = action({
 /**
  * Send admin notification when someone cancels their subscription
  */
-export const sendCancellationReasonEmail = action({
+export const sendCancellationReasonEmail = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.string(),

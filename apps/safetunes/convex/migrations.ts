@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./_generated/server";
 
 // Helper function to generate a unique 6-character family code
 function generateFamilyCode(): string {
@@ -185,7 +185,7 @@ export const fixRecentlyPlayedArtwork = mutation({
 });
 
 // CLEANUP: Clear all recently played data
-export const clearRecentlyPlayed = mutation({
+export const clearRecentlyPlayed = internalMutation({
   args: {},
   handler: async (ctx) => {
     const allRecentlyPlayed = await ctx.db.query("recentlyPlayed").collect();
@@ -306,7 +306,7 @@ export const analyzeNullKidProfileIds = mutation({
 
 // ONE-TIME MIGRATION: Fix songs with null kidProfileId
 // Creates a copy of each song for EACH kid profile of that user, then deletes the original
-export const fixNullKidProfileSongs = mutation({
+export const fixNullKidProfileSongs = internalMutation({
   args: {},
   handler: async (ctx) => {
     const songs = await ctx.db.query("approvedSongs").collect();
@@ -397,7 +397,7 @@ export const fixNullKidProfileSongs = mutation({
 
 // ONE-TIME MIGRATION: Fix albums with null kidProfileId
 // Creates a copy of each album for EACH kid profile of that user, then deletes the original
-export const fixNullKidProfileAlbums = mutation({
+export const fixNullKidProfileAlbums = internalMutation({
   args: {},
   handler: async (ctx) => {
     const albums = await ctx.db.query("approvedAlbums").collect();

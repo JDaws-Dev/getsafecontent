@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 
 // Get push subscriptions for a user
 export const getSubscriptions = query({
@@ -64,7 +64,7 @@ export const saveSubscription = mutation({
 });
 
 // Remove a push subscription
-export const removeSubscription = mutation({
+export const removeSubscription = internalMutation({
   args: { endpoint: v.string() },
   handler: async (ctx, args) => {
     const subscription = await ctx.db
@@ -79,7 +79,7 @@ export const removeSubscription = mutation({
 });
 
 // Remove all subscriptions for a user
-export const removeAllSubscriptions = mutation({
+export const removeAllSubscriptions = internalMutation({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     const subscriptions = await ctx.db
@@ -104,7 +104,7 @@ export const updateLastUsed = mutation({
 });
 
 // Internal mutation to remove invalid subscription
-export const removeInvalidSubscription = mutation({
+export const removeInvalidSubscription = internalMutation({
   args: { subscriptionId: v.id("pushSubscriptions") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.subscriptionId);

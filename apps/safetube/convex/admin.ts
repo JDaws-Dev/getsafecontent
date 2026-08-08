@@ -162,7 +162,7 @@ export const grantLifetimeByEmail = internalMutation({
 });
 
 // Remove watch history entries with "Unknown Channel" (cleanup bad data)
-export const cleanupUnknownChannelHistory = mutation({
+export const cleanupUnknownChannelHistory = internalMutation({
   args: {
     kidProfileId: v.id("kidProfiles"),
   },

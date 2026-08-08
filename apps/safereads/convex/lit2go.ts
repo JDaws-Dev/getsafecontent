@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 // ============================================================================
 // Lit2Go Integration (University of South Florida)
@@ -179,7 +179,7 @@ export const searchLit2Go = action({
         bookUrl: book.bookUrl,
       }));
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });
@@ -225,7 +225,7 @@ export const getLit2GoAudio = action({
 
       const result = { chapters };
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(result),
       });
@@ -281,7 +281,7 @@ export const browseLit2Go = action({
         bookUrl: book.bookUrl,
       }));
 
-      await ctx.runMutation(api.freeBooks.saveToCache, {
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
         cacheKey,
         results: JSON.stringify(results),
       });

@@ -157,7 +157,7 @@ export default httpAction(async (ctx, request) => {
 
         // Send emails (non-critical, don't fail webhook if emails fail)
         try {
-          await ctx.runAction(api.emails.sendSubscriptionConfirmation, {
+          await ctx.runAction(internal.emails.sendSubscriptionConfirmation, {
             email: customerEmail,
             name: session.customer_details?.name || customerEmail.split('@')[0],
             subscriptionType: isTrial ? "trial" : "paid",
@@ -170,7 +170,7 @@ export default httpAction(async (ctx, request) => {
         // Admin notification now handled centrally by Marketing webhook
         // See sites/marketing/src/app/api/stripe/webhook/route.ts
         // try {
-        //   await ctx.runAction(api.emails.sendAdminNotification, {
+        //   await ctx.runAction(internal.emails.sendAdminNotification, {
         //     userEmail: customerEmail,
         //     userName: session.customer_details?.name || customerEmail.split('@')[0],
         //     subscriptionType: isTrial ? "trial" : "paid",
@@ -224,7 +224,7 @@ export default httpAction(async (ctx, request) => {
         if (subscription.cancel_at_period_end && subscription.metadata?.email) {
           try {
             const customer = await stripe.customers.retrieve(subscription.customer as string);
-            await ctx.runAction(api.emails.sendCancellationConfirmation, {
+            await ctx.runAction(internal.emails.sendCancellationConfirmation, {
               email: subscription.metadata.email,
               name: (customer as Stripe.Customer).name || subscription.metadata.email.split('@')[0],
               endsAt: subscription.current_period_end * 1000,
@@ -374,7 +374,7 @@ export default httpAction(async (ctx, request) => {
           if (invoice.customer_email) {
             try {
               const failedCustomer = await stripe.customers.retrieve(invoice.customer as string);
-              await ctx.runAction(api.emails.sendPaymentFailedEmail, {
+              await ctx.runAction(internal.emails.sendPaymentFailedEmail, {
                 email: invoice.customer_email,
                 name: (failedCustomer as Stripe.Customer).name || invoice.customer_email.split('@')[0],
                 amountDue: invoice.amount_due,
