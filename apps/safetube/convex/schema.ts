@@ -68,6 +68,29 @@ export default defineSchema({
   })
     .index("by_user", ["userId"]),
 
+  // Cached view of the FAMILY-WIDE daily limit held by Marketing Central.
+  //
+  // Convex queries can't make network calls, and the content gate
+  // (videos.getPlayableContent) is a query — so an action refreshes this row
+  // and the query reads it. Same shape as the existing subscription-sync cache.
+  //
+  // If central says a combined limit is set, it REPLACES this app's own
+  // per-kid limit (parents pick one or the other, not both). If not set, or if
+  // we can't reach central, the app falls back to its own limit.
+  sharedScreenTimeCache: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    day: v.string(), // "YYYY-MM-DD" in the family's timezone
+    limitSet: v.boolean(), // is the family-wide limit in force?
+    allowed: v.boolean(),
+    usedMinutes: v.number(),
+    limitMinutes: v.number(),
+    remainingMinutes: v.optional(v.number()),
+    // Seconds already reported to central for this kid+day, so repeated syncs
+    // send only the delta and never double-count.
+    reportedSeconds: v.number(),
+    syncedAt: v.number(),
+  }).index("by_kid_day", ["kidProfileId", "day"]),
+
   // Approved YouTube channels
   approvedChannels: defineTable({
     userId: v.id("users"),

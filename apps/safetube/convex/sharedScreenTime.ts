@@ -1,0 +1,185 @@
+import { v } from "convex/values";
+import { action, internalMutation, internalQuery } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { dayKeyForTimezone } from "./timeLimits";
+
+/**
+ * Bridge to the FAMILY-WIDE daily screen-time limit held by Marketing Central.
+ *
+ * Parents choose ONE of two things:
+ *   - a per-app limit (this app's own timeLimits table), or
+ *   - one overall limit covering all five Safe Family apps.
+ * Setting an overall limit is the toggle: when central reports `limitSet`, it
+ * REPLACES this app's limit. Clear it and the per-app limit governs again.
+ *
+ * Convex queries cannot make network calls, and the content gate
+ * (videos.getPlayableContent) is a query. So this action refreshes a local
+ * cache row and the query reads that — the same pattern the subscription sync
+ * already uses.
+ *
+ * FAILS OPEN throughout. If central is unreachable, or ADMIN_KEY is missing, we
+ * leave the cache alone and the app falls back to its own per-app limit. A kid
+ * locked out of every app because central had a bad minute is much worse than a
+ * kid getting some extra screen time.
+ */
+
+const CENTRAL_URL =
+  process.env.CENTRAL_ACCOUNTS_URL || "https://adamant-crow-705.convex.site";
+const APP = "safetube";
+
+/** Identity + today's locally-observed usage for one kid. */
+export const kidSyncContext = internalQuery({
+  args: { kidProfileId: v.id("kidProfiles") },
+  handler: async (ctx, args) => {
+    const profile = await ctx.db.get(args.kidProfileId);
+    if (!profile) return null;
+    const parent = await ctx.db.get(profile.userId);
+    if (!parent?.familyCode) return null; // can't be matched across apps without it
+
+    const day = dayKeyForTimezone(parent.timezone);
+
+    // Today's watch seconds as THIS app sees them.
+    const startOfDay = Date.parse(day + "T00:00:00Z"); // coarse; only used to bound the scan
+    const history = await ctx.db
+      .query("watchHistory")
+      .withIndex("by_kid_recent", (q) => q.eq("kidProfileId", args.kidProfileId))
+      .filter((q) => q.gte(q.field("watchedAt"), startOfDay - 24 * 60 * 60 * 1000))
+      .collect();
+    const todaySeconds = history
+      .filter((h) => dayKeyForTimezone(parent.timezone, h.watchedAt) === day)
+      .reduce((sum, h) => sum + (h.watchDurationSeconds || 0), 0);
+
+    const cache = await ctx.db
+      .query("sharedScreenTimeCache")
+      .withIndex("by_kid_day", (q) =>
+        q.eq("kidProfileId", args.kidProfileId).eq("day", day)
+      )
+      .first();
+
+    return {
+      familyCode: parent.familyCode,
+      kidName: profile.name,
+      day,
+      todaySeconds,
+      reportedSeconds: cache?.reportedSeconds ?? 0,
+    };
+  },
+});
+
+/** Write back what central told us. */
+export const storeSyncResult = internalMutation({
+  args: {
+    kidProfileId: v.id("kidProfiles"),
+    day: v.string(),
+    limitSet: v.boolean(),
+    allowed: v.boolean(),
+    usedMinutes: v.number(),
+    limitMinutes: v.number(),
+    remainingMinutes: v.optional(v.number()),
+    reportedSeconds: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("sharedScreenTimeCache")
+      .withIndex("by_kid_day", (q) =>
+        q.eq("kidProfileId", args.kidProfileId).eq("day", args.day)
+      )
+      .first();
+    const row = { ...args, syncedAt: Date.now() };
+    if (existing) await ctx.db.patch(existing._id, row);
+    else await ctx.db.insert("sharedScreenTimeCache", row);
+  },
+});
+
+/**
+ * Report this app's new minutes to central and refresh the cached verdict.
+ * Called by the kid client on a timer while a profile is active.
+ */
+export const sync = action({
+  args: { kidProfileId: v.id("kidProfiles") },
+  handler: async (ctx, args): Promise<{
+    synced: boolean;
+    reason?: string;
+    // Echoed back for operator debugging — a mismatch here is almost always a
+    // kid-name difference between apps, which is silent otherwise.
+    central?: { allowed: boolean; limitSet: boolean; usedMinutes: number; limitMinutes: number };
+    familyCode?: string;
+    kidName?: string;
+    day?: string;
+  }> => {
+    const adminKey = process.env.ADMIN_KEY;
+    if (!adminKey) {
+      // Fail open — never block a kid because we're misconfigured.
+      return { synced: false, reason: "not_configured" };
+    }
+
+    const info = await ctx.runQuery(internal.sharedScreenTime.kidSyncContext, {
+      kidProfileId: args.kidProfileId,
+    });
+    if (!info) return { synced: false, reason: "no_family_code" };
+
+    // Only send what hasn't been sent yet, so repeated syncs can't double-count.
+    const deltaSeconds = Math.max(0, info.todaySeconds - info.reportedSeconds);
+    const deltaMinutes = Math.floor(deltaSeconds / 60);
+
+    try {
+      let status: {
+        allowed: boolean; limitSet: boolean; usedMinutes: number;
+        limitMinutes: number; remainingMinutes: number | null;
+      };
+
+      if (deltaMinutes > 0) {
+        const res = await fetch(`${CENTRAL_URL}/sharedScreenTime/record`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            familyCode: info.familyCode,
+            kidName: info.kidName,
+            day: info.day,
+            minutes: deltaMinutes,
+            app: APP,
+            key: adminKey,
+          }),
+        });
+        if (!res.ok) return { synced: false, reason: `record_${res.status}` };
+        status = await res.json();
+      } else {
+        const url = new URL(`${CENTRAL_URL}/sharedScreenTime/check`);
+        url.searchParams.set("familyCode", info.familyCode);
+        url.searchParams.set("kidName", info.kidName);
+        url.searchParams.set("day", info.day);
+        url.searchParams.set("key", adminKey);
+        const res = await fetch(url.toString());
+        if (!res.ok) return { synced: false, reason: `check_${res.status}` };
+        status = await res.json();
+      }
+
+      await ctx.runMutation(internal.sharedScreenTime.storeSyncResult, {
+        kidProfileId: args.kidProfileId,
+        day: info.day,
+        limitSet: status.limitSet,
+        allowed: status.allowed,
+        usedMinutes: status.usedMinutes,
+        limitMinutes: status.limitMinutes,
+        remainingMinutes: status.remainingMinutes ?? undefined,
+        // Only advance the watermark by whole minutes we actually sent.
+        reportedSeconds: info.reportedSeconds + deltaMinutes * 60,
+      });
+      return {
+        synced: true,
+        central: {
+          allowed: status.allowed,
+          limitSet: status.limitSet,
+          usedMinutes: status.usedMinutes,
+          limitMinutes: status.limitMinutes,
+        },
+        familyCode: info.familyCode,
+        kidName: info.kidName,
+        day: info.day,
+      };
+    } catch (err) {
+      console.error("[sharedScreenTime.sync] central unreachable:", err);
+      return { synced: false, reason: "central_unreachable" };
+    }
+  },
+});

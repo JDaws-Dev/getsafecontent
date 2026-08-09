@@ -30,6 +30,7 @@ import type * as rateLimit from "../rateLimit.js";
 import type * as safeAuth from "../safeAuth.js";
 import type * as setSubscriptionStatus from "../setSubscriptionStatus.js";
 import type * as setupOnboarding from "../setupOnboarding.js";
+import type * as sharedScreenTime from "../sharedScreenTime.js";
 import type * as stripe from "../stripe.js";
 import type * as stripeActions from "../stripeActions.js";
 import type * as subscriptionEvents from "../subscriptionEvents.js";
@@ -73,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   safeAuth: typeof safeAuth;
   setSubscriptionStatus: typeof setSubscriptionStatus;
   setupOnboarding: typeof setupOnboarding;
+  sharedScreenTime: typeof sharedScreenTime;
   stripe: typeof stripe;
   stripeActions: typeof stripeActions;
   subscriptionEvents: typeof subscriptionEvents;

@@ -154,6 +154,29 @@ function getCurrentHourInTimezone(timezone: string | undefined): { hour: number;
 }
 
 /**
+ * "YYYY-MM-DD" for a moment, in the family's own timezone.
+ *
+ * The shared cross-app limit buckets usage by this string, and Marketing
+ * Central deliberately does no timezone maths of its own — so every app must
+ * agree on where the day boundary falls, or a kid gets a fresh allowance when
+ * one app rolls over before another.
+ */
+export function dayKeyForTimezone(timezone: string | undefined, at?: number): string {
+  const when = new Date(at ?? Date.now());
+  try {
+    // en-CA formats as YYYY-MM-DD, which is exactly the key we want.
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone || "UTC",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(when);
+  } catch {
+    return when.toISOString().slice(0, 10);
+  }
+}
+
+/**
  * Shared time-limit evaluation. THE single source of truth — the `canWatch`
  * query, the kid's content feed (videos.getPlayableContent) and watch recording
  * all call this, so an enforcement point can't drift from what the UI shows.
@@ -168,6 +191,38 @@ export async function evaluateTimeLimit(
   ctx: { db: any },
   kidProfileId: Id<"kidProfiles">,
 ) {
+  // FAMILY-WIDE LIMIT TAKES PRECEDENCE.
+  //
+  // Parents set EITHER a per-app limit OR one overall limit across all five
+  // apps — not both. When an overall limit is in force, it replaces everything
+  // below; the per-app settings are ignored (and greyed out in the UI).
+  //
+  // cachedFamilyLimit returns null whenever the overall limit doesn't apply —
+  // not set, no cache yet, or the cache is stale because central was
+  // unreachable — and we fall through to this app's own limit. That's the
+  // fail-open path: a kid never loses access because central had a bad minute.
+  const profileForShared = await ctx.db.get(kidProfileId);
+  if (profileForShared) {
+    const parentForShared = await ctx.db.get(profileForShared.userId);
+    const family = await cachedFamilyLimit(
+      ctx,
+      kidProfileId,
+      parentForShared?.timezone
+    );
+    if (family) {
+      return {
+        canWatch: family.allowed,
+        reason: family.allowed ? null : "family_limit_reached",
+        scope: "family" as const,
+        dailyLimit: family.limitMinutes,
+        dailyLimitMinutes: family.limitMinutes,
+        watchedMinutes: family.usedMinutes,
+        remainingMinutes: family.remainingMinutes,
+        minutesRemaining: family.remainingMinutes,
+      };
+    }
+  }
+
   const limit = await ctx.db
     .query("timeLimits")
     .withIndex("by_kid", (q: any) => q.eq("kidProfileId", kidProfileId))
@@ -343,3 +398,38 @@ export const getTimeLimitsForUser = query({
     return limitsWithKids;
   },
 });
+
+/**
+ * Read the cached family-wide verdict for use inside queries.
+ *
+ * Returns null when the family-wide limit does not apply — no cache, stale
+ * cache, or central says no combined limit is set — in which case the caller
+ * uses its own per-app limit.
+ */
+export async function cachedFamilyLimit(
+  ctx: { db: any },
+  kidProfileId: Id<"kidProfiles">,
+  timezone: string | undefined,
+) {
+  const day = dayKeyForTimezone(timezone);
+  const cache = await ctx.db
+    .query("sharedScreenTimeCache")
+    .withIndex("by_kid_day", (q: any) =>
+      q.eq("kidProfileId", kidProfileId).eq("day", day)
+    )
+    .first();
+
+  if (!cache || !cache.limitSet) return null;
+
+  // Treat a long-stale cache as "unknown" and fall back to the per-app limit,
+  // rather than enforcing a number that may be hours out of date.
+  const STALE_MS = 15 * 60 * 1000;
+  if (Date.now() - cache.syncedAt > STALE_MS) return null;
+
+  return {
+    allowed: cache.allowed,
+    usedMinutes: cache.usedMinutes,
+    limitMinutes: cache.limitMinutes,
+    remainingMinutes: cache.remainingMinutes ?? 0,
+  };
+}
