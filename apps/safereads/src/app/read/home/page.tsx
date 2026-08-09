@@ -15,6 +15,7 @@ import Image from "next/image";
 import { SafeFamilyHeaderSwitcher } from "@/components/SafeFamilySwitcher";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { useCoverFetcher } from "@/hooks/useCoverFetcher";
+import { limitMessage } from "@/hooks/useReadingTime";
 
 interface KidProfile {
   _id: string;
@@ -357,6 +358,11 @@ export default function KidHomePage() {
     api.bible.getSavedVerses,
     kidId ? { kidId } : "skip"
   );
+  // Read-only here: browsing the home page is not reading, so nothing accrues.
+  const readingLimit = useQuery(
+    api.timeLimits.canRead,
+    kidId ? { kidId } : "skip"
+  );
 
   // Build book identifiers for cover cache lookups
   const classicIdentifiers = useMemo(
@@ -632,8 +638,37 @@ export default function KidHomePage() {
               <span className="text-[10px] text-white/70 sm:text-xs">streak</span>
             </div>
           )}
+          {/* Only shown when a limit actually exists \u2014 a child with no limit
+              should never be made to feel they're on a clock. */}
+          {typeof readingLimit?.minutesRemaining === "number" && (
+            <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
+              <Hourglass className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="text-xs font-bold sm:text-sm">
+                {readingLimit.minutesRemaining}
+              </span>
+              <span className="text-[10px] text-white/70 sm:text-xs">min left</span>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Reading time is up \u2014 say so here rather than letting them tap into a
+          book and hit a wall. Browsing stays open; only reading is closed. */}
+      {readingLimit?.canRead === false && (
+        <div className="animate-fade-up mt-5 flex items-start gap-3 rounded-2xl bg-white p-4 ring-1 ring-accent-200">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent-50">
+            <Hourglass className="h-5 w-5 text-accent-500" />
+          </div>
+          <div>
+            <p className="font-display text-sm font-bold text-brand-navy">
+              Time to rest your eyes
+            </p>
+            <p className="mt-0.5 text-xs text-ink-500">
+              {limitMessage(readingLimit)}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Reading Streaks & Badges */}
       <section className="animate-fade-up mt-5" style={{ animationDelay: "0.08s" }}>

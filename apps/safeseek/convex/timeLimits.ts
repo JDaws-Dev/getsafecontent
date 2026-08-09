@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { requireOwnerSoft, requireProfileOwner } from "./identity";
 
 // Get time limit settings for a kid
@@ -141,6 +142,65 @@ function getCurrentHourInTimezone(timezone: string | undefined): { hour: number;
   }
 }
 
+/**
+ * "YYYY-MM-DD" for a moment, in the family's own timezone.
+ *
+ * The shared cross-app limit buckets usage by this string, and Marketing
+ * Central deliberately does no timezone maths of its own — so every app must
+ * agree on where the day boundary falls, or a kid gets a fresh allowance when
+ * one app rolls over before another. Byte-identical to SafeTube's.
+ */
+export function dayKeyForTimezone(timezone: string | undefined, at?: number): string {
+  const when = new Date(at ?? Date.now());
+  try {
+    // en-CA formats as YYYY-MM-DD, which is exactly the key we want.
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone || "UTC",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(when);
+  } catch {
+    return when.toISOString().slice(0, 10);
+  }
+}
+
+/**
+ * Read the cached family-wide verdict for use inside queries.
+ *
+ * Returns null when the family-wide limit does not apply — no cache, stale
+ * cache, or central says no combined limit is set — in which case the caller
+ * uses SafeStudy's own per-app limit. This is the fail-open path: a kid never
+ * loses access because central had a bad minute.
+ */
+export async function cachedFamilyLimit(
+  ctx: { db: any },
+  kidProfileId: Id<"kidProfiles">,
+  timezone: string | undefined,
+) {
+  const day = dayKeyForTimezone(timezone);
+  const cache = await ctx.db
+    .query("sharedScreenTimeCache")
+    .withIndex("by_kid_day", (q: any) =>
+      q.eq("kidProfileId", kidProfileId).eq("day", day)
+    )
+    .first();
+
+  if (!cache || !cache.limitSet) return null;
+
+  // Treat a long-stale cache as "unknown" and fall back to the per-app limit,
+  // rather than enforcing a number that may be hours out of date.
+  const STALE_MS = 15 * 60 * 1000;
+  if (Date.now() - cache.syncedAt > STALE_MS) return null;
+
+  return {
+    allowed: cache.allowed,
+    usedMinutes: cache.usedMinutes,
+    limitMinutes: cache.limitMinutes,
+    remainingMinutes: cache.remainingMinutes ?? 0,
+  };
+}
+
 // Strictness-based default daily query budget.
 // Apr 2026: a kid running 48 searches in one day is doom-scrolling, not learning.
 // Caps default to a level that's permissive for real curiosity but stops
@@ -168,14 +228,39 @@ export const canSearch = query({
       return { canSearch: true, reason: null, remainingSearches: null };
     }
 
+    // Get parent user to get timezone
+    const parentUser = await ctx.db.get(kidProfile.userId);
+    const timezone = parentUser?.timezone;
+
+    // FAMILY-WIDE LIMIT TAKES PRECEDENCE.
+    //
+    // Parents set EITHER a per-app limit OR one overall limit across all five
+    // apps — not both. When an overall limit is in force it replaces everything
+    // below (including this app's allowed-hours window); the per-app settings
+    // are ignored, and greyed out in the parent UI so that's visible.
+    //
+    // cachedFamilyLimit returns null whenever the overall limit doesn't apply —
+    // not set, no cache yet, or the cache is stale because central was
+    // unreachable — and we fall through to SafeStudy's own search budget.
+    const family = await cachedFamilyLimit(ctx, args.kidProfileId, timezone);
+    if (family) {
+      return {
+        canSearch: family.allowed,
+        reason: family.allowed ? null : "family_limit_reached",
+        scope: "family" as const,
+        limitMinutes: family.limitMinutes,
+        usedMinutes: family.usedMinutes,
+        remainingMinutes: family.remainingMinutes,
+        // SafeStudy's own budget counts searches, and none of it applies while
+        // the family limit governs — don't hand the kid UI a stale count.
+        remainingSearches: null,
+      };
+    }
+
     const limit = await ctx.db
       .query("timeLimits")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
       .first();
-
-    // Get parent user to get timezone
-    const parentUser = await ctx.db.get(kidProfile.userId);
-    const timezone = parentUser?.timezone;
 
     // Get current time info in the family's timezone
     const { hour: currentHour, dayOfWeek, startOfDay: startOfToday } = getCurrentHourInTimezone(timezone);

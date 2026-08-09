@@ -9,6 +9,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { BookReader } from "@/components/kid/BookReader";
 import { AudioPlayer } from "@/components/kid/AudioPlayer";
+import { ReadingTimeUp } from "@/components/kid/ReadingTimeUp";
+import { useReadingTime } from "@/hooks/useReadingTime";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 
 export default function KidReadPage() {
@@ -31,6 +33,7 @@ export default function KidReadPage() {
   } | null>(null);
   const [audioChapters, setAudioChapters] = useState<Array<{ title: string; url: string; duration?: string }>>([]);
   const [audioLoading, setAudioLoading] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
   const updateProgress = useMutation(api.readingProgress.update);
   const createBookRequest = useMutation(api.bookRequests.create);
   const addToShelf = useMutation(api.approvedBooks.addForKid);
@@ -93,6 +96,15 @@ export default function KidReadPage() {
     { googleBookId: bookId }
   );
 
+  // Screen time for the inline audiobook player on this page. Reading is
+  // metered separately inside BookReader, which is why this only follows audio.
+  const limitStatus = useReadingTime({
+    kidId,
+    enabled: audioPlaying,
+    requireInteraction: false,
+  });
+  const outOfTime = limitStatus?.canRead === false;
+
   const book = approvedBooks?.find((b) => b.googleBookId === bookId);
 
   // For pre-approved books, construct a book-like object
@@ -137,7 +149,10 @@ export default function KidReadPage() {
 
     setAudioLoading(true);
     try {
-      const result = await getLibriVoxChapters({ rssUrl: audioMatch.rssUrl });
+      const result = await getLibriVoxChapters({
+        rssUrl: audioMatch.rssUrl,
+        kidId: kidId ?? undefined,
+      });
       if (result?.chapters) {
         setAudioChapters(result.chapters);
       }
@@ -146,7 +161,7 @@ export default function KidReadPage() {
     } finally {
       setAudioLoading(false);
     }
-  }, [audioMatch?.rssUrl, audioChapters.length, getLibriVoxChapters]);
+  }, [audioMatch?.rssUrl, audioChapters.length, kidId, getLibriVoxChapters]);
 
   const handleStartReading = async () => {
     if (!kidId) return;
@@ -492,13 +507,21 @@ export default function KidReadPage() {
             chapters={audioChapters}
             onClose={() => setIsListening(false)}
             embedded
+            onPlayingChange={setAudioPlaying}
           />
         </div>
       )}
 
       {/* Read / Action Area */}
       <div className="mt-8">
-        {isFreeBook ? (
+        {outOfTime ? (
+          /* Out of daily time — the book stays visible (it's still theirs),
+             but there's nothing to press. The server withholds the text and
+             audio regardless of what this page renders. */
+          <div className="rounded-2xl bg-accent-50 py-8 ring-1 ring-accent-200">
+            <ReadingTimeUp status={limitStatus} />
+          </div>
+        ) : isFreeBook ? (
           /* Free book - read in app */
           <div className="space-y-3">
             <button

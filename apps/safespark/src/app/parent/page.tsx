@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
-import { useMutation, useQuery } from 'convex/react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useAction, useMutation, useQuery } from 'convex/react';
 import {
   Copy,
   Plus,
@@ -1031,6 +1031,7 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
           })}
         </div>
       </div>
+      <KidScreenTimePanel kidProfileId={kidProfileId} />
       <div>
         <p className="text-[11px] font-bold uppercase tracking-widest text-accent-700">Topics Spark won&apos;t build</p>
         <p className="mt-1 text-xs text-brand-ink-soft">
@@ -1083,6 +1084,226 @@ function KidSettingsPanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> })
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Daily screen-time controls for one profile.
+ *
+ * Parents pick EITHER one overall limit across all five Safe Family apps OR
+ * a SafeSpark-only limit — never both. Turning the overall limit on IS the
+ * toggle: while it's set it replaces the per-app limit and the SafeSpark-only
+ * controls grey out.
+ *
+ * This is separate from the daily prompt budget above. That one caps spend
+ * (SafeSpark is the only Safe Family app that costs money per use); this one
+ * caps time. A kid has to be inside both to keep building.
+ */
+function KidScreenTimePanel({ kidProfileId }: { kidProfileId: Id<'kidProfiles'> }) {
+  const marketing = useMarketingAuth();
+  const timezone = useMemo(() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+    } catch {
+      return undefined;
+    }
+  }, []);
+
+  const appLimit = useQuery(api.screenTime.getTimeLimit, {
+    kidProfileId,
+    userToken: marketing.token ?? undefined,
+  });
+  const setTimeLimit = useMutation(api.screenTime.setTimeLimit);
+  const getFamilyLimit = useAction(api.sharedScreenTime.getFamilyLimit);
+  const setFamilyLimit = useAction(api.sharedScreenTime.setFamilyLimit);
+
+  type FamilyState = {
+    available: boolean;
+    limitSet?: boolean;
+    limitMinutes?: number;
+    usedMinutes?: number;
+  };
+  const [family, setFamily] = useState<FamilyState | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadFamily = useCallback(async () => {
+    try {
+      const result = (await getFamilyLimit({
+        kidProfileId,
+        userToken: marketing.token ?? undefined,
+        timezone,
+      })) as FamilyState;
+      setFamily(result);
+    } catch {
+      // Say "couldn't load" rather than showing "off" — showing off would
+      // tempt a parent into re-enabling something that is already on.
+      setFamily({ available: false });
+    }
+  }, [getFamilyLimit, kidProfileId, marketing.token, timezone]);
+
+  // The family-wide limit lives in Marketing Central, reachable only from a
+  // Convex action — so there's no reactive query to subscribe to and this has
+  // to be fetched on mount.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadFamily();
+  }, [loadFamily]);
+
+  const familyActive = family?.available === true && family.limitSet === true;
+
+  const chooseFamily = async (minutes: number) => {
+    setSaving(true);
+    setError(null);
+    try {
+      const result = await setFamilyLimit({
+        kidProfileId,
+        dailyLimitMinutes: minutes,
+        userToken: marketing.token ?? undefined,
+        timezone,
+      });
+      if (!result.ok) {
+        setError(
+          result.error === 'no_family_code'
+            ? "This profile isn't linked to your family code yet, so the shared limit can't be set."
+            : "Couldn't reach the shared limit just now. Try again in a minute.",
+        );
+      }
+      await loadFamily();
+    } catch {
+      setError("Couldn't reach the shared limit just now. Try again in a minute.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const chooseApp = async (minutes: number) => {
+    setSaving(true);
+    setError(null);
+    try {
+      await setTimeLimit({
+        kidProfileId,
+        dailyLimitMinutes: minutes,
+        userToken: marketing.token ?? undefined,
+        timezone,
+      });
+    } catch {
+      setError("Couldn't save that limit. Try again in a minute.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const PRESETS = [
+    { label: 'Off', value: 0 },
+    { label: '30 min', value: 30 },
+    { label: '1 hr', value: 60 },
+    { label: '90 min', value: 90 },
+    { label: '2 hr', value: 120 },
+  ];
+
+  return (
+    <div>
+      <p className="text-[11px] font-bold uppercase tracking-widest text-accent-700">
+        Daily screen time
+      </p>
+      <p className="mt-1 text-xs text-brand-ink-soft">
+        Counts active building time only &mdash; a tab left open and untouched doesn&apos;t
+        count. Separate from the prompt budget above: a kid has to be inside both to keep
+        building.
+      </p>
+
+      {/* One limit across all five apps. */}
+      <div className="mt-2 rounded-xl border border-brand-cream-2 bg-brand-cream p-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="text-xs font-black text-brand-navy">
+            One limit across all Safe Family apps
+          </p>
+          {family == null ? (
+            <span className="text-[10px] font-bold text-slate-400">Checking…</span>
+          ) : !family.available ? (
+            <span className="text-[10px] font-bold text-slate-400">Couldn&apos;t load</span>
+          ) : familyActive ? (
+            <span className="text-[10px] font-black text-emerald-700">
+              {family.usedMinutes ?? 0} of {family.limitMinutes} min used today
+            </span>
+          ) : null}
+        </div>
+        <p className="mt-0.5 text-[11px] text-brand-ink-soft">
+          Shared with SafeTunes, SafeTube, SafeReads and SafeStudy. Turning this on replaces
+          the SafeSpark-only limit below.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {PRESETS.map((opt) => {
+            const isActive = familyActive
+              ? family?.limitMinutes === opt.value
+              : opt.value === 0;
+            return (
+              <button
+                key={opt.label}
+                type="button"
+                disabled={saving || family?.available === false}
+                onClick={() => void chooseFamily(opt.value)}
+                className={
+                  isActive
+                    ? 'rounded-xl bg-brand-navy px-3 py-1.5 text-xs font-black text-brand-cream shadow disabled:opacity-50'
+                    : 'rounded-xl border border-brand-cream-2 bg-white px-3 py-1.5 text-xs font-bold text-brand-navy hover:bg-brand-cream disabled:opacity-50'
+                }
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* SafeSpark-only limit — greyed out while the overall limit governs. */}
+      <div
+        className={`mt-2 rounded-xl border border-brand-cream-2 p-3 ${
+          familyActive ? 'bg-white opacity-50' : 'bg-white'
+        }`}
+      >
+        <div className="flex items-baseline justify-between gap-2">
+          <p className="text-xs font-black text-brand-navy">SafeSpark only</p>
+          {appLimit && (
+            <span className="text-[10px] font-black text-brand-ink-soft">
+              {appLimit.usedMinutesInSparkToday} min in SafeSpark today
+            </span>
+          )}
+        </div>
+        {familyActive && (
+          <p className="mt-0.5 text-[11px] font-bold text-brand-navy">
+            Replaced by the overall limit. Set that to Off to use a SafeSpark-only limit.
+          </p>
+        )}
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {PRESETS.map((opt) => {
+            const isActive = (appLimit?.dailyLimitMinutes ?? 0) === opt.value;
+            return (
+              <button
+                key={opt.label}
+                type="button"
+                disabled={saving || familyActive}
+                onClick={() => void chooseApp(opt.value)}
+                className={
+                  isActive
+                    ? 'rounded-xl bg-accent-600 px-3 py-1.5 text-xs font-black text-brand-navy shadow disabled:cursor-not-allowed'
+                    : 'rounded-xl border border-brand-cream-2 bg-white px-3 py-1.5 text-xs font-bold text-brand-navy hover:bg-brand-cream disabled:cursor-not-allowed'
+                }
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {error && (
+        <p className="mt-2 rounded-xl bg-rose-50 px-3 py-2 text-[11px] font-bold text-rose-700">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAction, useMutation, useQuery } from 'convex/react';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 import { KidMobileNav, KidHeader } from '@/components/kid/SafeFamilyAppLauncher';
+import { useKidScreenTime } from '@/components/kid/useKidScreenTime';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import {
@@ -41,6 +42,16 @@ import { SpeakButton } from '../../components/chat/SpeakButton';
 import { MessageMarkdown } from '../../components/chat/MessageMarkdown';
 import { injectSparkDb } from '../../lib/inject-spark-db';
 import { KidLoginGate } from '../../components/kid/KidLoginGate';
+
+/** Inline clock — no emoji anywhere in kid-facing UI. */
+function ClockGlyph({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.5V12l3 2" />
+    </svg>
+  );
+}
 
 type DemoMessage = {
   role: 'user' | 'assistant';
@@ -716,7 +727,14 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
     }));
   }, [hasIdentity, cloudProjects, projects]);
 
-  const canSend = input.trim().length > 1 && inflightCount < MAX_CONCURRENT;
+  // Daily screen time. Records active building time and mirrors it to the
+  // family-wide counter shared with the other Safe Family apps. The server
+  // is the real gate (/api/demo refuses to build once the cap is hit) —
+  // this just keeps the kid from typing into a wall.
+  const screenTime = useKidScreenTime(kidSessionToken, inflightCount > 0);
+
+  const canSend =
+    input.trim().length > 1 && inflightCount < MAX_CONCURRENT && !screenTime.outOfTime;
   const hasUserMessages = messages.some((message) => message.role === 'user');
 
   // -----------------------------------------------------------------
@@ -2462,6 +2480,31 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
               }}
             />
 
+            {/* Screen time. Deliberately NOT amber — amber is this app's
+                accent and its warning colour, so a limit notice in amber
+                reads as just another button. Solid navy makes it obviously
+                a different kind of message. */}
+            {screenTime.outOfTime ? (
+              <div className="mb-2 flex items-start gap-2.5 rounded-2xl bg-brand-navy px-4 py-3 text-brand-cream">
+                <ClockGlyph className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold">That&apos;s your time for today — see you tomorrow!</p>
+                  <p className="mt-0.5 text-xs font-semibold opacity-80">
+                    Everything you made is still here. You can look at it and play it as much as you want.
+                  </p>
+                </div>
+              </div>
+            ) : screenTime.remainingMinutes != null && screenTime.remainingMinutes <= 10 ? (
+              <div className="mb-2 flex items-center gap-2 rounded-2xl border border-brand-navy/20 bg-white px-4 py-2.5 text-brand-navy">
+                <ClockGlyph className="h-4 w-4 shrink-0" />
+                <p className="text-xs font-bold">
+                  {screenTime.remainingMinutes <= 1
+                    ? 'About a minute of building time left today.'
+                    : `About ${screenTime.remainingMinutes} minutes of building time left today.`}
+                </p>
+              </div>
+            ) : null}
+
             <form
               className="flex items-end gap-2"
               onSubmit={(event) => {
@@ -2479,8 +2522,13 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
                   }
                 }}
                 rows={2}
-                className="min-h-16 flex-1 resize-none rounded-2xl border border-brand-cream-2 bg-white px-4 py-3 text-sm font-medium text-brand-navy outline-none transition focus:border-accent-400"
-                placeholder="What do you want to make?"
+                disabled={screenTime.outOfTime}
+                className="min-h-16 flex-1 resize-none rounded-2xl border border-brand-cream-2 bg-white px-4 py-3 text-sm font-medium text-brand-navy outline-none transition focus:border-accent-400 disabled:bg-brand-cream disabled:text-brand-ink-soft"
+                placeholder={
+                  screenTime.outOfTime
+                    ? 'Building is done for today'
+                    : 'What do you want to make?'
+                }
               />
               {/* Auxiliary actions: smaller (h-10 w-10) to give the
                 primary Send/Stop visual hierarchy AND free up horizontal

@@ -6,9 +6,10 @@ import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { KidForm, KidFormValues } from "@/components/KidForm";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Plus, Pencil, Trash2, X, User, BookOpen, Shield, Library } from "lucide-react";
+import { Plus, Pencil, Trash2, X, User, BookOpen, Shield, Library, Clock } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { ScreenTimeControls } from "@/components/ScreenTimeControls";
 
 const COLOR_MAP: Record<string, string> = {
   red: "bg-red-400",
@@ -150,6 +151,7 @@ export default function KidsPage() {
             <KidCard
               key={kid._id}
               kid={kid}
+              userToken={token ?? undefined}
               onEdit={() => openEdit(kid as Kid)}
               onDelete={() => handleDelete(kid._id)}
               deleting={deleting === kid._id}
@@ -200,11 +202,13 @@ export default function KidsPage() {
 
 function KidCard({
   kid,
+  userToken,
   onEdit,
   onDelete,
   deleting,
 }: {
   kid: Kid;
+  userToken?: string;
   onEdit: () => void;
   onDelete: () => void;
   deleting: boolean;
@@ -212,6 +216,7 @@ function KidCard({
   const wishlistCount = useQuery(api.wishlists.countByKid, { kidId: kid._id });
   const approvedCount = useQuery(api.approvedBooks.countForKid, { kidId: kid._id });
   const colorClass = COLOR_MAP[kid.color || "purple"] || COLOR_MAP.purple;
+  const [showScreenTime, setShowScreenTime] = useState(false);
 
   return (
     <div className="rounded-2xl border border-brand-cream-2 bg-white px-4 py-3">
@@ -233,6 +238,17 @@ function KidCard({
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => setShowScreenTime((v) => !v)}
+            className={`flex items-center gap-1 rounded px-2 py-1.5 text-xs font-medium transition-colors ${
+              showScreenTime
+                ? "bg-accent-100 text-accent-800"
+                : "text-accent-700 hover:bg-brand-cream-2"
+            }`}
+          >
+            <Clock className="h-3.5 w-3.5" />
+            Time
+          </button>
           <Link
             href={`/dashboard/kids/${kid._id}/books`}
             className="flex items-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
@@ -264,6 +280,14 @@ function KidCard({
           </button>
         </div>
       </div>
+
+      {showScreenTime && (
+        <ScreenTimeControls
+          kidId={kid._id}
+          kidName={kid.name}
+          userToken={userToken}
+        />
+      )}
     </div>
   );
 }

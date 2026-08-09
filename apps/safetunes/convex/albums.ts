@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { requireOwner } from "./identity";
+import { isOverDailyAllowance } from "./timeControls";
 
 // ============================================================================
 // UNIFIED ALBUM MODEL
@@ -373,6 +374,12 @@ export const refreshAlbumArtwork = mutation({
 export const getAlbumsWithApprovedSongs = query({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
+    // Time-limit gate — see songs.getApprovedSongsForKid. This query hands back
+    // albums with their playable track ids, so it has to close too.
+    if (await isOverDailyAllowance(ctx, args.kidProfileId)) {
+      return [];
+    }
+
     // Get the kid profile to find the userId
     const kidProfile = await ctx.db.get(args.kidProfileId);
     if (!kidProfile) {

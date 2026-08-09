@@ -44,6 +44,11 @@ export default defineSchema({
     globalHideArtwork: v.optional(v.boolean()), // Master toggle to hide ALL artwork (overrides individual settings)
     // Central accounts sync
     centralAccessCacheExpiry: v.optional(v.number()), // When central access cache expires (for 5-min caching)
+    // IANA timezone (e.g., "America/New_York"). Decides where the day boundary
+    // falls for the cross-app shared limit, so every Safe Family app buckets a
+    // kid's minutes into the same "YYYY-MM-DD". Unset = UTC, which is what
+    // SafeTunes' own daily bucket has always used.
+    timezone: v.optional(v.string()),
     // Trial expiration tracking
     trialWarningEmailSent: v.optional(v.boolean()), // Whether trial expiring warning email was sent
   })
@@ -89,6 +94,29 @@ export default defineSchema({
   })
     .index("by_kid_and_date", ["kidProfileId", "date"])
     .index("by_kid", ["kidProfileId"]),
+
+  // Cached view of the FAMILY-WIDE daily limit held by Marketing Central.
+  //
+  // Convex queries can't make network calls, and the content gates (the kid's
+  // approved songs / albums / playlists / Discover feed) are queries — so an
+  // action refreshes this row and the queries read it.
+  //
+  // If central says a combined limit is set, it REPLACES SafeTunes' own per-kid
+  // limit (parents pick one or the other, not both). If it isn't set, or we
+  // can't reach central, SafeTunes falls back to its own limit.
+  sharedScreenTimeCache: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    day: v.string(), // "YYYY-MM-DD" in the family's timezone
+    limitSet: v.boolean(), // is the family-wide limit in force?
+    allowed: v.boolean(),
+    usedMinutes: v.number(),
+    limitMinutes: v.number(),
+    remainingMinutes: v.optional(v.number()),
+    // Minutes already reported to central for this kid+day, so repeated syncs
+    // send only the delta and never double-count.
+    reportedMinutes: v.number(),
+    syncedAt: v.number(),
+  }).index("by_kid_day", ["kidProfileId", "day"]),
 
   // Approved albums
   approvedAlbums: defineTable({

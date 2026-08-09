@@ -31,10 +31,20 @@ export const saveTutorSession = internalMutation({
     const THIRTY_MINUTES = 30 * 60 * 1000;
 
     if (recentSession && now - recentSession.lastMessageAt < THIRTY_MINUTES) {
-      // Append to existing session
+      // Append to existing session.
+      //
+      // `messages` is replaced wholesale by the caller and its timestamps are
+      // synthetic (all rewritten to ~now on every save), so we also keep a
+      // real, append-only list of when each exchange happened. That's what the
+      // shared cross-app screen-time measure reads — without it a 20-message
+      // tutor conversation looks like a single instant of activity.
+      const stamps = [...(recentSession.messageTimestamps ?? []), now];
       await ctx.db.patch(recentSession._id, {
         messages: args.messages,
         lastMessageAt: now,
+        // Bounded so a long-running session row can't grow without limit; only
+        // today's tail is ever read.
+        messageTimestamps: stamps.slice(-500),
       });
       return recentSession._id;
     }
@@ -46,6 +56,7 @@ export const saveTutorSession = internalMutation({
       topic: args.topic,
       startedAt: now,
       lastMessageAt: now,
+      messageTimestamps: [now],
     });
   },
 });

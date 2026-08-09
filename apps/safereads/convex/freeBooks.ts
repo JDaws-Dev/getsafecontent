@@ -200,13 +200,49 @@ export const getFreeBook = action({
 /**
  * Fetch the actual HTML content of a Gutenberg book for in-app reading.
  * Strips Gutenberg header/footer boilerplate and returns clean content.
+ *
+ * THIS IS THE SCREEN-TIME ENFORCEMENT POINT for books. The client-side "time's
+ * up" screen is a courtesy; this is the part that actually withholds the book,
+ * so a reloaded page or a tampered client still gets nothing once the cap is
+ * hit. `kidId` is optional purely so the gate fails open when it's absent —
+ * every kid-facing caller passes it.
  */
 export const getFreeBookContent = action({
   args: {
     gutenbergId: v.string(),
+    kidId: v.optional(v.id("kids")),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args): Promise<{
+    content: string | null;
+    error: string | null;
+    limitReached?: boolean;
+    minutesUsed?: number;
+    dailyLimitMinutes?: number | null;
+  }> => {
     const id = args.gutenbergId;
+
+    if (args.kidId) {
+      // Refresh the family-wide verdict before deciding. Opening a book is a
+      // once-per-sitting action and the Gutenberg download dwarfs this call, so
+      // the round-trip is invisible here — whereas without it the very first
+      // book of the day would open on a cold cache even if the child had
+      // already used their whole allowance in another app.
+      try {
+        await ctx.runAction(api.sharedScreenTime.sync, { kidId: args.kidId });
+      } catch {
+        // Central unreachable — fall through to whatever we know locally.
+      }
+      const verdict = await ctx.runQuery(api.timeLimits.canRead, { kidId: args.kidId });
+      if (!verdict.canRead) {
+        return {
+          content: null,
+          error: null,
+          limitReached: true,
+          minutesUsed: verdict.minutesUsed,
+          dailyLimitMinutes: verdict.dailyLimitMinutes,
+        };
+      }
+    }
 
     // Try multiple Gutenberg HTML URLs (they vary by book)
     const urls = [

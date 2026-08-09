@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { isOverDailyAllowance } from "./timeControls";
 
 // Toggle featured status for an album
 export const toggleAlbumFeatured = mutation({
@@ -302,6 +303,12 @@ export const removeAlbumFromDiscoverCompletely = mutation({
 export const getFeaturedContentForKid = query({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
+    // Time-limit gate — Discover content is playable, so it closes with the
+    // library. See songs.getApprovedSongsForKid.
+    if (await isOverDailyAllowance(ctx, args.kidProfileId)) {
+      return { albums: [], playlists: [] };
+    }
+
     // Get kid profile to find userId
     const kidProfile = await ctx.db.get(args.kidProfileId);
     if (!kidProfile) return { albums: [], playlists: [] };

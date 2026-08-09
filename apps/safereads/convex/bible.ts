@@ -336,14 +336,26 @@ export const getBooks = action({
 /**
  * Get chapter text for a specific book and chapter.
  * Returns cached data if available, otherwise fetches from Bolls.life.
+ *
+ * SCREEN-TIME ENFORCEMENT POINT for Bible reading. When the child is over their
+ * daily limit this returns no verses at all — the client shows the friendly
+ * "time's up" screen, but the text is withheld server-side so a reload or a
+ * tampered client gets nothing either. `kidId` is optional so the gate fails
+ * open when it's missing; the kid-facing Bible page always passes it.
  */
 export const getChapter = action({
   args: {
     translation: v.string(),
     bookId: v.number(),
     chapter: v.number(),
+    kidId: v.optional(v.id("kids")),
   },
   handler: async (ctx, args): Promise<Array<{ verse: number; text: string }>> => {
+    if (args.kidId) {
+      const verdict = await ctx.runQuery(api.timeLimits.canRead, { kidId: args.kidId });
+      if (!verdict.canRead) return [];
+    }
+
     const cacheKey = `chapter:${args.translation}:${args.bookId}:${args.chapter}`;
 
     // Check cache

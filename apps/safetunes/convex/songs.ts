@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { isOverDailyAllowance } from "./timeControls";
 
 // Get all approved songs for a user (EXCLUDES Discover-only songs)
 export const getApprovedSongs = query({
@@ -28,6 +29,21 @@ export const getApprovedSongs = query({
 export const getApprovedSongsForKid = query({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
+    // SERVER-SIDE TIME LIMIT ENFORCEMENT.
+    //
+    // The daily cap used to live entirely in the client: ChildDashboard read
+    // timeControls.getTimeLimitSettings and was trusted to stop. A tampered or
+    // buggy client just kept playing. This is the gate a client can't talk its
+    // way past — once the cap is hit the server stops handing out song ids, so
+    // there is nothing to feed MusicKit.
+    //
+    // Applies to whichever cap is in force: the family-wide limit shared across
+    // all five Safe Family apps, or SafeTunes' own per-app one. Recording
+    // minutes is never gated (see timeControls.addListeningTime).
+    if (await isOverDailyAllowance(ctx, args.kidProfileId)) {
+      return [];
+    }
+
     // First get the kid profile to find the userId
     const kidProfile = await ctx.db.get(args.kidProfileId);
     if (!kidProfile) {

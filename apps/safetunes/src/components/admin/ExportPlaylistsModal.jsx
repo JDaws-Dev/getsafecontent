@@ -11,7 +11,7 @@ import musicKitService from '../../config/musickit';
  * Step 3: Export progress
  * Step 4: Results summary
  */
-export default function ExportPlaylistsModal({ kidProfile, onClose }) {
+export default function ExportPlaylistsModal({ kidProfile, onClose, userToken }) {
   const [step, setStep] = useState(1);
   const [selectedPlaylistIds, setSelectedPlaylistIds] = useState(new Set());
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -34,9 +34,11 @@ export default function ExportPlaylistsModal({ kidProfile, onClose }) {
     errors: [],
   });
 
-  // Fetch playlists for this kid
+  // Fetch playlists for this kid. The parent token bypasses the kid-side daily
+  // time-limit gate — exporting is a parent action, not screen time.
   const playlists = useQuery(api.playlists.getPlaylistsForKid, {
     kidProfileId: kidProfile._id,
+    userToken,
   });
 
   // Default all playlists selected when data loads

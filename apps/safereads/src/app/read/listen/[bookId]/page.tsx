@@ -9,6 +9,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { AudioPlayer } from "@/components/kid/AudioPlayer";
 import { StylizedCover } from "@/components/kid/StylizedCover";
+import { ReadingTimeUp } from "@/components/kid/ReadingTimeUp";
+import { useReadingTime } from "@/hooks/useReadingTime";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 
 interface AudioChapter {
   title: string;
@@ -34,6 +37,19 @@ export default function ListenPage() {
   const [chapters, setChapters] = useState<AudioChapter[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [kidId, setKidId] = useState<Id<"kids"> | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Listening counts towards the daily limit only while audio is genuinely
+  // playing — no interaction required (you don't touch the screen while
+  // listening) and it keeps counting in the background, because it's still
+  // being consumed.
+  const limitStatus = useReadingTime({
+    kidId,
+    enabled: isPlaying,
+    requireInteraction: false,
+  });
+  const outOfTime = limitStatus?.canRead === false;
 
   const getChapters = useAction(api.librivox.getLibriVoxChapters);
 
@@ -96,9 +112,16 @@ export default function ListenPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const result = await getChapters({ rssUrl: bookMeta!.rssUrl! });
+        const result = await getChapters({
+          rssUrl: bookMeta!.rssUrl!,
+          kidId: kidId ?? undefined,
+        });
         if (cancelled) return;
-        if (result.chapters && result.chapters.length > 0) {
+        if (result.limitReached) {
+          // Server withheld the audio — out of daily time. The limit screen
+          // below is what the child sees; no error message needed.
+          setError(null);
+        } else if (result.chapters && result.chapters.length > 0) {
           setChapters(result.chapters);
         } else {
           setError("No chapters found for this audiobook.");
@@ -114,15 +137,27 @@ export default function ListenPage() {
 
     loadChapters();
     return () => { cancelled = true; };
-  }, [bookMeta, getChapters]);
+  }, [bookMeta, kidId, getChapters]);
 
   // Check kid session
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
     if (!profileData) {
       router.replace("/read");
+      return;
+    }
+    try {
+      setKidId(JSON.parse(profileData)._id as Id<"kids">);
+    } catch {
+      router.replace("/read");
     }
   }, [router]);
+
+  // Out of daily time — the chapters were withheld server-side, so this screen
+  // is the whole page rather than a banner over a dead player.
+  if (outOfTime) {
+    return <ReadingTimeUp status={limitStatus} />;
+  }
 
   if (!bookMeta) {
     return (
@@ -218,6 +253,7 @@ export default function ListenPage() {
             coverUrl={bookMeta.coverUrl}
             chapters={chapters}
             embedded
+            onPlayingChange={setIsPlaying}
           />
         )}
       </div>

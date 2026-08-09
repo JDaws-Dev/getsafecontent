@@ -655,6 +655,35 @@ function ChildDashboard({ onLogout }) {
     kidProfile ? { kidProfileId: kidProfile._id } : 'skip'
   );
 
+  // Keep the FAMILY-WIDE limit in sync with Marketing Central.
+  //
+  // Pushes the minutes SafeTunes has recorded today (delta only, so repeat
+  // syncs can't double-count) and refreshes the cached verdict the server-side
+  // content gates read. Every 60s is enough: usage is reported in whole
+  // minutes, so nothing changes faster than that.
+  //
+  // Deliberately fire-and-forget — a failed sync must never interrupt music.
+  // The server already falls back to SafeTunes' own per-app limit whenever the
+  // shared verdict is missing or stale.
+  const syncSharedScreenTime = useAction(api.sharedScreenTime.sync);
+  useEffect(() => {
+    const kidProfileId = kidProfile?._id;
+    if (!kidProfileId) return;
+    let cancelled = false;
+    const run = () => {
+      if (cancelled) return;
+      syncSharedScreenTime({ kidProfileId }).catch(() => {
+        /* offline or central down — per-app limit still applies */
+      });
+    };
+    run();
+    const id = setInterval(run, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [kidProfile?._id, syncSharedScreenTime]);
+
   // Fetch real-time kid profile data (for musicPaused status that parent can toggle)
   const liveKidProfile = useQuery(
     api.kidProfiles.getKidProfile,
@@ -1028,6 +1057,30 @@ function ChildDashboard({ onLogout }) {
       setSessionMinutesSaved(0);
     }
   }, [listeningStartTime]);
+
+  // Server says the day's allowance is gone (either SafeTunes' own limit or the
+  // shared all-apps one). Stop the music and say so.
+  //
+  // Without this the kid would just watch their library empty out — the content
+  // gates stop serving songs the moment the cap is hit — with no explanation.
+  // The `announced` ref keeps it to one modal per time the limit trips, so
+  // dismissing it doesn't put it straight back.
+  const limitReachedAnnouncedRef = useRef(false);
+  useEffect(() => {
+    const reached = !!timeLimitSettings?.isLimitReached;
+    if (!reached) {
+      limitReachedAnnouncedRef.current = false;
+      return;
+    }
+    if (limitReachedAnnouncedRef.current) return;
+    limitReachedAnnouncedRef.current = true;
+
+    setShowTimeLimitModal(true);
+    const music = musicKitService.music;
+    if (music && music.playbackState === 2) {
+      musicKitService.pause();
+    }
+  }, [timeLimitSettings?.isLimitReached]);
 
   // Helper to play a recently played item
   const handlePlayRecentlyPlayed = (item) => {
@@ -4857,10 +4910,14 @@ function ChildDashboard({ onLogout }) {
             </div>
             <h3 className="text-xl font-display font-bold text-brand-navy mb-2">Time's Up!</h3>
             <p className="text-gray-600 mb-4">
-              You've used your {timeLimitSettings?.limitMinutes && formatTimeRemaining(timeLimitSettings.limitMinutes)} of music time for today.
+              {timeLimitSettings?.scope === 'family'
+                ? <>You've used your {timeLimitSettings?.limitMinutes && formatTimeRemaining(timeLimitSettings.limitMinutes)} of screen time for today.</>
+                : <>You've used your {timeLimitSettings?.limitMinutes && formatTimeRemaining(timeLimitSettings.limitMinutes)} of music time for today.</>}
             </p>
             <p className="text-sm text-gray-500 mb-6">
-              Take a break and come back tomorrow for more music!
+              {timeLimitSettings?.scope === 'family'
+                ? 'That time is shared with your other Safe Family apps. Take a break and come back tomorrow!'
+                : 'Take a break and come back tomorrow for more music!'}
             </p>
             <button
               onClick={() => setShowTimeLimitModal(false)}

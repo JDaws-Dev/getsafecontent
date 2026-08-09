@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -42,6 +42,24 @@ const HOURS = Array.from({ length: 24 }, (_, i) => ({
   label: i === 0 ? '12 AM' : i < 12 ? `${i} AM` : i === 12 ? '12 PM' : `${i - 12} PM`,
 }));
 
+// The FAMILY-WIDE limit is measured in minutes (it has to be — it's shared with
+// SafeTunes, SafeTube, SafeReads and SafeSpark, where usage is time, not searches).
+const FAMILY_TIME_PRESETS = [
+  { value: 30, label: '30 min' },
+  { value: 60, label: '1 hour' },
+  { value: 90, label: '1.5 hours' },
+  { value: 120, label: '2 hours' },
+  { value: 180, label: '3 hours' },
+];
+
+function formatMinutes(mins) {
+  if (!mins) return 'Unlimited';
+  if (mins < 60) return `${mins} min`;
+  const hours = Math.floor(mins / 60);
+  const remaining = mins % 60;
+  return remaining === 0 ? `${hours}h` : `${hours}h ${remaining}m`;
+}
+
 export default function TimeLimits({ userId, defaultKidId }) {
   const [selectedKid, setSelectedKid] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -55,6 +73,50 @@ export default function TimeLimits({ userId, defaultKidId }) {
 
   const setTimeLimit = useMutation(api.timeLimits.setTimeLimit);
   const deleteTimeLimit = useMutation(api.timeLimits.deleteTimeLimit);
+
+  // FAMILY-WIDE limit (one allowance shared across all five Safe Family apps).
+  // Parents pick EITHER this OR the per-app search limit below — never both —
+  // so turning this on disables the per-app controls rather than stacking.
+  const getFamilyLimit = useAction(api.sharedScreenTime.getFamilyLimit);
+  const setFamilyLimitAction = useAction(api.sharedScreenTime.setFamilyLimit);
+  const [familyLimit, setFamilyLimit] = useState(null); // null = still loading
+  const [familyLimitBusy, setFamilyLimitBusy] = useState(false);
+
+  useEffect(() => {
+    if (!selectedKid) {
+      setFamilyLimit(null);
+      return;
+    }
+    let cancelled = false;
+    getFamilyLimit({ kidProfileId: selectedKid, userToken: token ?? undefined })
+      .then((r) => { if (!cancelled) setFamilyLimit(r); })
+      .catch(() => { if (!cancelled) setFamilyLimit({ available: false }); });
+    return () => { cancelled = true; };
+  }, [selectedKid, getFamilyLimit, token]);
+
+  const saveFamilyLimit = async (minutes) => {
+    if (!selectedKid) return;
+    setFamilyLimitBusy(true);
+    try {
+      const res = await setFamilyLimitAction({
+        kidProfileId: selectedKid,
+        dailyLimitMinutes: minutes,
+        userToken: token ?? undefined,
+      });
+      if (res?.ok) {
+        setFamilyLimit((prev) => ({
+          ...(prev || { available: true }),
+          available: true,
+          limitSet: minutes > 0,
+          limitMinutes: minutes,
+        }));
+      }
+    } finally {
+      setFamilyLimitBusy(false);
+    }
+  };
+
+  const familyLimitOn = !!familyLimit?.limitSet;
 
   // Auto-select kid if defaultKidId is provided
   useEffect(() => {
@@ -110,10 +172,14 @@ export default function TimeLimits({ userId, defaultKidId }) {
     if (!selectedKid) return;
     setSaving(true);
     try {
+      // The stored fields are named *Minutes for cross-app parity, but in
+      // SafeStudy they hold a SEARCH COUNT (see convex/schema.ts). Sending
+      // `dailyLimitSearches` here was silently failing the mutation's validator,
+      // so per-app limits could never be saved.
       await setTimeLimit({
         kidProfileId: selectedKid,
-        dailyLimitSearches: formState.dailyLimitSearches,
-        weekendLimitSearches: formState.weekendLimitSearches,
+        dailyLimitMinutes: formState.dailyLimitSearches,
+        weekendLimitMinutes: formState.weekendLimitSearches,
         allowedStartHour: showTimeWindow ? formState.allowedStartHour : undefined,
         allowedEndHour: showTimeWindow ? formState.allowedEndHour : undefined,
         userToken: token ?? undefined,
@@ -184,15 +250,15 @@ export default function TimeLimits({ userId, defaultKidId }) {
             <span className="mt-2 text-sm font-medium text-gray-900">{kid.kidName}</span>
             <span className="text-xs text-gray-500 mt-1">
               {kid.limit
-                ? kid.limit.dailyLimitSearches === 0
+                ? kid.limit.dailyLimitMinutes === 0
                   ? 'Unlimited'
-                  : `${kid.limit.dailyLimitSearches} searches/day`
+                  : `${kid.limit.dailyLimitMinutes} searches/day`
                 : 'No limit'}
             </span>
             {/* Today's usage */}
-            {kid.searchesToday > 0 && (
+            {kid.searchCountToday > 0 && (
               <span className="text-xs text-accent-600 mt-0.5">
-                {kid.searchesToday} searches today
+                {kid.searchCountToday} searches today
               </span>
             )}
           </button>
@@ -205,6 +271,73 @@ export default function TimeLimits({ userId, defaultKidId }) {
           <h3 className="font-semibold text-gray-900 mb-4">
             Settings for {timeLimitsData.find(k => k.kidProfileId === selectedKid)?.kidName}
           </h3>
+
+          {/* One limit across every Safe Family app */}
+          <div className="mb-6 rounded-xl border border-accent-200 bg-accent-50 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-gray-900">One limit for all apps</p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  {timeLimitsData.find(k => k.kidProfileId === selectedKid)?.kidName}&rsquo;s
+                  time counts across SafeTunes, SafeTube, SafeReads, SafeStudy and
+                  SafeSpark together &mdash; not a separate allowance in each. In
+                  SafeStudy that&rsquo;s time spent searching and working with the tutor.
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={familyLimitOn}
+                  disabled={familyLimitBusy}
+                  onChange={(e) => saveFamilyLimit(e.target.checked ? (familyLimit?.limitMinutes || 60) : 0)}
+                />
+                <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-accent-500 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5"></div>
+              </label>
+            </div>
+
+            {familyLimit && familyLimit.available === false && (
+              <p className="mt-2 text-xs text-amber-700">
+                Couldn&rsquo;t load this right now. The per-app limit below still applies.
+              </p>
+            )}
+
+            {familyLimitOn && (
+              <div className="mt-3">
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {FAMILY_TIME_PRESETS.map((preset) => (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      disabled={familyLimitBusy}
+                      onClick={() => saveFamilyLimit(preset.value)}
+                      className={`py-2 px-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
+                        familyLimit?.limitMinutes === preset.value
+                          ? 'bg-accent-500 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+                {typeof familyLimit?.usedMinutes === 'number' && (
+                  <p className="mt-2 text-xs text-gray-600">
+                    Used today across all apps: {formatMinutes(familyLimit.usedMinutes)}
+                    {familyLimit.limitMinutes ? ` of ${formatMinutes(familyLimit.limitMinutes)}` : ''}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Per-app search limit — ignored while the all-apps limit is on */}
+          <div className={familyLimitOn ? 'opacity-40 pointer-events-none' : ''}>
+          {familyLimitOn && (
+            <p className="mb-3 text-xs text-gray-500">
+              Turned off while &ldquo;One limit for all apps&rdquo; is on.
+            </p>
+          )}
 
           {/* Daily limit */}
           <div className="mb-6">
@@ -374,6 +507,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
                 Remove Limit
               </button>
             )}
+          </div>
           </div>
         </div>
       )}

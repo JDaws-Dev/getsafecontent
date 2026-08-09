@@ -122,6 +122,27 @@ export default defineSchema({
   })
     .index("by_kid", ["kidProfileId"]),
 
+  // Cached verdict from the FAMILY-WIDE daily screen-time limit held by
+  // Marketing Central (shared across all five Safe Family apps).
+  //
+  // Convex queries cannot make network calls, and the gate (timeLimits.canSearch)
+  // is a query — so sharedScreenTime.sync (an action) refreshes this row and the
+  // query reads it. A missing or stale row means "family limit doesn't apply",
+  // which is the fail-open path back to SafeStudy's own per-app limit.
+  sharedScreenTimeCache: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    day: v.string(), // "YYYY-MM-DD" in the family's timezone
+    limitSet: v.boolean(), // is the family-wide limit in force?
+    allowed: v.boolean(),
+    usedMinutes: v.number(),
+    limitMinutes: v.number(),
+    remainingMinutes: v.optional(v.number()),
+    // Engaged seconds already reported to central for this kid+day, so repeated
+    // syncs send only the delta and never double-count.
+    reportedSeconds: v.number(),
+    syncedAt: v.number(),
+  }).index("by_kid_day", ["kidProfileId", "day"]),
+
   // Parent search settings (per-user, applies to all kids)
   searchSettings: defineTable({
     userId: v.id("users"),
@@ -153,6 +174,11 @@ export default defineSchema({
     topic: v.optional(v.string()),
     startedAt: v.number(),
     lastMessageAt: v.number(),
+    // One timestamp per message exchange, appended as it happens (Aug 2026).
+    // The `messages` array is rewritten wholesale on every save with synthetic
+    // timestamps, so it can't be used to reconstruct when a kid was actually
+    // active — this can. Used by sharedScreenTime to measure engaged minutes.
+    messageTimestamps: v.optional(v.array(v.number())),
   })
     .index("by_kid", ["kidProfileId"]),
 

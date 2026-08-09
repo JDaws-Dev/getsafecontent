@@ -46,7 +46,9 @@ export const sendMessage = action({
         response:
           searchCheck.reason === "outside_hours"
             ? "Tutor time is over for now. Come back during allowed hours!"
-            : "You've reached your limit for today. Come back tomorrow!",
+            : searchCheck.reason === "family_limit_reached"
+              ? "That's all your screen time for today. Come back tomorrow!"
+              : "You've reached your limit for today. Come back tomorrow!",
         flagged: false,
         blocked: true,
       };

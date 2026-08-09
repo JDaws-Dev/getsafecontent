@@ -189,6 +189,12 @@ type PatchOp = {
 // and built for "emit JSON with HTML" output. Env override stays.
 const DEFAULT_MODEL = process.env.BELLA_DEMO_MODEL || process.env.BELLA_AGENT_MODEL || 'gpt-5.5';
 
+// Screen time credited for one accepted build, as a server-side floor under
+// the client heartbeat. A build takes the kid roughly this long to ask for,
+// watch land, and look at. Clamped against real elapsed time server-side, so
+// a burst of quick builds can never add up to more than the wall clock.
+const BUILD_ACTIVE_SECONDS = 60;
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as DemoRequest | null;
 
@@ -281,6 +287,24 @@ export async function POST(request: Request) {
         body.jobId,
       );
     }
+    // Daily SCREEN-TIME cap. Separate from the prompt-budget cap below:
+    // that one protects money (and fails closed), this one protects time
+    // and FAILS OPEN — a missing family code, an unreachable Marketing
+    // Central, or a stale cache all resolve to "let them build."
+    //
+    // Whichever limit the parent set governs: the family-wide limit across
+    // all five Safe Family apps if one is in force, otherwise SafeSpark's
+    // own. Enforced here because this is where kid-facing build capability
+    // is actually served — the kid can still open and play what they've
+    // already made, they just can't make more today.
+    const timeVerdict = await fetchTimeLimitStatus(body.sessionToken ?? null);
+    if (timeVerdict && !timeVerdict.allowed) {
+      return parentControlStream(
+        "That's your time for today — see you tomorrow!",
+        body.jobId,
+      );
+    }
+
     // Phase 2 — daily prompt cap. Per-kid `dailyQueryBudget` (set in
     // /parent → Settings) counted against today's prompt count from
     // safesparkRequests. UTC day boundary, same as getKidStatsToday.
@@ -335,6 +359,15 @@ export async function POST(request: Request) {
       );
       return concernAlertStream(classified.category, body.jobId);
     }
+  }
+
+  // Screen-time floor, recorded server-side now that the build is going
+  // ahead. A build genuinely occupies the kid for a minute or so, and this
+  // lands even if the workbench heartbeat never fires (offline, backgrounded
+  // or tampered client). creditActiveSeconds clamps every credit to real
+  // elapsed wall-clock time, so it can't double-count with the heartbeat.
+  if (body.sessionToken) {
+    void recordBuildTimeAsync(body.sessionToken);
   }
 
   // 3D engine detection — for prompts that obviously want real 3D, we
@@ -1978,6 +2011,46 @@ async function countPromptsTodayForSession(sessionToken: string | null): Promise
   } catch (err) {
     console.error('[safespark] countPromptsTodayForSession failed:', err);
     return null;
+  }
+}
+
+/**
+ * Today's screen-time verdict for a kid session.
+ *
+ * FAILS OPEN: returns null on a missing token, missing Convex URL, or any
+ * error, and the caller treats null as "no limit in force." The whole point
+ * of the shared limit is to be a boundary, not a lockout — a kid must never
+ * lose SafeSpark because a lookup had a bad minute.
+ */
+async function fetchTimeLimitStatus(
+  sessionToken: string | null,
+): Promise<{ allowed: boolean; remainingMinutes: number | null } | null> {
+  if (!sessionToken) return null;
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+  if (!url) return null;
+  try {
+    const client = new ConvexHttpClient(url);
+    const result = await client.query(api.screenTime.kidStatus, { sessionToken });
+    if (!result || !result.known) return null;
+    return { allowed: result.allowed, remainingMinutes: result.remainingMinutes };
+  } catch (err) {
+    console.error('[safespark] fetchTimeLimitStatus failed:', err);
+    return null;
+  }
+}
+
+/** Per-build screen-time floor. Fire-and-forget; never blocks a build. */
+async function recordBuildTimeAsync(sessionToken: string): Promise<void> {
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL;
+  if (!url) return;
+  try {
+    const client = new ConvexHttpClient(url);
+    await client.mutation(api.screenTime.recordActive, {
+      sessionToken,
+      activeSeconds: BUILD_ACTIVE_SECONDS,
+    });
+  } catch (err) {
+    console.error('[safespark] recordBuildTimeAsync failed:', err);
   }
 }
 

@@ -24,6 +24,8 @@ import {
   Search,
 } from "lucide-react";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { useReadingTime } from "@/hooks/useReadingTime";
+import { ReadingTimeUp } from "@/components/kid/ReadingTimeUp";
 
 // ============================================================================
 // Types
@@ -189,6 +191,15 @@ export default function BiblePage() {
 
   const [selectedVerse, setSelectedVerse] = useState<{ verse: number; text: string } | null>(null);
 
+  // Daily screen-time limit. Bible reading counts towards it exactly like any
+  // other book — only while a chapter is actually open, and only while the
+  // child is interacting with it.
+  const limitStatus = useReadingTime({
+    kidId,
+    enabled: viewState.view === "reading",
+  });
+  const outOfTime = limitStatus?.canRead === false;
+
   // Load kid profile
   useEffect(() => {
     const profileData = localStorage.getItem("safereads_kid_profile");
@@ -254,6 +265,7 @@ export default function BiblePage() {
         translation,
         bookId: book.bookid,
         chapter,
+        kidId: kidId ?? undefined,
       });
       setVerses(result);
 
@@ -608,6 +620,18 @@ export default function BiblePage() {
   // Render: Reading View
   // ============================================================================
   if (viewState.view === "reading") {
+    // Out of daily reading time. The server has already stopped returning
+    // verses; this is what the child actually sees.
+    if (outOfTime) {
+      return (
+        <ReadingTimeUp
+          status={limitStatus}
+          onBack={() => setViewState({ view: "books" })}
+          fullScreen
+        />
+      );
+    }
+
     const { book, chapter } = viewState;
     const themeStyle = THEME_STYLES[theme];
     const hasPrev = chapter > 1;

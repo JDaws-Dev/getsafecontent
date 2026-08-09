@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { isOverDailyAllowance } from "./timeControls";
 
 // Add a playlist to Discover (featured playlists)
 export const addPlaylistToDiscover = mutation({
@@ -115,6 +116,11 @@ export const addPlaylistToDiscover = mutation({
 export const getFeaturedPlaylistsForKid = query({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
+    // Time-limit gate — see songs.getApprovedSongsForKid.
+    if (await isOverDailyAllowance(ctx, args.kidProfileId)) {
+      return [];
+    }
+
     const kidProfile = await ctx.db.get(args.kidProfileId);
     if (!kidProfile) return [];
 

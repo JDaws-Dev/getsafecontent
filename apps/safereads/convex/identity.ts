@@ -93,6 +93,24 @@ export async function requireOwnerSoft(
 }
 
 /**
+ * Assert the authenticated caller is the parent of `kidId`, and return the kid
+ * row. Use for any parent-facing read/write scoped to one child — it saves
+ * every call site from repeating the "load kid, then check kid.userId" dance
+ * and, more importantly, from forgetting the second half of it.
+ */
+export async function requireKidOwner(
+  ctx: { db: Db },
+  userToken: string | undefined,
+  kidId: Id<"kids">,
+  label?: string,
+): Promise<DataModel["kids"]["document"]> {
+  const kid = await ctx.db.get(kidId);
+  if (!kid) throw new Error("That child could not be found.");
+  await requireOwner(ctx, userToken, kid.userId, label);
+  return kid;
+}
+
+/**
  * Pull the authoritative family code from the verified login token onto the
  * local `users` row. The frontend calls this on login so SafeReads always
  * tracks Central's one canonical code (docs/UNIFIED-IDENTITY.md) — replacing

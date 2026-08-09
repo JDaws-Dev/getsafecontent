@@ -31,6 +31,7 @@ import type * as safeAuth from "../safeAuth.js";
 import type * as search from "../search.js";
 import type * as searchCache from "../searchCache.js";
 import type * as searchQueries from "../searchQueries.js";
+import type * as sharedScreenTime from "../sharedScreenTime.js";
 import type * as stripe from "../stripe.js";
 import type * as stripeActions from "../stripeActions.js";
 import type * as syncFamilyCode from "../syncFamilyCode.js";
@@ -77,6 +78,7 @@ declare const fullApi: ApiFromModules<{
   search: typeof search;
   searchCache: typeof searchCache;
   searchQueries: typeof searchQueries;
+  sharedScreenTime: typeof sharedScreenTime;
   stripe: typeof stripe;
   stripeActions: typeof stripeActions;
   syncFamilyCode: typeof syncFamilyCode;

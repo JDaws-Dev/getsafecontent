@@ -68,6 +68,7 @@ import type * as recentlyPlayed from "../recentlyPlayed.js";
 import type * as safeAuth from "../safeAuth.js";
 import type * as setSubscriptionStatus from "../setSubscriptionStatus.js";
 import type * as setupOnboarding from "../setupOnboarding.js";
+import type * as sharedScreenTime from "../sharedScreenTime.js";
 import type * as songRequests from "../songRequests.js";
 import type * as songs from "../songs.js";
 import type * as stripe from "../stripe.js";
@@ -151,6 +152,7 @@ declare const fullApi: ApiFromModules<{
   safeAuth: typeof safeAuth;
   setSubscriptionStatus: typeof setSubscriptionStatus;
   setupOnboarding: typeof setupOnboarding;
+  sharedScreenTime: typeof sharedScreenTime;
   songRequests: typeof songRequests;
   songs: typeof songs;
   stripe: typeof stripe;

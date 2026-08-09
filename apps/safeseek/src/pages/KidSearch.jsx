@@ -318,6 +318,39 @@ export default function KidSearch() {
     }
   }, [familyCode, user, navigate]);
 
+  // Keep the FAMILY-WIDE daily limit up to date while a kid is using SafeStudy.
+  //
+  // This reports the engaged minutes SafeStudy has seen to Marketing Central and
+  // pulls back the combined total across all five apps. Without it the shared
+  // limit sits dormant — a kid could burn their whole allowance in SafeTube and
+  // SafeStudy would never find out.
+  //
+  // The timer only REFRESHES the verdict; it never creates usage. Minutes come
+  // from what the kid actually did (searches and tutor messages), so a tab left
+  // open on this screen contributes nothing.
+  //
+  // Deliberately fire-and-forget — a failed sync must never interrupt a kid's
+  // search. The server already falls back to SafeStudy's own per-app limit
+  // whenever the shared verdict is missing or stale.
+  const syncSharedScreenTime = useAction(api.sharedScreenTime.sync);
+  useEffect(() => {
+    const kidProfileId = selectedProfile?._id;
+    if (!kidProfileId) return;
+    let cancelled = false;
+    const run = () => {
+      if (cancelled) return;
+      syncSharedScreenTime({ kidProfileId }).catch(() => {
+        /* offline or central down — per-app limit still applies */
+      });
+    };
+    run();
+    const id = setInterval(run, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [selectedProfile?._id, syncSharedScreenTime]);
+
   // Check time limits
   useEffect(() => {
     if (canSearchStatus && !canSearchStatus.canSearch) {

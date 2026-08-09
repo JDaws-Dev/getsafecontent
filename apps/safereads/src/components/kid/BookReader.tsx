@@ -13,6 +13,8 @@ import {
   Type,
 } from "lucide-react";
 import { WordDefinition } from "./WordDefinition";
+import { ReadingTimeUp } from "./ReadingTimeUp";
+import { useReadingTime } from "@/hooks/useReadingTime";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 type ThemeMode = "light" | "dark" | "sepia";
@@ -60,6 +62,7 @@ export function BookReader({
   const [content, setContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
   const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
   const [theme, setTheme] = useState<ThemeMode>("light");
   const [showControls, setShowControls] = useState(true);
@@ -90,6 +93,13 @@ export function BookReader({
   const readingStartTime = useRef(Date.now());
   const lastTimeRecord = useRef(Date.now());
   const hasRecordedFinish = useRef(false);
+
+  // Daily screen-time limit. Accrues active reading seconds (idle time doesn't
+  // count) and reports them to the family-wide cross-app limit. `limitStatus`
+  // updates live, so a child who runs out mid-chapter is eased out rather than
+  // reading on past the cap.
+  const limitStatus = useReadingTime({ kidId, enabled: !limitReached });
+  const outOfTime = limitReached || limitStatus?.canRead === false;
 
   // Load saved preferences
   useEffect(() => {
@@ -167,9 +177,12 @@ export function BookReader({
       setIsLoading(true);
       setError(null);
       try {
-        const result = await getBookContent({ gutenbergId });
+        const result = await getBookContent({ gutenbergId, kidId });
         if (cancelled) return;
-        if (result.error || !result.content) {
+        if (result.limitReached) {
+          // The server refused to serve the book — out of daily reading time.
+          setLimitReached(true);
+        } else if (result.error || !result.content) {
           setError(result.error || "Could not load book content.");
         } else {
           setContent(result.content);
@@ -200,7 +213,7 @@ export function BookReader({
 
     loadContent();
     return () => { cancelled = true; };
-  }, [gutenbergId, getBookContent]);
+  }, [gutenbergId, kidId, getBookContent]);
 
   // Track reading time — record incremental minutes every 30 seconds
   useEffect(() => {
@@ -365,6 +378,12 @@ export function BookReader({
   };
 
   const currentTheme = THEME_STYLES[theme];
+
+  // Out of daily reading time — checked before loading/error so a child who
+  // runs out mid-book is taken here rather than left staring at the page.
+  if (outOfTime) {
+    return <ReadingTimeUp status={limitStatus} onBack={onBack} fullScreen />;
+  }
 
   // Loading state
   if (isLoading) {

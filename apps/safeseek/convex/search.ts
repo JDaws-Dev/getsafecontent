@@ -439,6 +439,10 @@ export const searchFromKid = action({
         results: [],
         summary: searchCheck.reason === "outside_hours"
           ? "Search time is over for now. Come back during allowed hours!"
+          : searchCheck.reason === "family_limit_reached"
+          // The family-wide limit is shared with the other Safe Family apps, so
+          // "your search limit" would be wrong — they may have used it elsewhere.
+          ? "That's all your screen time for today. Come back tomorrow!"
           : "You've reached your search limit for today. Come back tomorrow!",
         flagged: false,
         blocked: true,
@@ -676,6 +680,22 @@ export const expandSection = action({
     });
     if (!subCheck.allowed) {
       return { content: subCheck.message };
+    }
+
+    // Time limits. Expanding a section is more kid-facing AI content, so it has
+    // to sit behind the same gate as a search — otherwise a kid at their cap
+    // could keep pulling new material out of an answer that's already on screen.
+    const expandCheck = await ctx.runQuery(api.timeLimits.canSearch, {
+      kidProfileId: args.kidProfileId,
+    });
+    if (!expandCheck.canSearch) {
+      return {
+        content: expandCheck.reason === "outside_hours"
+          ? "Search time is over for now. Come back during allowed hours!"
+          : expandCheck.reason === "family_limit_reached"
+          ? "That's all your screen time for today. Come back tomorrow!"
+          : "You've reached your search limit for today. Come back tomorrow!",
+      };
     }
 
     // Rate limit check (expand counts as a search action)

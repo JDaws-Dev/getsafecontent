@@ -25,6 +25,8 @@ import type * as provisionUser from "../provisionUser.js";
 import type * as provisionUserInternal from "../provisionUserInternal.js";
 import type * as safeAuth from "../safeAuth.js";
 import type * as safespark from "../safespark.js";
+import type * as screenTime from "../screenTime.js";
+import type * as sharedScreenTime from "../sharedScreenTime.js";
 import type * as sparkdb from "../sparkdb.js";
 import type * as users from "../users.js";
 
@@ -52,6 +54,8 @@ declare const fullApi: ApiFromModules<{
   provisionUserInternal: typeof provisionUserInternal;
   safeAuth: typeof safeAuth;
   safespark: typeof safespark;
+  screenTime: typeof screenTime;
+  sharedScreenTime: typeof sharedScreenTime;
   sparkdb: typeof sparkdb;
   users: typeof users;
 }>;

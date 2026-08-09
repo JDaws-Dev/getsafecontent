@@ -37,6 +37,12 @@ interface AudioPlayerProps {
   embedded?: boolean;
   /** Unique key for persisting playback position (defaults to title) */
   persistKey?: string;
+  /**
+   * Notified whenever playback starts or stops. Screen-time accrual uses this:
+   * listening counts only while audio is genuinely playing, never while the
+   * player merely sits open.
+   */
+  onPlayingChange?: (playing: boolean) => void;
 }
 
 /** Get the localStorage key for a given book */
@@ -61,6 +67,7 @@ export function AudioPlayer({
   onClose,
   embedded,
   persistKey,
+  onPlayingChange,
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressKey = getProgressKey(persistKey || title);
@@ -80,6 +87,17 @@ export function AudioPlayer({
   const hasChapters = chapters && chapters.length > 0;
   const currentChapter = hasChapters ? chapters[currentChapterIndex] : null;
   const activeUrl = currentChapter?.url || audioUrl;
+
+  // Report play/pause outward. Held in a ref so an inline callback from the
+  // parent can't re-fire this on every render.
+  const onPlayingChangeRef = useRef(onPlayingChange);
+  useEffect(() => {
+    onPlayingChangeRef.current = onPlayingChange;
+  }, [onPlayingChange]);
+  useEffect(() => {
+    onPlayingChangeRef.current?.(isPlaying);
+    return () => onPlayingChangeRef.current?.(false);
+  }, [isPlaying]);
 
   // Save playback position to localStorage
   const saveProgress = useCallback(() => {

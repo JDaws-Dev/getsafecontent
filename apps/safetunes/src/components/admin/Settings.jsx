@@ -52,6 +52,14 @@ function Settings({ user, onLogout, initialSection }) {
   const deleteOwnAccount = useMutation(api.admin.deleteOwnAccount);
   const setGlobalHideArtwork = useMutation(api.users.setGlobalHideArtwork);
 
+  // FAMILY-WIDE limit (one allowance shared across all five Safe Family apps).
+  // Parents choose EITHER this OR the per-app limit below — never both — so
+  // turning this on disables the per-app control rather than stacking with it.
+  const getFamilyLimit = useAction(api.sharedScreenTime.getFamilyLimit);
+  const setFamilyLimitAction = useAction(api.sharedScreenTime.setFamilyLimit);
+  const [familyLimit, setFamilyLimit] = useState(null); // null = still loading
+  const [familyLimitBusy, setFamilyLimitBusy] = useState(false);
+
   // View state: 'menu' shows the main list, others show specific sections
   const [activeSection, setActiveSection] = useState(initialSection || 'menu');
 
@@ -312,6 +320,50 @@ function Settings({ user, onLogout, initialSection }) {
       showToast('Failed to delete archive. Please try again.', 'error');
     }
   };
+
+  // Load the family-wide limit for whichever kid is being edited. Reads through
+  // an ownership-checked action (SafeTunes never asks central directly from the
+  // browser — ADMIN_KEY lives only in Convex env).
+  useEffect(() => {
+    if (!editingKidId) {
+      setFamilyLimit(null);
+      return;
+    }
+    let cancelled = false;
+    getFamilyLimit({ kidProfileId: editingKidId, userToken: token ?? undefined })
+      .then((r) => { if (!cancelled) setFamilyLimit(r); })
+      .catch(() => { if (!cancelled) setFamilyLimit({ available: false }); });
+    return () => { cancelled = true; };
+  }, [editingKidId, getFamilyLimit, token]);
+
+  const saveFamilyLimit = async (minutes) => {
+    if (!editingKidId) return;
+    setFamilyLimitBusy(true);
+    try {
+      const res = await setFamilyLimitAction({
+        kidProfileId: editingKidId,
+        dailyLimitMinutes: minutes,
+        userToken: token ?? undefined,
+      });
+      if (res?.ok) {
+        setFamilyLimit((prev) => ({
+          ...(prev || { available: true }),
+          available: true,
+          limitSet: minutes > 0,
+          limitMinutes: minutes,
+        }));
+      } else {
+        showToast("Couldn't save that right now. Please try again.", 'error');
+      }
+    } catch (error) {
+      console.error('Failed to save family-wide limit:', error);
+      showToast("Couldn't save that right now. Please try again.", 'error');
+    } finally {
+      setFamilyLimitBusy(false);
+    }
+  };
+
+  const familyLimitOn = !!familyLimit?.limitSet;
 
   const startEditingKid = (kid) => {
     setEditingKidId(kid._id);
@@ -1006,8 +1058,81 @@ function Settings({ user, onLogout, initialSection }) {
                     </div>
                   </div>
 
-                  {/* Time Limit Controls */}
-                  <div className="border-t border-gray-200 pt-4 mt-4">
+                  {/* One limit across every Safe Family app.
+                      Saves immediately (it lives in Marketing Central, not in
+                      this form), so it is deliberately outside the Save flow. */}
+                  {editingKidId && (
+                    <div className="border-t border-gray-200 pt-4 mt-4">
+                      <div className="rounded-xl border border-accent-200 bg-accent-50 p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="pr-3">
+                            <p className="text-sm font-medium text-brand-navy">One limit for all apps</p>
+                            <p className="text-xs text-gray-600">
+                              {formData.name || 'This kid'}&rsquo;s time counts across SafeTunes, SafeTube,
+                              SafeReads, SafeStudy and SafeSpark together &mdash; not a separate
+                              allowance in each.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={familyLimitBusy}
+                            onClick={() => saveFamilyLimit(familyLimitOn ? 0 : (familyLimit?.limitMinutes || 60))}
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+                              familyLimitOn ? 'bg-accent-600' : 'bg-gray-300'
+                            }`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                familyLimitOn ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </div>
+
+                        {familyLimit && familyLimit.available === false && (
+                          <p className="mt-2 text-xs text-amber-700">
+                            Couldn&rsquo;t load this right now. The per-app limit below still applies.
+                          </p>
+                        )}
+
+                        {familyLimitOn && (
+                          <div className="mt-3">
+                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                              {[30, 60, 90, 120, 180, 240].map((mins) => (
+                                <button
+                                  key={mins}
+                                  type="button"
+                                  disabled={familyLimitBusy}
+                                  onClick={() => saveFamilyLimit(mins)}
+                                  className={`py-2 px-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
+                                    familyLimit?.limitMinutes === mins
+                                      ? 'bg-accent-500 text-white'
+                                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                                  }`}
+                                >
+                                  {mins < 60 ? `${mins}m` : `${mins / 60}h`}
+                                </button>
+                              ))}
+                            </div>
+                            {typeof familyLimit?.usedMinutes === 'number' && (
+                              <p className="mt-2 text-xs text-gray-600">
+                                Used today across all apps: {familyLimit.usedMinutes}m
+                                {familyLimit.limitMinutes ? ` of ${familyLimit.limitMinutes}m` : ''}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Time Limit Controls — ignored while the all-apps limit is on */}
+                  <div className={`border-t border-gray-200 pt-4 mt-4 ${familyLimitOn ? 'opacity-40 pointer-events-none' : ''}`}>
+                    {familyLimitOn && (
+                      <p className="mb-2 text-xs text-gray-500">
+                        Turned off while &ldquo;One limit for all apps&rdquo; is on.
+                      </p>
+                    )}
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Daily Listening Limit</label>
@@ -1940,6 +2065,7 @@ function Settings({ user, onLogout, initialSection }) {
       {showExportModal && exportKidProfile && (
         <ExportPlaylistsModal
           kidProfile={exportKidProfile}
+          userToken={token ?? undefined}
           onClose={() => {
             setShowExportModal(false);
             setExportKidProfile(null);

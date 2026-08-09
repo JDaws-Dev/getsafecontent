@@ -200,12 +200,22 @@ export const searchLibriVox = action({
 /**
  * Get chapter-level audio details for a LibriVox audiobook.
  * Parses the RSS feed to get individual chapter MP3 URLs.
+ *
+ * SCREEN-TIME ENFORCEMENT POINT for audiobooks — the MP3 URLs are the playable
+ * content, so withholding them is what actually stops listening. `kidId` is
+ * optional so the gate fails open when it's missing; kid-facing callers pass it.
  */
 export const getLibriVoxChapters = action({
   args: {
     rssUrl: v.string(),
+    kidId: v.optional(v.id("kids")),
   },
-  handler: async (ctx, args): Promise<{ chapters: Array<{ title: string; url: string; duration?: string }> }> => {
+  handler: async (ctx, args): Promise<{ chapters: Array<{ title: string; url: string; duration?: string }>; limitReached?: boolean }> => {
+    if (args.kidId) {
+      const verdict = await ctx.runQuery(api.timeLimits.canRead, { kidId: args.kidId });
+      if (!verdict.canRead) return { chapters: [], limitReached: true };
+    }
+
     const cacheKey = `librivox:chapters:${args.rssUrl}`;
 
     const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });

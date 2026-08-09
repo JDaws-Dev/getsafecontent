@@ -54,6 +54,11 @@ export default defineSchema({
     parentUserId: v.id('users'),
     familyCode: v.string(),                    // 6-char alphanumeric, case-insensitive
     familyName: v.optional(v.string()),        // 'The Daws Family' — optional display
+    // IANA timezone ('America/New_York'). Decides where the screen-time day
+    // boundary falls. Captured opportunistically from whichever device
+    // reports it (kid workbench heartbeat, parent time-limit save) because
+    // SafeSpark has never asked for it. Unset → UTC.
+    timezone: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index('by_parent', ['parentUserId'])
@@ -119,6 +124,58 @@ export default defineSchema({
   })
     .index('by_token', ['sessionToken'])
     .index('by_profile', ['kidProfileId']),
+
+  // ---------------------------------------------------------------------
+  // Screen time. Distinct from the COST controls (dailyQueryBudget /
+  // budgetUsage) — that caps how much money a kid can spend, this caps how
+  // long they can spend. They are enforced independently and neither
+  // relaxes the other.
+  // ---------------------------------------------------------------------
+
+  // This app's OWN daily limit for one kid. Ignored while the family-wide
+  // limit from Marketing Central is in force (parents pick one or the
+  // other, never both).
+  sparkTimeLimits: defineTable({
+    kidProfileId: v.id('kidProfiles'),
+    dailyLimitMinutes: v.number(),             // 0 = unlimited
+    updatedAt: v.number(),
+  }).index('by_kid', ['kidProfileId']),
+
+  // Locally-observed ACTIVE build time, one row per kid per day.
+  //
+  // `activeSeconds` only ever grows through creditActiveSeconds(), which
+  // clamps every credit to the wall-clock time since `lastCreditedAt`. That
+  // makes the number impossible to inflate past real elapsed time, and means
+  // an idle open tab contributes nothing (the client stops sending while
+  // idle, so no credit is claimed).
+  sparkTimeUsage: defineTable({
+    kidProfileId: v.id('kidProfiles'),
+    day: v.string(),                           // 'YYYY-MM-DD' in the family's timezone
+    activeSeconds: v.number(),
+    lastCreditedAt: v.number(),                // epoch ms of the last credited beat
+    updatedAt: v.number(),
+  }).index('by_kid_day', ['kidProfileId', 'day']),
+
+  // Cached view of the FAMILY-WIDE daily limit held by Marketing Central.
+  //
+  // Convex queries can't make network calls and the enforcement read is a
+  // query, so an action refreshes this row and the query reads it. If
+  // central says a combined limit is set it REPLACES sparkTimeLimits. If
+  // central is unreachable or the row goes stale we fall back to the
+  // per-app limit, and then to allowing access.
+  sharedScreenTimeCache: defineTable({
+    kidProfileId: v.id('kidProfiles'),
+    day: v.string(),                           // 'YYYY-MM-DD' in the family's timezone
+    limitSet: v.boolean(),                     // is the family-wide limit in force?
+    allowed: v.boolean(),
+    usedMinutes: v.number(),
+    limitMinutes: v.number(),
+    remainingMinutes: v.optional(v.number()),
+    // Seconds already reported to central for this kid+day, so repeated
+    // syncs send only the delta and never double-count.
+    reportedSeconds: v.number(),
+    syncedAt: v.number(),
+  }).index('by_kid_day', ['kidProfileId', 'day']),
 
   // Perplexity-style "Spaces" — themed rooms with their own standing
   // instructions + persistent memory. Conversations belong to a space.

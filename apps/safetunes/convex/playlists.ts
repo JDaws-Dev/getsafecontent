@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { isOverDailyAllowance } from "./timeControls";
 
 // Get all playlists for a user
 export const getPlaylists = query({
@@ -14,8 +15,15 @@ export const getPlaylists = query({
 
 // Get all playlists for a kid
 export const getPlaylistsForKid = query({
-  args: { kidProfileId: v.id("kidProfiles") },
+  // userToken is the PARENT's — the admin-side playlist exporter reads a kid's
+  // playlists through here and must not go blank when the kid is over cap.
+  args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    // Time-limit gate — playlist docs carry their songs inline, so this is a
+    // playable-content surface like the library. See songs.getApprovedSongsForKid.
+    if (await isOverDailyAllowance(ctx, args.kidProfileId, args.userToken)) {
+      return [];
+    }
     return await ctx.db
       .query("playlists")
       .withIndex("by_kid_profile", (q) => q.eq("kidProfileId", args.kidProfileId))
@@ -27,7 +35,14 @@ export const getPlaylistsForKid = query({
 export const getPlaylist = query({
   args: { playlistId: v.id("playlists") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.playlistId);
+    const playlist = await ctx.db.get(args.playlistId);
+    if (!playlist) return null;
+    // Gated by id too, so holding a playlist id from before the cap was hit
+    // isn't a way back to the songs inside it.
+    if (await isOverDailyAllowance(ctx, playlist.kidProfileId)) {
+      return null;
+    }
+    return playlist;
   },
 });
 

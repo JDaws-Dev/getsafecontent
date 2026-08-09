@@ -521,6 +521,51 @@ export default defineSchema({
     .index("by_kid", ["kidId"])
     .index("by_kid_and_ref", ["kidId", "translation", "bookId", "chapter", "verse"]),
 
+  // ========================================================================
+  // Screen Time (per-app limit + the family-wide cross-app limit)
+  // ========================================================================
+  // Parents choose EITHER a per-app SafeReads limit (this table) OR one overall
+  // limit covering all five Safe Family apps (held by Marketing Central and
+  // mirrored into sharedScreenTimeCache below) — never both. See
+  // convex/timeLimits.ts for the precedence rules.
+  timeLimits: defineTable({
+    kidId: v.id("kids"),
+    dailyLimitMinutes: v.number(),                  // 0 = unlimited
+    weekendLimitMinutes: v.optional(v.number()),    // overrides daily on Sat/Sun
+    allowedStartHour: v.optional(v.number()),       // 0-23, local to the family
+    allowedEndHour: v.optional(v.number()),
+    updatedAt: v.number(),
+  }).index("by_kid", ["kidId"]),
+
+  // Active reading seconds, bucketed by the family's own calendar day.
+  //
+  // Deliberately separate from `readingStreaks`: that table is the kid's
+  // gamified reading GOAL (nice round numbers, only counts book reading, day
+  // key in server time). This one is the enforcement ledger — it counts every
+  // kind of reading, uses the family's timezone so all five apps agree on where
+  // midnight falls, and must never be tuned for how it makes a streak look.
+  readingUsage: defineTable({
+    kidId: v.id("kids"),
+    day: v.string(),          // "YYYY-MM-DD" in the family's timezone
+    seconds: v.number(),      // active seconds accrued today
+    updatedAt: v.number(),
+  }).index("by_kid_day", ["kidId", "day"]),
+
+  // Local mirror of Marketing Central's family-wide verdict. Convex queries
+  // can't make network calls, so an action refreshes this row and the content
+  // gate (a query) reads it. Stale rows are ignored — see cachedFamilyLimit.
+  sharedScreenTimeCache: defineTable({
+    kidId: v.id("kids"),
+    day: v.string(),
+    limitSet: v.boolean(),          // does an overall limit exist for this kid?
+    allowed: v.boolean(),
+    usedMinutes: v.number(),        // combined across all five apps
+    limitMinutes: v.number(),
+    remainingMinutes: v.optional(v.number()),
+    reportedSeconds: v.number(),    // watermark: seconds already sent to central
+    syncedAt: v.number(),
+  }).index("by_kid_day", ["kidId", "day"]),
+
   // Bible reading progress per kid
   bibleProgress: defineTable({
     kidId: v.id("kids"),
