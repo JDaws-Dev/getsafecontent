@@ -18,6 +18,7 @@ import type * as emails from "../emails.js";
 import type * as familyCode from "../familyCode.js";
 import type * as forceProvision from "../forceProvision.js";
 import type * as http from "../http.js";
+import type * as kidIdentity from "../kidIdentity.js";
 import type * as kids from "../kids.js";
 import type * as migrations from "../migrations.js";
 import type * as passwordReset from "../passwordReset.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   familyCode: typeof familyCode;
   forceProvision: typeof forceProvision;
   http: typeof http;
+  kidIdentity: typeof kidIdentity;
   kids: typeof kids;
   migrations: typeof migrations;
   passwordReset: typeof passwordReset;

@@ -22,10 +22,35 @@ import { internalMutation, internalQuery } from "./_generated/server";
  *      limit as the fallback.
  */
 
-// Kid identity across apps is familyCode + name. Normalise both ends so
-// "Bella", "bella " and "BELLA" are one child rather than three.
+// Kid identity across apps.
+//
+// Usage is keyed on the CANONICAL identity from kidIdentity, not the typed
+// name, so a child known as "Bella" in one app and "Isabella" in another is one
+// child with one allowance. Callers pass whatever name they hold; we resolve it.
+//
+// The name is still normalised for case and surrounding whitespace as a
+// fallback for rows written before identities existed.
 function norm(name: string): string {
   return name.trim().toLowerCase();
+}
+
+/**
+ * Resolve a family + typed name to the canonical identity key used for usage
+ * buckets. Falls back to the normalised name when no identity exists yet, so
+ * this is safe to deploy before the backfill has run.
+ */
+async function identityKey(
+  ctx: { db: any },
+  familyCode: string,
+  kidName: string,
+): Promise<string> {
+  const key = norm(kidName);
+  const family = await ctx.db
+    .query("kidIdentity")
+    .withIndex("by_family", (q: any) => q.eq("familyCode", familyCode))
+    .collect();
+  const hit = family.find((row: any) => row.matchKeys.includes(key));
+  return hit ? `id:${hit._id}` : key;
 }
 
 /**
@@ -86,8 +111,11 @@ async function readStatus(
 /** Read today's total and the applicable cap. Never throws for missing rows. */
 export const check = internalQuery({
   args: { familyCode: v.string(), kidName: v.string(), day: v.string() },
-  handler: async (ctx, args) =>
-    await readStatus(ctx, args.familyCode.trim().toUpperCase(), norm(args.kidName), args.day),
+  handler: async (ctx, args) => {
+    const familyCode = args.familyCode.trim().toUpperCase();
+    const key = await identityKey(ctx, familyCode, args.kidName);
+    return await readStatus(ctx, familyCode, key, args.day);
+  },
 });
 
 /**
@@ -106,8 +134,8 @@ export const record = internalMutation({
     app: v.string(),
   },
   handler: async (ctx, args) => {
-    const kidName = norm(args.kidName);
     const familyCode = args.familyCode.trim().toUpperCase();
+    const kidName = await identityKey(ctx, familyCode, args.kidName);
     // Guard against a bad client sending negative or absurd values — a single
     // report should never be more than a day.
     const minutes = Math.max(0, Math.min(args.minutes, 24 * 60));
@@ -151,8 +179,8 @@ export const setLimit = internalMutation({
     dailyLimitMinutes: v.number(),
   },
   handler: async (ctx, args) => {
-    const kidName = norm(args.kidName);
     const familyCode = args.familyCode.trim().toUpperCase();
+    const kidName = await identityKey(ctx, familyCode, args.kidName);
     const dailyLimitMinutes = Math.max(0, Math.min(args.dailyLimitMinutes, 24 * 60));
 
     const existing = await ctx.db
@@ -226,5 +254,28 @@ export const familyOverview = internalQuery({
     }
 
     return Object.values(byKid).sort((a, b) => a.kidName.localeCompare(b.kidName));
+  },
+});
+
+/**
+ * Operator tool: wipe a child's recorded usage for one day.
+ *
+ * Exists because verifying this feature means writing real usage rows, and
+ * leaving phantom minutes on a real family's child would silently eat into a
+ * limit they later switch on.
+ */
+export const clearUsage = internalMutation({
+  args: { familyCode: v.string(), kidName: v.string(), day: v.string() },
+  handler: async (ctx, args) => {
+    const familyCode = args.familyCode.trim().toUpperCase();
+    const key = await identityKey(ctx, familyCode, args.kidName);
+    const rows = await ctx.db
+      .query("kidUsage")
+      .withIndex("by_family_kid_day", (q) =>
+        q.eq("familyCode", familyCode).eq("kidName", key).eq("day", args.day)
+      )
+      .collect();
+    for (const r of rows) await ctx.db.delete(r._id);
+    return { deleted: rows.length };
   },
 });

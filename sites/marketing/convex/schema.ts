@@ -288,6 +288,29 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_family_kid_day", ["familyCode", "kidName", "day"]),
 
+  // ---------------------------------------------------------------------
+  // Canonical identity for a child across all five apps.
+  //
+  // Before this, cross-app features matched children by familyCode + typed
+  // name. That breaks the moment a parent uses a nickname: one real child was
+  // "Bella" in SafeReads/SafeStudy and "Isabella" in SafeTube/SafeTunes, so a
+  // shared daily limit would have given her two allowances instead of one —
+  // while looking like it worked, because her sister (spelled identically
+  // everywhere) was capped correctly.
+  //
+  // `matchKeys` holds every normalised name that resolves to this child, so
+  // aliases are data rather than a special case in code. Apps store the
+  // resulting id and stop caring what the child is called locally.
+  // ---------------------------------------------------------------------
+  kidIdentity: defineTable({
+    familyCode: v.string(),
+    canonicalName: v.string(), // for display in parent-facing summaries
+    matchKeys: v.array(v.string()), // lowercased, trimmed names that map here
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_family", ["familyCode"]),
+
   // The combined cap. 0 or absent = unlimited.
   kidDailyLimits: defineTable({
     familyCode: v.string(),
