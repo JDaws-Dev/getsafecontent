@@ -787,6 +787,45 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
   const timeLimit = allTimeLimits?.find(t => t.kidProfileId === kid._id);
   const kidHistory = recentHistory?.filter(h => h.kidProfileId === kid._id) || [];
 
+  // FAMILY-WIDE limit (shared across all five Safe Family apps).
+  // Parents choose EITHER this OR the per-app limit below — never both — so
+  // turning this on disables the per-app controls rather than stacking with them.
+  const getFamilyLimit = useAction(api.sharedScreenTime.getFamilyLimit);
+  const setFamilyLimitAction = useAction(api.sharedScreenTime.setFamilyLimit);
+  const [familyLimit, setFamilyLimit] = useState(null); // null = still loading
+  const [familyLimitBusy, setFamilyLimitBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getFamilyLimit({ kidProfileId: kid._id, userToken: token ?? undefined })
+      .then((r) => { if (!cancelled) setFamilyLimit(r); })
+      .catch(() => { if (!cancelled) setFamilyLimit({ available: false }); });
+    return () => { cancelled = true; };
+  }, [kid._id, getFamilyLimit, token]);
+
+  const saveFamilyLimit = async (minutes) => {
+    setFamilyLimitBusy(true);
+    try {
+      const res = await setFamilyLimitAction({
+        kidProfileId: kid._id,
+        dailyLimitMinutes: minutes,
+        userToken: token ?? undefined,
+      });
+      if (res?.ok) {
+        setFamilyLimit((prev) => ({
+          ...(prev || { available: true }),
+          available: true,
+          limitSet: minutes > 0,
+          limitMinutes: minutes,
+        }));
+      }
+    } finally {
+      setFamilyLimitBusy(false);
+    }
+  };
+
+  const familyLimitOn = !!familyLimit?.limitSet;
+
   // Combined form state for profile AND time limits
   const [form, setForm] = useState({
     name: kid.name,
@@ -1049,6 +1088,67 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
           <div>
             <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Time Limits</h4>
 
+            {/* One limit across every Safe Family app */}
+            <div className="mb-4 rounded-xl border border-accent-200 bg-accent-50 p-3">
+              <div className="flex items-center justify-between">
+                <div className="pr-3">
+                  <p className="text-sm font-medium text-brand-navy">One limit for all apps</p>
+                  <p className="text-xs text-gray-600">
+                    {kid.name}&rsquo;s time counts across SafeTunes, SafeTube, SafeReads,
+                    SafeStudy and SafeSpark together &mdash; not a separate allowance in each.
+                  </p>
+                </div>
+                <Toggle
+                  enabled={familyLimitOn}
+                  onChange={(val) => saveFamilyLimit(val ? (familyLimit?.limitMinutes || 60) : 0)}
+                />
+              </div>
+
+              {familyLimit && familyLimit.available === false && (
+                <p className="mt-2 text-xs text-amber-700">
+                  Couldn&rsquo;t load this right now. The per-app limit below still applies.
+                </p>
+              )}
+
+              {familyLimitOn && (
+                <div className="mt-3">
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    {TIME_PRESETS.map((preset) => (
+                      <button
+                        key={preset.value}
+                        type="button"
+                        disabled={familyLimitBusy}
+                        onClick={() => saveFamilyLimit(preset.value)}
+                        className={`py-2 px-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
+                          familyLimit?.limitMinutes === preset.value
+                            ? 'bg-accent-500 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                  {typeof familyLimit?.usedMinutes === 'number' && (
+                    <p className="mt-2 text-xs text-gray-600">
+                      Used today across all apps: {formatMinutes(familyLimit.usedMinutes)}
+                      {familyLimit.limitMinutes
+                        ? ` of ${formatMinutes(familyLimit.limitMinutes)}`
+                        : ''}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Per-app limit — ignored while the all-apps limit is on */}
+            <div className={familyLimitOn ? 'opacity-40 pointer-events-none' : ''}>
+            {familyLimitOn && (
+              <p className="mb-2 text-xs text-gray-500">
+                Turned off while &ldquo;One limit for all apps&rdquo; is on.
+              </p>
+            )}
+
             {/* Enable time limit */}
             <div className="flex items-center justify-between py-2 mb-3">
               <div>
@@ -1159,6 +1259,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                 </div>
               </div>
             )}
+            </div>{/* /per-app limit wrapper (greyed while all-apps limit is on) */}
           </div>
 
           {/* Recent Activity Section */}

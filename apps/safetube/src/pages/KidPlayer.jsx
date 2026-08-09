@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
 // Components
@@ -58,6 +58,39 @@ export default function KidPlayer() {
   );
 
   const redeemKidPass = useMutation(api.kidPass.redeemKidPass);
+
+  // Keep the FAMILY-WIDE daily limit up to date while a kid is using the app.
+  //
+  // This reports the minutes SafeTube has seen to Marketing Central and pulls
+  // back the combined total across all five apps. Without it the shared limit
+  // sits dormant — a kid could burn their whole allowance in SafeTunes and
+  // SafeTube would never find out.
+  //
+  // Every 60s (and immediately on profile pick) is frequent enough for a limit
+  // measured in minutes, and cheap: it's one request, and central only writes
+  // when whole new minutes have accrued.
+  //
+  // Deliberately fire-and-forget — a failed sync must never interrupt playback.
+  // The server side already falls back to SafeTube's own per-app limit whenever
+  // the shared verdict is missing or stale.
+  const syncSharedScreenTime = useAction(api.sharedScreenTime.sync);
+  useEffect(() => {
+    const kidProfileId = selectedProfile?._id;
+    if (!kidProfileId) return;
+    let cancelled = false;
+    const run = () => {
+      if (cancelled) return;
+      syncSharedScreenTime({ kidProfileId }).catch(() => {
+        /* offline or central down — per-app limit still applies */
+      });
+    };
+    run();
+    const id = setInterval(run, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [selectedProfile?._id, syncSharedScreenTime]);
 
   // Boot from another Safe Family app's cross-app switcher. A kid pass (?kt=)
   // wins: it proves the kid was already authenticated in a sibling app, so we

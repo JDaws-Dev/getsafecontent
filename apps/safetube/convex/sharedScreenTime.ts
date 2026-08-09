@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { action, internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { dayKeyForTimezone } from "./timeLimits";
+import { requireProfileOwner } from "./identity";
 
 /**
  * Bridge to the FAMILY-WIDE daily screen-time limit held by Marketing Central.
@@ -180,6 +181,94 @@ export const sync = action({
     } catch (err) {
       console.error("[sharedScreenTime.sync] central unreachable:", err);
       return { synced: false, reason: "central_unreachable" };
+    }
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Parent-facing controls for the family-wide limit.
+//
+// These are ACTIONS because they talk to Marketing Central over HTTP, which a
+// query or mutation cannot do. Ownership is enforced through an internal query
+// before anything is read or written — without it, these would be exactly the
+// hole that was just closed on setTimeLimit/deleteTimeLimit.
+// ---------------------------------------------------------------------------
+
+/** Verify the caller owns this kid, and return the identity central needs. */
+export const ownerContext = internalQuery({
+  args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const profile = await requireProfileOwner(
+      ctx,
+      args.userToken,
+      args.kidProfileId,
+      "sharedScreenTime.ownerContext"
+    );
+    const parent = await ctx.db.get(profile.userId);
+    if (!parent?.familyCode) return null;
+    return {
+      familyCode: parent.familyCode,
+      kidName: profile.name,
+      day: dayKeyForTimezone(parent.timezone),
+    };
+  },
+});
+
+/** Read the family-wide limit + today's combined usage for one kid. */
+export const getFamilyLimit = action({
+  args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
+  handler: async (ctx, args): Promise<any> => {
+    const adminKey = process.env.ADMIN_KEY;
+    const info = await ctx.runQuery(internal.sharedScreenTime.ownerContext, args);
+    if (!adminKey || !info) return { available: false };
+    try {
+      const url = new URL(`${CENTRAL_URL}/sharedScreenTime/check`);
+      url.searchParams.set("familyCode", info.familyCode);
+      url.searchParams.set("kidName", info.kidName);
+      url.searchParams.set("day", info.day);
+      url.searchParams.set("key", adminKey);
+      const res = await fetch(url.toString());
+      if (!res.ok) return { available: false };
+      const status = await res.json();
+      return { available: true, ...status };
+    } catch {
+      // Central down — tell the UI so it can say "couldn't load" rather than
+      // showing "off" and tempting the parent to re-enable something already on.
+      return { available: false };
+    }
+  },
+});
+
+/** Set (minutes > 0) or clear (0) the family-wide limit for one kid. */
+export const setFamilyLimit = action({
+  args: {
+    kidProfileId: v.id("kidProfiles"),
+    dailyLimitMinutes: v.number(),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<{ ok: boolean; error?: string }> => {
+    const adminKey = process.env.ADMIN_KEY;
+    const info = await ctx.runQuery(internal.sharedScreenTime.ownerContext, {
+      kidProfileId: args.kidProfileId,
+      userToken: args.userToken,
+    });
+    if (!adminKey) return { ok: false, error: "not_configured" };
+    if (!info) return { ok: false, error: "no_family_code" };
+    try {
+      const res = await fetch(`${CENTRAL_URL}/sharedScreenTime/setLimit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          familyCode: info.familyCode,
+          kidName: info.kidName,
+          dailyLimitMinutes: args.dailyLimitMinutes,
+          key: adminKey,
+        }),
+      });
+      if (!res.ok) return { ok: false, error: `central_${res.status}` };
+      return { ok: true };
+    } catch {
+      return { ok: false, error: "central_unreachable" };
     }
   },
 });
