@@ -260,4 +260,39 @@ export default defineSchema({
   })
     .index("by_app", ["app"])
     .index("by_reportedAt", ["reportedAt"]),
+
+  // ---------------------------------------------------------------------
+  // Shared cross-app daily screen time.
+  //
+  // Each app used to keep its own separate timer, so a kid with a "1 hour"
+  // limit got an hour of music PLUS an hour of video PLUS an hour of search.
+  // These two tables are the single place all five apps read and write, so one
+  // limit covers the whole family of apps.
+  //
+  // Kids are keyed by familyCode + lowercased name — the same cross-app
+  // identity basis the kid pass already uses. There is no shared kid id
+  // across apps, and adding one would be a migration; name+family is what
+  // actually holds today.
+  // ---------------------------------------------------------------------
+
+  // One row per kid per day. `day` is a "YYYY-MM-DD" string computed by the
+  // CALLING APP in the family's own timezone — central deliberately does no
+  // timezone maths, so "today" can't drift between apps.
+  kidUsage: defineTable({
+    familyCode: v.string(),
+    kidName: v.string(), // lowercased
+    day: v.string(),
+    minutes: v.number(),
+    // Which apps contributed, for the parent-facing breakdown.
+    byApp: v.optional(v.record(v.string(), v.number())),
+    updatedAt: v.number(),
+  }).index("by_family_kid_day", ["familyCode", "kidName", "day"]),
+
+  // The combined cap. 0 or absent = unlimited.
+  kidDailyLimits: defineTable({
+    familyCode: v.string(),
+    kidName: v.string(), // lowercased
+    dailyLimitMinutes: v.number(),
+    updatedAt: v.number(),
+  }).index("by_family_kid", ["familyCode", "kidName"]),
 });

@@ -21,6 +21,7 @@ import type * as http from "../http.js";
 import type * as kids from "../kids.js";
 import type * as migrations from "../migrations.js";
 import type * as passwordReset from "../passwordReset.js";
+import type * as sharedScreenTime from "../sharedScreenTime.js";
 import type * as signupInternal from "../signupInternal.js";
 import type * as trialSummary from "../trialSummary.js";
 import type * as trialSummaryDigest from "../trialSummaryDigest.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   kids: typeof kids;
   migrations: typeof migrations;
   passwordReset: typeof passwordReset;
+  sharedScreenTime: typeof sharedScreenTime;
   signupInternal: typeof signupInternal;
   trialSummary: typeof trialSummary;
   trialSummaryDigest: typeof trialSummaryDigest;

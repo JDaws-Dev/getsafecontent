@@ -1972,4 +1972,114 @@ http.route({
   }),
 });
 
+// ---------------------------------------------------------------------------
+// Shared cross-app daily screen time.
+//
+// Server-to-server only: the apps call these from their own Convex backends
+// with ADMIN_KEY. They are deliberately NOT user-token gated — the kid side has
+// no parent JWT, and the calling app has already established which kid it is
+// acting for. Same trust model as /verifyAppAccess.
+//
+// `day` is supplied by the calling app as "YYYY-MM-DD" in the FAMILY's
+// timezone. Central does no timezone maths, so "today" can't drift apart
+// between apps.
+// ---------------------------------------------------------------------------
+
+const screenTimeHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Content-Type": "application/json",
+};
+
+function screenTimeKeyOk(key: string | null): boolean {
+  const expected = process.env.ADMIN_KEY;
+  return Boolean(expected && key === expected);
+}
+
+// GET /sharedScreenTime/check?familyCode=..&kidName=..&day=..&key=..
+http.route({
+  path: "/sharedScreenTime/check",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    if (!screenTimeKeyOk(url.searchParams.get("key"))) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: screenTimeHeaders });
+    }
+    const familyCode = url.searchParams.get("familyCode");
+    const kidName = url.searchParams.get("kidName");
+    const day = url.searchParams.get("day");
+    if (!familyCode || !kidName || !day) {
+      return new Response(JSON.stringify({ error: "familyCode, kidName and day are required" }), { status: 400, headers: screenTimeHeaders });
+    }
+    const result = await ctx.runQuery(internal.sharedScreenTime.check, { familyCode, kidName, day });
+    return new Response(JSON.stringify(result), { status: 200, headers: screenTimeHeaders });
+  }),
+});
+
+// POST /sharedScreenTime/record  { familyCode, kidName, day, minutes, app, key }
+http.route({
+  path: "/sharedScreenTime/record",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    let body: { familyCode?: string; kidName?: string; day?: string; minutes?: number; app?: string; key?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400, headers: screenTimeHeaders });
+    }
+    if (!screenTimeKeyOk(body.key ?? null)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: screenTimeHeaders });
+    }
+    const { familyCode, kidName, day, minutes, app } = body;
+    if (!familyCode || !kidName || !day || typeof minutes !== "number" || !app) {
+      return new Response(JSON.stringify({ error: "familyCode, kidName, day, minutes and app are required" }), { status: 400, headers: screenTimeHeaders });
+    }
+    const result = await ctx.runMutation(internal.sharedScreenTime.record, { familyCode, kidName, day, minutes, app });
+    return new Response(JSON.stringify(result), { status: 200, headers: screenTimeHeaders });
+  }),
+});
+
+// POST /sharedScreenTime/setLimit  { familyCode, kidName, dailyLimitMinutes, key }
+http.route({
+  path: "/sharedScreenTime/setLimit",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    let body: { familyCode?: string; kidName?: string; dailyLimitMinutes?: number; key?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400, headers: screenTimeHeaders });
+    }
+    if (!screenTimeKeyOk(body.key ?? null)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: screenTimeHeaders });
+    }
+    const { familyCode, kidName, dailyLimitMinutes } = body;
+    if (!familyCode || !kidName || typeof dailyLimitMinutes !== "number") {
+      return new Response(JSON.stringify({ error: "familyCode, kidName and dailyLimitMinutes are required" }), { status: 400, headers: screenTimeHeaders });
+    }
+    const result = await ctx.runMutation(internal.sharedScreenTime.setLimit, { familyCode, kidName, dailyLimitMinutes });
+    return new Response(JSON.stringify(result), { status: 200, headers: screenTimeHeaders });
+  }),
+});
+
+// GET /sharedScreenTime/family?familyCode=..&day=..&key=..
+http.route({
+  path: "/sharedScreenTime/family",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    if (!screenTimeKeyOk(url.searchParams.get("key"))) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: screenTimeHeaders });
+    }
+    const familyCode = url.searchParams.get("familyCode");
+    const day = url.searchParams.get("day");
+    if (!familyCode || !day) {
+      return new Response(JSON.stringify({ error: "familyCode and day are required" }), { status: 400, headers: screenTimeHeaders });
+    }
+    const result = await ctx.runQuery(internal.sharedScreenTime.familyOverview, { familyCode, day });
+    return new Response(JSON.stringify(result), { status: 200, headers: screenTimeHeaders });
+  }),
+});
+
 export default http;
