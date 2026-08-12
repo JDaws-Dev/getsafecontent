@@ -305,29 +305,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // Phase 2 — daily prompt cap. Per-kid `dailyQueryBudget` (set in
-    // /parent → Settings) counted against today's prompt count from
-    // safesparkRequests. UTC day boundary, same as getKidStatsToday.
-    // Cost-cap floor (2026-05-29): when a kid has no explicit
-    // dailyQueryBudget, fall back to a system-wide default. Prior
-    // behavior was "unlimited until parent sets a cap" which let
-    // outlier accounts (Jace's family hit ~360/day) burn $25+/day in
-    // OpenAI cost on a $14.99/mo subscription. SYSTEM_DEFAULT_BUDGET
-    // is generous enough that 95% of kids never see the message but
-    // catches the spammers.
-    const SYSTEM_DEFAULT_BUDGET = Number(process.env.SAFESPARK_SYSTEM_DEFAULT_DAILY_BUDGET ?? 75);
-    const effectiveBudget =
-      enforcement.dailyQueryBudget && enforcement.dailyQueryBudget > 0
-        ? enforcement.dailyQueryBudget
-        : SYSTEM_DEFAULT_BUDGET;
-    if (effectiveBudget > 0) {
-      const usedToday = await countPromptsTodayForSession(body.sessionToken ?? null);
-      if (usedToday != null && usedToday >= effectiveBudget) {
-        return parentControlStream(
-          `You've used all ${effectiveBudget} of today's builds. Come back tomorrow — or ask your parent for more.`,
-          body.jobId,
-        );
-      }
+    // Phase 2 — daily prompt cap, now spent ATOMICALLY server-side before
+    // the LLM call. The old flow read today's count from safesparkRequests
+    // (rows only the CLIENT wrote via logRequest) and let the response
+    // through — so a direct API caller was never counted, and parallel
+    // requests raced past the cap. spendPromptBudget does the check and
+    // the increment in one Convex mutation; budget resolution (per-kid
+    // dailyQueryBudget, else the system default) lives in the mutation so
+    // it can't be caller-supplied. This is a MONEY gate, so unlike the
+    // time gate above it FAILS CLOSED — an unreachable Convex refuses the
+    // build rather than serving unmetered OpenAI spend.
+    const spend = await spendPromptBudgetSafely(body.sessionToken ?? null, message);
+    if (!spend.allowed) {
+      return parentControlStream(
+        spend.reason === 'budget'
+          ? `You've used all ${spend.budget} of today's builds. Come back tomorrow — or ask your parent for more.`
+          : "Spark couldn't check your settings just now. Reload and pick your profile again to keep building.",
+        body.jobId,
+      );
     }
     const hit = matchBlockedTopic(message, enforcement.blockedTopics);
     if (hit) {
@@ -337,6 +332,19 @@ export async function POST(request: Request) {
       // parent" button that submits a topic-request to /parent.
       void logBlockedTopicAsync(message, hit, body.sessionToken ?? null, currentHtml.length);
       return blockedTopicStream(hit, message, body.jobId);
+    }
+  } else {
+    // Tokenless callers (demo links, parent self-tests, and anyone who
+    // lifted the demo code out of a browser — it ships to the client, so
+    // it is NOT a secret). This path used to reach the LLM with no budget
+    // and no record at all; it now spends from one global 'guest:demo'
+    // daily bucket, atomically, and gets its prompts logged server-side.
+    const spend = await spendPromptBudgetSafely(null, message);
+    if (!spend.allowed) {
+      return parentControlStream(
+        "SafeSpark's free tries are used up for today — come back tomorrow, or sign in with your family code to keep building.",
+        body.jobId,
+      );
     }
   }
 
@@ -673,9 +681,10 @@ For chat replies, set \`"changed": false\` and omit \`html\`, \`versionLabel\`, 
           const payloadJson = JSON.stringify(payload);
           controller.enqueue(encoder.encode(`r:${encodeURIComponent(payloadJson)}\n`));
           void writeJobOutcomeAsync(body.jobId, { ok: true, resultJson: payloadJson });
-          if (convexToken) {
-            void recordUsageAsync(convexToken, 0, 0, 1, body.sessionToken ?? undefined);
-          }
+          // Cost tracking keys on sessionToken (guest spend books under
+          // 'guest:demo') — the old convexToken gate made this dead code
+          // once Clerk was retired, so image transforms went untracked.
+          void recordUsageAsync(convexToken, 0, 0, 1, body.sessionToken ?? undefined);
         } catch (error) {
           const text = error instanceof Error ? error.message : String(error);
           controller.enqueue(encoder.encode(`e:${encodeURIComponent(text)}\n`));
@@ -1316,8 +1325,11 @@ ${message}`;
           controller.enqueue(encoder.encode(`r:${encodeURIComponent(parsedJson)}\n`));
           void writeJobOutcomeAsync(body.jobId, { ok: true, resultJson: parsedJson });
 
-          // Best-effort cost recording — never block the response.
-          if (convexToken && (inputTokens > 0 || outputTokens > 0)) {
+          // Best-effort cost recording — never block the response. Keys on
+          // sessionToken (guests book under 'guest:demo'); the old
+          // convexToken gate here was always-false after Clerk was
+          // retired, which is why safesparkUsage stopped counting chat.
+          if (inputTokens > 0 || outputTokens > 0) {
             const imageTransforms = parsed.html?.includes('data:image/png;base64') ||
               (await transformedImagePromise.then((u) => Boolean(u)).catch(() => false))
                 ? 1
@@ -1998,19 +2010,32 @@ function concernAlertStream(category: IntentCategory, jobId?: string | null): Re
   return refusalStream(reply, jobId);
 }
 
-async function countPromptsTodayForSession(sessionToken: string | null): Promise<number | null> {
-  if (!sessionToken) return null;
+/**
+ * Atomically spend one build from the caller's daily budget (per-kid for
+ * valid sessions, the global guest bucket for tokenless calls) BEFORE any
+ * OpenAI spend. Check + increment happen inside one Convex mutation, so
+ * parallel requests can't race past the cap and direct API callers are
+ * counted like everyone else.
+ *
+ * FAILS CLOSED: this guards money, not time. Convex unreachable or
+ * misconfigured → refuse the build. (Contrast fetchTimeLimitStatus below,
+ * which deliberately fails open.)
+ */
+async function spendPromptBudgetSafely(
+  sessionToken: string | null,
+  prompt: string,
+): Promise<{ allowed: boolean; reason?: string; used?: number; budget?: number }> {
   const url = process.env.NEXT_PUBLIC_CONVEX_URL;
-  if (!url) return null;
+  if (!url) return { allowed: false, reason: 'error' };
   try {
     const client = new ConvexHttpClient(url);
-    const result = (await client.query(api.safespark.countPromptsTodayBySession, {
-      sessionToken,
-    })) as number | null;
-    return result;
+    return await client.mutation(api.safespark.spendPromptBudget, {
+      sessionToken: sessionToken ?? undefined,
+      prompt,
+    });
   } catch (err) {
-    console.error('[safespark] countPromptsTodayForSession failed:', err);
-    return null;
+    console.error('[safespark] spendPromptBudget failed:', err);
+    return { allowed: false, reason: 'error' };
   }
 }
 

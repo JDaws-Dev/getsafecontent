@@ -606,6 +606,20 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index('by_kid_day', ['kidProfileId', 'yearMonthDay']),
 
+  // Authoritative daily build counter, written by /api/demo BEFORE the LLM
+  // call. safesparkRequests can't serve this role: those rows are inserted
+  // by the client (logRequest), so a direct API caller was never counted
+  // and parallel requests raced past the cap. One row per owner per UTC
+  // day; check + increment happen in one mutation, so it's atomic.
+  // ownerKey is 'kid:<profileId>' or 'guest:demo' (all tokenless callers
+  // share one global bucket).
+  safesparkPromptSpend: defineTable({
+    ownerKey: v.string(),
+    day: v.string(), // "2026-08-11" UTC
+    count: v.number(),
+    updatedAt: v.number(),
+  }).index('by_owner_day', ['ownerKey', 'day']),
+
   // Cached Wikipedia / search results — keeps cost down on common factual
   // questions. Lifted shape from safecontent/apps/safeseek/convex/searchCache.ts.
   searchCache: defineTable({

@@ -66,6 +66,16 @@ export const synthesize = action({
     const text = args.text.trim().slice(0, MAX_CHARS);
     if (!text) return { ok: false, reason: 'invalid' };
 
+    // This action is PUBLIC (SpeakButton calls it directly), so a valid
+    // kid session is the price of admission for anything that costs
+    // money. Previously every check hung off `if (args.sessionToken)` —
+    // an anonymous caller skipped the cap entirely and spent the OpenAI
+    // key freely. Cache hits stay available to everyone (free reads;
+    // guests fall back to the browser voice for anything uncached).
+    const sessionValid = args.sessionToken
+      ? await ctx.runQuery(internal.ai.tts._sessionValid, { sessionToken: args.sessionToken })
+      : false;
+
     const voice = args.voice && ALLOWED_VOICES.has(args.voice) ? args.voice : DEFAULT_VOICE;
     const hash = await sha256Hex(`${MODEL}|${voice}|${text}`);
 
@@ -74,7 +84,7 @@ export const synthesize = action({
     if (cached) {
       await ctx.runMutation(internal.ai.tts._touchCache, { id: cached._id });
       // Count cache hits against budget too, but cheaply (no API call).
-      if (args.sessionToken) {
+      if (sessionValid && args.sessionToken) {
         await ctx.runMutation(internal.ai.tts._incrementUsage, {
           sessionToken: args.sessionToken,
           cached: true,
@@ -83,10 +93,13 @@ export const synthesize = action({
       return { ok: true, audioBase64: cached.audioBase64, cached: true };
     }
 
+    // Fresh synthesis bills OpenAI — no valid kid session, no spend.
+    if (!sessionValid || !args.sessionToken) return { ok: false, reason: 'unavailable' };
+
     // Cap check before paying OpenAI. Cache hits don't bill, so they
     // pass through cheaply above — only fresh synthesis counts toward
     // the cap meaningfully (we still record both for parent visibility).
-    if (args.sessionToken) {
+    {
       const allowed = await ctx.runQuery(internal.ai.tts._checkBudget, {
         sessionToken: args.sessionToken,
       });
@@ -148,6 +161,21 @@ export const synthesize = action({
   },
 });
 
+// Does this token resolve to a live (non-expired) kid session? Gate for
+// anything that spends money in this file.
+export const _sessionValid = internalQuery({
+  args: { sessionToken: v.string() },
+  handler: async (ctx, args): Promise<boolean> => {
+    const session = await ctx.db
+      .query('kidSessions')
+      .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken))
+      .first();
+    if (!session) return false;
+    if (session.expiresAt != null && session.expiresAt < Date.now()) return false;
+    return true;
+  },
+});
+
 export const _getCache = internalQuery({
   args: { hash: v.string() },
   handler: async (ctx, args) => {
@@ -204,7 +232,7 @@ export const _checkBudget = internalQuery({
       .query('kidSessions')
       .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken))
       .first();
-    if (!session) return true; // unknown session → permissive; cache + dailyQueryBudget already protect
+    if (!session) return false; // unknown session → fail CLOSED; this gates real OpenAI spend
     // Independent TTS cap — deliberately NOT profile.dailyQueryBudget (the
     // BUILD cap). Coupling them meant raising a kid's build budget silently
     // raised allowed TTS spend, and gave no way to cap TTS on its own.

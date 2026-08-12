@@ -103,8 +103,20 @@ DONE (branch security/p0-lockdown, SOL SHIP):
 - Removed hardcoded `BELLA-BUILD` demo-code fallback -> fails closed. **DEPLOY PRECONDITION: `BELLA_DEMO_CODE` MUST be set in Vercel prod env or the whole /api/demo route 401s.**
 - Fail-closed when a sessionToken is supplied but does not resolve to a valid kid (was fail-open -> forged/expired token bypassed pause/budget/blocklist).
 
-STILL OPEN (P0, needs its own tested PR):
-- Direct callers can OMIT sessionToken and take the unrestricted parent/guest path (no per-kid budget). Need a trusted parent/guest-vs-kid distinction.
-- Budget is enforced only because the CLIENT calls `logRequest` (writes safesparkRequests). A direct API caller never does -> not counted. Move prompt recording + the daily-budget check+increment SERVER-SIDE into the route, atomically, before the LLM call.
-- `recordUsage` (safesparkUsage cost tracking) is dead: gated on `convexToken` which is always null post-Clerk. Re-wire to the sessionToken path so cost analytics count again.
-- convex/ai/tts.ts public TTS action spends the OpenAI key with no session — gate it.
+DONE 2026-08-11 (deployed to prod: giddy-peacock-124 + Vercel/getsafespark.com):
+- ~~Direct callers can OMIT sessionToken~~ — tokenless callers now spend from one
+  global `guest:demo` daily bucket (`SAFESPARK_GUEST_DAILY_BUDGET`, default 25)
+  and their prompts are logged server-side to safesparkRequests. The demo code
+  ships to the browser, so it was never a secret.
+- ~~Budget enforced only via client `logRequest`~~ — new `safespark.spendPromptBudget`
+  mutation does the check + increment ATOMICALLY in one transaction against the
+  new `safesparkPromptSpend` table, called by /api/demo BEFORE any OpenAI call.
+  Budget resolves server-side (per-kid `dailyQueryBudget`, else
+  `SAFESPARK_SYSTEM_DEFAULT_DAILY_BUDGET`=75) so it can't be caller-supplied.
+  Fails CLOSED (money gate). Forged/expired session tokens are refused.
+- ~~`recordUsage` dead~~ — the always-null `convexToken` gates were removed; cost
+  tracking now keys on sessionToken, and tokenless spend books under `guest:demo`
+  instead of being thrown away.
+- ~~public TTS action ungated~~ — fresh synthesis now requires a live kid session
+  (`_sessionValid`, expiry-checked); anonymous/forged callers get cache hits only
+  (free) and `_checkBudget` fails closed on unknown sessions.

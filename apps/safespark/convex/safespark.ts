@@ -2559,10 +2559,20 @@ export const recordUsage = mutation({
     sessionToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { clerkUserId, email } = await resolveSafeSparkIdentity(
-      ctx as SafeSparkCtx,
-      args.sessionToken,
-    );
+    // Tokenless callers (demo links, guest mode) book under one shared
+    // bucket rather than throwing — their OpenAI spend is just as real,
+    // and untracked guest cost is how the sprite bill went unnoticed once.
+    let clerkUserId: string;
+    let email: string;
+    try {
+      ({ clerkUserId, email } = await resolveSafeSparkIdentity(
+        ctx as SafeSparkCtx,
+        args.sessionToken,
+      ));
+    } catch {
+      clerkUserId = 'guest:demo';
+      email = 'demo';
+    }
     const now = Date.now();
     const yearMonth = yearMonthUTC(now);
     const chatInputTokens = args.chatInputTokens ?? 0;
@@ -3546,33 +3556,83 @@ export const getShareApprovalStatus = query({
   },
 });
 
-// Phase 2 — per-kid daily prompt count for budget enforcement. Called
-// from /api/demo before the LLM fires when dailyQueryBudget is set.
-// Returns the number of safesparkRequests rows for this kid since the
-// start of today UTC. Returns null if the session isn't valid.
-export const countPromptsTodayBySession = query({
-  args: { sessionToken: v.string() },
-  handler: async (ctx, args) => {
-    const session = await ctx.db
-      .query('kidSessions')
-      .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken))
-      .first();
-    if (!session) return null;
-    const ownerKey = `kid:${session.kidProfileId}`;
+// Atomic daily-budget spend, called by /api/demo BEFORE any OpenAI call.
+// Replaces the old read-then-trust flow (countPromptsTodayBySession + the
+// client's logRequest), which had two holes: a direct API caller who never
+// called logRequest was never counted at all, and check/record being
+// separate meant parallel requests raced past the cap. Here the check and
+// the increment are one mutation, so neither is possible.
+//
+// Budget resolution is deliberately server-side (never an argument — a
+// caller-supplied budget would be a bypass):
+//  - valid kid session → the profile's dailyQueryBudget, else the system
+//    default (SAFESPARK_SYSTEM_DEFAULT_DAILY_BUDGET, 75).
+//  - no token → one GLOBAL 'guest:demo' bucket capped by
+//    SAFESPARK_GUEST_DAILY_BUDGET (25). The demo code ships to the
+//    browser, so tokenless calls are cheap to forge; before this they were
+//    unlimited and invisible. Guest prompts are also logged to
+//    safesparkRequests here (the client only logs identified users).
+//  - a token that doesn't resolve to a live session → refused. Same
+//    fail-closed stance as fetchKidEnforcement in the route.
+// Public by necessity (the Next.js route holds no Convex auth); the worst
+// an abuser can do is spend a budget they could already spend by building.
+export const spendPromptBudget = mutation({
+  args: {
+    sessionToken: v.optional(v.string()),
+    prompt: v.optional(v.string()),
+  },
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{ allowed: boolean; reason?: 'invalid' | 'budget'; used: number; budget: number }> => {
     const now = Date.now();
-    const startOfTodayUtc = Date.UTC(
-      new Date(now).getUTCFullYear(),
-      new Date(now).getUTCMonth(),
-      new Date(now).getUTCDate(),
-    );
-    // Cap the scan at the most recent 500 prompts — anything beyond that
-    // is comfortably "yesterday" by the time today's budget matters.
-    const recent = await ctx.db
-      .query('safesparkRequests')
-      .withIndex('by_clerk_id_time', (q) => q.eq('clerkUserId', ownerKey))
-      .order('desc')
-      .take(500);
-    return recent.filter((r) => r.createdAt >= startOfTodayUtc).length;
+    const d = new Date(now);
+    const day = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+
+    let ownerKey: string;
+    let budget: number;
+    if (args.sessionToken) {
+      const session = await ctx.db
+        .query('kidSessions')
+        .withIndex('by_token', (q) => q.eq('sessionToken', args.sessionToken!))
+        .first();
+      const expired = session?.expiresAt != null && session.expiresAt < now;
+      const profile = session && !expired ? await ctx.db.get(session.kidProfileId) : null;
+      if (!profile) {
+        return { allowed: false, reason: 'invalid', used: 0, budget: 0 };
+      }
+      ownerKey = `kid:${profile._id}`;
+      budget =
+        profile.dailyQueryBudget && profile.dailyQueryBudget > 0
+          ? profile.dailyQueryBudget
+          : Number(process.env.SAFESPARK_SYSTEM_DEFAULT_DAILY_BUDGET ?? 75);
+    } else {
+      ownerKey = 'guest:demo';
+      budget = Number(process.env.SAFESPARK_GUEST_DAILY_BUDGET ?? 25);
+    }
+
+    const row = await ctx.db
+      .query('safesparkPromptSpend')
+      .withIndex('by_owner_day', (q) => q.eq('ownerKey', ownerKey).eq('day', day))
+      .first();
+    const used = row?.count ?? 0;
+    if (budget > 0 && used >= budget) {
+      return { allowed: false, reason: 'budget', used, budget };
+    }
+    if (row) {
+      await ctx.db.patch(row._id, { count: used + 1, updatedAt: now });
+    } else {
+      await ctx.db.insert('safesparkPromptSpend', { ownerKey, day, count: 1, updatedAt: now });
+    }
+    if (ownerKey === 'guest:demo' && args.prompt) {
+      await ctx.db.insert('safesparkRequests', {
+        clerkUserId: 'guest:demo',
+        email: 'demo',
+        prompt: args.prompt.slice(0, 4000),
+        createdAt: now,
+      });
+    }
+    return { allowed: true, used: used + 1, budget };
   },
 });
 
