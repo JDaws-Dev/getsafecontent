@@ -28,6 +28,12 @@ export default defineSchema({
     // last /verifyAppAccess answer is trusted, so a page-load storm doesn't
     // hammer central. Unset/past = re-verify on next check.
     centralAccessCacheExpiry: v.optional(v.number()),
+
+    // Extra recipients for concern alerts (eating-disorder / self-harm), on top
+    // of this account's own email. Added Aug 2026: alerts had been landing with
+    // exactly one parent and going unacknowledged. A second parent on the
+    // thread is the difference between a flag and a conversation.
+    alertEmails: v.optional(v.array(v.string())),
   })
     .index("email", ["email"])
     .index("by_familyCode", ["familyCode"])
@@ -106,6 +112,10 @@ export default defineSchema({
     notifiedAt: v.optional(v.number()),
     acknowledgedAt: v.optional(v.number()),
     createdAt: v.number(),
+    // Which surface raised this: "search" (default, historical rows) or
+    // "tutor". Tutor alerts are NOT accompanied by a block — the conversation
+    // continues in supportive mode — so the parent email must say so.
+    source: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
     .index("by_kid", ["kidProfileId"])

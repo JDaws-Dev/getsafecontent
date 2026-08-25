@@ -32,6 +32,13 @@ export type IntentResult = {
   degraded?: boolean;
 };
 
+/**
+ * Minimum classifier confidence required to block a NON-concern category
+ * (aesthetic_browsing / self_image / appearance / celebrity_gossip).
+ * eating_disorder_adjacent and self_harm_adjacent ignore this entirely.
+ */
+export const NON_CONCERN_BLOCK_CONFIDENCE = 0.75;
+
 const CATEGORY_LIST: IntentCategory[] = [
   "study",
   "curiosity",
@@ -84,7 +91,12 @@ function fastClassify(query: string): IntentResult | null {
 
   // ED-adjacent
   if (
-    /\b(thinspo|pro ?ana|pro ?mia|skinny check|legs|thigh gap)\b/.test(q) ||
+    // NOTE: do NOT put bare body-part words ("legs", "abs", "waist") in here.
+    // A bare `legs` token used to live in this alternation and blocked every
+    // ordinary "leg workouts for women" query as an eating-disorder signal —
+    // 3 of Bella's 5 concern alerts were that false positive. ED intent lives
+    // in the *goal* (shrinking, restricting), not the body part.
+    /\b(thinspo|pro ?ana|pro ?mia|skinny check|thigh gap|leg gap)\b/.test(q) ||
     /(disorder.{0,15}eat|eat.{0,15}disorder)/.test(q) ||
     /\b(stop eating|eat (less|nothing)|how to (not eat|skip meals|lose \d+ lbs? (fast|quick)))\b/.test(q) ||
     /\bhow (many|few) calories.{0,30}(lose|skip|skinny)\b/.test(q)
@@ -143,14 +155,20 @@ Categories:
 - study: homework, school subjects, factual learning lookups (math, history, science definitions, vocabulary)
 - curiosity: open "why/how" exploration ("why do volcanoes erupt", "how do airplanes fly", "what are black holes")
 - aesthetic_browsing: mood-board / Pinterest-style image collage browsing — visual inspiration boards, "X color aesthetic", "silhouette aesthetic", "baddie aesthetic", "mafia boss aesthetic", any "aesthetic + collage/pintrest" combo even with misspellings
-- self_image: appearance self-comparison ("how can I be prettier", "what is my face shape", "am I pretty", "face card", attractiveness self-eval)
-- appearance: neutral curiosity about hair/makeup/fashion ("what is balayage", "chocolate brown hair", "outfits for teens") — repeated obsessively over time still gets this label
+- self_image: appearance self-comparison ONLY — the kid evaluating their own looks ("how can I be prettier", "what is my face shape", "am I pretty", "face card", "do I look like X")
+- appearance: neutral curiosity about hair/makeup/fashion/clothing ("what is balayage", "chocolate brown hair", "outfits for teens", "types of dresses") — repeated obsessively over time still gets this label
 - celebrity_gossip: celebrity personal life beyond their public work (children, relationships, scandals, "who is X dating")
 - eating_disorder_adjacent: ED signals — restrictive eating, weight-loss obsession, thinspo, calorie counting tied to skinniness, "disorder when someone eats too much"
 - self_harm_adjacent: any self-harm or suicide-related query
 - other: doesn't fit above — generic searches, random, names, places, travel
 
-Important: when the query has aesthetic/collage/pintrest/asthedic spelling variations + a color + silhouette/girl/baddie, it is aesthetic_browsing. When the query asks about the searcher's own attractiveness, face, body, weight — it is self_image. Be decisive on confidence: 0.7+ when clear, 0.4-0.6 when borderline.`,
+Important: when the query has aesthetic/collage/pintrest/asthedic spelling variations + a color + silhouette/girl/baddie, it is aesthetic_browsing. When the query asks about the searcher's own attractiveness, face, body, weight — it is self_image. Be decisive on confidence: 0.7+ when clear, 0.4-0.6 when borderline.
+
+These are NOT self_image and NOT eating_disorder_adjacent — do not label them so:
+- Social and friendship questions, including crushes: "how do you know if someone likes you", "is he flirting or just friendly", "what are red flags in a friendship". These are curiosity.
+- Ordinary body facts and comparisons that aren't self-evaluation: "is 5'2 considered short", "how tall is <celebrity>", "what actresses are 5'4". These are other.
+- Ordinary exercise and nutrition: "arm workout", "core workout", "handstand progression", "what is a healthy diet", "daily food chart for teens". These are study. Only label ED when the goal is shrinking, restricting, or losing weight fast.
+- Cultural or ancestry appearance questions: "what do Greek people look like". These are curiosity.`,
           },
           {
             role: "user",
@@ -224,8 +242,12 @@ export function shouldBlockCategory(
     return { block: true, reason: "eating_disorder_signal", alert: true };
   }
 
-  // Low confidence → don't block on intent alone
-  if (confidence < 0.6) {
+  // Low confidence → don't block on intent alone.
+  // Raised 0.6 → 0.75 (Aug 2026): at 0.6 the classifier was blocking ordinary
+  // questions it had only weakly labelled self_image ("is 5'2 considered
+  // short", "how do you know if someone likes you"). Concern categories above
+  // are unaffected — they escalate regardless of confidence.
+  if (confidence < NON_CONCERN_BLOCK_CONFIDENCE) {
     return { block: false, reason: "", alert: false };
   }
 

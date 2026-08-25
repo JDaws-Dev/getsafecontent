@@ -73,6 +73,7 @@ export const recordConcernAlert = internalMutation({
     category: v.string(),
     confidence: v.number(),
     rationale: v.string(),
+    source: v.optional(v.string()), // "search" (default) | "tutor"
   },
   handler: async (ctx, args) => {
     const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
@@ -89,6 +90,7 @@ export const recordConcernAlert = internalMutation({
     if (dup) return dup._id;
 
     return await ctx.db.insert("kidConcernAlerts", {
+      source: args.source ?? "search",
       kidProfileId: args.kidProfileId,
       userId: args.userId,
       query: args.query,
@@ -127,6 +129,40 @@ export const getRecentQueriesForLoopCheck = internalQuery({
       query: r.query,
       searchedAt: r.searchedAt,
     }));
+  },
+});
+
+/**
+ * Recent blocks that were CONCERN-level (eating-disorder / self-harm).
+ *
+ * Feeds the rephrase guard in search.ts. Only concern reasons are returned —
+ * an ordinary aesthetic/self-image block should not make the next 30 minutes
+ * of adjacent questions unanswerable.
+ */
+export const getRecentConcernBlocks = internalQuery({
+  args: {
+    kidProfileId: v.id("kidProfiles"),
+    sinceMs: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const cutoff = Date.now() - args.sinceMs;
+    const blocked = await ctx.db
+      .query("blockedSearches")
+      .withIndex("by_kid_recent", (q) => q.eq("kidProfileId", args.kidProfileId))
+      .filter((q) => q.gte(q.field("searchedAt"), cutoff))
+      .collect();
+    return blocked
+      .filter(
+        (r) =>
+          r.blockedReason === "eating_disorder_signal" ||
+          r.blockedReason === "self_harm_signal"
+      )
+      .map((r) => ({
+        query: r.query,
+        blockedReason: r.blockedReason,
+        intentCategory: r.intentCategory,
+        searchedAt: r.searchedAt,
+      }));
   },
 });
 

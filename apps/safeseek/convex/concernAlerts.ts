@@ -19,6 +19,7 @@ export const sendParentEmail = internalAction({
     query: v.string(),
     category: v.string(),
     rationale: v.string(),
+    source: v.optional(v.string()), // "search" (default) | "tutor"
   },
   handler: async (ctx, args) => {
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -37,6 +38,18 @@ export const sendParentEmail = internalAction({
       return;
     }
 
+    // Every parent on the account, not just the one who happens to own this
+    // app's login. Five of these alerts went to a single inbox and none were
+    // ever acknowledged; a second recipient is the cheapest fix for that.
+    const recipients = Array.from(
+      new Set(
+        [user.email, ...((user as any).alertEmails ?? [])]
+          .filter((e: unknown): e is string => typeof e === "string" && e.includes("@"))
+          .map((e: string) => e.trim().toLowerCase())
+      )
+    );
+
+    const fromTutor = args.source === "tutor";
     const isED = args.category === "eating_disorder_adjacent";
     const isSH = args.category === "self_harm_adjacent";
     const headline = isSH
@@ -55,12 +68,16 @@ export const sendParentEmail = internalAction({
 <html><body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a2e;line-height:1.55">
   <h2 style="color:#dc2626;margin:0 0 16px">${headline}</h2>
   <p>Hi ${user.name || "there"},</p>
-  <p>Your child <strong>${escapeHtml(kid.name)}</strong> searched SafeStudy for something we think is worth a parent conversation:</p>
+  <p>Your child <strong>${escapeHtml(kid.name)}</strong> ${fromTutor ? "said something to the SafeStudy tutor" : "searched SafeStudy for something"} we think is worth a parent conversation:</p>
   <blockquote style="border-left:3px solid #dc2626;padding:12px 16px;background:#fef2f2;margin:16px 0;font-size:15px">
     "${escapeHtml(args.query)}"
   </blockquote>
   <p style="color:#444"><em>Why we're flagging this:</em> ${escapeHtml(args.rationale)}</p>
-  <p>SafeStudy did not return results for this query. We blocked it and showed your child a gentle redirect.</p>
+  <p>${
+    fromTutor
+      ? "We did not end the conversation. The tutor replied warmly, avoided giving any diet or weight-loss guidance, and encouraged her to talk to an adult she trusts — shutting the chat down at that moment tends to stop a kid from opening up again."
+      : "SafeStudy did not return results for this query. We blocked it and showed your child a gentle redirect."
+  }</p>
   <p style="background:#fffbeb;padding:12px 16px;border-radius:6px;border:1px solid #fcd34d">
     <strong>Resources:</strong> ${resourceLine}
   </p>
@@ -79,7 +96,7 @@ export const sendParentEmail = internalAction({
         },
         body: JSON.stringify({
           from: "SafeStudy <jeremiah@getsafefamily.com>",
-          to: [user.email],
+          to: recipients,
           subject: headline,
           html,
         }),

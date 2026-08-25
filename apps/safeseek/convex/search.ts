@@ -5,9 +5,22 @@ import { action, internalAction } from "./_generated/server";
 import { internal, api } from "./_generated/api";
 import { sanitizeQuery as sanitizeInput, detectPromptInjection, filterResponse } from "./ai/inputFilter";
 import { classifyIntent, shouldBlockCategory, redirectMessage } from "./ai/intentClassifier";
+
 import { normalizeForIntentCache } from "./intentCache";
-import { isLoop, loopMessage } from "./ai/loopDetector";
+import {
+  isLoop,
+  loopMessage,
+  queryOverlap,
+  CONCERN_REPHRASE_OVERLAP,
+} from "./ai/loopDetector";
 import { normalizeQuery } from "./lib/utils";
+
+/**
+ * How long a concern block (ED / self-harm) suppresses substantially-similar
+ * rephrases from the same kid. Long enough to cover a sitting, short enough
+ * that it never becomes a silent permanent ban on a topic.
+ */
+const CONCERN_REPHRASE_WINDOW_MS = 30 * 60 * 1000;
 
 // --- Query classification ---
 
@@ -158,7 +171,7 @@ Use this reference to ground your answer in facts. Summarize it in a way appropr
     const systemPrompt = `You are SafeStudy, a friendly AI tutor for kids aged ${ageMin}-${ageMax}. Content strictness: ${strictness}.
 ${lexileLevel !== "auto" ? `READING LEVEL: ${lexileLevel} grade (override age default).` : ""}
 ${accessibilityNeeds.length > 0 ? `ACCESSIBILITY: ${accessibilityNeeds.join(", ")}.` : ""}
-${blockedTopics.length > 0 ? `STRICTLY BLOCKED TOPICS — If the query is about ANY of these topics, you MUST return safe:false. No exceptions. Do NOT answer questions about: ${blockedTopics.join(", ")}. This includes educational questions about these topics. Even "how does X work" about a blocked topic must be blocked.` : ""}
+${blockedTopics.length > 0 ? `BLOCKED TOPICS — Return safe:false when the query is GENUINELY ABOUT one of these: ${blockedTopics.join(", ")}. Judge the subject of the question, not whether a word brushes against a topic. Do NOT block: ordinary animals and jobs (police dogs, guard dogs, dog breeds), exercise and fitness (arm workout, core workout, calisthenics), clothing and styles (dress styles, prom dresses, outfits), names and their meanings, a public figure's height/age/filmography, quotes about sadness or hardship, or ordinary friendship questions. When a query is only loosely adjacent to a blocked topic, answer it.` : ""}
 ${allowedTopics.length > 0 ? `ALLOWED TOPICS (override blocks): ${allowedTopics.join(", ")}` : ""}
 ${customInstructions ? `PARENT INSTRUCTIONS: ${customInstructions}` : ""}
 ${wikiSection}
@@ -545,6 +558,62 @@ export const searchFromKid = action({
       } catch (err) {
         console.error("[searchFromKid] failed to record classifier degradation:", err);
       }
+    }
+
+    // --- Concern-rephrase guard -------------------------------------------
+    // A concern block (ED / self-harm) used to last exactly one query. The
+    // classifier judges each query independently, so dropping a single word
+    // re-classified the same attempt as harmless and answered it seconds later
+    // ("legs workouts for women" blocked 14:02 → "leg workouts for women"
+    // answered 14:02; "healthy diet for women weight loss" blocked → full meal
+    // plan four minutes later). The alert fired and the kid got the content
+    // anyway, which made the escalation theatre.
+    //
+    // So: for 30 minutes after a concern block, a query that is substantially
+    // the same question stays blocked. We do NOT re-alert — the parent has
+    // already been told; repeat emails would train them to ignore these.
+    let rephraseOf: { query: string; blockedReason: string; intentCategory?: string } | null = null;
+    try {
+      const recentConcerns = await ctx.runQuery(
+        internal.searchQueries.getRecentConcernBlocks,
+        { kidProfileId: args.kidProfileId, sinceMs: CONCERN_REPHRASE_WINDOW_MS }
+      );
+      for (const prior of recentConcerns) {
+        if (queryOverlap(sanitized, prior.query) >= CONCERN_REPHRASE_OVERLAP) {
+          rephraseOf = prior as any;
+          break;
+        }
+      }
+    } catch (err) {
+      // Fail open — a lookup failure must never block a kid.
+      console.warn("[searchFromKid] concern-rephrase lookup failed:", err);
+    }
+
+    if (rephraseOf) {
+      const now = Date.now();
+      const category =
+        rephraseOf.blockedReason === "self_harm_signal"
+          ? "self_harm_adjacent"
+          : "eating_disorder_adjacent";
+      await ctx.runMutation(internal.searchQueries.insertBlockedSearch, {
+        kidProfileId: args.kidProfileId,
+        query: sanitized,
+        blockedReason: rephraseOf.blockedReason,
+        searchedAt: now,
+        intentCategory: category,
+        intentConfidence: intent.confidence,
+        intentRationale: `Rephrase of a concern query blocked in the last 30 minutes ("${rephraseOf.query.slice(0, 80)}").`,
+      });
+      return {
+        safe: false,
+        results: [],
+        summary: redirectMessage(category as any),
+        flagged: true,
+        blocked: true,
+        reason: rephraseOf.blockedReason,
+        images: [],
+        intentCategory: category,
+      };
     }
 
     const decision = shouldBlockCategory(

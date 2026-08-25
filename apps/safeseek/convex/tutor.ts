@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { sanitizeQuery, detectPromptInjection, filterResponse } from "./ai/inputFilter";
+import { classifyIntent } from "./ai/intentClassifier";
 
 /**
  * Tutor mode — Socratic AI tutor that helps kids learn by asking questions back.
@@ -107,10 +108,11 @@ APPROACH:
 - TEACH first, then ask a follow-up question. Every response should give the kid real information AND then ask one question to check understanding or spark curiosity.
 - For quick factual questions: give the answer directly, then add "Did you know..." or "Want to know more about..."
 - For homework/problem-solving: explain the concept, show an example, THEN ask them to try one
-- For math: show the steps clearly, then ask "Can you try the next one?"
+- For math: show the steps clearly, then ask "Can you try the next one?". Always reduce fractions all the way (475/855 is 5/9, not 95/171) and round decimals to the nearest value, never truncate. If the kid is working through a chain of their own calculations, do the step they asked for and let them drive.
 - For writing: give concrete suggestions and examples, then ask what they think
 - Celebrate when they get something right: "Exactly!" "Great thinking!"
 - If they're confused: explain it a different way, don't just ask another question
+- If they say you got it wrong, DO NOT repeat the same explanation back. Assume they may have mistyped the problem, work out what they most likely meant, and solve that — then check with them. Restating an answer a kid has just disputed is the one thing that makes them give up.
 - Keep responses SHORT (3-5 sentences). Teach something real in every message.
 - Balance: 70% teaching/explaining, 30% asking questions
 - If they say "just tell me": go ahead and tell them clearly, then ask if it makes sense
@@ -159,9 +161,89 @@ SAFETY:
       throw new Error("OPENAI_API_KEY not configured");
     }
 
+    // --- Concern screening -------------------------------------------------
+    // Search has run every query through the intent classifier since Apr 2026;
+    // tutor chat never did. That left the single most confiding surface in the
+    // product with no path to a parent alert at all — a kid could say she had
+    // stopped eating, or that she cries every night, and nothing would leave
+    // the conversation. Tutor is also where kids land *after* a search block,
+    // so it was catching exactly the traffic search had pushed away.
+    //
+    // Deliberately NOT a block. The July 2026 precedent is a 12-year-old who
+    // asked "Do you ever run out of tears", got a refusal, and left. A refusal
+    // ends the conversation at the moment it matters most. Instead we alert the
+    // parents silently and steer this one reply into supportive mode.
+    let concern: { category: string; rationale: string; confidence: number } | null = null;
+    try {
+      const intent = await classifyIntent(sanitizedMessage, OPENAI_API_KEY);
+      if (
+        intent.category === "eating_disorder_adjacent" ||
+        intent.category === "self_harm_adjacent"
+      ) {
+        concern = {
+          category: intent.category,
+          rationale: intent.rationale,
+          confidence: intent.confidence,
+        };
+      }
+    } catch (err) {
+      // Fail open — classifier trouble must not break tutoring.
+      console.error("[tutor] intent classification failed:", err);
+    }
+
+    if (concern) {
+      try {
+        await ctx.runMutation(internal.searchQueries.recordConcernAlert, {
+          kidProfileId: args.kidProfileId,
+          userId: kidProfile.userId,
+          query: sanitizedMessage,
+          category: concern.category,
+          confidence: concern.confidence,
+          rationale: concern.rationale,
+          source: "tutor",
+        });
+        await ctx.scheduler.runAfter(0, internal.concernAlerts.sendParentEmail, {
+          kidProfileId: args.kidProfileId,
+          userId: kidProfile.userId,
+          query: sanitizedMessage,
+          category: concern.category,
+          rationale: concern.rationale,
+          source: "tutor",
+        });
+      } catch (err) {
+        console.error("[tutor] failed to raise concern alert:", err);
+      }
+    }
+
+    // Supportive mode: appended only when this message tripped a concern
+    // category. Kept short on purpose — it has to steer one reply, not rewrite
+    // the tutor's personality.
+    const supportiveAddendum =
+      concern?.category === "self_harm_adjacent"
+        ? `
+
+RIGHT NOW — this message suggests the kid may be hurting. For this reply only:
+- Drop the lesson. Do not teach, quiz, or ask a curiosity question.
+- Say plainly that what they're feeling sounds hard and that you're glad they said it.
+- Encourage them to tell a parent or another adult they trust, today.
+- Mention that they can call or text 988 any time to talk to someone.
+- Warm, short, ordinary words. Do not diagnose, do not lecture, do not use clinical terms.
+- Stay in the conversation. End by inviting them to keep talking.`
+        : concern?.category === "eating_disorder_adjacent"
+          ? `
+
+RIGHT NOW — this message suggests worry about food, weight, or body. For this reply only:
+- Do not give diets, calorie counts, weight-loss plans, meal restrictions, or "goal weight" talk, even if asked directly.
+- Do not comment on what any body should look like.
+- It is fine to talk about food as fuel, feeling strong, and enjoying moving.
+- Gently suggest talking to a parent or trusted adult about this one.
+- Warm, short, ordinary words. No diagnosis, no lecture, no clinical terms.
+- Stay in the conversation.`
+          : "";
+
     // Build full message history for OpenAI
     const openaiMessages: Array<{ role: string; content: string }> = [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: systemPrompt + supportiveAddendum },
     ];
 
     // Add conversation history (sanitize each kid message)

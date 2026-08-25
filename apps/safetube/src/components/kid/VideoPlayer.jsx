@@ -3,6 +3,13 @@ import { useMutation, useQuery } from 'convex/react';
 import { createPortal } from 'react-dom';
 import { api } from '../../../convex/_generated/api';
 
+/**
+ * How long the play-span timer keeps crediting time after the YouTube player
+ * last reported its position. Two missed 1s polls plus slack — long enough to
+ * ride out a hiccup, short enough that a closed laptop can't bank hours.
+ */
+const STALL_GRACE_MS = 5000;
+
 // Custom YouTube player using postMessage API (no youtube.com/iframe_api script needed)
 // This allows playback on Family Link devices without whitelisting youtube.com
 // Props:
@@ -30,6 +37,18 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
   const playStartedAtRef = useRef(null);
   const accumulatedPlayMsRef = useRef(0);
   const periodicSaveIntervalRef = useRef(null);
+  // Guards a double recordWatch: the YouTube `onReady` postMessage and the
+  // iframe `onload` timer both used to fire one, ~0.5s apart, so every play
+  // wrote TWO watchHistory rows (one with a duration, one stuck at null) and
+  // every "videos watched" count in the parent dashboard was exactly doubled.
+  const watchRecordedRef = useRef(false);
+  // Last time the player actually told us where it was. The play-span timer
+  // trusted `playStartedAtRef` unconditionally, so when the iframe stopped
+  // reporting — backgrounded tab, sleeping laptop, dead network — the 30s
+  // periodic save kept writing an ever-growing figure. That is where the
+  // 280-minute rows on a 4-minute karaoke track came from, and those minutes
+  // fed the family-wide screen-time cap.
+  const lastProgressAtRef = useRef(Date.now());
 
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -81,7 +100,14 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
   const getActivePlayMs = useCallback(() => {
     let total = accumulatedPlayMsRef.current;
     if (playStartedAtRef.current !== null) {
-      total += Date.now() - playStartedAtRef.current;
+      // Only credit time up to the last heartbeat from the player (plus a
+      // short grace). If the player has gone quiet, playback has stopped
+      // even though nothing told us so.
+      const creditUntil = Math.min(
+        Date.now(),
+        lastProgressAtRef.current + STALL_GRACE_MS
+      );
+      total += Math.max(0, creditUntil - playStartedAtRef.current);
     }
     return total;
   }, []);
@@ -140,6 +166,15 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
 
   // Initialize player and set up message listener
   useEffect(() => {
+    // Fresh video → fresh watch row, fresh timers. These refs outlive the
+    // effect, so without this a second video in the same session would never
+    // record (guard still true) and would inherit a stale heartbeat.
+    watchRecordedRef.current = false;
+    watchIdRef.current = null;
+    accumulatedPlayMsRef.current = 0;
+    playStartedAtRef.current = null;
+    lastProgressAtRef.current = Date.now();
+
     // Create container outside React's DOM
     const container = document.createElement('div');
     container.id = 'yt-player-portal';
@@ -199,8 +234,9 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
           watchStartTimeRef.current = Date.now();
           beginPlaySpan();
 
-          // Record watch
-          if (kidProfileId) {
+          // Record watch (once per video — see watchRecordedRef)
+          if (kidProfileId && !watchRecordedRef.current) {
+            watchRecordedRef.current = true;
             recordWatch({
               kidProfileId,
               videoId: video.videoId,
@@ -214,6 +250,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
               // recording zero minutes.
               watchIdRef.current = result?.watchId ?? result;
             }).catch(err => {
+              watchRecordedRef.current = false;
               console.error('Failed to record watch:', err);
             });
           }
@@ -248,6 +285,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
 
         if (data.event === 'infoDelivery' && data.info) {
           if (data.info.currentTime !== undefined) {
+            lastProgressAtRef.current = Date.now();
             setCurrentTime(data.info.currentTime);
             // Fallback end detection: if currentTime is within 1.5 seconds of duration, consider video ended
             // This catches cases where YouTube doesn't send the ENDED state
@@ -270,6 +308,18 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
       }
     };
 
+    // A backgrounded tab is not watching. Without this the span stays open and
+    // the periodic save keeps banking minutes against the family cap.
+    const handleVisibility = () => {
+      if (document.hidden) {
+        endPlaySpan();
+        saveWatchDuration();
+      } else {
+        lastProgressAtRef.current = Date.now();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     window.addEventListener('message', handleMessage);
 
     // When iframe loads, start listening for events
@@ -283,8 +333,9 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
           watchStartTimeRef.current = Date.now();
           beginPlaySpan();
 
-          // Record watch
-          if (kidProfileId) {
+          // Record watch (once per video — see watchRecordedRef)
+          if (kidProfileId && !watchRecordedRef.current) {
+            watchRecordedRef.current = true;
             recordWatch({
               kidProfileId,
               videoId: video.videoId,
@@ -298,6 +349,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
               // recording zero minutes.
               watchIdRef.current = result?.watchId ?? result;
             }).catch(err => {
+              watchRecordedRef.current = false;
               console.error('Failed to record watch:', err);
             });
           }
@@ -323,7 +375,11 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
     };
 
     return () => {
+      // Close any open play span so the last stretch is counted once and never
+      // keeps growing after the player is gone.
+      endPlaySpan();
       window.removeEventListener('message', handleMessage);
+      document.removeEventListener('visibilitychange', handleVisibility);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
       if (periodicSaveIntervalRef.current) clearInterval(periodicSaveIntervalRef.current);
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
