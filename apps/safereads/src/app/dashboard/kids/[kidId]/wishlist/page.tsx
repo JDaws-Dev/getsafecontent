@@ -82,6 +82,7 @@ export default function WishlistPage({
   });
   const wishlist = useQuery(api.wishlists.listByKid, {
     kidId: kidId as Id<"kids">,
+    userToken: token ?? undefined,
   });
   const kids = useQuery(
     api.kids.listByUser,
@@ -97,14 +98,14 @@ export default function WishlistPage({
   async function handleRemove(wishlistId: Id<"wishlists">) {
     setRemoving(wishlistId);
     try {
-      await removeItem({ wishlistId });
+      await removeItem({ wishlistId, userToken: token ?? undefined });
     } finally {
       setRemoving(null);
     }
   }
 
   async function handleStatusChange(wishlistId: Id<"wishlists">, status: WishlistStatus) {
-    await updateStatus({ wishlistId, status });
+    await updateStatus({ wishlistId, status, userToken: token ?? undefined });
     setStatusMenu(null);
   }
 
@@ -114,6 +115,7 @@ export default function WishlistPage({
     setApproving(key);
     try {
       await addApprovedBook({
+        userToken: token ?? undefined,
         userId: currentUser._id,
         kidId: targetKidId,
         googleBookId: item.book.googleBooksId || item.book._id,

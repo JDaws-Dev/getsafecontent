@@ -8,12 +8,12 @@ import { StickyNote, Pencil, Trash2, Check, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function BookNotes({ bookId }: { bookId: Id<"books"> }) {
-  const { user: authUser } = useAuth();
+  const { user: authUser, token } = useAuth();
   const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
 
   const note = useQuery(
     api.notes.getByUserAndBook,
-    userId ? { userId, bookId } : "skip"
+    userId ? { userId, bookId, userToken: token ?? undefined } : "skip"
   );
 
   const upsert = useMutation(api.notes.upsert);
@@ -32,7 +32,7 @@ export function BookNotes({ bookId }: { bookId: Id<"books"> }) {
     if (!userId || !draft.trim()) return;
     setSaving(true);
     try {
-      await upsert({ userId, bookId, content: draft.trim() });
+      await upsert({ userId, bookId, content: draft.trim(), userToken: token ?? undefined });
       setEditing(false);
     } finally {
       setSaving(false);
@@ -43,7 +43,7 @@ export function BookNotes({ bookId }: { bookId: Id<"books"> }) {
     if (!note?._id) return;
     setSaving(true);
     try {
-      await remove({ noteId: note._id as Id<"notes"> });
+      await remove({ noteId: note._id as Id<"notes">, userToken: token ?? undefined });
       setEditing(false);
       setDraft("");
     } finally {

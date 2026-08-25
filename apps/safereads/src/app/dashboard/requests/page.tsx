@@ -112,7 +112,7 @@ function AnalysisSummary({ googleBookId }: { googleBookId: string }) {
 }
 
 export default function RequestsPage() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, token } = useAuth();
   const currentUser = useQuery(
     api.users.currentUser,
     authUser?.email ? { email: authUser.email } : "skip"
@@ -121,11 +121,11 @@ export default function RequestsPage() {
 
   const pendingRequests = useQuery(
     api.bookRequests.listPendingByUser,
-    userId ? { userId } : "skip"
+    userId ? { userId, userToken: token ?? undefined } : "skip"
   );
   const allRequests = useQuery(
     api.bookRequests.listByUser,
-    userId ? { userId } : "skip"
+    userId ? { userId, userToken: token ?? undefined } : "skip"
   );
 
   const approveRequest = useMutation(api.bookRequests.approve);
@@ -165,6 +165,7 @@ export default function RequestsPage() {
     try {
       await approveRequest({
         requestId: requestId as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        userToken: token ?? undefined,
       });
     } catch (err) {
       console.error("Failed to approve:", err);
@@ -179,6 +180,7 @@ export default function RequestsPage() {
       await denyRequest({
         requestId: requestId as any, // eslint-disable-line @typescript-eslint/no-explicit-any
         denyReason: denyReason || undefined,
+        userToken: token ?? undefined,
       });
       setDenyingId(null);
       setDenyReason("");

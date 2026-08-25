@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation, action } from "./_generated/server";
+import { requireOwner } from "./identity";
 import { internal } from "./_generated/api";
 
 /**
@@ -158,12 +159,16 @@ export const approve = mutation({
   args: {
     requestId: v.id("bookRequests"),
     notes: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) {
       throw new Error("Request not found");
     }
+    // Approving a book is a content-control decision — it must be the parent
+    // who owns the request making it, not whoever can name a request id.
+    await requireOwner(ctx, args.userToken, request.userId, "bookRequests.approve");
 
     if (request.status !== "pending") {
       throw new Error("Request is no longer pending");
@@ -212,12 +217,14 @@ export const deny = mutation({
   args: {
     requestId: v.id("bookRequests"),
     denyReason: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const request = await ctx.db.get(args.requestId);
     if (!request) {
       throw new Error("Request not found");
     }
+    await requireOwner(ctx, args.userToken, request.userId, "bookRequests.deny");
 
     if (request.status !== "pending") {
       throw new Error("Request is no longer pending");
@@ -237,8 +244,9 @@ export const deny = mutation({
  * List all pending requests for a parent.
  */
 export const listPendingByUser = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "bookRequests.listPendingByUser");
     const requests = await ctx.db
       .query("bookRequests")
       .withIndex("by_user_and_status", (q) =>
@@ -266,8 +274,9 @@ export const listPendingByUser = query({
  * Count pending requests for a parent (for notification badge).
  */
 export const countPendingByUser = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "bookRequests.countPendingByUser");
     const requests = await ctx.db
       .query("bookRequests")
       .withIndex("by_user_and_status", (q) =>
@@ -295,8 +304,9 @@ export const listByKid = query({
  * List all requests for a parent (all statuses).
  */
 export const listByUser = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "bookRequests.listByUser");
     const requests = await ctx.db
       .query("bookRequests")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))

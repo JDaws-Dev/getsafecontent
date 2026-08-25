@@ -139,6 +139,18 @@ export const getPreApprovedBooks = query({
 });
 
 /**
+ * Plain (non-Convex) membership check, so server-side callers can verify a
+ * book really is on the pre-approved shelf instead of trusting the client.
+ * Accepts "gutenberg:123" or a raw id.
+ */
+export function isPreApprovedBookId(googleBookId: string): boolean {
+  const id = googleBookId.startsWith("gutenberg:")
+    ? googleBookId.slice("gutenberg:".length)
+    : googleBookId;
+  return PRE_APPROVED_IDS.has(id);
+}
+
+/**
  * Quick check if a gutenbergId is in the pre-approved list.
  */
 export const isPreApproved = query({

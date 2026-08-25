@@ -109,6 +109,7 @@ export default function ManageBooksPage({
       await removeBook({
         kidId: kidId as Id<"kids">,
         googleBookId: bookId,
+        userToken: token ?? undefined,
       });
     } finally {
       setRemoving(null);

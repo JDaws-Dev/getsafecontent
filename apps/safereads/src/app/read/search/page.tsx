@@ -10,15 +10,20 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 
 type SearchTab = "books" | "audio";
 
+// Text-only by house rule (no emoji on any kid-facing screen). The old list
+// was also pitched at about a six-year-old — dragons, unicorns, dinosaurs —
+// on a screen that serves readers up to 13. These span the range.
 const SEARCH_SUGGESTIONS = [
-  { label: "Dragons", emoji: "\uD83D\uDC09" },
-  { label: "Space", emoji: "\uD83D\uDE80" },
-  { label: "Dinosaurs", emoji: "\uD83E\uDD95" },
-  { label: "Pirates", emoji: "\uD83C\uDFF4\u200D\u2620\uFE0F" },
-  { label: "Unicorns", emoji: "\uD83E\uDD84" },
-  { label: "Dogs", emoji: "\uD83D\uDC36" },
-  { label: "Magic", emoji: "\u2728" },
-  { label: "Robots", emoji: "\uD83E\uDD16" },
+  "Adventure",
+  "Mystery",
+  "Fantasy",
+  "Funny",
+  "Animals",
+  "Space",
+  "History",
+  "Myths & Legends",
+  "Scary Stories",
+  "Poetry",
 ];
 
 export default function KidSearchPage() {
@@ -87,16 +92,16 @@ export default function KidSearchPage() {
 
       {/* Quick Search Suggestions - horizontal scroll */}
       <div className="animate-fade-up mb-4 flex gap-2 overflow-x-auto overscroll-contain pb-1 scrollbar-none" style={{ animationDelay: "0.05s" }}>
-        {SEARCH_SUGGESTIONS.map((s) => (
+        {SEARCH_SUGGESTIONS.map((label) => (
           <button
-            key={s.label}
+            key={label}
             onClick={() => {
               setActiveTab("books");
+              setInitialQuery(label);
             }}
-            className="kid-touch flex flex-shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-gray-600 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md active:scale-95"
+            className="kid-touch flex flex-shrink-0 items-center rounded-full bg-white px-3.5 py-2 text-xs font-bold text-gray-600 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md active:scale-95"
           >
-            <span>{s.emoji}</span>
-            {s.label}
+            {label}
           </button>
         ))}
       </div>
@@ -143,9 +148,9 @@ export default function KidSearchPage() {
 
       {/* Search Content */}
       {activeTab === "books" ? (
-        <FreeBookSearch kidId={kidId} initialQuery={activeTab === "books" ? initialQuery : undefined} />
+        <FreeBookSearch key={`books:${initialQuery ?? ""}`} kidId={kidId} initialQuery={initialQuery} />
       ) : (
-        <FreeBookSearch kidId={kidId} audioOnly initialQuery={activeTab === "audio" ? initialQuery : undefined} />
+        <FreeBookSearch key={`audio:${initialQuery ?? ""}`} kidId={kidId} audioOnly initialQuery={initialQuery} />
       )}
     </div>
   );

@@ -702,15 +702,33 @@ export const searchAllSources = action({
     query: v.string(),
     childrenOnly: v.optional(v.boolean()),
     includeAudioOnly: v.optional(v.boolean()),
+    kidId: v.optional(v.id("kids")),
   },
   handler: async (ctx, args): Promise<Array<Record<string, unknown>>> => {
     const childrenOnly = args.childrenOnly ?? true;
     const cacheKey = `unified:search:${args.query.toLowerCase().trim()}:${childrenOnly}:${args.includeAudioOnly ?? false}`;
 
+    // Log the child's search before the cache short-circuit, so a cached hit
+    // still shows up in the parent's history. Never let logging break search.
+    const logKidSearch = async (resultCount: number) => {
+      if (!args.kidId) return;
+      try {
+        await ctx.runMutation(internal.kidSearchHistory.record, {
+          kidId: args.kidId,
+          query: args.query,
+          resultCount,
+        });
+      } catch (err) {
+        console.warn("[freeBooks] kid search log failed:", err);
+      }
+    };
+
     // Check cache
     const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
     if (cached) {
-      return JSON.parse(cached.results);
+      const parsed = JSON.parse(cached.results);
+      await logKidSearch(Array.isArray(parsed) ? parsed.length : 0);
+      return parsed;
     }
 
     // Fire all source searches in parallel
@@ -800,6 +818,7 @@ export const searchAllSources = action({
       results: JSON.stringify(finalResults),
     });
 
+    await logKidSearch(finalResults.length);
     return finalResults;
   },
 });

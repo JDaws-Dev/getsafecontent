@@ -214,7 +214,7 @@ function KidCard({
   deleting: boolean;
 }) {
   const wishlistCount = useQuery(api.wishlists.countByKid, { kidId: kid._id });
-  const approvedCount = useQuery(api.approvedBooks.countForKid, { kidId: kid._id });
+  const approvedCount = useQuery(api.approvedBooks.countForKid, { kidId: kid._id, userToken });
   const colorClass = COLOR_MAP[kid.color || "purple"] || COLOR_MAP.purple;
   const [showScreenTime, setShowScreenTime] = useState(false);
 

@@ -73,6 +73,7 @@ export function WishlistButton({ bookId }: { bookId: Id<"books"> }) {
                   key={kid._id}
                   kid={kid}
                   bookId={bookId}
+                  userToken={token ?? undefined}
                 />
               ))}
             </div>
@@ -86,12 +87,15 @@ export function WishlistButton({ bookId }: { bookId: Id<"books"> }) {
 function WishlistKidRow({
   kid,
   bookId,
+  userToken,
 }: {
   kid: Kid;
   bookId: Id<"books">;
+  userToken?: string;
 }) {
   const isOnWishlist = useQuery(api.wishlists.isOnWishlist, {
     kidId: kid._id,
+    userToken,
     bookId,
   });
   const addToWishlist = useMutation(api.wishlists.add);
@@ -102,7 +106,7 @@ function WishlistKidRow({
   async function handleAdd(status: WishlistStatus = "want_to_read") {
     setLoading(true);
     try {
-      await addToWishlist({ kidId: kid._id, bookId, status });
+      await addToWishlist({ kidId: kid._id, bookId, status, userToken });
       setShowStatusPicker(false);
     } finally {
       setLoading(false);
@@ -112,7 +116,7 @@ function WishlistKidRow({
   async function handleRemove() {
     setLoading(true);
     try {
-      await removeFromWishlist({ kidId: kid._id, bookId });
+      await removeFromWishlist({ kidId: kid._id, bookId, userToken });
     } finally {
       setLoading(false);
     }

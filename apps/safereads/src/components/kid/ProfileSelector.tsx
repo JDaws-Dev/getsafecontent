@@ -174,7 +174,7 @@ export function ProfileSelector({
       <div className="mb-2 text-center">
         <div className="relative mx-auto mb-4 w-fit">
           <span className="text-5xl">{"\uD83D\uDCDA"}</span>
-          <span className="absolute -right-2 -top-1 animate-float text-lg" style={{ animationDelay: "0.5s" }}>{"✨"}</span>
+          
         </div>
         <h1 className="text-center font-display text-2xl font-bold text-brand-navy">
           {familyName}&apos;s Library

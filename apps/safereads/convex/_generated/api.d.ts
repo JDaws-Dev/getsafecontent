@@ -33,6 +33,7 @@ import type * as http from "../http.js";
 import type * as httpRateLimit from "../httpRateLimit.js";
 import type * as identity from "../identity.js";
 import type * as kidPass from "../kidPass.js";
+import type * as kidSearchHistory from "../kidSearchHistory.js";
 import type * as kids from "../kids.js";
 import type * as lib_doesTheDogDie from "../lib/doesTheDogDie.js";
 import type * as librivox from "../librivox.js";
@@ -91,6 +92,7 @@ declare const fullApi: ApiFromModules<{
   httpRateLimit: typeof httpRateLimit;
   identity: typeof identity;
   kidPass: typeof kidPass;
+  kidSearchHistory: typeof kidSearchHistory;
   kids: typeof kids;
   "lib/doesTheDogDie": typeof lib_doesTheDogDie;
   librivox: typeof librivox;

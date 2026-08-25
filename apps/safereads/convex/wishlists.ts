@@ -1,5 +1,24 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { GenericDatabaseReader } from "convex/server";
+import { requireKidOwner } from "./identity";
+import { DataModel, Id } from "./_generated/dataModel";
+
+/**
+ * wishlistId-keyed mutations hand us a row id, not a kid id — resolve the row
+ * first so the ownership check is on the kid the row actually belongs to.
+ */
+async function requireWishlistOwner(
+  ctx: { db: GenericDatabaseReader<DataModel> },
+  userToken: string | undefined,
+  wishlistId: Id<"wishlists">,
+  label: string,
+) {
+  const row = await ctx.db.get(wishlistId);
+  if (!row) throw new Error("That wishlist item could not be found.");
+  await requireKidOwner(ctx, userToken, row.kidId, label);
+  return row;
+}
 
 type WishlistStatus = "want_to_read" | "reading" | "finished" | "not_interested";
 
@@ -7,8 +26,9 @@ type WishlistStatus = "want_to_read" | "reading" | "finished" | "not_interested"
  * List all wishlist entries for a kid, with book data.
  */
 export const listByKid = query({
-  args: { kidId: v.id("kids") },
+  args: { kidId: v.id("kids"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireKidOwner(ctx, args.userToken, args.kidId, "wishlists.listByKid");
     const items = await ctx.db
       .query("wishlists")
       .withIndex("by_kid", (q) => q.eq("kidId", args.kidId))
@@ -39,8 +59,9 @@ export const listByKid = query({
  * Count wishlist entries for a kid.
  */
 export const countByKid = query({
-  args: { kidId: v.id("kids") },
+  args: { kidId: v.id("kids"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireKidOwner(ctx, args.userToken, args.kidId, "wishlists.countByKid");
     const items = await ctx.db
       .query("wishlists")
       .withIndex("by_kid", (q) => q.eq("kidId", args.kidId))
@@ -53,8 +74,9 @@ export const countByKid = query({
  * Count wishlist entries grouped by status.
  */
 export const countByStatus = query({
-  args: { kidId: v.id("kids") },
+  args: { kidId: v.id("kids"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireKidOwner(ctx, args.userToken, args.kidId, "wishlists.countByStatus");
     const items = await ctx.db
       .query("wishlists")
       .withIndex("by_kid", (q) => q.eq("kidId", args.kidId))
@@ -80,8 +102,9 @@ export const countByStatus = query({
  * Check if a book is on a kid's wishlist.
  */
 export const isOnWishlist = query({
-  args: { kidId: v.id("kids"), bookId: v.id("books") },
+  args: { kidId: v.id("kids"), bookId: v.id("books"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireKidOwner(ctx, args.userToken, args.kidId, "wishlists.isOnWishlist");
     const existing = await ctx.db
       .query("wishlists")
       .withIndex("by_kid_and_book", (q) =>
@@ -106,8 +129,10 @@ export const add = mutation({
       v.literal("finished"),
       v.literal("not_interested")
     )),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireKidOwner(ctx, args.userToken, args.kidId, "wishlists.add");
     // Prevent duplicates
     const existing = await ctx.db
       .query("wishlists")
@@ -136,8 +161,10 @@ export const updateNote = mutation({
   args: {
     wishlistId: v.id("wishlists"),
     note: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireWishlistOwner(ctx, args.userToken, args.wishlistId, "wishlists.updateNote");
     await ctx.db.patch(args.wishlistId, { note: args.note });
   },
 });
@@ -154,8 +181,10 @@ export const updateStatus = mutation({
       v.literal("finished"),
       v.literal("not_interested")
     ),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireWishlistOwner(ctx, args.userToken, args.wishlistId, "wishlists.updateStatus");
     await ctx.db.patch(args.wishlistId, { status: args.status });
   },
 });
@@ -164,8 +193,9 @@ export const updateStatus = mutation({
  * Remove a book from a kid's wishlist.
  */
 export const remove = mutation({
-  args: { wishlistId: v.id("wishlists") },
+  args: { wishlistId: v.id("wishlists"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireWishlistOwner(ctx, args.userToken, args.wishlistId, "wishlists.remove");
     await ctx.db.delete(args.wishlistId);
   },
 });
@@ -174,8 +204,9 @@ export const remove = mutation({
  * Remove a book from a kid's wishlist by kid+book IDs.
  */
 export const removeByKidAndBook = mutation({
-  args: { kidId: v.id("kids"), bookId: v.id("books") },
+  args: { kidId: v.id("kids"), bookId: v.id("books"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireKidOwner(ctx, args.userToken, args.kidId, "wishlists.removeByKidAndBook");
     const existing = await ctx.db
       .query("wishlists")
       .withIndex("by_kid_and_book", (q) =>

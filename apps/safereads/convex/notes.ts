@@ -1,13 +1,16 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { requireOwner } from "./identity";
 
 /** Get the current user's note for a specific book (or null). */
 export const getByUserAndBook = query({
   args: {
     userId: v.id("users"),
     bookId: v.id("books"),
+    userToken: v.optional(v.string()),
   },
-  handler: async (ctx, { userId, bookId }) => {
+  handler: async (ctx, { userId, bookId, userToken }) => {
+    await requireOwner(ctx, userToken, userId, "notes.getByUserAndBook");
     return await ctx.db
       .query("notes")
       .withIndex("by_user_and_book", (q) =>
@@ -22,8 +25,10 @@ export const listByUser = query({
   args: {
     userId: v.id("users"),
     count: v.optional(v.number()),
+    userToken: v.optional(v.string()),
   },
-  handler: async (ctx, { userId, count }) => {
+  handler: async (ctx, { userId, count, userToken }) => {
+    await requireOwner(ctx, userToken, userId, "notes.listByUser");
     const limit = count ?? 50;
     const notes = await ctx.db
       .query("notes")
@@ -48,8 +53,10 @@ export const upsert = mutation({
     userId: v.id("users"),
     bookId: v.id("books"),
     content: v.string(),
+    userToken: v.optional(v.string()),
   },
-  handler: async (ctx, { userId, bookId, content }) => {
+  handler: async (ctx, { userId, bookId, content, userToken }) => {
+    await requireOwner(ctx, userToken, userId, "notes.upsert");
     const existing = await ctx.db
       .query("notes")
       .withIndex("by_user_and_book", (q) =>
@@ -70,8 +77,12 @@ export const upsert = mutation({
 export const remove = mutation({
   args: {
     noteId: v.id("notes"),
+    userToken: v.optional(v.string()),
   },
-  handler: async (ctx, { noteId }) => {
+  handler: async (ctx, { noteId, userToken }) => {
+    const note = await ctx.db.get(noteId);
+    if (!note) throw new Error("That note could not be found.");
+    await requireOwner(ctx, userToken, note.userId, "notes.remove");
     await ctx.db.delete(noteId);
   },
 });

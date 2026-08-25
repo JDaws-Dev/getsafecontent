@@ -128,7 +128,7 @@ export function BookSearch({ kidId }: BookSearchProps) {
         <div className="flex flex-col items-center rounded-3xl bg-gradient-to-b from-accent-50 to-accent-50/50 px-6 py-12 text-center shadow-sm ring-1 ring-accent-100">
           <div className="animate-float relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-accent-200 to-accent-300 shadow-lg shadow-accent-100">
             <BookOpen className="h-12 w-12 text-white" />
-            <span className="absolute -right-1 -top-1 text-2xl">{"✨"}</span>
+            
           </div>
           <p className="mt-6 text-xl font-bold text-brand-navy">
             Find your next adventure!

@@ -345,6 +345,20 @@ export default defineSchema({
     resultCount: v.number(),
   }).index("by_user", ["userId"]),
 
+  // Kid-side search log (Aug 2026). `searchHistory` above is keyed on the
+  // PARENT user id, so until now every search the app recorded was a parent's
+  // and there was no record whatsoever of what children looked for. SafeStudy
+  // has logged and classified every kid query since April; SafeReads logged
+  // none, which left a blind spot in a parental-controls product.
+  kidSearchHistory: defineTable({
+    kidId: v.id("kids"),
+    query: v.string(),
+    resultCount: v.number(),
+    searchedAt: v.number(),
+  })
+    .index("by_kid", ["kidId"])
+    .index("by_kid_recent", ["kidId", "searchedAt"]),
+
   conversations: defineTable({
     userId: v.id("users"),
     title: v.string(),

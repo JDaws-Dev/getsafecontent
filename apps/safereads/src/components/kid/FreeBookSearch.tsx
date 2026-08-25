@@ -125,6 +125,7 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
         query: debouncedQuery,
         childrenOnly: true,
         includeAudioOnly: audioOnly,
+        kidId,
       });
       setResults((searchResults || []) as unknown as FreeBookResult[]);
     } catch (err) {
@@ -143,7 +144,7 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
     } finally {
       setIsSearching(false);
     }
-  }, [debouncedQuery, searchAllSources, searchFreeBooks, audioOnly]);
+  }, [debouncedQuery, searchAllSources, searchFreeBooks, audioOnly, kidId]);
 
   useEffect(() => {
     doSearch();
