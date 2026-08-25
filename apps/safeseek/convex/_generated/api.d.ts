@@ -9,6 +9,7 @@
  */
 
 import type * as admin from "../admin.js";
+import type * as adminAlertEmails from "../adminAlertEmails.js";
 import type * as ai_inputFilter from "../ai/inputFilter.js";
 import type * as ai_intentClassifier from "../ai/intentClassifier.js";
 import type * as ai_loopDetector from "../ai/loopDetector.js";
@@ -56,6 +57,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
+  adminAlertEmails: typeof adminAlertEmails;
   "ai/inputFilter": typeof ai_inputFilter;
   "ai/intentClassifier": typeof ai_intentClassifier;
   "ai/loopDetector": typeof ai_loopDetector;

@@ -28,7 +28,8 @@ Repo root: **`~/Projects/safecontent`** (note: *not* `~/safecontent`)
 2. Schema changes must be additive (don't remove fields).
 3. Use feature branches for significant changes.
 4. **Admin/webhook logic must be `internalMutation`/`internalQuery`.** A public `mutation`/`query` is callable directly via the deployment URL and bypasses any HTTP admin-key gate. User-facing functions must verify ownership (`requireOwner` / `getAuthUserId`), never trust a client-supplied `userId`/`email`.
-5. **Target Convex deployments explicitly with `--deployment-name <name>`.** `CONVEX_DEPLOYMENT=prod:<name>` is honored by `deploy` but **silently misroutes** other commands (`export`, `env set`) to a dev deployment while appearing to succeed.
+5. **Target Convex deployments explicitly with `--deployment-name <name>`.** `CONVEX_DEPLOYMENT=prod:<name>` is honored by `deploy` but **silently misroutes** other commands (`export`, `env set`, `run`) to a dev deployment while appearing to succeed.
+6. **SafeTube lives in a different Convex project.** The pinned CLI can't resolve `--deployment-name rightful-rabbit-333` for `run`/`env set` and 404s with `DeploymentNotFound`. Use `npx convex@latest` for those. `deploy` works with either.
 
 ## Deploy Commands
 
