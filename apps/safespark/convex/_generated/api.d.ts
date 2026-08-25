@@ -9,6 +9,7 @@
  */
 
 import type * as actors from "../actors.js";
+import type * as adminUserEmail from "../adminUserEmail.js";
 import type * as ai_intentClassifier from "../ai/intentClassifier.js";
 import type * as ai_tts from "../ai/tts.js";
 import type * as checkpoints from "../checkpoints.js";
@@ -38,6 +39,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   actors: typeof actors;
+  adminUserEmail: typeof adminUserEmail;
   "ai/intentClassifier": typeof ai_intentClassifier;
   "ai/tts": typeof ai_tts;
   checkpoints: typeof checkpoints;

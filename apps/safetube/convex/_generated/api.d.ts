@@ -10,6 +10,7 @@
 
 import type * as admin from "../admin.js";
 import type * as adminDashboard from "../adminDashboard.js";
+import type * as adminUserEmail from "../adminUserEmail.js";
 import type * as ai_channelReview from "../ai/channelReview.js";
 import type * as blockedSearches from "../blockedSearches.js";
 import type * as channelRequests from "../channelRequests.js";
@@ -54,6 +55,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   adminDashboard: typeof adminDashboard;
+  adminUserEmail: typeof adminUserEmail;
   "ai/channelReview": typeof ai_channelReview;
   blockedSearches: typeof blockedSearches;
   channelRequests: typeof channelRequests;

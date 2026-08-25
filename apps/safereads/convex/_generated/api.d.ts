@@ -11,6 +11,7 @@
 import type * as accounts from "../accounts.js";
 import type * as admin from "../admin.js";
 import type * as adminDashboard from "../adminDashboard.js";
+import type * as adminUserEmail from "../adminUserEmail.js";
 import type * as analyses from "../analyses.js";
 import type * as approvedBooks from "../approvedBooks.js";
 import type * as bible from "../bible.js";
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   accounts: typeof accounts;
   admin: typeof admin;
   adminDashboard: typeof adminDashboard;
+  adminUserEmail: typeof adminUserEmail;
   analyses: typeof analyses;
   approvedBooks: typeof approvedBooks;
   bible: typeof bible;
