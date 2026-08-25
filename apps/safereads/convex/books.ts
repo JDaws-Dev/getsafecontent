@@ -178,15 +178,94 @@ interface GoogleBooksItem {
   };
 }
 
+/**
+ * Wrap a query in quotes so a Google Books field operator applies to the whole
+ * phrase. Inner quotes are stripped rather than escaped — Google has no escape
+ * syntax here, and a stray quote silently breaks the operator.
+ */
+function quotePhrase(query: string): string {
+  return `"${query.trim().replace(/"/g, " ").replace(/\s+/g, " ")}"`;
+}
+
 async function searchGoogleBooks(
   query: string,
   maxResults: number
 ): Promise<GoogleBooksItem[]> {
-  // Add intitle: prefix if query doesn't already have a search operator
-  // This works around a Google Books API issue where plain queries return 0 results
+  // Google's field operators bind to the NEXT TOKEN ONLY, so the old
+  // `intitle:Up in Smoke` actually meant intitle:Up AND "in" AND "smoke" —
+  // which is how a parent looking for a romance novel got an academic
+  // monograph on tobacco regulation analysed instead. Quote the phrase so the
+  // operator covers all of it.
   const hasOperator = /^(intitle:|inauthor:|isbn:|subject:)/i.test(query);
-  const searchQuery = hasOperator ? query : `intitle:${query}`;
 
+  // Widening ladder. A strict title-phrase match is the best answer when it
+  // exists, but parents type author names into the title box — five identical
+  // "gabrielle meyer" searches in the logs are one parent getting nothing back
+  // five times. Fall back rather than return an empty shelf.
+  // Every rung stays scoped to a field. A bare free-text query was tried here
+  // and is actively harmful: "Up in Smoke" free-text returns Mellon Institute
+  // smoke-abatement bulletins, and handing one of those to the analyser is
+  // exactly the failure this is meant to fix. Empty beats wrong — a parent who
+  // sees nothing searches again, a parent who sees the wrong book analyses it.
+  const attempts = hasOperator
+    ? [query]
+    : [
+        `intitle:${quotePhrase(query)}`,   // exact title phrase
+        `inauthor:${quotePhrase(query)}`,  // they typed an author in the title box
+        `intitle:${query}`,                // loose title match (prior behaviour)
+      ];
+
+  for (let i = 0; i < attempts.length; i++) {
+    const candidate = attempts[i];
+
+    // Google intermittently answers a perfectly good query with an empty 200 —
+    // `inauthor:"gabrielle meyer"` returns nothing on one call and her whole
+    // Timeless series on the next. Treating that empty as "no match" is what
+    // made the ladder fall through to a worse rung and hand back junk, so give
+    // each rung a second look before widening.
+    let items = await runGoogleBooksQuery(candidate, maxResults);
+    if (items.length === 0) {
+      await new Promise((r) => setTimeout(r, 300));
+      items = await runGoogleBooksQuery(candidate, maxResults);
+    }
+    if (items.length === 0) continue;
+
+    // Applies to EVERY rung, not just the loose one — Google's operators are
+    // fuzzier than they look. `inauthor:"Heir of Fire"` comes back with
+    // "Proceedings of the Annual Meeting, Fire Underwriters'"; `intitle:` for
+    // an author name returns "Dictionary Catalog of the University Library".
+    // If nothing in a result set echoes the query, it isn't an answer.
+    if (!hasOperator && !itemsLookRelevant(items, query)) continue;
+
+    return items;
+  }
+  return [];
+}
+
+/** True if any result's title or author contains a meaningful query word. */
+function itemsLookRelevant(items: GoogleBooksItem[], query: string): boolean {
+  const words = query
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 2);
+  if (words.length === 0) return true;
+
+  return items.some((it) => {
+    const hay = [
+      it.volumeInfo?.title ?? "",
+      ...(it.volumeInfo?.authors ?? []),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return words.every((w) => hay.includes(w));
+  });
+}
+
+async function runGoogleBooksQuery(
+  searchQuery: string,
+  maxResults: number
+): Promise<GoogleBooksItem[]> {
   const params = new URLSearchParams({
     q: searchQuery,
     maxResults: String(maxResults),
@@ -203,7 +282,7 @@ async function searchGoogleBooks(
   const url = `https://www.googleapis.com/books/v1/volumes?${params.toString()}`;
 
   // Retry with exponential backoff on rate limiting
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 4; attempt++) {
     const response = await fetch(url);
 
     if (response.status === 429) {
@@ -223,6 +302,19 @@ async function searchGoogleBooks(
       }
       const delay = 1000 * Math.pow(2, attempt); // 1s, 2s, 4s
       await new Promise((r) => setTimeout(r, delay));
+      continue;
+    }
+
+    // Google Books returns transient 5xx routinely. Only 429 was retried, so a
+    // single blip failed the whole search — measured at roughly two requests
+    // in three failing before this was added.
+    if (response.status >= 500 && response.status < 600) {
+      if (attempt === 3) {
+        throw new Error(
+          "Book search is temporarily unavailable. Please try again in a moment."
+        );
+      }
+      await new Promise((r) => setTimeout(r, 400 * Math.pow(2, attempt)));
       continue;
     }
 
