@@ -11,6 +11,7 @@
 import type * as admin from "../admin.js";
 import type * as adminDashboard from "../adminDashboard.js";
 import type * as adminOrphans from "../adminOrphans.js";
+import type * as adminSetKidPin from "../adminSetKidPin.js";
 import type * as adminUserEmail from "../adminUserEmail.js";
 import type * as ai_aiSearch from "../ai/aiSearch.js";
 import type * as ai_contentReview from "../ai/contentReview.js";
@@ -96,6 +97,7 @@ declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   adminDashboard: typeof adminDashboard;
   adminOrphans: typeof adminOrphans;
+  adminSetKidPin: typeof adminSetKidPin;
   adminUserEmail: typeof adminUserEmail;
   "ai/aiSearch": typeof ai_aiSearch;
   "ai/contentReview": typeof ai_contentReview;
