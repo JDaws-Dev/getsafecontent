@@ -54,7 +54,7 @@ export default function DashboardPage() {
   const recentAnalyses = useQuery(api.analyses.listRecent, { count: 5 });
   const pendingRequestCount = useQuery(
     api.bookRequests.countPendingByUser,
-    userId ? { userId } : "skip"
+    userId ? { userId, userToken: token ?? undefined } : "skip"
   );
   const familyCode = useQuery(
     api.familyCodes.getByUser,
