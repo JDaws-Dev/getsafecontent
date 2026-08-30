@@ -57,3 +57,36 @@ export const migrateUserEmail = internalMutation({
     return { migrated: true, dryRun: !!args.dryRun, changes };
   },
 });
+
+/**
+ * SafeSpark keeps a second, email-derived identity key: `clerkUserId` of the
+ * form `marketing:<email>` (a leftover shape from when Clerk was the provider).
+ * The email migration only rewrote `email`, so this key was left pointing at
+ * the old address — an inconsistency that any `by_clerk_id` reconciliation
+ * would trip over even though the live provisioning path resolves by email.
+ */
+export const resyncClerkUserId = internalMutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const email = args.email.trim().toLowerCase();
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", email))
+      .first();
+    if (!user) return { skipped: `no user with ${email}` };
+
+    const expected = `marketing:${email}`;
+    if (user.clerkUserId === expected) {
+      return { alreadyCorrect: true, clerkUserId: expected };
+    }
+    // Only rewrite synthetic marketing keys. A real provider subject must
+    // never be clobbered by an email rename.
+    if (!user.clerkUserId.startsWith("marketing:")) {
+      return { skipped: "clerkUserId is not a synthetic marketing key", clerkUserId: user.clerkUserId };
+    }
+
+    const before = user.clerkUserId;
+    await ctx.db.patch(user._id, { clerkUserId: expected });
+    return { updated: true, before, after: expected };
+  },
+});
