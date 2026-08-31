@@ -275,11 +275,22 @@ export function shouldBlockCategory(
       return { block: true, reason: `strict_${category}`, alert: false };
     }
   }
-  if (strictness === "moderate") {
-    if (category === "aesthetic_browsing" || category === "self_image") {
-      return { block: true, reason: `moderate_${category}`, alert: false };
-    }
-  }
+  // "moderate" used to hard-block aesthetic_browsing and self_image. It was
+  // removed (Aug 2026) after reading a month of real blocks: a 12-year-old
+  // could not look up "cute fall nails", "mirror pics", or "what shade of
+  // blond hair goes with my skin color". The classifier was RIGHT about the
+  // category every time — the rule was simply too harsh for the middle tier,
+  // and raising the confidence bar did nothing because these score 0.8+.
+  //
+  // These categories are still classified and still recorded on every search,
+  // so the parent dashboard can show the pattern over time. Blocking a girl
+  // from nail art teaches her the tool is useless, and the usage data says she
+  // then goes and finds it somewhere with no supervision at all.
+  //
+  // Obsessive scrolling is caught by repetition (see loopDetector), which is
+  // the behaviour that actually matters, rather than by topic. Parents who
+  // want these blocked outright still can — via `strict`, or by naming them in
+  // blockedTopics, both handled above.
 
   return { block: false, reason: "", alert: false };
 }
