@@ -6,6 +6,12 @@
 
 ---
 
+## Current Status (September 2, 2026)
+
+**SafeTube — kid-facing "YouTube is blocked" fallback (deployed, frontend-only).** A customer's kids saw an endless spinner on every video for a month; her account, kids, approvals and time limits were all clean, and our own family played fine on the same build — the kids' device could not reach YouTube. The kid app had no way to say so. Now: the player shows "Hmm, this video won't load — YouTube is blocked on this device, ask a grown-up" (Try again / Done) if the embed hasn't posted any message within 15s; a YouTube `onError` gets "this video can't be played"; the home feed shows the same notice when every approved channel fails; the channel page distinguishes unreachable from empty and no longer caches failures; every YouTube API fetch has a 15s timeout. Commit `a0b8d3fe`, Vercel `safetube-oqt94dnha`, domain re-aliased and verified by content marker. Verified with Playwright against a local build with youtube/googleapis/googlevideo aborted, plus the unblocked happy path. Support thread with the customer is in the getsafefamily.com drafts.
+
+---
+
 ## Current Status (July 12–22, 2026)
 
 A long arc across three fronts: **child-safety fixes → security P0 lockdown → cost surgery**, then a design/UX pass. Everything in "Deployed" is live in prod; the glow-up + SSO work is staged on branches and **not deployed**.
