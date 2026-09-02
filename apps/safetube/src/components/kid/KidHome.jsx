@@ -43,6 +43,8 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
   const [searchQuery, setSearchQuery] = useState('');
   const [liveChannelVideos, setLiveChannelVideos] = useState([]);
   const [isLoadingChannelVideos, setIsLoadingChannelVideos] = useState(false);
+  // True when the last channel fetch never reached YouTube (blocked device/network).
+  const [channelUnreachable, setChannelUnreachable] = useState(false);
   const [channelVideoCache, setChannelVideoCache] = useState({}); // Cache videos by channel ID
   const [hasMoreVideos, setHasMoreVideos] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -141,6 +143,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
   const handleChannelClick = (channel) => {
     setSelectedChannel(channel);
     setLiveChannelVideos([]);
+    setChannelUnreachable(false);
     setIsLoadingChannelVideos(true);
   };
 
@@ -179,19 +182,24 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
     const fetchVideos = async () => {
       try {
         // Only fetch 50 videos initially (1 API batch = fast)
-        const { videos: fetchedVideos, totalResults } = await getChannelVideos(channelId, 50);
+        const { videos: fetchedVideos, totalResults, unreachable } = await getChannelVideos(channelId, 50);
         if (!cancelled) {
           setLiveChannelVideos(fetchedVideos);
+          setChannelUnreachable(!!unreachable);
           const hasMore = totalResults > fetchedVideos.length;
           setHasMoreVideos(hasMore);
-          // Cache the results
-          setChannelVideoCache(prev => ({
-            ...prev,
-            [channelId]: { videos: fetchedVideos, hasMore, totalResults }
-          }));
+          // Cache the results — but never cache a failed fetch, so tapping the
+          // channel again after the block is lifted actually retries.
+          if (!unreachable) {
+            setChannelVideoCache(prev => ({
+              ...prev,
+              [channelId]: { videos: fetchedVideos, hasMore, totalResults }
+            }));
+          }
         }
       } catch (err) {
         console.error('Failed to fetch channel videos:', err);
+        if (!cancelled) setChannelUnreachable(true);
       } finally {
         if (!cancelled) {
           setIsLoadingChannelVideos(false);
@@ -360,7 +368,14 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </div>
-              <p className="text-gray-500">No videos from this channel yet.</p>
+              {channelUnreachable ? (
+                <>
+                  <p className="text-gray-700 font-medium mb-1">We couldn't load this channel's videos.</p>
+                  <p className="text-gray-500 text-sm">YouTube might be blocked on this device. Ask a grown-up to check.</p>
+                </>
+              ) : (
+                <p className="text-gray-500">No videos from this channel yet.</p>
+              )}
             </div>
           ) : filteredChannelVideos.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100">
@@ -1051,6 +1066,10 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
   const [feedVideos, setFeedVideos] = useState([]);
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
   const [loadError, setLoadError] = useState(null);
+  // Every approved channel failed to reach YouTube — the device or network is
+  // blocking it. Distinct from loadError so the kid gets a real explanation.
+  const [feedUnreachable, setFeedUnreachable] = useState(false);
+  const [feedAttempt, setFeedAttempt] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState('all'); // 'all' or topic id
   const [showAddToPlaylist, setShowAddToPlaylist] = useState(null); // Video to add to playlist
 
@@ -1095,28 +1114,37 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
       try {
         setIsLoadingFeed(true);
         setLoadError(null);
+        setFeedUnreachable(false);
 
         // Separate full vs partial channels
         const fullChannels = channels.filter(c => !c.isPartial);
         const partialChannelIds = new Set(channels.filter(c => c.isPartial).map(c => c.channelId));
 
         // Only fetch from YouTube for FULL channel approvals
-        const fullChannelVideos = await Promise.all(
+        const fullChannelResults = await Promise.all(
           fullChannels.map(async (channel) => {
             try {
-              const { videos: channelVids } = await getChannelVideos(channel.channelId, 15);
-              return channelVids.map(v => ({
-                ...v,
-                channelThumbnailUrl: channel.thumbnailUrl,
-              }));
+              const { videos: channelVids, unreachable } = await getChannelVideos(channel.channelId, 15);
+              return {
+                unreachable: !!unreachable,
+                videos: channelVids.map(v => ({
+                  ...v,
+                  channelThumbnailUrl: channel.thumbnailUrl,
+                })),
+              };
             } catch (err) {
               console.error(`Failed to fetch videos for ${channel.channelTitle}:`, err);
-              return [];
+              return { unreachable: true, videos: [] };
             }
           })
         );
 
         if (cancelled) return;
+
+        const fullChannelVideos = fullChannelResults.map(r => r.videos);
+        // One channel failing is YouTube being flaky; ALL of them failing is
+        // this device not being allowed to talk to YouTube at all.
+        setFeedUnreachable(fullChannels.length > 0 && fullChannelResults.every(r => r.unreachable));
 
         // For partial channels, ONLY use the pre-approved videos (from `videos` prop)
         // These are the specifically approved individual videos
@@ -1159,7 +1187,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
     return () => {
       cancelled = true;
     };
-  }, [channels, videos]);
+  }, [channels, videos, feedAttempt]);
 
   // Separate shorts (up to 3 minutes / 180 seconds - max YouTube Shorts length) from regular videos
   // Sort shorts by publish date (most recent first)
@@ -1645,6 +1673,25 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
       {loadError && (
         <div className="text-center py-4">
           <p className="text-gray-500 text-sm">{loadError}</p>
+        </div>
+      )}
+
+      {/* YouTube unreachable — the device or network is blocking it */}
+      {!isLoadingFeed && feedUnreachable && (
+        <div className="text-center py-12 px-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" />
+            </svg>
+          </div>
+          <p className="text-gray-900 font-semibold text-lg mb-1">We couldn't load your videos.</p>
+          <p className="text-gray-500 mb-5">YouTube might be blocked on this device, so SafeTube can't play videos here. Ask a grown-up to check.</p>
+          <button
+            onClick={() => setFeedAttempt(n => n + 1)}
+            className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-2.5 rounded-full font-semibold transition shadow-sm"
+          >
+            Try again
+          </button>
         </div>
       )}
 

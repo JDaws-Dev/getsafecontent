@@ -12,6 +12,19 @@
 export const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY || '';
 export const YOUTUBE_API_BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
+// How long to wait on a YouTube API call before giving up. A device whose
+// filter silently drops googleapis.com (instead of refusing it) otherwise
+// leaves the kid staring at "Loading videos..." indefinitely.
+const YOUTUBE_FETCH_TIMEOUT_MS = 15000;
+
+function fetchWithTimeout(url) {
+  // AbortSignal.timeout is missing on older iPads (Safari < 16); plain fetch there.
+  const signal = typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+    ? AbortSignal.timeout(YOUTUBE_FETCH_TIMEOUT_MS)
+    : undefined;
+  return fetch(url, signal ? { signal } : undefined);
+}
+
 // API Quota info:
 // - Free tier: 10,000 units/day
 // - search.list: 100 units per call
@@ -41,7 +54,7 @@ export async function searchChannels(query, maxResults = 20) {
   });
 
   try {
-    const response = await fetch(`${YOUTUBE_API_BASE_URL}/search?${params}`);
+    const response = await fetchWithTimeout(`${YOUTUBE_API_BASE_URL}/search?${params}`);
     const data = await response.json();
 
     if (data.error) {
@@ -97,7 +110,7 @@ export async function searchVideos(query, maxResults = 20) {
   });
 
   try {
-    const response = await fetch(`${YOUTUBE_API_BASE_URL}/search?${params}`);
+    const response = await fetchWithTimeout(`${YOUTUBE_API_BASE_URL}/search?${params}`);
     const data = await response.json();
 
     if (data.error) {
@@ -148,7 +161,7 @@ export async function getChannelDetails(channelIds) {
   });
 
   try {
-    const response = await fetch(`${YOUTUBE_API_BASE_URL}/channels?${params}`);
+    const response = await fetchWithTimeout(`${YOUTUBE_API_BASE_URL}/channels?${params}`);
     const data = await response.json();
     return data.items || [];
   } catch (err) {
@@ -171,7 +184,7 @@ export async function getVideoDetails(videoIds) {
   });
 
   try {
-    const response = await fetch(`${YOUTUBE_API_BASE_URL}/videos?${params}`);
+    const response = await fetchWithTimeout(`${YOUTUBE_API_BASE_URL}/videos?${params}`);
     const data = await response.json();
     return data.items || [];
   } catch (err) {
@@ -218,7 +231,10 @@ export async function getChannelVideos(channelId, maxVideos = 500) {
     const channelDetails = await getChannelDetails(channelId);
     const uploadsPlaylistId = channelDetails[0]?.contentDetails?.relatedPlaylists?.uploads;
 
-    if (!uploadsPlaylistId) return { videos: [], totalResults: 0 };
+    // Channel ids here come from approvals, so an empty lookup means YouTube
+    // couldn't be reached (blocked or timed out), not that the channel is
+    // gone. Flag it so the kid UI can say so instead of "no videos yet".
+    if (!uploadsPlaylistId) return { videos: [], totalResults: 0, unreachable: true };
 
     let allPlaylistItems = [];
     let nextPageToken = null;
@@ -236,7 +252,7 @@ export async function getChannelVideos(channelId, maxVideos = 500) {
         params.append('pageToken', nextPageToken);
       }
 
-      const response = await fetch(`${YOUTUBE_API_BASE_URL}/playlistItems?${params}`);
+      const response = await fetchWithTimeout(`${YOUTUBE_API_BASE_URL}/playlistItems?${params}`);
       const data = await response.json();
 
       if (data.error) {
@@ -303,7 +319,7 @@ export async function getChannelVideos(channelId, maxVideos = 500) {
     };
   } catch (err) {
     console.error('Failed to get channel videos:', err);
-    return { videos: [], totalResults: 0 };
+    return { videos: [], totalResults: 0, unreachable: true };
   }
 }
 

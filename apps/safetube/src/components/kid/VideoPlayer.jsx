@@ -51,6 +51,12 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
   const lastProgressAtRef = useRef(Date.now());
 
   const [isReady, setIsReady] = useState(false);
+  // 'unreachable' — YouTube never answered (blocked device/network).
+  // 'unavailable' — YouTube answered but refuses to play this video here.
+  // Without this the kid gets a spinner forever and no idea why.
+  const [loadFailed, setLoadFailed] = useState(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const heardFromPlayerRef = useRef(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -174,6 +180,9 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
     accumulatedPlayMsRef.current = 0;
     playStartedAtRef.current = null;
     lastProgressAtRef.current = Date.now();
+    heardFromPlayerRef.current = false;
+    setLoadFailed(null);
+    setIsReady(false);
 
     // Create container outside React's DOM
     const container = document.createElement('div');
@@ -224,9 +233,17 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
     const handleMessage = (event) => {
       // Only accept messages from youtube-nocookie.com
       if (!event.origin.includes('youtube')) return;
+      heardFromPlayerRef.current = true;
 
       try {
         const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+
+        // YouTube loaded but won't play this one (embedding disabled, removed,
+        // region-locked). Tell the kid rather than sit on a black screen.
+        if (data.event === 'onError') {
+          setLoadFailed('unavailable');
+          return;
+        }
 
         if (data.event === 'onReady') {
           setIsReady(true);
@@ -322,6 +339,14 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
 
     window.addEventListener('message', handleMessage);
 
+    // If YouTube hasn't said a word by now, the device can't reach it. The
+    // iframe's own onload is not a reliable signal — a filtered request may
+    // never fire it, or may fire it for an error page — so we key off the
+    // player actually talking back.
+    const loadTimer = setTimeout(() => {
+      if (!heardFromPlayerRef.current) setLoadFailed('unreachable');
+    }, 15000);
+
     // When iframe loads, start listening for events
     iframe.onload = () => {
       // Send listening command to start receiving events
@@ -380,6 +405,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
       endPlaySpan();
       window.removeEventListener('message', handleMessage);
       document.removeEventListener('visibilitychange', handleVisibility);
+      clearTimeout(loadTimer);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
       if (periodicSaveIntervalRef.current) clearInterval(periodicSaveIntervalRef.current);
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
@@ -388,7 +414,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
       const styleEl = document.getElementById('yt-player-hide-branding');
       if (styleEl) styleEl.remove();
     };
-  }, [video.videoId, kidProfileId, recordWatch, saveWatchDuration, beginPlaySpan, endPlaySpan]);
+  }, [video.videoId, kidProfileId, recordWatch, saveWatchDuration, beginPlaySpan, endPlaySpan, loadAttempt]);
 
   // Control handlers
   const togglePlayPause = () => {
@@ -711,12 +737,57 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
       )}
 
       {/* Loading state */}
-      {!isReady && (
+      {!isReady && !loadFailed && (
         <div
           className="absolute inset-0 flex items-center justify-center bg-black"
           style={{ zIndex: 10003 }}
         >
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent-500 border-t-transparent"></div>
+        </div>
+      )}
+
+      {/* Couldn't load — say so in kid terms instead of spinning forever */}
+      {loadFailed && (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center bg-black px-6 text-center"
+          style={{ zIndex: 10004 }}
+        >
+          <div className="w-16 h-16 mb-4 bg-white/10 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+            </svg>
+          </div>
+          {loadFailed === 'unreachable' ? (
+            <>
+              <p className="text-white font-semibold text-xl mb-2">Hmm, this video won't load.</p>
+              <p className="text-gray-300 mb-6 max-w-sm">
+                It looks like YouTube is blocked on this device, so SafeTube can't play videos here. Ask a grown-up to check.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-white font-semibold text-xl mb-2">This video can't be played.</p>
+              <p className="text-gray-300 mb-6 max-w-sm">
+                The people who made it don't allow it to play outside YouTube. Try a different one.
+              </p>
+            </>
+          )}
+          <div className="flex flex-wrap justify-center gap-3">
+            {loadFailed === 'unreachable' && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setLoadAttempt(n => n + 1); }}
+                className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-full font-semibold transition shadow-lg"
+              >
+                Try again
+              </button>
+            )}
+            <button
+              onClick={(e) => { e.stopPropagation(); handleClose(); }}
+              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-full font-semibold transition shadow-lg"
+            >
+              Done
+            </button>
+          </div>
         </div>
       )}
 
