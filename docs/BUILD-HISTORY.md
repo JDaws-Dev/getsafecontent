@@ -6,6 +6,12 @@
 
 ---
 
+## Current Status (September 4, 2026)
+
+**SafeTunes — listening minutes now counted correctly (frontend deploy, commit `6969b3ba`).** Kids on the iPhone app (a web view of the site) were credited 0 minutes no matter how long they listened — MusicKit fires stop/start events constantly, and the tracker rounded each stretch to whole minutes. Desktop kids got the opposite: a periodic saver and the stop handler both credited the same span, so days showed double. Both SafeTunes' own daily limit and the family-wide cap read that table, so neither was enforcing for iPhone listeners. The tracker now keeps exact milliseconds and saves whole minutes once. Also: the SafeTunes Vercel project is named `apple-music-whitelist`.
+
+---
+
 ## Current Status (September 3, 2026)
 
 **SafeTube Chrome extension revived + re-secured (backend deployed `rightful-rabbit-333`, commit `940fd275`).** The "Add to SafeTube" browser extension had been dead since the August hardening (it authenticated by family code, then hit parent-token-only queries → 500 on every call) and was a kid-side bypass (the family code is the kid login code). Both `/extension/*` endpoints now require the parent's sign-in token as a Bearer header; the extension borrows that token from the signed-in getsafetube.com tab via a new `connect.js` content script (no password, Google sign-in OK). Tokens last 7 days. Extension is still unpacked/local, not on the Chrome Web Store.
