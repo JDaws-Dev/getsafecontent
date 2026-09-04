@@ -1,5 +1,40 @@
-import { httpAction } from "./_generated/server";
+import { v } from "convex/values";
+import { httpAction, internalQuery } from "./_generated/server";
 import { api, internal } from "./_generated/api";
+import { resolveTubeIdentity } from "./identity";
+
+// The extension authenticates as the PARENT, with the same Marketing Central
+// login token the web app holds (it copies `safetube_jwt` from getsafetube.com).
+// It used to authenticate with the family code alone — but the family code is
+// what the KIDS type to log in, so any kid who knew it could have approved
+// their own videos through this endpoint. The August hardening made the
+// underlying queries demand a parent token anyway, which is what broke it.
+export const resolveExtensionUser = internalQuery({
+  args: { userToken: v.string() },
+  handler: async (ctx, args) => {
+    const me = await resolveTubeIdentity(ctx, args.userToken);
+    if (!me) return null;
+    return {
+      _id: me._id,
+      email: me.email,
+      subscriptionStatus: me.subscriptionStatus,
+      trialEndsAt: me.trialEndsAt,
+    };
+  },
+});
+
+function bearerToken(request: Request): string | undefined {
+  const header = request.headers.get("authorization") || "";
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match?.[1]?.trim() || undefined;
+}
+
+function signInResponse(corsHeaders: Record<string, string>): Response {
+  return new Response(
+    JSON.stringify({ error: "Please sign in to SafeTube again.", code: "SIGN_IN" }),
+    { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+}
 
 // Family codes are 6 chars (~1B combinations with the 32-char alphabet, but
 // only a few dozen are live) — per-IP rate limiting makes enumeration
@@ -29,7 +64,7 @@ const extensionAddVideo = httpAction(async (ctx, request) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
 
   // Handle preflight
@@ -45,9 +80,11 @@ const extensionAddVideo = httpAction(async (ctx, request) => {
   if (rate.limited) return rateLimitResponse(rate.retryAfter, corsHeaders);
 
   try {
+    const userToken = bearerToken(request);
+    if (!userToken) return signInResponse(corsHeaders);
+
     const body = await request.json();
     const {
-      familyCode,
       kidProfileIds,
       videoId,
       title,
@@ -59,21 +96,16 @@ const extensionAddVideo = httpAction(async (ctx, request) => {
     } = body;
 
     // Validate required fields
-    if (!familyCode || !kidProfileIds?.length || !videoId || !title || !channelId || !channelTitle) {
+    if (!kidProfileIds?.length || !videoId || !title || !channelId || !channelTitle) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Get user by family code
-    const user = await ctx.runQuery(api.users.getUserByFamilyCode, { familyCode });
-    if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid family code" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // Who is the parent? Verified from the token, never from the request body.
+    const user = await ctx.runQuery(internal.extensionApi.resolveExtensionUser, { userToken });
+    if (!user) return signInResponse(corsHeaders);
 
     // Check subscription status
     const isTrialExpired = user.subscriptionStatus === "trial" &&
@@ -88,7 +120,7 @@ const extensionAddVideo = httpAction(async (ctx, request) => {
     }
 
     // Get kid profiles and verify they belong to this user
-    const kidProfiles = await ctx.runQuery(api.kidProfiles.getKidProfiles, { userId: user._id });
+    const kidProfiles = await ctx.runQuery(api.kidProfiles.getKidProfiles, { userId: user._id, userToken });
     const validKidIds = kidProfiles.map((p: { _id: string }) => p._id);
 
     // Filter to only valid kid IDs
@@ -113,6 +145,7 @@ const extensionAddVideo = httpAction(async (ctx, request) => {
       duration: duration || "0:00",
       durationSeconds: durationSeconds || 0,
       madeForKids: false, // Extension doesn't have this info
+      userToken,
     });
 
     return new Response(
@@ -139,15 +172,14 @@ const extensionGetKids = httpAction(async (ctx, request) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
 
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  // Tighter limit here: this endpoint maps family codes → kid names, the
-  // exact lookup an enumeration attack needs.
+  // Tighter limit here: this endpoint returns kid names — cheap to be strict.
   const rate = await ctx.runMutation(internal.rateLimit.checkAndCount, {
     identifier: `ext-kids:${clientIp(request)}`,
     maxRequests: 10,
@@ -156,31 +188,19 @@ const extensionGetKids = httpAction(async (ctx, request) => {
   if (rate.limited) return rateLimitResponse(rate.retryAfter, corsHeaders);
 
   try {
-    const url = new URL(request.url);
-    const familyCode = url.searchParams.get("familyCode");
+    const userToken = bearerToken(request);
+    if (!userToken) return signInResponse(corsHeaders);
 
-    if (!familyCode) {
-      return new Response(
-        JSON.stringify({ error: "Family code required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get user by family code
-    const user = await ctx.runQuery(api.users.getUserByFamilyCode, { familyCode });
-    if (!user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid family code" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const user = await ctx.runQuery(internal.extensionApi.resolveExtensionUser, { userToken });
+    if (!user) return signInResponse(corsHeaders);
 
     // Get kid profiles
-    const kidProfiles = await ctx.runQuery(api.kidProfiles.getKidProfiles, { userId: user._id });
+    const kidProfiles = await ctx.runQuery(api.kidProfiles.getKidProfiles, { userId: user._id, userToken });
 
     return new Response(
       JSON.stringify({
         success: true,
+        email: user.email,
         kids: kidProfiles.map((p: { _id: string; name: string; color: string; icon: string }) => ({
           id: p._id,
           name: p.name,

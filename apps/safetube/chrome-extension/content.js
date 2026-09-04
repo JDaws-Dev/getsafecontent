@@ -160,11 +160,11 @@
     const btn = document.getElementById('safetube-add-btn');
     if (!btn) return;
 
-    // Get stored family code and selected kids
-    const stored = await chrome.storage.local.get(['familyCode', 'selectedKids']);
+    // Get the parent's sign-in token and selected kids
+    const stored = await chrome.storage.local.get(['userToken', 'selectedKids']);
 
-    if (!stored.familyCode) {
-      showFeedback('Set up in extension popup first', false);
+    if (!stored.userToken) {
+      showFeedback('Sign in via the SafeTube icon first', false);
       return;
     }
 
@@ -192,9 +192,11 @@
 
       const response = await fetch(`${API_BASE}/extension/add-video`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${stored.userToken}`,
+        },
         body: JSON.stringify({
-          familyCode: stored.familyCode,
           kidProfileIds: stored.selectedKids,
           ...metadata
         })
@@ -202,6 +204,11 @@
 
       const data = await response.json();
 
+      if (response.status === 401) {
+        // Token expired (they last a week) — drop it so the popup asks for a fresh sign-in.
+        await chrome.storage.local.remove(['userToken', 'tokenSavedAt']);
+        throw new Error('Sign in to SafeTube again');
+      }
       if (!response.ok) {
         throw new Error(data.error || 'Failed to add video');
       }

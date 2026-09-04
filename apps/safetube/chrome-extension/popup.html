@@ -324,16 +324,13 @@
 
     <!-- Login State -->
     <div id="state-login" class="state">
-      <form id="login-form">
-        <div class="form-group">
-          <label for="family-code">Family Code</label>
-          <input type="text" id="family-code" placeholder="ABC123" maxlength="6" autocomplete="off">
-        </div>
-        <button type="submit" class="btn" id="login-btn">Connect</button>
-        <div id="login-error" class="error" style="display: none;"></div>
-      </form>
+      <p class="help-text" style="margin-bottom: 14px;">
+        Sign in to your SafeTube parent account, then come back here and the extension connects automatically.
+      </p>
+      <button type="button" class="btn" id="login-btn">Open SafeTube to connect</button>
+      <div id="login-error" class="error" style="display: none;"></div>
       <p class="help-text">
-        Find your code in <a href="https://getsafetube.com/admin" target="_blank">Parent Dashboard</a>
+        Already signed in there? Reload the SafeTube tab, then click this icon again.
       </p>
     </div>
 
@@ -343,7 +340,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M20 6L9 17l-5-5"></path>
         </svg>
-        <span>Connected to SafeTube</span>
+        <span id="connected-label">Connected to SafeTube</span>
       </div>
 
       <p class="section-title">Add videos for:</p>
