@@ -8,7 +8,7 @@
 
 ## Current Status (September 4, 2026)
 
-**SafeTunes — listening minutes now counted correctly (frontend deploy, commit `6969b3ba`).** Kids on the iPhone app (a web view of the site) were credited 0 minutes no matter how long they listened — MusicKit fires stop/start events constantly, and the tracker rounded each stretch to whole minutes. Desktop kids got the opposite: a periodic saver and the stop handler both credited the same span, so days showed double. Both SafeTunes' own daily limit and the family-wide cap read that table, so neither was enforcing for iPhone listeners. The tracker now keeps exact milliseconds and saves whole minutes once. Also: the SafeTunes Vercel project is named `apple-music-whitelist`.
+**SafeTunes — listening minutes now counted correctly (frontend deploy, commits `6969b3ba` + `58b5de8a`).** Many kids were credited 0 minutes no matter how long they listened: the minutes listener attached once, when the kid profile loaded, and if the music engine wasn't ready at that instant it never attached for the session (the play-logging listener next to it re-attached on readiness, which is why plays still showed). When it did attach, a periodic saver and the stop handler both credited the same span, so days showed double. Both SafeTunes' own daily limit and the family-wide cap read that table, so neither was enforcing for iPhone listeners. The tracker now keeps exact milliseconds and saves whole minutes once. Also: the SafeTunes Vercel project is named `apple-music-whitelist`.
 
 ---
 
