@@ -6,6 +6,12 @@
 
 ---
 
+## Current Status (September 3, 2026)
+
+**SafeTube Chrome extension revived + re-secured (backend deployed `rightful-rabbit-333`, commit `940fd275`).** The "Add to SafeTube" browser extension had been dead since the August hardening (it authenticated by family code, then hit parent-token-only queries → 500 on every call) and was a kid-side bypass (the family code is the kid login code). Both `/extension/*` endpoints now require the parent's sign-in token as a Bearer header; the extension borrows that token from the signed-in getsafetube.com tab via a new `connect.js` content script (no password, Google sign-in OK). Tokens last 7 days. Extension is still unpacked/local, not on the Chrome Web Store.
+
+---
+
 ## Current Status (September 2, 2026)
 
 **SafeTube — kid-facing "YouTube is blocked" fallback (deployed, frontend-only).** A customer's kids saw an endless spinner on every video for a month; her account, kids, approvals and time limits were all clean, and our own family played fine on the same build — the kids' device could not reach YouTube. The kid app had no way to say so. Now: the player shows "Hmm, this video won't load — YouTube is blocked on this device, ask a grown-up" (Try again / Done) if the embed hasn't posted any message within 15s; a YouTube `onError` gets "this video can't be played"; the home feed shows the same notice when every approved channel fails; the channel page distinguishes unreachable from empty and no longer caches failures; every YouTube API fetch has a 15s timeout. Commit `a0b8d3fe`, Vercel `safetube-oqt94dnha`, domain re-aliased and verified by content marker. Verified with Playwright against a local build with youtube/googleapis/googlevideo aborted, plus the unblocked happy path. Support thread with the customer is in the getsafefamily.com drafts.
