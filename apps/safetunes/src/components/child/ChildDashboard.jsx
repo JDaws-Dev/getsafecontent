@@ -945,12 +945,13 @@ function ChildDashboard({ onLogout }) {
   // family-wide cross-app limit (both read dailyListeningTime), so it must be
   // accurate for every kid, limit or no limit.
   //
-  // The previous version credited minutes only when a "stopped playing" event
-  // arrived, rounding each stretch to whole minutes. MusicKit inside the iPhone
-  // app fires stop/start events constantly mid-song, so every stretch rounded
-  // to zero — Bella played ten songs and was credited 0 minutes. On desktop the
-  // opposite happened: a periodic saver AND the stop handler both credited the
-  // same span, doubling the day (241 "minutes" in one afternoon).
+  // The previous version had two faults. Its listener was attached once, when
+  // the kid profile loaded — but MusicKit often isn't ready yet at that moment
+  // (the play-tracking effect above re-attaches on `musicKitService.music`;
+  // this one didn't), so for many sessions no listening time was ever
+  // recorded at all: Bella played ten songs and was credited 0 minutes. And
+  // when it did attach, a periodic saver AND the stop handler both credited
+  // the same span, doubling the day (241 "minutes" in one afternoon).
   //
   // Now: keep exact milliseconds of PLAYING time (closed spans in a bucket,
   // plus the open span), and every 10s — or when playback stops — move whole
@@ -1047,7 +1048,7 @@ function ChildDashboard({ onLogout }) {
       // Keep the bucket and open span across re-runs (kidProfile/timeLimitSettings
       // identity changes) — they are refs precisely so a re-render can't drop time.
     };
-  }, [kidProfile, timeLimitSettings, addListeningTimeMutation]);
+  }, [musicKitService.music, kidProfile, timeLimitSettings, addListeningTimeMutation]);
 
   // Server says the day's allowance is gone (either SafeTunes' own limit or the
   // shared all-apps one). Stop the music and say so.
