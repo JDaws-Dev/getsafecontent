@@ -645,9 +645,10 @@ function ChildDashboard({ onLogout }) {
   // Time limit state
   const [showTimeLimitModal, setShowTimeLimitModal] = useState(false);
   const [showMusicPausedModal, setShowMusicPausedModal] = useState(false);
-  const [listeningStartTime, setListeningStartTime] = useState(null);
-  const listeningStartTimeRef = useRef(null);
-  const [sessionMinutesSaved, setSessionMinutesSaved] = useState(0); // Track minutes saved in current session
+  // Listening-time accounting. Exact milliseconds, saved to the server in
+  // whole minutes, remainder carried forward — see the tracking effect below.
+  const playSpanStartRef = useRef(null);   // Date.now() when the current PLAYING span began, or null
+  const unsavedPlayMsRef = useRef(0);      // closed-span milliseconds not yet turned into a saved minute
 
   // Fetch time limit settings
   const timeLimitSettings = useQuery(
@@ -902,10 +903,7 @@ function ChildDashboard({ onLogout }) {
 
     // Calculate current total including any ongoing session time
     const savedMinutes = timeLimitSettings.usedMinutes || 0;
-    let sessionMinutes = 0;
-    if (listeningStartTime) {
-      sessionMinutes = Math.floor((Date.now() - listeningStartTime) / 60000) - sessionMinutesSaved;
-    }
+    const sessionMinutes = unsavedListeningMinutes();
     const totalMinutes = savedMinutes + sessionMinutes;
     const limitMinutes = timeLimitSettings.limitMinutes;
 
@@ -928,10 +926,11 @@ function ChildDashboard({ onLogout }) {
     return `${mins}m`;
   };
 
-  // Keep ref in sync with state for use in event listener
-  useEffect(() => {
-    listeningStartTimeRef.current = listeningStartTime;
-  }, [listeningStartTime]);
+  // Minutes of listening not yet saved to the server (closed spans + the open one).
+  const unsavedListeningMinutes = () => {
+    const open = playSpanStartRef.current ? Date.now() - playSpanStartRef.current : 0;
+    return Math.floor((unsavedPlayMsRef.current + open) / 60000);
+  };
 
   // Auto-stop playback if parent pauses music access
   useEffect(() => {
@@ -942,121 +941,113 @@ function ChildDashboard({ onLogout }) {
     }
   }, [liveKidProfile?.musicPaused, playerState.isPlaying]);
 
-  // Track listening time when playback state changes (always track, regardless of time limit settings)
+  // Listening-time tracking — feeds SafeTunes' own daily limit AND the
+  // family-wide cross-app limit (both read dailyListeningTime), so it must be
+  // accurate for every kid, limit or no limit.
+  //
+  // The previous version credited minutes only when a "stopped playing" event
+  // arrived, rounding each stretch to whole minutes. MusicKit inside the iPhone
+  // app fires stop/start events constantly mid-song, so every stretch rounded
+  // to zero — Bella played ten songs and was credited 0 minutes. On desktop the
+  // opposite happened: a periodic saver AND the stop handler both credited the
+  // same span, doubling the day (241 "minutes" in one afternoon).
+  //
+  // Now: keep exact milliseconds of PLAYING time (closed spans in a bucket,
+  // plus the open span), and every 10s — or when playback stops — move whole
+  // minutes out of the bucket to the server. The remainder stays in the bucket,
+  // so nothing is lost to rounding and nothing is ever counted twice. The tick
+  // also re-checks the real playback state, so a missed event can't leave a
+  // span open or unopened.
   useEffect(() => {
     if (!kidProfile) return;
+    const kidProfileId = kidProfile._id;
+    let cancelled = false;
 
-    const handlePlaybackChange = async () => {
-      const music = musicKitService.music;
-      if (!music) return;
+    const isPlayingNow = () => musicKitService.music?.playbackState === 2; // 2 = playing
 
-      const isPlaying = music.playbackState === 2; // 2 = playing
-      const startTime = listeningStartTimeRef.current;
-
-      if (isPlaying && !startTime) {
-        // Started playing - record start time
-        const now = Date.now();
-        listeningStartTimeRef.current = now;
-        setListeningStartTime(now);
-      } else if (!isPlaying && startTime) {
-        // Stopped playing - calculate and add listening time
-        const elapsed = Date.now() - startTime;
-        const minutes = Math.round(elapsed / 60000);
-
-        if (minutes > 0) {
-          try {
-            await addListeningTimeMutation({
-              kidProfileId: kidProfile._id,
-              minutes,
-            });
-          } catch (error) {
-            console.error('Failed to track listening time:', error);
-          }
-        }
-        listeningStartTimeRef.current = null;
-        setListeningStartTime(null);
+    const closeSpan = () => {
+      if (playSpanStartRef.current) {
+        unsavedPlayMsRef.current += Date.now() - playSpanStartRef.current;
+        playSpanStartRef.current = null;
       }
     };
 
-    // Set up listener
-    const music = musicKitService.music;
-    if (music) {
-      music.addEventListener('playbackStateDidChange', handlePlaybackChange);
-      return () => {
-        music.removeEventListener('playbackStateDidChange', handlePlaybackChange);
-      };
-    }
-  }, [kidProfile, addListeningTimeMutation]);
-
-  // Check time limit periodically during playback and save time incrementally
-  useEffect(() => {
-    if (!kidProfile || !timeLimitSettings?.isEnabled || !listeningStartTime) return;
-
-    const intervalId = setInterval(async () => {
-      const music = musicKitService.music;
-      if (!music || music.playbackState !== 2) return; // Only check if playing
-
-      // Calculate time listened in this session since last save
-      const elapsed = Date.now() - listeningStartTime;
-      const totalSessionMinutes = Math.floor(elapsed / 60000);
-      const minutesToSave = totalSessionMinutes - sessionMinutesSaved;
-
-      // Save time every minute during playback (not just when stopped)
-      if (minutesToSave >= 1) {
-        try {
-          await addListeningTimeMutation({
-            kidProfileId: kidProfile._id,
-            minutes: minutesToSave,
-          });
-          setSessionMinutesSaved(totalSessionMinutes);
-          console.log(`[TimeLimit] Saved ${minutesToSave} minutes. Session total: ${totalSessionMinutes}m`);
-        } catch (error) {
-          console.error('Failed to save listening time:', error);
-        }
+    // Move whole minutes from the bucket to the server. Safe to call often.
+    const saveWholeMinutes = async () => {
+      // Roll the open span into the bucket and restart it so the same
+      // milliseconds can't be counted again.
+      if (playSpanStartRef.current) {
+        const now = Date.now();
+        unsavedPlayMsRef.current += now - playSpanStartRef.current;
+        playSpanStartRef.current = now;
       }
+      const minutes = Math.floor(unsavedPlayMsRef.current / 60000);
+      if (minutes < 1) return;
+      unsavedPlayMsRef.current -= minutes * 60000;
+      try {
+        await addListeningTimeMutation({ kidProfileId, minutes });
+      } catch (error) {
+        // Put the minutes back so the next tick retries them.
+        unsavedPlayMsRef.current += minutes * 60000;
+        console.error('Failed to save listening time:', error);
+      }
+    };
 
-      // Check if we've exceeded the limit using fresh calculation
-      // usedMinutes from query + any unsaved session time
-      const savedMinutes = timeLimitSettings.usedMinutes || 0;
-      const unsavedMinutes = totalSessionMinutes - sessionMinutesSaved;
-      const totalMinutes = savedMinutes + unsavedMinutes;
+    const reconcile = () => {
+      if (cancelled) return;
+      if (isPlayingNow()) {
+        if (!playSpanStartRef.current) playSpanStartRef.current = Date.now();
+      } else if (playSpanStartRef.current) {
+        closeSpan();
+        saveWholeMinutes();
+      }
+    };
 
-      console.log(`[TimeLimit] Check: saved=${savedMinutes}, session=${totalSessionMinutes}, unsaved=${unsavedMinutes}, total=${totalMinutes}, limit=${timeLimitSettings.limitMinutes}`);
+    const tick = async () => {
+      if (cancelled) return;
+      reconcile();
+      await saveWholeMinutes();
 
-      if (timeLimitSettings.limitMinutes && totalMinutes >= timeLimitSettings.limitMinutes) {
-        // Time limit reached - stop playback
+      // Enforce SafeTunes' own daily limit mid-session: server-saved minutes
+      // plus whatever is still in the bucket.
+      if (!timeLimitSettings?.isEnabled || !timeLimitSettings?.limitMinutes) return;
+      const total = (timeLimitSettings.usedMinutes || 0) + unsavedListeningMinutes();
+      if (total >= timeLimitSettings.limitMinutes && isPlayingNow()) {
         try {
-          await music.pause();
+          await musicKitService.music.pause();
+          closeSpan();
           setShowTimeLimitModal(true);
-
-          // Save any remaining unsaved time
-          if (unsavedMinutes > 0) {
-            await addListeningTimeMutation({
-              kidProfileId: kidProfile._id,
-              minutes: unsavedMinutes,
-            });
-          }
-
-          // Reset session tracking
-          listeningStartTimeRef.current = null;
-          setListeningStartTime(null);
-          setSessionMinutesSaved(0);
-          console.log('[TimeLimit] Limit reached - playback stopped');
+          await saveWholeMinutes();
         } catch (error) {
           console.error('Failed to pause playback:', error);
         }
       }
-    }, 10000); // Check every 10 seconds (more responsive)
+    };
 
-    return () => clearInterval(intervalId);
-  }, [kidProfile, timeLimitSettings, listeningStartTime, sessionMinutesSaved, addListeningTimeMutation]);
+    const music = musicKitService.music;
+    if (music) music.addEventListener('playbackStateDidChange', reconcile);
+    reconcile();
+    const intervalId = setInterval(tick, 10000);
 
-  // Reset session minutes when playback stops
-  useEffect(() => {
-    if (!listeningStartTime) {
-      setSessionMinutesSaved(0);
-    }
-  }, [listeningStartTime]);
+    // Leaving the page (or the iPhone app going to the background) — bank what
+    // we can before the JS is frozen.
+    const flush = () => {
+      if (document.visibilityState === 'hidden') {
+        if (!isPlayingNow()) closeSpan();
+        saveWholeMinutes();
+      }
+    };
+    document.addEventListener('visibilitychange', flush);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', flush);
+      if (music) music.removeEventListener('playbackStateDidChange', reconcile);
+      // Keep the bucket and open span across re-runs (kidProfile/timeLimitSettings
+      // identity changes) — they are refs precisely so a re-render can't drop time.
+    };
+  }, [kidProfile, timeLimitSettings, addListeningTimeMutation]);
 
   // Server says the day's allowance is gone (either SafeTunes' own limit or the
   // shared all-apps one). Stop the music and say so.
