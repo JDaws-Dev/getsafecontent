@@ -113,3 +113,93 @@ export const sendPasswordResetEmail = internalAction({
     }
   },
 });
+
+/**
+ * Heads-up to the owner when a NEW account is created directly on the site
+ * (free trial or promo code) — i.e. without Stripe checkout.
+ *
+ * The only signup notification used to live in the Stripe webhook, so
+ * card-less trial signups (the normal path since central auth launched)
+ * arrived silently. Stefan (2026-09-03) was the one that made this obvious.
+ * Non-critical: never throws, never blocks signup.
+ */
+export const sendAdminSignupNotification = internalAction({
+  args: {
+    email: v.string(),
+    name: v.optional(v.string()),
+    subscriptionStatus: v.string(),
+    entitledApps: v.array(v.string()),
+    source: v.string(), // "password" | "google"
+    couponCode: v.optional(v.string()),
+    trialExpiresAt: v.optional(v.number()),
+  },
+  handler: async (_ctx, args): Promise<{ success: boolean; error?: string }> => {
+    const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_KEY;
+    if (!apiKey) {
+      console.warn("[sendAdminSignupNotification] No Resend API key — skipping");
+      return { success: false, error: "Email service not configured" };
+    }
+
+    const pretty: Record<string, string> = {
+      safetunes: "SafeTunes",
+      safetube: "SafeTube",
+      safereads: "SafeReads",
+      safestudy: "SafeStudy",
+      safespark: "SafeSpark",
+    };
+    const apps = args.entitledApps.map((a) => pretty[a] ?? a);
+    const plan =
+      args.subscriptionStatus === "trial"
+        ? "Free Trial (no card)"
+        : args.couponCode
+          ? `Promo code ${args.couponCode} → ${args.subscriptionStatus}`
+          : args.subscriptionStatus;
+    const who = args.name ? `${args.name} (${args.email})` : args.email;
+    const via = args.source === "google" ? "Google sign-in" : "email + password";
+    const trialEnds = args.trialExpiresAt
+      ? new Date(args.trialExpiresAt).toLocaleDateString("en-US", { timeZone: "America/New_York" })
+      : null;
+
+    const html = `
+      <h1>New Safe Family signup</h1>
+      <p>Someone just created an account on getsafefamily.com (${via}).</p>
+      <ul>
+        <li><strong>Name:</strong> ${args.name || "Not provided"}</li>
+        <li><strong>Email:</strong> ${args.email}</li>
+        <li><strong>Plan:</strong> ${plan}</li>
+        <li><strong>Apps:</strong> ${apps.join(", ") || "none"}</li>
+        ${trialEnds ? `<li><strong>Trial ends:</strong> ${trialEnds}</li>` : ""}
+        <li><strong>Date:</strong> ${new Date().toLocaleString("en-US", { timeZone: "America/New_York" })}</li>
+      </ul>
+      <p>No payment has been taken. If the trial converts, the Stripe webhook will send its own notice.</p>
+      <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
+      <p style="color: #6b7280; font-size: 14px;">You're receiving this because you're the admin of Safe Family.</p>
+    `;
+
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Safe Family <notifications@getsafefamily.com>",
+          to: process.env.ADMIN_EMAIL || "jeremiah@getsafefamily.com",
+          subject: `Signup: ${who} - ${apps.join("+") || "no apps"} (${plan})`,
+          html,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        console.error("[sendAdminSignupNotification] Resend error:", result);
+        return { success: false, error: result.message || `HTTP ${response.status}` };
+      }
+      console.log(`[sendAdminSignupNotification] Sent for ${args.email}: ${result.id}`);
+      return { success: true };
+    } catch (error) {
+      console.error("[sendAdminSignupNotification] Failed:", error);
+      return { success: false, error: String(error) };
+    }
+  },
+});

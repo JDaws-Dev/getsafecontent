@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 /**
  * Internal Signup Mutations
@@ -197,6 +198,18 @@ export const createUserWithPassword = internalMutation({
     console.log(
       `[signupInternal] Created user ${email} with status ${subscriptionStatus}`
     );
+
+    // Tell the owner. Scheduled (not awaited) so a mail hiccup can't fail signup.
+    await ctx.scheduler.runAfter(0, internal.emails.sendAdminSignupNotification, {
+      email,
+      name: args.name,
+      subscriptionStatus,
+      entitledApps,
+      source: "password",
+      couponCode: args.couponCode?.toUpperCase(),
+      trialExpiresAt:
+        subscriptionStatus === "trial" ? now + TRIAL_DURATION_MS : undefined,
+    });
 
     return {
       success: true,
@@ -449,6 +462,15 @@ export const getOrCreateOAuthUser = internalMutation({
     });
 
     console.log(`[getOrCreateOAuthUser] Created new OAuth user: ${email}`);
+
+    await ctx.scheduler.runAfter(0, internal.emails.sendAdminSignupNotification, {
+      email,
+      name: args.name,
+      subscriptionStatus: "trial",
+      entitledApps,
+      source: "google",
+      trialExpiresAt,
+    });
 
     return {
       success: true,
