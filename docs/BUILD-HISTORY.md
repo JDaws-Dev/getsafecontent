@@ -6,6 +6,12 @@
 
 ---
 
+## Current Status (September 7, 2026)
+
+**Central — owner is now notified of direct signups (backend deploy `adamant-crow-705`).** The "new signup" email only ever fired from the Stripe webhook, so free trials started on getsafefamily.com without a card (the normal path since central auth) were silent. A new internal email action is scheduled from both the password and Google signup paths. Also fixed this week: SafeTunes listening minutes (Sep 4), SafeTube "YouTube is blocked" fallback (Sep 2), SafeTube Chrome extension re-auth (Sep 3).
+
+---
+
 ## Current Status (September 4, 2026)
 
 **SafeTunes — listening minutes now counted correctly (frontend deploy, commits `6969b3ba` + `58b5de8a`).** Many kids were credited 0 minutes no matter how long they listened: the minutes listener attached once, when the kid profile loaded, and if the music engine wasn't ready at that instant it never attached for the session (the play-logging listener next to it re-attached on readiness, which is why plays still showed). When it did attach, a periodic saver and the stop handler both credited the same span, so days showed double. Both SafeTunes' own daily limit and the family-wide cap read that table, so neither was enforcing for iPhone listeners. The tracker now keeps exact milliseconds and saves whole minutes once. Also: the SafeTunes Vercel project is named `apple-music-whitelist`.
