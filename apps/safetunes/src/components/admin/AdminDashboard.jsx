@@ -1,3 +1,4 @@
+import { isEmbedded, shouldRedirectToHubDashboard, HUB_DASHBOARD } from '../../lib/embed';
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -482,6 +483,12 @@ function AdminDashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('home');
   const [settingsSection, setSettingsSection] = useState(null); // 'account', 'apple-music', 'kids', 'subscription', 'support'
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  // One admin: inside the hub's dashboard iframe we hide our own chrome; opened
+  // directly under the hub we hand off to the single dashboard.
+  const embedded = isEmbedded();
+  useEffect(() => {
+    if (shouldRedirectToHubDashboard()) window.location.replace(HUB_DASHBOARD);
+  }, []);
   const [hideTip, setHideTip] = useState(() => localStorage.getItem('safetunes_hide_tip') === 'true');
 
   // Register for push notifications (mobile app)
@@ -595,8 +602,8 @@ function AdminDashboard({ user, onLogout }) {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Top Bar */}
-          <div className="flex items-center justify-between py-4">
+          {/* Top Bar — hidden when embedded in the hub dashboard (the shell has one) */}
+          {!embedded && (<div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center shadow-md">
                 <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
@@ -624,12 +631,12 @@ function AdminDashboard({ user, onLogout }) {
                 </svg>
               </button>
             </div>
-          </div>
+          </div>)}
 
-          {/* Safe Family — mobile app-switcher row (always visible under 1024px) */}
-          <div className="lg:hidden flex justify-center pb-3 -mt-1">
+          {/* Safe Family — mobile app-switcher row — hidden when embedded */}
+          {!embedded && (<div className="lg:hidden flex justify-center pb-3 -mt-1">
             <SafeFamilyParentSwitcher current="safetunes" familyCode={fullUser?.familyCode} tile={40} />
-          </div>
+          </div>)}
 
           {/* Desktop Tabs */}
           <div className="hidden md:block">

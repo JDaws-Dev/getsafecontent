@@ -218,7 +218,7 @@ function Settings({ user, onLogout, initialSection }) {
       const { url } = await createPortalSession({
         stripeCustomerId: fullUser.stripeCustomerId,
       });
-      window.location.href = url;
+      topNavigate(url);
     } catch (error) {
       console.error('Failed to process cancellation:', error);
       showToast('Failed to process. Please try again.', 'error');
@@ -1598,7 +1598,7 @@ function Settings({ user, onLogout, initialSection }) {
                           const { url } = await createPortalSession({
                             stripeCustomerId: fullUser.stripeCustomerId,
                           });
-                          window.location.href = url;
+                          topNavigate(url);
                         } catch (error) {
                           console.error('Failed to create portal session:', error);
                           showToast('Failed to open subscription management. Please try again.', 'error');

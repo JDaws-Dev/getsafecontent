@@ -90,6 +90,7 @@ export default function UpgradePrompt({ user, onLogout }) {
           {/* CTA Button */}
           <a
             href={upgradeUrl}
+            target="_top"
             className="block w-full bg-accent-500 hover:bg-accent-600 text-white py-4 rounded-xl font-bold text-lg text-center transition shadow-lg mb-4"
           >
             Upgrade Now

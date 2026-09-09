@@ -1,3 +1,4 @@
+import { topNavigate } from '../lib/embed';
 import { withBase } from '../lib/appBase';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -52,7 +53,7 @@ function UpgradePage() {
         priceId: priceId,
       });
 
-      window.location.href = url;
+      topNavigate(url);
     } catch (err) {
       setError('Failed to start checkout. Please try again.');
       console.error(err);
