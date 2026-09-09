@@ -10,7 +10,9 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 pids=()
 cleanup(){ for p in "${pids[@]:-}"; do [ -n "$p" ] && kill "$p" 2>/dev/null || true; done; }
 trap cleanup EXIT INT TERM
-getv(){ grep -E "^$2=" "$ENV_DIR/$1.env" | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//'; }
+# Strips quotes AND a trailing literal "\n" — at least one production value
+# (SafeStudy's VITE_CONVEX_URL) was saved with a newline on the end.
+getv(){ grep -E "^$2=" "$ENV_DIR/$1.env" | head -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' -e 's/\\n$//' | tr -d '[:space:]'; }
 start_vite(){ # app-dir port envfile
   (cd "$ROOT/$1" && env VITE_DEV_PORT="$2" VITE_CONVEX_URL="$(getv "$3" VITE_CONVEX_URL)" VITE_YOUTUBE_API_KEY="$(getv "$3" VITE_YOUTUBE_API_KEY)" VITE_MUSICKIT_DEVELOPER_TOKEN="$(getv "$3" VITE_MUSICKIT_DEVELOPER_TOKEN)" VITE_MUSICKIT_APP_NAME="$(getv "$3" VITE_MUSICKIT_APP_NAME)" NODE_OPTIONS= npx vite --port "$2" --strictPort >"/tmp/one-site-$3.log" 2>&1) & pids+=($!)
 }
