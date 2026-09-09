@@ -10,6 +10,7 @@ Goal of Phase 1: every app served under a path on getsafefamily.com, one sign-in
 - Each **Next app** uses `basePath: '/<path>'`.
 - **SafeTunes is dual-host**: assets always come from `/tunes/…`, but the router prefix is decided at load time, so the same build serves getsafetunes.com at the root (the iPhone/Android shells only accept that host) and getsafefamily.com/tunes.
 - **One dashboard**: `sites/marketing/src/app/dashboard/[[...app]]/page.tsx` is the only parent dashboard. Each app tab is a same-origin iframe of that app's parent area with `?embed=1`; in embedded mode the app hides its own header/switcher/sign-out (`src/lib/embed.*` in each app) and sends Stripe/sign-out navigation to the top window. Opened directly under the hub, an app's admin redirects to `/dashboard/<app>`.
+- **One kid front door**: `sites/marketing/src/app/play/[[...app]]/page.tsx`. Kids enter the family code once; every app is a tab (Music, Videos, Books, Search, Build) rendering that app's kid entry in an iframe with `?fc=<code>&embed=1`. Apps hide their own cross-app switcher when embedded and redirect a direct kid deep link under the hub to `/play/<app>?fc=<code>`. The code and last app are remembered on the device.
 - **One sign-in**: apps store the parent token under `safefamily_jwt` (migrating their old per-app key once). After a hub sign-in, `AppSessionBridge` mints that token and stores it; hub sign-out clears it. Works because everything now shares the hub's origin.
 
 ## Run it locally
@@ -48,6 +49,12 @@ Automation on each project. The local-against-production run above is the simple
 2. On the hub project, set `ONE_SITE_ORIGIN_<APP>` **for the Preview environment only** to each app's preview URL, then deploy a hub preview.
 3. Walk the flows on the hub preview URL: sign in once at `/login`, then `/tube/admin`, `/tunes/admin`, … with no second sign-in; kid flow at `/tube/play/<code>`.
 4. Production stays as it is until the same env vars are set on the hub's Production environment and the old domains are pointed at the hub (except getsafetunes.com, which keeps serving SafeTunes).
+
+## Known follow-ups from the walkthrough build
+- SafeSpark: the family code ERLW4U maps to a SafeSpark family with no kid profiles (Bella's SafeSpark profile sits under Jeremiah's own family record), so the Build tab shows SafeSpark's sign-up screen for this family. Data question, not one-site code.
+- SafeTunes: Apple Music authorization popup from inside the dashboard iframe — verify in the walkthrough.
+- SafeReads kid screens still show emoji (pre-existing).
+- SafeStudy's production `VITE_CONVEX_URL` on Vercel has a trailing newline (works in prod, tripped the local launcher; worth re-saving cleanly).
 
 ## Before go-live (from the spec's loose-ends table)
 - Add getsafefamily.com to the YouTube API key's allowed referrers.
