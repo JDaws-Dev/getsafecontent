@@ -9,6 +9,7 @@ Goal of Phase 1: every app served under a path on getsafefamily.com, one sign-in
 - Each **Vite app** is built with `base: '/<path>/'` and a router basename (`src/lib/appBase.js`); its `vercel.json` also serves `/<path>/*` on its own deployment, so previews work standalone and via the hub.
 - Each **Next app** uses `basePath: '/<path>'`.
 - **SafeTunes is dual-host**: assets always come from `/tunes/…`, but the router prefix is decided at load time, so the same build serves getsafetunes.com at the root (the iPhone/Android shells only accept that host) and getsafefamily.com/tunes.
+- **One dashboard**: `sites/marketing/src/app/dashboard/[[...app]]/page.tsx` is the only parent dashboard. Each app tab is a same-origin iframe of that app's parent area with `?embed=1`; in embedded mode the app hides its own header/switcher/sign-out (`src/lib/embed.*` in each app) and sends Stripe/sign-out navigation to the top window. Opened directly under the hub, an app's admin redirects to `/dashboard/<app>`.
 - **One sign-in**: apps store the parent token under `safefamily_jwt` (migrating their old per-app key once). After a hub sign-in, `AppSessionBridge` mints that token and stores it; hub sign-out clears it. Works because everything now shares the hub's origin.
 
 ## Run it locally
@@ -29,8 +30,9 @@ for a in apps/safetube apps/safetunes apps/safeseek apps/safereads apps/safespar
   (cd ~/Projects/safecontent/$a && vercel env pull ~/one-site-env/$(basename $a).env --environment production --yes); done
 ENV_DIR=~/one-site-env scripts/one-site-dev-prod.sh
 ```
-Then open http://localhost:3000/login, sign in as yourself, and visit /tube/admin, /tunes/admin,
-/study/admin, /reads/dashboard, /spark/parent — none should ask you to sign in again. Kid flow:
+Then open http://localhost:3000/login and sign in as yourself. You land on **/dashboard — the one
+parent dashboard**: one tab per app, each app's parent screens rendered inside it, no second
+sign-in. (The apps' own /tube/admin etc. redirect there when opened directly.) Kid flow:
 /tube/play/<your family code>. This talks to production data exactly like the live sites do.
 
 ## Vercel previews (secondary)

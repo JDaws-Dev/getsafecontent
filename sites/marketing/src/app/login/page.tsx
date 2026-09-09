@@ -23,13 +23,21 @@ export default function LoginPage() {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
 
+  // Where to land after sign-in. The one parent dashboard by default; a
+  // same-site ?returnTo=/path (e.g. /dashboard/tube) wins when present.
+  const postLoginPath = (() => {
+    if (typeof window === "undefined") return "/dashboard";
+    const rt = new URLSearchParams(window.location.search).get("returnTo") || "";
+    return rt.startsWith("/") && !rt.startsWith("//") ? rt : "/dashboard";
+  })();
+
   // Redirect if already logged in or just completed login
   useEffect(() => {
     if (isAuthenticated && !isPending) {
       localStorage.removeItem("safefamily_login_pending");
-      window.location.href = "/account";
+      window.location.href = postLoginPath;
     }
-  }, [isAuthenticated, isPending]);
+  }, [isAuthenticated, isPending, postLoginPath]);
 
   // Load remembered email on mount
   useEffect(() => {
@@ -93,7 +101,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await signIn("google", { redirectTo: "/account" });
+      await signIn("google", { redirectTo: postLoginPath });
     } catch (err) {
       console.error("[LoginPage] Google login error:", err);
       setError("Google sign-in failed. Please try again.");

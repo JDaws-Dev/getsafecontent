@@ -285,6 +285,8 @@ function AccountPageContent() {
           <span className="text-xl font-bold text-navy">Safe Family</span>
         </Link>
 
+        <Link href="/dashboard" className="text-sm font-semibold text-navy/70 hover:text-navy">Dashboard</Link>
+
         <button
           onClick={async () => {
             clearAppSession();
