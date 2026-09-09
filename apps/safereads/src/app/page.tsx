@@ -1,5 +1,6 @@
 "use client";
 
+import { withBase } from "@/lib/appBase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -273,7 +274,7 @@ export default function Home() {
               playsInline
               preload="none"
             >
-              <source src="/safereads-app-demo.mp4" type="video/mp4" />
+              <source src={withBase("/safereads-app-demo.mp4")} type="video/mp4" />
             </video>
           </div>
         </div>

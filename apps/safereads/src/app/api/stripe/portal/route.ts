@@ -1,3 +1,4 @@
+import { APP_BASE } from "@/lib/appBase";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "../../../../../convex/_generated/api";
 import Stripe from "stripe";
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${appUrl}/dashboard`,
+      return_url: `${appUrl}${APP_BASE}/dashboard`,
     });
 
     return NextResponse.json({ url: session.url });

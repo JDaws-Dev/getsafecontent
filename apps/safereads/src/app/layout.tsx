@@ -3,6 +3,7 @@ import { Fredoka, Quicksand, Libre_Baskerville } from "next/font/google";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ClientNavWrapper } from "@/components/ClientNavWrapper";
+import { withBase } from "@/lib/appBase";
 import "./globals.css";
 
 // Safe Family "glow-up" type system (shared across all 5 apps):
@@ -36,8 +37,8 @@ export const metadata: Metadata = {
   description:
     "AI-powered book content reviews for parents. Search books, get objective content reviews to make informed decisions.",
   icons: {
-    icon: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: withBase("/favicon.svg"),
+    apple: withBase("/favicon.svg"),
   },
   alternates: {
     canonical: "/",

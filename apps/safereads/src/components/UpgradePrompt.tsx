@@ -1,5 +1,6 @@
 "use client";
 
+import { withBase } from "@/lib/appBase";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -23,7 +24,7 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
   async function handleUpgrade() {
     setLoading(true);
     try {
-      const res = await fetch("/api/stripe/checkout", { method: "POST" });
+      const res = await fetch(withBase("/api/stripe/checkout"), { method: "POST" });
       const data = (await res.json()) as { url?: string; error?: string };
       if (data.url) {
         window.location.href = data.url;

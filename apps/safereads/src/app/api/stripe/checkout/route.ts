@@ -1,3 +1,4 @@
+import { APP_BASE } from "@/lib/appBase";
 import { fetchQuery, fetchMutation } from "convex/nextjs";
 import { api } from "../../../../../convex/_generated/api";
 import Stripe from "stripe";
@@ -127,8 +128,8 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${appUrl}/dashboard?subscription=success`,
-      cancel_url: `${appUrl}/dashboard?subscription=canceled`,
+      success_url: `${appUrl}${APP_BASE}/dashboard?subscription=success`,
+      cancel_url: `${appUrl}${APP_BASE}/dashboard?subscription=canceled`,
     });
 
     return NextResponse.json({ url: session.url });

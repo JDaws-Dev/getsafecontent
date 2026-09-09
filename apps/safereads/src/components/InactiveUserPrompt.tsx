@@ -1,5 +1,6 @@
 "use client";
 
+import { withBase } from "@/lib/appBase";
 import Link from "next/link";
 import { BookOpen, LogOut, Sparkles, Heart, Infinity, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,7 +25,7 @@ export function InactiveUserPrompt({ user }: InactiveUserPromptProps) {
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/";
+    window.location.href = withBase("/");
   };
 
   const upgradeUrl = `https://getsafefamily.com/account?upgrade=safereads&email=${encodeURIComponent(user?.email || "")}`;

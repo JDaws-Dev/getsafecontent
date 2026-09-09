@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // One-site: served at getsafefamily.com/reads behind the hub proxy (prefix intact).
+  basePath: "/reads",
+  // The hub rewrites bare /reads to /reads/ (trailing slash). Without this Next
+  // 308s /reads/ back to /reads and the two redirect each other forever.
+  skipTrailingSlashRedirect: true,
   images: {
     remotePatterns: [
       {

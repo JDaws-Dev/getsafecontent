@@ -11,6 +11,7 @@
  * - Apps store JWT in localStorage
  * - Apps verify JWT with Marketing for protected routes
  */
+import { withBase } from "@/lib/appBase";
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 // Marketing Convex backend URL for auth endpoints
@@ -250,7 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const loginWithGoogle = useCallback(() => {
     // Build the return URL with the login path (so we return and handle the token)
-    const returnTo = window.location.origin + "/login";
+    const returnTo = window.location.origin + withBase("/login");
     const oauthUrl = new URL(MARKETING_OAUTH_URL);
     oauthUrl.searchParams.set("returnTo", returnTo);
     oauthUrl.searchParams.set("app", "SafeReads");

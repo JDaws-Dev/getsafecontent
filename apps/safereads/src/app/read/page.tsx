@@ -1,5 +1,6 @@
 "use client";
 
+import { withBase } from "@/lib/appBase";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
@@ -253,7 +254,7 @@ export default function PlayPage() {
       </p>
       <p className="mt-3 text-xs text-gray-400">
         Parents:{" "}
-        <a href="/dashboard" className="font-medium text-accent-700 underline">
+        <a href={withBase("/dashboard")} className="font-medium text-accent-700 underline">
           tap here to add profiles
         </a>
       </p>

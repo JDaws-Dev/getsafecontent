@@ -1,5 +1,6 @@
 "use client";
 
+import { withBase } from "@/lib/appBase";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, Library, BookMarked, LogOut, Users, BookOpen, LayoutGrid, X } from "lucide-react";
@@ -41,7 +42,7 @@ export function KidNav() {
   const handleLogout = () => {
     localStorage.removeItem("safereads_kid_profile");
     localStorage.removeItem("safereads_family_code");
-    window.location.href = "/read";
+    window.location.href = withBase("/read");
   };
 
   const handleSwitchProfile = () => {

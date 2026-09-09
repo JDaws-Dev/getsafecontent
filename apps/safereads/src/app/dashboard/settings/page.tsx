@@ -1,5 +1,6 @@
 "use client";
 
+import { withBase } from "@/lib/appBase";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
@@ -68,7 +69,7 @@ export default function SettingsPage() {
     }
     setCheckoutLoading(true);
     try {
-      const res = await fetch("/api/stripe/checkout", {
+      const res = await fetch(withBase("/api/stripe/checkout"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: authUser.email }),
@@ -90,7 +91,7 @@ export default function SettingsPage() {
     }
     setPortalLoading(true);
     try {
-      const res = await fetch("/api/stripe/portal", {
+      const res = await fetch(withBase("/api/stripe/portal"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: authUser.email }),
