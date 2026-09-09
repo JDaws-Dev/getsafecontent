@@ -6,16 +6,18 @@
 // parent to the one dashboard instead.
 import { APP_BASE } from './appBase';
 
-const KEY = 'safefamily_embed';
 export const HUB_DASHBOARD = '/dashboard/study';
+export const HUB_PLAY = '/play/study';
 
+// Embedded = actually inside a frame (the hub's dashboard/play tabs), or an
+// explicit ?embed=1 on this page. Deliberately NOT remembered in storage:
+// sessionStorage is shared between the hub page and its same-origin iframes,
+// so a remembered flag leaked into top-level navigation and stopped the
+// deep-link redirect from firing.
 export function isEmbedded() {
   try {
-    const p = new URLSearchParams(window.location.search);
-    if (p.get('embed') === '1') { sessionStorage.setItem(KEY, '1'); return true; }
-    if (p.get('embed') === '0') { sessionStorage.removeItem(KEY); return false; }
     if (window.self !== window.top) return true;
-    return sessionStorage.getItem(KEY) === '1';
+    return new URLSearchParams(window.location.search).get('embed') === '1';
   } catch {
     return false;
   }
@@ -28,4 +30,12 @@ export function shouldRedirectToHubDashboard() {
 
 export function topNavigate(url) {
   try { (window.top || window).location.href = url; } catch { window.location.href = url; }
+}
+
+/** Kid deep link under the hub (not embedded) → the one kid front door, code carried along. */
+export function redirectKidToHubPlay(familyCode) {
+  if (!shouldRedirectToHubDashboard()) return false;
+  const fc = (familyCode || '').toUpperCase();
+  window.location.replace(fc ? `${HUB_PLAY}?fc=${encodeURIComponent(fc)}` : '/play');
+  return true;
 }

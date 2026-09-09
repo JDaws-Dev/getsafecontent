@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { Search, Sparkles, Rocket, HelpCircle } from 'lucide-react';
 import SafeFamilySwitcher from '../SafeFamilySwitcher';
+import { isEmbedded } from '../../lib/embed';
 
 const CODE_LENGTH = 6;
 
@@ -125,9 +126,11 @@ export default function FamilyCodeEntry({ codeInput, setCodeInput, error, codeSh
           </p>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <SafeFamilySwitcher current="safestudy" familyCode={codeInput} />
-        </div>
+        {!isEmbedded() && (
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <SafeFamilySwitcher current="safestudy" familyCode={codeInput} />
+          </div>
+        )}
       </div>
     </div>
   );

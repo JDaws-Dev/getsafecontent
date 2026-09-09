@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useAction, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useTheme } from '../contexts/ThemeContext';
+import { isEmbedded, redirectKidToHubPlay } from '../lib/embed';
 
 // Extracted components
 import FamilyCodeEntry from '../components/kid/FamilyCodeEntry';
@@ -37,6 +38,16 @@ export default function KidSearch() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { resolvedTheme, setTheme } = useTheme();
+
+  // One kid front door: opened directly under the hub, hand off to /play/study
+  // (the code rides along); inside the hub's kid tabs, hide our own switcher.
+  // Declared before the boot effect below so we still see ?fc= before it is
+  // stripped from the URL.
+  const embedded = isEmbedded();
+  useEffect(() => {
+    const fc = urlFamilyCode || new URLSearchParams(window.location.search).get('fc');
+    redirectKidToHubPlay(fc);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // State
   const [familyCode, setFamilyCode] = useState(urlFamilyCode || '');
@@ -911,7 +922,7 @@ export default function KidSearch() {
           }, 50);
         }}
         onSwitchProfile={() => setSelectedProfile(null)}
-        onOpenApps={() => setAppsOpen(true)}
+        onOpenApps={embedded ? undefined : () => setAppsOpen(true)}
         onToggleDarkMode={toggleDarkMode}
         onToggleRequestsInbox={() => setShowRequestsInbox(!showRequestsInbox)}
       />
@@ -1065,7 +1076,7 @@ export default function KidSearch() {
       </div>
 
       {/* Other Safe Family apps — modal sheet */}
-      {appsOpen && (
+      {appsOpen && !embedded && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
           onClick={() => setAppsOpen(false)}

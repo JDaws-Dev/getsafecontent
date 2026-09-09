@@ -4,6 +4,7 @@ import {
 import { getColorClass } from './utils';
 import AvatarIcon from './AvatarIcon';
 import { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
+import { isEmbedded } from '../../lib/embed';
 
 export default function SearchHeader({
   selectedProfile,
@@ -45,9 +46,11 @@ export default function SearchHeader({
         </div>
 
         {/* Center: cross-app Safe Family switcher (desktop) */}
-        <div className="hidden lg:flex">
-          <SafeFamilyHeaderSwitcher current="safestudy" familyCode={familyCode} kidToken={kidToken} />
-        </div>
+        {!isEmbedded() && (
+          <div className="hidden lg:flex">
+            <SafeFamilyHeaderSwitcher current="safestudy" familyCode={familyCode} kidToken={kidToken} />
+          </div>
+        )}
 
         {/* Right: search count + profile + dark mode + history */}
         <div className="flex items-center gap-3">
@@ -123,9 +126,11 @@ export default function SearchHeader({
       </div>
 
       {/* Cross-app Safe Family switcher (mobile row, always visible under lg) */}
-      <div className="lg:hidden flex justify-center pb-3 -mt-1">
-        <SafeFamilyHeaderSwitcher current="safestudy" familyCode={familyCode} kidToken={kidToken} tile={40} />
-      </div>
+      {!isEmbedded() && (
+        <div className="lg:hidden flex justify-center pb-3 -mt-1">
+          <SafeFamilyHeaderSwitcher current="safestudy" familyCode={familyCode} kidToken={kidToken} tile={40} />
+        </div>
+      )}
     </header>
   );
 }
