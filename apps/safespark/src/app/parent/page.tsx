@@ -22,12 +22,16 @@ import type { Id } from '../../../convex/_generated/dataModel';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 import { SafeFamilyParentSwitcher } from '@/components/SafeFamilySwitcher';
 import { withBase } from '@/lib/appBase';
+import { topNavigate, useEmbedded } from '@/lib/embed';
 
 export default function ParentDashboard() {
   // Marketing Central JWT is the sole identity surface post-Clerk-retirement
   // (2026-05-28). Legacy Clerk users (jedaws, soonerjace) migrated by
   // logging in at /login after triggering a password reset.
   const marketing = useMarketingAuth();
+  // Inside the hub's dashboard iframe we hide our own chrome (header, switcher,
+  // sign-out) — the shell draws those. The dashboard body itself is the app.
+  const embedded = useEmbedded();
 
   const isLoaded = !marketing.isLoading;
   const isSignedIn = marketing.isAuthenticated;
@@ -147,7 +151,8 @@ export default function ParentDashboard() {
   return (
     <main className="min-h-screen bg-brand-cream px-4 py-6 sm:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
-        <header className="flex flex-wrap items-end justify-between gap-3">
+        {/* App chrome — hidden when embedded in the hub dashboard (the shell has one) */}
+        {!embedded && (<header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <Link href="/" className="text-xs font-bold uppercase tracking-widest text-accent-700 hover:text-accent-800">
               SafeSpark
@@ -180,25 +185,25 @@ export default function ParentDashboard() {
               type="button"
               onClick={() => {
                 marketing.logout();
-                window.location.href = withBase('/login');
+                topNavigate(withBase('/login'));
               }}
               className="inline-flex items-center gap-1.5 rounded-2xl border border-brand-cream-2 bg-white px-3 py-2 text-xs font-bold text-brand-navy hover:bg-brand-cream"
             >
               <LogOut className="h-3.5 w-3.5" /> Sign out
             </button>
           </div>
-        </header>
+        </header>)}
 
-        {/* Cross-app switcher — mobile row, always visible under 1024px where
-            the desktop switcher in the header is hidden. */}
-        <div className="lg:hidden flex justify-center -mt-2">
+        {/* Cross-app switcher — mobile row, visible under 1024px where the
+            desktop switcher in the header is hidden. Hidden when embedded. */}
+        {!embedded && (<div className="lg:hidden flex justify-center -mt-2">
           <SafeFamilyParentSwitcher
             current="safespark"
             familyCode={code}
             parentToken={marketing.token ?? undefined}
             tile={40}
           />
-        </div>
+        </div>)}
 
         {usage && (
           <section className="rounded-3xl border border-brand-cream-2 bg-white p-5 shadow-sm">

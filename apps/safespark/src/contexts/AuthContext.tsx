@@ -21,6 +21,7 @@ import {
   type ReactNode,
 } from "react";
 import { withBase } from "@/lib/appBase";
+import { topNavigate } from "@/lib/embed";
 
 const CENTRAL_AUTH_URL = "https://adamant-crow-705.convex.site";
 const MARKETING_OAUTH_URL = "https://getsafefamily.com/oauth";
@@ -211,7 +212,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const oauthUrl = new URL(MARKETING_OAUTH_URL);
     oauthUrl.searchParams.set("returnTo", returnTo);
     oauthUrl.searchParams.set("app", "SafeSpark");
-    window.location.href = oauthUrl.toString();
+    // Google refuses to load inside a frame — always leave from the top window.
+    topNavigate(oauthUrl.toString());
   }, []);
 
   const requestPasswordReset = useCallback(async (email: string) => {
