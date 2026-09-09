@@ -13,6 +13,7 @@ import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star,
 import Link from "next/link";
 import Image from "next/image";
 import { SafeFamilyHeaderSwitcher } from "@/components/SafeFamilySwitcher";
+import { useIsEmbedded } from "@/lib/embed";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { useCoverFetcher } from "@/hooks/useCoverFetcher";
 import { limitMessage } from "@/hooks/useReadingTime";
@@ -142,6 +143,8 @@ interface MergedBook {
 
 export default function KidHomePage() {
   const router = useRouter();
+  // Inside the hub's /play iframe the shell owns the cross-app tabs.
+  const embedded = useIsEmbedded();
   const [kidProfile, setKidProfile] = useState<KidProfile | null>(null);
   const [freeBooks, setFreeBooks] = useState<FreeBook[]>([]);
   const [freeBooksLoading, setFreeBooksLoading] = useState(false);
@@ -574,10 +577,12 @@ export default function KidHomePage() {
             <p className="truncate text-sm font-bold text-gray-900">{kidProfile.name}</p>
           </div>
         </div>
-        {/* Safe Family switcher — desktop (always visible on lg+) */}
-        <div className="hidden lg:flex">
-          <SafeFamilyHeaderSwitcher current="safereads" familyCode={savedCode || ""} kidToken={kidToken} />
-        </div>
+        {/* Safe Family switcher — desktop (lg+); the hub's /play tabs replace it when embedded */}
+        {!embedded && (
+          <div className="hidden lg:flex">
+            <SafeFamilyHeaderSwitcher current="safereads" familyCode={savedCode || ""} kidToken={kidToken} />
+          </div>
+        )}
         <Link
           href="/read/search"
           className="kid-touch flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-gray-500 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md active:scale-95"
@@ -587,10 +592,12 @@ export default function KidHomePage() {
         </Link>
       </div>
 
-      {/* Safe Family switcher — mobile row (always visible < lg) */}
-      <div className="lg:hidden mb-4 flex justify-center">
-        <SafeFamilyHeaderSwitcher current="safereads" familyCode={savedCode || ""} kidToken={kidToken} tile={40} />
-      </div>
+      {/* Safe Family switcher — mobile row (< lg); hidden inside the hub */}
+      {!embedded && (
+        <div className="lg:hidden mb-4 flex justify-center">
+          <SafeFamilyHeaderSwitcher current="safereads" familyCode={savedCode || ""} kidToken={kidToken} tile={40} />
+        </div>
+      )}
 
       {/* 1. Welcome Header - Hero */}
       <div className={`animate-fade-up overflow-hidden rounded-3xl bg-gradient-to-br ${gradientClass} p-5 text-white shadow-xl sm:p-6`}

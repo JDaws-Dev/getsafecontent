@@ -9,6 +9,7 @@ import { FamilyCodeEntry } from "@/components/kid/FamilyCodeEntry";
 import { ProfileSelector } from "@/components/kid/ProfileSelector";
 import { BookOpen, Hourglass, Library } from "lucide-react";
 import SafeFamilySwitcher from "@/components/SafeFamilySwitcher";
+import { useIsEmbedded } from "@/lib/embed";
 
 /**
  * /play - Kid login page
@@ -24,6 +25,8 @@ export default function PlayPage() {
   const [step, setStep] = useState<"loading" | "code" | "profiles" | "expired">("loading");
   const [familyCode, setFamilyCode] = useState("");
   const [error, setError] = useState("");
+  // Inside the hub's /play iframe the shell owns the cross-app tabs.
+  const embedded = useIsEmbedded();
 
   // Validate the family code against Convex
   const familyData = useQuery(
@@ -208,9 +211,11 @@ export default function PlayPage() {
           error={error}
           isLoading={!!familyCode && familyData === undefined}
         />
-        <div className="mt-2 w-full max-w-xs px-4">
-          <SafeFamilySwitcher current="safereads" familyCode={familyCode} />
-        </div>
+        {!embedded && (
+          <div className="mt-2 w-full max-w-xs px-4">
+            <SafeFamilySwitcher current="safereads" familyCode={familyCode} />
+          </div>
+        )}
       </div>
     );
   }

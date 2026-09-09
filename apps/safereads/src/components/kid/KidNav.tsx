@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Home, Library, BookMarked, LogOut, Users, BookOpen, LayoutGrid, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import SafeFamilySwitcher from "@/components/SafeFamilySwitcher";
+import { useIsEmbedded } from "@/lib/embed";
 
 const COLOR_GRADIENTS: Record<string, { bg: string; text: string; dot: string; gradient: string; border: string }> = {
   red: { bg: "bg-red-50", text: "text-red-600", dot: "from-red-500 to-rose-500", gradient: "from-red-500 to-rose-500", border: "border-red-500" },
@@ -30,6 +31,9 @@ export function KidNav() {
   const [kidProfile, setKidProfile] = useState<KidProfile | null>(null);
   const [familyCode, setFamilyCode] = useState("");
   const [appsOpen, setAppsOpen] = useState(false);
+  // Inside the hub's /play iframe the shell owns the cross-app tabs — keep
+  // only profile switching and exit here.
+  const embedded = useIsEmbedded();
 
   useEffect(() => {
     const data = localStorage.getItem("safereads_kid_profile");
@@ -99,6 +103,7 @@ export function KidNav() {
           })}
 
           {/* Other Safe Family apps */}
+          {!embedded && (
           <button
             onClick={() => setAppsOpen(true)}
             className="kid-touch flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-2xl px-3 py-1.5 text-gray-400 transition-all duration-200 hover:text-gray-600 active:scale-95 sm:px-5"
@@ -106,6 +111,7 @@ export function KidNav() {
             <LayoutGrid className="h-[22px] w-[22px]" strokeWidth={1.8} />
             <span className="mt-0.5 text-[10px] font-bold">Apps</span>
           </button>
+          )}
 
           {/* Switch Profile button */}
           <button
@@ -171,6 +177,7 @@ export function KidNav() {
 
         {/* Bottom actions */}
         <div className="mt-auto border-t border-gray-100 px-3 py-4">
+          {!embedded && (
           <button
             onClick={() => setAppsOpen(true)}
             className="flex w-full items-center gap-3 rounded-xl border-l-[3px] border-transparent px-3 py-2.5 text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-gray-700"
@@ -178,6 +185,7 @@ export function KidNav() {
             <LayoutGrid className="h-5 w-5 shrink-0" strokeWidth={1.8} />
             <span className="text-sm font-medium">Other apps</span>
           </button>
+          )}
           <button
             onClick={handleSwitchProfile}
             className="flex w-full items-center gap-3 rounded-xl border-l-[3px] border-transparent px-3 py-2.5 text-gray-500 transition-all duration-200 hover:bg-gray-50 hover:text-gray-700"
@@ -196,7 +204,7 @@ export function KidNav() {
       </nav>
 
       {/* Other Safe Family apps — modal sheet */}
-      {appsOpen && (
+      {appsOpen && !embedded && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
           onClick={() => setAppsOpen(false)}

@@ -11,6 +11,7 @@
 import { useSyncExternalStore } from "react";
 
 export const HUB_DASHBOARD = "/dashboard/reads";
+export const HUB_PLAY = "/play/reads";
 
 export function isEmbedded(): boolean {
   if (typeof window === "undefined") return false;
@@ -36,6 +37,18 @@ export function topNavigate(url: string): void {
   } catch {
     window.location.href = url;
   }
+}
+
+/**
+ * Kid deep link opened directly (not inside the hub's /play iframe) → the one
+ * kid front door, family code carried along so the kid lands on their profiles.
+ * Returns whether it redirected. Never fires when embedded or during SSR.
+ */
+export function redirectKidToHubPlay(familyCode?: string | null): boolean {
+  if (!shouldRedirectToHubDashboard()) return false;
+  const fc = (familyCode || "").toUpperCase();
+  window.location.replace(fc ? `${HUB_PLAY}?fc=${encodeURIComponent(fc)}` : "/play");
+  return true;
 }
 
 const noopSubscribe = () => () => {};
