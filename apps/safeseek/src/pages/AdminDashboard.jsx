@@ -1,3 +1,4 @@
+import { isEmbedded, shouldRedirectToHubDashboard, topNavigate, HUB_DASHBOARD } from '../lib/embed';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from 'convex/react';
@@ -855,7 +856,7 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
 }
 
 // --- Settings Tab ---
-function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavigate }) {
+function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavigate, embedded }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   return (
@@ -1031,14 +1032,14 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
         <p className="text-xs text-gray-400 mt-4">We typically respond within 24 hours</p>
       </div>
 
-      {/* Sign Out */}
-      <button
+      {/* Sign Out — hidden when embedded (the hub shell has one) */}
+      {!embedded && (<button
         onClick={onLogout}
         className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm px-1 py-2"
       >
         <LogOut className="w-4 h-4" />
         Sign Out
-      </button>
+      </button>)}
 
       {/* Danger Zone */}
       <div className="bg-white rounded-2xl border-2 border-red-200 shadow-sm p-6">
@@ -1166,6 +1167,12 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user, token, logout, isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
+  // One admin: inside the hub's dashboard iframe we hide our own chrome; opened
+  // directly under the hub we hand off to the single dashboard.
+  const embedded = isEmbedded();
+  useEffect(() => {
+    if (shouldRedirectToHubDashboard()) window.location.replace(HUB_DASHBOARD);
+  }, []);
   const [toast, setToast] = useState(null);
   const [copiedCode, setCopiedCode] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -1272,6 +1279,8 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     logout();
+    // Embedded: the hub shell owns the session, so leave the frame and let the hub take over.
+    if (embedded) { topNavigate('/'); return; }
     navigate('/');
   };
 
@@ -1356,8 +1365,8 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          {/* Top Bar */}
-          <div className="flex items-center justify-between py-3.5">
+          {/* Top Bar — hidden when embedded in the hub dashboard (the shell has one) */}
+          {!embedded && (<div className="flex items-center justify-between py-3.5">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-accent-500 rounded-xl flex items-center justify-center shadow-sm">
                 <Search className="w-4 h-4 text-white" />
@@ -1416,12 +1425,12 @@ export default function AdminDashboard() {
                 </svg>
               </button>
             </div>
-          </div>
+          </div>)}
 
-          {/* Cross-app Safe Family switcher (mobile row, always visible under lg) */}
-          <div className="lg:hidden flex justify-center pb-3 -mt-1">
+          {/* Cross-app Safe Family switcher (mobile row) — hidden when embedded */}
+          {!embedded && (<div className="lg:hidden flex justify-center pb-3 -mt-1">
             <SafeFamilyParentSwitcher current="safestudy" familyCode={userData?.familyCode} tile={40} />
-          </div>
+          </div>)}
 
           {/* Desktop Tab Navigation */}
           <nav className="hidden md:flex gap-1 -mb-px">
@@ -1618,6 +1627,7 @@ export default function AdminDashboard() {
             onCopyCode={copyFamilyCode}
             codeCopied={copiedCode}
             onNavigate={setActiveTab}
+            embedded={embedded}
           />
         )}
       </main>

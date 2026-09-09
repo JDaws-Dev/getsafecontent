@@ -11,6 +11,7 @@
  */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { withBase } from '../lib/appBase';
+import { topNavigate } from '../lib/embed';
 
 // Marketing Convex backend URL for auth endpoints
 const CENTRAL_AUTH_URL = 'https://adamant-crow-705.convex.site';
@@ -249,7 +250,8 @@ export function AuthProvider({ children }) {
     oauthUrl.searchParams.set('returnTo', returnTo);
     oauthUrl.searchParams.set('app', 'SafeStudy');
 
-    window.location.href = oauthUrl.toString();
+    // Google refuses to load inside a frame: move the top window (no-op when not embedded).
+    topNavigate(oauthUrl.toString());
   }, []);
 
   /**
