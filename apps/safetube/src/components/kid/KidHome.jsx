@@ -1,3 +1,4 @@
+import { withBase } from '../../lib/appBase';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -809,7 +810,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                 </button>
                 <div className="border-t border-gray-100 mt-1 pt-1">
                   <a
-                    href="/login"
+                    href={withBase('/login')}
                     className="w-full px-4 py-2.5 text-left text-gray-500 hover:bg-gray-50 flex items-center gap-3 transition text-sm"
                   >
                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

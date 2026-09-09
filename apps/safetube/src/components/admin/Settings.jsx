@@ -1,3 +1,4 @@
+import { withBase } from '../../lib/appBase';
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -165,7 +166,7 @@ export default function Settings({ userData, onLogout }) {
   // Password change handler - navigates to forgot password page
   // Password changes go through central auth (Marketing) which sends an OTP via email
   const handlePasswordChange = () => {
-    window.location.href = '/forgot-password';
+    window.location.href = withBase('/forgot-password');
   };
 
   return (

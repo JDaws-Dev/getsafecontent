@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { APP_BASE } from './lib/appBase';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SubscriptionSync } from './hooks/useSubscriptionSync';
@@ -106,7 +107,7 @@ export default function App() {
     <AuthProvider>
       <ThemeProvider>
         <SubscriptionSync />
-        <BrowserRouter>
+        <BrowserRouter basename={APP_BASE}>
           <AppRoutes />
         </BrowserRouter>
       </ThemeProvider>

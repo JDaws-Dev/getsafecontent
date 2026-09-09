@@ -1,3 +1,4 @@
+import { withBase } from '../lib/appBase';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -17,7 +18,7 @@ export default function UpgradePrompt({ user, onLogout }) {
     if (onLogout) {
       onLogout();
     } else {
-      window.location.href = '/login';
+      window.location.href = withBase('/login');
     }
   };
 

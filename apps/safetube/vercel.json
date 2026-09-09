@@ -1,8 +1,24 @@
 {
   "rewrites": [
     {
+      "source": "/tube/api/auth/:path*",
+      "destination": "https://rightful-rabbit-333.convex.site/api/auth/:path*"
+    },
+    {
       "source": "/api/auth/:path*",
       "destination": "https://rightful-rabbit-333.convex.site/api/auth/:path*"
+    },
+    {
+      "source": "/tube/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/tube/:file(.*\\.(svg|png|json|txt|ico|webmanifest))",
+      "destination": "/:file"
+    },
+    {
+      "source": "/tube/:path*",
+      "destination": "/index.html"
     },
     {
       "source": "/(.*)",
