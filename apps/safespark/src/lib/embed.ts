@@ -10,6 +10,7 @@
 import { useEffect, useState } from 'react';
 
 export const HUB_DASHBOARD = '/dashboard/spark';
+export const HUB_PLAY = '/play/spark';
 
 // Deliberately NOT remembered in sessionStorage: it is shared between the hub
 // page and its same-origin iframes, so a remembered flag would leak into
@@ -42,4 +43,19 @@ export function useEmbedded(): boolean {
   const [embedded, setEmbedded] = useState(false);
   useEffect(() => { setEmbedded(isEmbedded()); }, []);
   return embedded;
+}
+
+/**
+ * Kid deep link opened directly (not inside the hub's /play tabs) → send the
+ * kid to the one kid front door, carrying the family code along. Returns
+ * whether it redirected. SSR-safe: no window means no redirect. Share pages
+ * (/s/[id], /lumi/share, /demo/share) must NOT call this — anyone with the
+ * link is meant to open them.
+ */
+export function redirectKidToHubPlay(familyCode?: string | null): boolean {
+  if (typeof window === 'undefined') return false;
+  if (isEmbedded()) return false;
+  const fc = (familyCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  window.location.replace(fc ? `${HUB_PLAY}?fc=${encodeURIComponent(fc)}` : '/play');
+  return true;
 }

@@ -6,6 +6,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import SafeFamilySwitcher from '../SafeFamilySwitcher';
+import { redirectKidToHubPlay, useEmbedded } from '@/lib/embed';
 
 /**
  * KidLoginGate — the family-code → profile-picker → PIN flow.
@@ -43,6 +44,8 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
   const [pinProfile, setPinProfile] = useState<{ _id: Id<'kidProfiles'>; displayName: string; avatarColor: string } | null>(null);
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
+  // Inside the hub's kid tabs the shell owns cross-app switching — hide ours.
+  const embedded = useEmbedded();
 
   const family = useQuery(
     api.families.lookupByCode,
@@ -65,6 +68,10 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
     const url = new URL(window.location.href);
     const ktParam = url.searchParams.get('kt');
     const fcParam = url.searchParams.get('fc');
+
+    // One kid front door: opened directly under the hub (not in its /play
+    // iframe), hand off to /play/spark with the code riding along.
+    if (redirectKidToHubPlay(fcParam)) return;
 
     if (ktParam || fcParam) {
       url.searchParams.delete('kt');
@@ -196,9 +203,11 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
           <p className="text-xs text-slate-400">
             Ask your parent for the family code if you don&apos;t remember it.
           </p>
-          <div className="pt-6 mt-6 border-t border-brand-cream-2">
-            <SafeFamilySwitcher current="safespark" familyCode={code} />
-          </div>
+          {!embedded && (
+            <div className="pt-6 mt-6 border-t border-brand-cream-2">
+              <SafeFamilySwitcher current="safespark" familyCode={code} />
+            </div>
+          )}
         </div>
       </main>
     );

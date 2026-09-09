@@ -8,6 +8,7 @@ import { Home, Hammer, Grid3x3, GraduationCap, X, Music, PlayCircle, BookOpen, S
 import type { LucideIcon } from 'lucide-react';
 import { api } from '../../../convex/_generated/api';
 import { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
+import { useEmbedded } from '@/lib/embed';
 
 /**
  * Cross-app kid nav primitives.
@@ -209,6 +210,8 @@ export function AppLauncherSheet({
 export function KidMobileNav({ familyCode }: { familyCode?: string | null }) {
   const pathname = usePathname() ?? '/';
   const [sheetOpen, setSheetOpen] = useState(false);
+  // Under the hub's kid tabs the shell has the app switcher — no Apps tab.
+  const embedded = useEmbedded();
 
   const onProjects = pathname.startsWith('/dashboard');
   const onMake = pathname.startsWith('/make');
@@ -224,15 +227,17 @@ export function KidMobileNav({ familyCode }: { familyCode?: string | null }) {
           <NavTab href="/dashboard" label="Home" icon={<Home className="h-5 w-5" />} active={onProjects} />
           <NavTab href="/make" label="Make" icon={<Hammer className="h-5 w-5" />} active={onMake} />
           <NavTab href="/learn" label="Learn" icon={<GraduationCap className="h-5 w-5" />} active={onLearn} />
-          <NavButton
-            label="Apps"
-            icon={<Grid3x3 className="h-5 w-5" />}
-            onClick={() => setSheetOpen(true)}
-          />
+          {!embedded && (
+            <NavButton
+              label="Apps"
+              icon={<Grid3x3 className="h-5 w-5" />}
+              onClick={() => setSheetOpen(true)}
+            />
+          )}
         </div>
       </nav>
       <AppLauncherSheet
-        open={sheetOpen}
+        open={sheetOpen && !embedded}
         onClose={() => setSheetOpen(false)}
         currentApp="safespark"
         familyCode={familyCode}
@@ -318,6 +323,9 @@ export function KidHeader({
   // their PIN. Self-contained here so every kid surface that renders KidHeader
   // (/make, /dashboard, /learn) gets one-tap switching identically.
   const kidToken = useKidPassToken(familyCode);
+  // Inside the hub's kid tabs the shell draws the cross-app switcher; keep
+  // only the brand mark + the kid's own Home/Make/Learn nav.
+  const embedded = useEmbedded();
   return (
     <header className="flex-none border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
@@ -336,18 +344,22 @@ export function KidHeader({
         </div>
         {/* Cross-app Safe Family switcher — desktop, always visible in the
             header between the brand/nav and the right-side action cluster. */}
-        <div className="hidden lg:flex">
-          <SafeFamilyHeaderSwitcher current="safespark" familyCode={familyCode ?? undefined} kidToken={kidToken} />
-        </div>
+        {!embedded && (
+          <div className="hidden lg:flex">
+            <SafeFamilyHeaderSwitcher current="safespark" familyCode={familyCode ?? undefined} kidToken={kidToken} />
+          </div>
+        )}
         <div className="flex items-center gap-2">
           {rightSlot}
         </div>
       </div>
       {/* Cross-app Safe Family switcher — mobile row, always visible under
           1024px where the desktop switcher is hidden. */}
-      <div className="lg:hidden flex justify-center pb-3 -mt-1">
-        <SafeFamilyHeaderSwitcher current="safespark" familyCode={familyCode ?? undefined} kidToken={kidToken} tile={40} />
-      </div>
+      {!embedded && (
+        <div className="lg:hidden flex justify-center pb-3 -mt-1">
+          <SafeFamilyHeaderSwitcher current="safespark" familyCode={familyCode ?? undefined} kidToken={kidToken} tile={40} />
+        </div>
+      )}
     </header>
   );
 }
@@ -465,6 +477,9 @@ export function OtherAppsStrip({
   familyCode?: string | null;
 }) {
   const others = SAFE_FAMILY_APPS.filter((a) => a.id !== currentApp);
+  // The hub's kid tabs already list every app — don't repeat them in-frame.
+  const embedded = useEmbedded();
+  if (embedded) return null;
   return (
     <section>
       <p className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-500">

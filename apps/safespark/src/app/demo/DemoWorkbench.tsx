@@ -7,6 +7,7 @@ import { useAction, useMutation, useQuery } from 'convex/react';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 import { withBase } from '@/lib/appBase';
 import { KidMobileNav, KidHeader } from '@/components/kid/SafeFamilyAppLauncher';
+import { redirectKidToHubPlay } from '@/lib/embed';
 import { useKidScreenTime } from '@/components/kid/useKidScreenTime';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
@@ -522,6 +523,10 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
   // the result as if the stream had finished in this tab.
   const [pendingJobId, setPendingJobId] = useState<string | null>(null);
   useEffect(() => {
+    // One kid front door: /make opened directly under the hub (not inside its
+    // /play iframe) hands off to /play/spark, code riding along. Covers the
+    // signed-in path too — KidLoginGate only mounts when there's no session.
+    if (redirectKidToHubPlay(new URLSearchParams(window.location.search).get('fc'))) return;
     setMounted(true);
     if (typeof window !== 'undefined') {
       setKidSessionToken(localStorage.getItem('lumiKidSession'));
