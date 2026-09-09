@@ -1,3 +1,4 @@
+import { isEmbedded, redirectKidToHubPlay } from '../lib/embed';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useAction } from 'convex/react';
@@ -11,6 +12,13 @@ import SafeFamilySwitcher from '../components/SafeFamilySwitcher';
 
 export default function KidPlayer() {
   const { familyCode: urlFamilyCode } = useParams();
+  // One kid front door: opened directly under the hub, hand off to /play/tube
+  // (the code rides along); inside the hub's kid tabs, hide our own switcher.
+  const embedded = isEmbedded();
+  useEffect(() => {
+    const fc = urlFamilyCode || new URLSearchParams(window.location.search).get('fc');
+    redirectKidToHubPlay(fc);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const navigate = useNavigate();
 
   // State
@@ -296,7 +304,7 @@ export default function KidPlayer() {
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-200 w-full max-w-xs">
-          <SafeFamilySwitcher current="safetube" familyCode={codeInput} />
+          {!embedded && <SafeFamilySwitcher current="safetube" familyCode={codeInput} />}
         </div>
       </div>
     );

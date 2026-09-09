@@ -1,3 +1,4 @@
+import { isEmbedded } from '../../lib/embed';
 import { withBase } from '../../lib/appBase';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from 'convex/react';
@@ -703,7 +704,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
 
         {/* Bottom Actions */}
         <div className="px-3 py-4 border-t border-gray-100 space-y-1">
-          <button
+          {!isEmbedded() && (<button
             onClick={() => setAppsOpen(true)}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-100 transition"
           >
@@ -711,7 +712,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
             </svg>
             <span>Other apps</span>
-          </button>
+          </button>)}
           <button
             onClick={onSwitchProfile}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-100 transition"
@@ -772,7 +773,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
             {/* Dropdown Menu */}
             {showProfileMenu && (
               <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-1 min-w-[180px] z-50">
-                <button
+                {!isEmbedded() && (<button
                   onClick={() => {
                     setShowProfileMenu(false);
                     setAppsOpen(true);
@@ -783,7 +784,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
                   </svg>
                   Other apps
-                </button>
+                </button>)}
                 <button
                   onClick={() => {
                     setShowProfileMenu(false);
@@ -963,7 +964,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
             <p className="mb-5 text-center text-sm text-gray-500">
               Same family code — no need to type it again.
             </p>
-            <SafeFamilySwitcher current="safetube" familyCode={familyCode} />
+            {!isEmbedded() && <SafeFamilySwitcher current="safetube" familyCode={familyCode} />}
           </div>
         </div>
       )}
