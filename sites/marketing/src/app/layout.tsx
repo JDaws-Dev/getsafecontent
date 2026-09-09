@@ -3,6 +3,7 @@ import { Inter, Geist_Mono } from "next/font/google";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AppSessionBridge } from "@/components/AppSessionBridge";
 import "./globals.css";
 
 // Initialize Sentry on the client side
@@ -108,6 +109,7 @@ export default function RootLayout({
         >
           <ThemeProvider>
             <ConvexClientProvider>
+              <AppSessionBridge />
               {children}
             </ConvexClientProvider>
           </ThemeProvider>

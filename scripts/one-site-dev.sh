@@ -25,4 +25,9 @@ for a in "${APPS[@]}"; do
   echo "  /$a  -> http://localhost:$port  (log /tmp/one-site-$a.log)"
 done
 echo "hub  -> http://localhost:3000"
-cd "$ROOT/sites/marketing" && env $ENVLINE NODE_OPTIONS= npx next dev -p 3000
+if lsof -nP -iTCP:3000 -sTCP:LISTEN >/dev/null 2>&1; then
+  echo "hub already listening on :3000 — leaving it alone; app servers stay up until Ctrl-C"
+  wait
+else
+  cd "$ROOT/sites/marketing" && env $ENVLINE NODE_OPTIONS= npx next dev -p 3000
+fi

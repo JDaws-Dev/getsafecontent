@@ -1,5 +1,6 @@
 "use client";
 
+import { clearAppSession } from "@/lib/appSession";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -185,6 +186,7 @@ function AccountPageContent() {
         userId: currentUser.id,
         reason: "User requested deletion from account page",
       });
+      clearAppSession();
       await signOut();
       router.push("/");
     } catch (error) {
@@ -285,7 +287,8 @@ function AccountPageContent() {
 
         <button
           onClick={async () => {
-            await signOut();
+            clearAppSession();
+      await signOut();
             router.push("/");
           }}
           className="text-sm text-navy/60 hover:text-navy flex items-center gap-1"
