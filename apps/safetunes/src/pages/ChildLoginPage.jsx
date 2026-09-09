@@ -7,6 +7,7 @@ import musicKitService from '../config/musickit';
 import ChildDashboard from '../components/child/ChildDashboard';
 import { useIsNativeApp } from '../hooks/useIsNativeApp';
 import SafeFamilySwitcher from '../components/SafeFamilySwitcher';
+import { isEmbedded, redirectKidToHubPlay } from '../lib/embed';
 
 function ChildLoginPage() {
   const navigate = useNavigate();
@@ -20,6 +21,14 @@ function ChildLoginPage() {
   const [kidProfile, setKidProfile] = useState(null);
   const attemptKidPin = useMutation(api.kidProfiles.attemptKidPin);
   const redeemKidPass = useMutation(api.kidPass.redeemKidPass);
+  // One kid front door: opened directly under the hub, hand off to /play/tunes
+  // (the code rides along); inside the hub's kid tabs, hide our own switcher.
+  const embedded = isEmbedded();
+  useEffect(() => {
+    let fc = new URLSearchParams(window.location.search).get('fc');
+    if (!fc) { try { fc = localStorage.getItem('safetunes_family_code'); } catch { /* ignore */ } }
+    redirectKidToHubPlay(fc);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Boot: a cross-app kid pass (?kt=) wins, then a bare family code (?fc=),
   // then a saved localStorage session.
@@ -324,9 +333,11 @@ function ChildLoginPage() {
               </button>
             </div>
 
-            <div className="pt-6 mt-6 border-t border-gray-200">
-              <SafeFamilySwitcher current="safetunes" familyCode={familyCode} />
-            </div>
+            {!embedded && (
+              <div className="pt-6 mt-6 border-t border-gray-200">
+                <SafeFamilySwitcher current="safetunes" familyCode={familyCode} />
+              </div>
+            )}
           </div>
         )}
 

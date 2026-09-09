@@ -4,6 +4,7 @@ import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
 import SafeFamilySwitcher, { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
+import { isEmbedded } from '../../lib/embed';
 import musicKitService from '../../config/musickit';
 import {
   MiniPlayer,
@@ -63,6 +64,8 @@ function ChildDashboard({ onLogout }) {
   const [kidProfile, setKidProfile] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
   const [appsOpen, setAppsOpen] = useState(false);
+  // Inside the hub's kid tabs the shell owns app switching — hide ours.
+  const embedded = isEmbedded();
   const familyCode = typeof window !== 'undefined' ? (localStorage.getItem('safetunes_family_code') || '') : '';
 
   // Cross-app kid pass: mint a short-lived token for the current kid so the
@@ -2293,9 +2296,11 @@ function ChildDashboard({ onLogout }) {
             </div>
 
             {/* Safe Family — always-visible one-tap app switcher (desktop; carries the family code) */}
-            <div className="hidden lg:flex">
-              <SafeFamilyHeaderSwitcher current="safetunes" familyCode={familyCode} kidToken={kidToken} />
-            </div>
+            {!embedded && (
+              <div className="hidden lg:flex">
+                <SafeFamilyHeaderSwitcher current="safetunes" familyCode={familyCode} kidToken={kidToken} />
+              </div>
+            )}
 
             {/* Time Remaining Badge (when time limit is enabled) */}
             {timeLimitSettings?.isEnabled && timeLimitSettings?.remainingMinutes !== null && (
@@ -2343,9 +2348,11 @@ function ChildDashboard({ onLogout }) {
           </div>
 
           {/* Safe Family — mobile app-switcher row (always visible under 1024px) */}
-          <div className="lg:hidden flex justify-center pb-3 -mt-1">
-            <SafeFamilyHeaderSwitcher current="safetunes" familyCode={familyCode} kidToken={kidToken} tile={40} />
-          </div>
+          {!embedded && (
+            <div className="lg:hidden flex justify-center pb-3 -mt-1">
+              <SafeFamilyHeaderSwitcher current="safetunes" familyCode={familyCode} kidToken={kidToken} tile={40} />
+            </div>
+          )}
 
           {/* Desktop Tabs */}
           <div className="hidden md:block">
@@ -4761,6 +4768,7 @@ function ChildDashboard({ onLogout }) {
               </div>
 
               {/* Other Safe Family apps */}
+              {!embedded && (
               <button
                 onClick={() => setAppsOpen(true)}
                 className="w-full mb-3 py-4 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
@@ -4770,6 +4778,7 @@ function ChildDashboard({ onLogout }) {
                 </svg>
                 <span>Other Safe Family apps</span>
               </button>
+              )}
 
               {/* Logout Button */}
               <button
@@ -5259,7 +5268,7 @@ function ChildDashboard({ onLogout }) {
       )}
 
       {/* Other Safe Family apps — modal sheet */}
-      {appsOpen && (
+      {appsOpen && !embedded && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
           onClick={() => setAppsOpen(false)}
