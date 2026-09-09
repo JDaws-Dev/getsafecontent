@@ -5,7 +5,7 @@
       "destination": "/assets/:path*"
     },
     {
-      "source": "/study/:file(.*\\.(svg|png|json|txt|ico|webmanifest))",
+      "source": "/study/:file(apple-touch-icon.png|favicon.svg|icon-192.png|icon-512.png|manifest.json|og-image.png|robots.txt|sitemap.xml)",
       "destination": "/:file"
     },
     {

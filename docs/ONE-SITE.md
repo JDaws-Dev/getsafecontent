@@ -21,6 +21,25 @@ Then open http://localhost:3000/tube/play/<family code>. Logs: `/tmp/one-site-<a
 
 Local caveat: the hub dev server talks to the marketing **dev** deployment while the apps verify tokens against **prod** central, so a locally minted token is refused by the apps. The real sign-in-once check happens on preview deployments (below).
 
+## Prove sign-in-once locally against production (the real check)
+
+```bash
+mkdir -p ~/one-site-env && cd ~/one-site-env   # keep OUTSIDE the repo
+for a in apps/safetube apps/safetunes apps/safeseek apps/safereads apps/safespark sites/marketing; do
+  (cd ~/Projects/safecontent/$a && vercel env pull ~/one-site-env/$(basename $a).env --environment production --yes); done
+ENV_DIR=~/one-site-env scripts/one-site-dev-prod.sh
+```
+Then open http://localhost:3000/login, sign in as yourself, and visit /tube/admin, /tunes/admin,
+/study/admin, /reads/dashboard, /spark/parent — none should ask you to sign in again. Kid flow:
+/tube/play/<your family code>. This talks to production data exactly like the live sites do.
+
+## Vercel previews (secondary)
+
+Preview deployments exist for every app but are behind Vercel's SSO login (deployment
+protection), so the hub cannot proxy to them and a browser can't test them without a Vercel
+session. To use previews for the cross-app check you would need Protection Bypass for
+Automation on each project. The local-against-production run above is the simpler proof.
+
 ## Prove it on Vercel previews (no domain changes)
 
 1. Push the branch; each app project builds a preview (`vercel` from the app dir, or the Git integration).

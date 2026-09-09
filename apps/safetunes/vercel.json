@@ -1,11 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/tunes/api/auth/:path*",
+      "source": "/api/auth/:path*",
       "destination": "https://formal-chihuahua-623.convex.site/api/auth/:path*"
     },
     {
-      "source": "/api/auth/:path*",
+      "source": "/tunes/api/auth/:path*",
       "destination": "https://formal-chihuahua-623.convex.site/api/auth/:path*"
     },
     {
@@ -13,16 +13,16 @@
       "destination": "/assets/:path*"
     },
     {
-      "source": "/tunes/sw.js",
-      "destination": "/sw.js"
-    },
-    {
-      "source": "/tunes/:file(.*\\.(svg|png|json|txt|ico|webmanifest|jpg|jpeg|webp))",
-      "destination": "/:file"
-    },
-    {
       "source": "/tunes/.well-known/:path*",
       "destination": "/.well-known/:path*"
+    },
+    {
+      "source": "/tunes/screenshots/:path*",
+      "destination": "/screenshots/:path*"
+    },
+    {
+      "source": "/tunes/:file(favicon.svg|hero-kids.jpg|manifest.json|og-image.png|og-image.svg|robots.txt|safetunes-icon-192.png|safetunes-icon-512.png|safetunes-icon-maskable-192.png|safetunes-icon-maskable-512.png|safetunes-icon.svg|safetunes-logo.svg|sitemap.xml|sw.js|vite.svg)",
+      "destination": "/:file"
     },
     {
       "source": "/tunes/:path*",

@@ -1,11 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/tube/api/auth/:path*",
+      "source": "/api/auth/:path*",
       "destination": "https://rightful-rabbit-333.convex.site/api/auth/:path*"
     },
     {
-      "source": "/api/auth/:path*",
+      "source": "/tube/api/auth/:path*",
       "destination": "https://rightful-rabbit-333.convex.site/api/auth/:path*"
     },
     {
@@ -13,7 +13,7 @@
       "destination": "/assets/:path*"
     },
     {
-      "source": "/tube/:file(.*\\.(svg|png|json|txt|ico|webmanifest))",
+      "source": "/tube/:file(apple-touch-icon.svg|favicon.svg|icon-192.svg|icon-512.svg|manifest.json|og-image.png|og-image.svg|robots.txt)",
       "destination": "/:file"
     },
     {
