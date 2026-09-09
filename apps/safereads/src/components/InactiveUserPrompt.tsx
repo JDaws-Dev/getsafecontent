@@ -1,6 +1,7 @@
 "use client";
 
 import { withBase } from "@/lib/appBase";
+import { topNavigate } from "@/lib/embed";
 import Link from "next/link";
 import { BookOpen, LogOut, Sparkles, Heart, Infinity, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,7 +26,7 @@ export function InactiveUserPrompt({ user }: InactiveUserPromptProps) {
 
   const handleLogout = () => {
     logout();
-    window.location.href = withBase("/");
+    topNavigate(withBase("/"));
   };
 
   const upgradeUrl = `https://getsafefamily.com/account?upgrade=safereads&email=${encodeURIComponent(user?.email || "")}`;
@@ -91,6 +92,7 @@ export function InactiveUserPrompt({ user }: InactiveUserPromptProps) {
           {/* CTA Button */}
           <a
             href={upgradeUrl}
+            target="_top"
             className="btn-brand flex items-center justify-center gap-2 w-full py-4 rounded-xl font-bold text-lg transition shadow-lg mb-4"
           >
             Upgrade Now

@@ -34,7 +34,9 @@ const nextConfig: NextConfig = {
     {
       source: "/(.*)",
       headers: [
-        { key: "X-Frame-Options", value: "DENY" },
+        // SAMEORIGIN, not DENY: the hub renders /reads/dashboard inside its own
+        // dashboard in a same-origin iframe. Cross-site framing stays blocked.
+        { key: "X-Frame-Options", value: "SAMEORIGIN" },
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         {

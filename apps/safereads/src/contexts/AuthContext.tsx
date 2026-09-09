@@ -12,6 +12,7 @@
  * - Apps verify JWT with Marketing for protected routes
  */
 import { withBase } from "@/lib/appBase";
+import { topNavigate } from "@/lib/embed";
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 // Marketing Convex backend URL for auth endpoints
@@ -257,7 +258,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     oauthUrl.searchParams.set("app", "SafeReads");
 
     console.log("[AuthContext] Redirecting to Marketing OAuth:", oauthUrl.toString());
-    window.location.href = oauthUrl.toString();
+    topNavigate(oauthUrl.toString()); // Google refuses OAuth inside a frame
   }, []);
 
   /**

@@ -1,6 +1,7 @@
 "use client";
 
 import { withBase } from "@/lib/appBase";
+import { isEmbedded, topNavigate } from "@/lib/embed";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
@@ -76,7 +77,7 @@ export default function SettingsPage() {
       });
       const data = (await res.json()) as { url?: string };
       if (data.url) {
-        window.location.href = data.url;
+        topNavigate(data.url); // Stripe refuses to load inside a frame
       } else {
         setCheckoutLoading(false);
       }
@@ -98,7 +99,7 @@ export default function SettingsPage() {
       });
       const data = (await res.json()) as { url?: string };
       if (data.url) {
-        window.location.href = data.url;
+        topNavigate(data.url); // Stripe refuses to load inside a frame
       } else {
         setPortalLoading(false);
       }
@@ -122,7 +123,7 @@ export default function SettingsPage() {
       }
       await deleteOwnAccount({ userToken: token });
       await logout();
-      router.push("/");
+      topNavigate(withBase("/")); // leave the hub frame too — the account is gone
     } catch (error) {
       console.error("Failed to delete account:", error);
       setDeleteError(
@@ -619,17 +620,19 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Logout Button */}
-      <button
-        onClick={async () => {
-          await logout();
-          router.push("/");
-        }}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-brand-cream-2 bg-white px-4 py-3 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-cream-2"
-      >
-        <LogOut className="h-4 w-4" />
-        Log Out
-      </button>
+      {/* Logout Button — hidden inside the hub dashboard (the shell has sign-out) */}
+      {!isEmbedded() && (
+        <button
+          onClick={async () => {
+            await logout();
+            router.push("/");
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-brand-cream-2 bg-white px-4 py-3 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-cream-2"
+        >
+          <LogOut className="h-4 w-4" />
+          Log Out
+        </button>
+      )}
 
       {/* Help & Support Section */}
       <div className="rounded-2xl border border-brand-cream-2 bg-white p-6">

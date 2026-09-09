@@ -1,6 +1,7 @@
 "use client";
 
 import { withBase } from "@/lib/appBase";
+import { topNavigate } from "@/lib/embed";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -27,7 +28,7 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
       const res = await fetch(withBase("/api/stripe/checkout"), { method: "POST" });
       const data = (await res.json()) as { url?: string; error?: string };
       if (data.url) {
-        window.location.href = data.url;
+        topNavigate(data.url); // Stripe refuses to load inside a frame
       } else {
         setLoading(false);
       }

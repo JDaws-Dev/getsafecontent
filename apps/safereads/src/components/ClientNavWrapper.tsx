@@ -3,7 +3,9 @@
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Footer } from "@/components/Footer";
+import { EmbeddedNav } from "@/components/EmbeddedNav";
 import { SubscriptionSync } from "@/hooks/useSubscriptionSync";
+import { useIsEmbedded } from "@/lib/embed";
 
 // Dynamically import nav components that use auth (no SSR to avoid prerender errors)
 const Navbar = dynamic(() => import("@/components/Navbar").then((mod) => mod.Navbar), {
@@ -28,6 +30,10 @@ const footerPages = ["/privacy", "/terms", "/contact", "/about"];
 export function ClientNavWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
+  // Inside the hub's dashboard iframe the shell owns the logo, family code,
+  // cross-app switcher and sign-out — draw only the app's own section tabs.
+  const embedded = useIsEmbedded();
+
   // Hide parent nav on kid-facing /read pages and landing page (has its own nav)
   const isPlayPage = pathname?.startsWith("/read");
   const isLandingPage = pathname === "/";
@@ -36,6 +42,16 @@ export function ClientNavWrapper({ children }: { children: React.ReactNode }) {
     return (
       <>
         <SubscriptionSync />
+        <main>{children}</main>
+      </>
+    );
+  }
+
+  if (embedded) {
+    return (
+      <>
+        <SubscriptionSync />
+        {pathname?.startsWith("/dashboard") && <EmbeddedNav />}
         <main>{children}</main>
       </>
     );

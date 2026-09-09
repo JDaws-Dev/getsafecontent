@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import { InactiveUserPrompt } from "@/components/InactiveUserPrompt";
 import { useAuth } from "@/contexts/AuthContext";
+import { HUB_DASHBOARD, useIsEmbedded, shouldRedirectToHubDashboard } from "@/lib/embed";
 
 export default function DashboardLayout({
   children,
@@ -15,6 +16,13 @@ export default function DashboardLayout({
   // Use central JWT auth for authentication state
   const { user: centralUser, token, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+
+  // One dashboard: inside the hub's iframe we render as the app's screens;
+  // opened directly, hand off to the hub's dashboard (this is not a destination).
+  const embedded = useIsEmbedded();
+  useEffect(() => {
+    if (shouldRedirectToHubDashboard()) window.location.replace(HUB_DASHBOARD);
+  }, []);
 
   // Track whether we've already attempted to provision the local user
   const [provisionAttempted, setProvisionAttempted] = useState(false);
@@ -81,7 +89,8 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.replace("/");
+      // In the hub frame the landing page makes no sense — go to sign-in instead.
+      router.replace(embedded ? "/login" : "/");
       return;
     }
     // Only redirect to onboarding if user has valid subscription status
@@ -89,7 +98,7 @@ export default function DashboardLayout({
     if (convexUser && !convexUser.onboardingComplete && validActiveStatuses.includes(convexUser.subscriptionStatus || "")) {
       router.replace("/onboarding");
     }
-  }, [isLoading, isAuthenticated, convexUser, router]);
+  }, [isLoading, isAuthenticated, convexUser, router, embedded]);
 
   // Show loading state while checking auth
   if (isLoading || !isAuthenticated) {
