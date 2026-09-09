@@ -21,6 +21,7 @@ import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 import { SafeFamilyParentSwitcher } from '@/components/SafeFamilySwitcher';
+import { withBase } from '@/lib/appBase';
 
 export default function ParentDashboard() {
   // Marketing Central JWT is the sole identity surface post-Clerk-retirement
@@ -179,7 +180,7 @@ export default function ParentDashboard() {
               type="button"
               onClick={() => {
                 marketing.logout();
-                window.location.href = '/login';
+                window.location.href = withBase('/login');
               }}
               className="inline-flex items-center gap-1.5 rounded-2xl border border-brand-cream-2 bg-white px-3 py-2 text-xs font-bold text-brand-navy hover:bg-brand-cream"
             >

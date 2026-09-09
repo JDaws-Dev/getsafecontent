@@ -1,6 +1,13 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  // One-site: served at getsafefamily.com/spark behind the hub's rewrite, prefix
+  // intact. Keep in sync with APP_BASE in src/lib/appBase.ts. Next prefixes the
+  // redirect sources/destinations below automatically.
+  basePath: '/spark',
+  // The hub rewrites /spark to <origin>/spark/ (trailing slash). Next's default
+  // 308 back to /spark would loop through the hub, so serve both forms as-is.
+  skipTrailingSlashRedirect: true,
   redirects: async () => [
     // Maker-route aliases — the canonical path is /make. /lumi was the
     // original codename, /demo was a guest-mode side door, /spark was

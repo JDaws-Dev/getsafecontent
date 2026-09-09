@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { withBase } from '@/lib/appBase';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../../../../convex/_generated/api';
 
@@ -67,7 +68,7 @@ export default async function Image({ params }: Props) {
       process.env.VERCEL_URL ?
         `https://${process.env.VERCEL_URL}` :
         'https://getsafespark.com';
-    const screenshotUrl = `${origin}${featuredScreenshot}`;
+    const screenshotUrl = `${origin}${withBase(featuredScreenshot)}`;
     return new ImageResponse(
       (
         <div

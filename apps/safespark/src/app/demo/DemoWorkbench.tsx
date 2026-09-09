@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAction, useMutation, useQuery } from 'convex/react';
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
+import { withBase } from '@/lib/appBase';
 import { KidMobileNav, KidHeader } from '@/components/kid/SafeFamilyAppLauncher';
 import { useKidScreenTime } from '@/components/kid/useKidScreenTime';
 import { api } from '../../../convex/_generated/api';
@@ -671,7 +672,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
       });
       if (!res.ok) throw new Error('Upload failed.');
       const { storageId } = (await res.json()) as { storageId: string };
-      const extractRes = await fetch('/api/extract-pdf', {
+      const extractRes = await fetch(withBase('/api/extract-pdf'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ storageId, sessionToken: kidSessionToken }),
@@ -1164,7 +1165,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
     }
 
     try {
-      const response = await fetch('/api/demo', {
+      const response = await fetch(withBase('/api/demo'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal,
@@ -1599,7 +1600,7 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
         }
         return;
       }
-      link = `${window.location.origin}/s/${result.shortId}`;
+      link = `${window.location.origin}${withBase(`/s/${result.shortId}`)}`;
     } catch {
       // Fallback to legacy gzip hash share when the server share fails or guest mode.
       link = await makeShareUrl({ title, html: projectHtml });
@@ -2971,7 +2972,7 @@ function upsertProject({
 
 async function makeShareUrl(payload: ShareProject): Promise<string> {
   const encoded = await encodePayload({ ...payload, v: 1 });
-  return `${window.location.origin}/lumi/share#p=${encoded}`;
+  return `${window.location.origin}${withBase('/lumi/share')}#p=${encoded}`;
 }
 
 async function encodePayload(payload: SharePayload): Promise<string> {

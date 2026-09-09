@@ -18,11 +18,18 @@ import type { NextRequest } from 'next/server';
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (pathname === '/sign-in' || pathname.startsWith('/sign-in/')) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-  if (pathname === '/sign-up' || pathname.startsWith('/sign-up/')) {
-    return NextResponse.redirect(new URL('/login', req.url));
+  if (
+    pathname === '/sign-in' ||
+    pathname.startsWith('/sign-in/') ||
+    pathname === '/sign-up' ||
+    pathname.startsWith('/sign-up/')
+  ) {
+    // Clone nextUrl rather than `new URL('/login', req.url)` so the configured
+    // basePath (/spark) is kept on the redirect target.
+    const url = req.nextUrl.clone();
+    url.pathname = '/login';
+    url.search = '';
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();

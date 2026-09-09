@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Quicksand, Fredoka } from 'next/font/google';
 import './globals.css';
 import { ConvexClientProvider } from '@/components/ConvexClientProvider';
+import { withBase } from '@/lib/appBase';
 
 // Viewport meta — was MISSING before 2026-05-29, which is THE actual
 // cause of "still scrolls sideways on iPhone." Without this, iOS Safari
@@ -97,11 +98,13 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
+  // Next does not apply basePath to explicit metadata icon/manifest paths
+  // (verified against the rendered <head>), so prefix them by hand.
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: withBase('/favicon.ico'),
+    apple: withBase('/apple-touch-icon.png'),
   },
-  manifest: '/site.webmanifest',
+  manifest: withBase('/site.webmanifest'),
 };
 
 export default function RootLayout({

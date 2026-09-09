@@ -3,6 +3,7 @@
 import { useAuth as useMarketingAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { withBase } from '@/lib/appBase';
 import { useEffect, useState } from 'react';
 import {
   BookOpen,
@@ -499,7 +500,7 @@ export default function HomePage() {
               </span>
             </div>
             <Image
-              src="/landing/share-pokemon.png"
+              src={withBase("/landing/share-pokemon.png")}
               alt="Knox's Pokemon Quest game running on a SafeSpark share link"
               width={900}
               height={700}
@@ -534,7 +535,7 @@ export default function HomePage() {
               desc="A real 3D driving game built with Three.js — blue car, chase camera, houses with red roofs, a giraffe walking around, and a HUD showing the driver. Tap to play."
               href="/s/neighborhood-drive-p3pf"
               tag="3D game"
-              image="/landing/build-neighborhood.png"
+              image={withBase("/landing/build-neighborhood.png")}
             />
             <KidBuildCard
               builder="Knox, age 11"
@@ -542,7 +543,7 @@ export default function HomePage() {
               desc="A walk-around region game with travel between Kanto, Johto, Hoenn, and Sinnoh — wild encounters, companions, badges to earn, particles, sound. Real characters and tile maps, not text."
               href="/s/pok-mon-region-adventure-4k8k"
               tag="Adventure"
-              image="/landing/build-region-adventure.png"
+              image={withBase("/landing/build-region-adventure.png")}
             />
             <KidBuildCard
               builder="Bella, age 12"
@@ -550,7 +551,7 @@ export default function HomePage() {
               desc="A Minecraft-style 3D sandbox — walk around with WASD, jump, mouse-look, place blocks, knock them out, build houses or towers. Bounce blocks, teleporters, a rocket launcher, and a mobile control layer. Real Three.js."
               href="/s/blockcraft-builder-cw2w"
               tag="3D sandbox"
-              image="/landing/build-blockcraft.png"
+              image={withBase("/landing/build-blockcraft.png")}
             />
           </div>
         </div>
@@ -812,7 +813,7 @@ export default function HomePage() {
           >
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8 pb-8 border-b border-brand-cream-2">
               <Image
-                src="/landing/jeremiah-headshot.jpg"
+                src={withBase("/landing/jeremiah-headshot.jpg")}
                 alt="Jeremiah Daws"
                 width={400}
                 height={400}
@@ -1158,7 +1159,7 @@ function KidBuildCard({
 }) {
   return (
     <a
-      href={href}
+      href={withBase(href)}
       target="_blank"
       rel="noopener noreferrer"
       className="group block overflow-hidden rounded-2xl border border-brand-cream-2 bg-white shadow-sm hover:border-accent-300 hover:shadow-md transition"
