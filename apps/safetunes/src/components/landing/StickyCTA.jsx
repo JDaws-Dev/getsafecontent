@@ -1,3 +1,4 @@
+import { withBase } from '../../lib/appBase';
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
@@ -38,7 +39,7 @@ function StickyCTA() {
             </p>
           </div>
           <a
-            href="/signup"
+            href={withBase('/signup')}
             className="bg-white text-[#1a1a2e] px-6 py-3 min-h-[48px] rounded-lg font-bold text-sm hover:bg-gray-50 transition shadow-lg whitespace-nowrap flex items-center justify-center"
           >
             Try Free

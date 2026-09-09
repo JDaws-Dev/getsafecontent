@@ -1,3 +1,4 @@
+import { withBase } from '../lib/appBase';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAction, useQuery } from 'convex/react';
@@ -141,7 +142,7 @@ function UpgradePage() {
 
               {/* Log out button - can't go back to dashboard since trial expired */}
               <button
-                onClick={() => window.location.href = '/login'}
+                onClick={() => window.location.href = withBase('/login')}
                 className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-center transition"
               >
                 Log Out

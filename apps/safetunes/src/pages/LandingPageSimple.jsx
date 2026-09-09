@@ -1,3 +1,4 @@
+import { withBase } from '../lib/appBase';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -289,7 +290,7 @@ function LandingPageSimple() {
                 </div>
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
                   <img
-                    src="/screenshots/4_ADMIN SEARCH APPROVE.png"
+                    src={withBase("/screenshots/4_ADMIN SEARCH APPROVE.png")}
                     alt="Parent dashboard showing album approval interface"
                     className="w-full h-auto"
                   />
@@ -335,7 +336,7 @@ function LandingPageSimple() {
                 </div>
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
                   <img
-                    src="/screenshots/KID HOME.png"
+                    src={withBase("/screenshots/KID HOME.png")}
                     alt="Kid player interface showing safe music library"
                     className="w-full h-auto"
                   />
@@ -391,7 +392,7 @@ function LandingPageSimple() {
                   <p className="text-sm text-gray-500 mb-3">Your phone buzzes instantly</p>
                   <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
                     <img
-                      src="/screenshots/KID_REQUEST.png"
+                      src={withBase("/screenshots/KID_REQUEST.png")}
                       alt="Kid requesting an album"
                       className="w-full h-auto"
                     />
@@ -414,7 +415,7 @@ function LandingPageSimple() {
                   <p className="text-sm text-gray-500 mb-3">She can play it immediately</p>
                   <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
                     <img
-                      src="/screenshots/2_ADMIN ALBUM REQUEST.png"
+                      src={withBase("/screenshots/2_ADMIN ALBUM REQUEST.png")}
                       alt="Parent approving album request"
                       className="w-full h-auto"
                     />
@@ -465,7 +466,7 @@ function LandingPageSimple() {
                 <p className="text-xs text-gray-500 mb-2 text-center font-medium">What you see in your dashboard:</p>
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
                   <img
-                    src="/screenshots/6-ADMIN_BLOCKED SEARCH.png"
+                    src={withBase("/screenshots/6-ADMIN_BLOCKED SEARCH.png")}
                     alt="Parent notification when child searches for inappropriate content"
                     className="w-full h-auto"
                   />

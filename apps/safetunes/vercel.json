@@ -1,8 +1,32 @@
 {
   "rewrites": [
     {
+      "source": "/tunes/api/auth/:path*",
+      "destination": "https://formal-chihuahua-623.convex.site/api/auth/:path*"
+    },
+    {
       "source": "/api/auth/:path*",
       "destination": "https://formal-chihuahua-623.convex.site/api/auth/:path*"
+    },
+    {
+      "source": "/tunes/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/tunes/sw.js",
+      "destination": "/sw.js"
+    },
+    {
+      "source": "/tunes/:file(.*\\.(svg|png|json|txt|ico|webmanifest|jpg|jpeg|webp))",
+      "destination": "/:file"
+    },
+    {
+      "source": "/tunes/.well-known/:path*",
+      "destination": "/.well-known/:path*"
+    },
+    {
+      "source": "/tunes/:path*",
+      "destination": "/index.html"
     },
     {
       "source": "/(.*)",
@@ -10,4 +34,3 @@
     }
   ]
 }
-

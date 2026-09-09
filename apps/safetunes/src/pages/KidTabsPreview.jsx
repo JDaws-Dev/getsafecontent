@@ -1,3 +1,4 @@
+import { withBase } from '../lib/appBase';
 import { KidPlayerTabsDemo } from '../components/child/KidPlayerTabs';
 
 /**
@@ -27,7 +28,7 @@ function KidTabsPreview() {
             <p className="text-xs text-white/80">Home, Discover, Playlists</p>
           </div>
           <a
-            href="/preview/kid-player"
+            href={withBase('/preview/kid-player')}
             className="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition"
           >
             Old Preview

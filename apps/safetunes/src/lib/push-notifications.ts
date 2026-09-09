@@ -1,3 +1,4 @@
+import { withBase } from './appBase';
 // Push notification utilities for SafeTunes
 
 // VAPID public key (same as configured in Convex)
@@ -58,7 +59,7 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     throw new Error('Service workers are not supported');
   }
 
-  const registration = await navigator.serviceWorker.register('/sw.js');
+  const registration = await navigator.serviceWorker.register(withBase('/sw.js'));
   return registration;
 }
 

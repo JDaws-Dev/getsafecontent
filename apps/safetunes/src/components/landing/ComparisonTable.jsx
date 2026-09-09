@@ -1,3 +1,4 @@
+import { withBase } from '../../lib/appBase';
 import React from 'react';
 import { Check, X } from 'lucide-react';
 
@@ -157,7 +158,7 @@ function ComparisonTable() {
 
         <div className="text-center mt-8">
           <a
-            href="/signup"
+            href={withBase('/signup')}
             className="inline-block bg-accent-500 hover:bg-accent-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition shadow-lg hover:shadow-xl"
           >
             Start Free Trial

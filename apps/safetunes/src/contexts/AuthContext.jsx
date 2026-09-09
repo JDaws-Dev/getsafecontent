@@ -10,13 +10,26 @@
  * - Apps verify JWT with Marketing for protected routes
  */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { withBase } from '../lib/appBase';
 
 // Marketing Convex backend URL for auth endpoints
 const CENTRAL_AUTH_URL = 'https://adamant-crow-705.convex.site';
 
 // Storage keys
-const JWT_KEY = 'safetunes_jwt';
-const USER_KEY = 'safetunes_user';
+// One-site: every Safe Family app shares one sign-in on getsafefamily.com, so
+// the token lives under one key. Older builds stored it per app; migrate once.
+const JWT_KEY = 'safefamily_jwt';
+const USER_KEY = 'safefamily_user';
+const LEGACY_KEYS = { jwt: 'safetunes_jwt', user: 'safetunes_user' };
+(function migrateLegacyKeys() {
+  try {
+    if (!localStorage.getItem(JWT_KEY) && localStorage.getItem(LEGACY_KEYS.jwt)) {
+      localStorage.setItem(JWT_KEY, localStorage.getItem(LEGACY_KEYS.jwt));
+      const u = localStorage.getItem(LEGACY_KEYS.user);
+      if (u) localStorage.setItem(USER_KEY, u);
+    }
+  } catch { /* storage unavailable */ }
+})();
 
 /**
  * @typedef {Object} User
@@ -240,7 +253,7 @@ export function AuthProvider({ children }) {
    */
   const loginWithGoogle = useCallback(() => {
     // Build the return URL with the current path (so we return to the same page)
-    const returnTo = window.location.origin + '/login';
+    const returnTo = window.location.origin + withBase('/login');
     const oauthUrl = new URL(MARKETING_OAUTH_URL);
     oauthUrl.searchParams.set('returnTo', returnTo);
     oauthUrl.searchParams.set('app', 'SafeTunes');

@@ -1,3 +1,4 @@
+import { APP_BASE, withBase } from './lib/appBase';
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ConvexReactClient, ConvexProvider } from 'convex/react';
@@ -82,7 +83,7 @@ function ErrorFallback({ error, resetError }) {
           We're sorry, but something unexpected happened. Our team has been notified and we're working to fix it.
         </p>
         <button
-          onClick={() => window.location.href = isNativeApp ? '/app' : '/'}
+          onClick={() => window.location.href = withBase(isNativeApp ? '/app' : '/')}
           className="w-full bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-semibold transition mb-3"
         >
           {isNativeApp ? 'Go Back' : 'Go to Homepage'}
@@ -116,7 +117,7 @@ function App() {
         <ConvexProvider client={convex}>
           <AuthProvider>
             <ToastProvider>
-              <Router>
+              <Router basename={APP_BASE}>
             <FacebookPixel />
             <GoogleAds />
             <CookieConsent />

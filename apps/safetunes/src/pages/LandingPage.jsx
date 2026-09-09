@@ -1,3 +1,4 @@
+import { withBase } from '../lib/appBase';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import ImprovedHero from '../components/landing/ImprovedHero';
@@ -336,7 +337,7 @@ function LandingPage() {
                 <div className="order-2 md:order-1 bg-gradient-to-br from-gray-100 to-gray-200 p-4 flex items-center justify-center">
                   <div className="relative w-full max-w-md">
                     <img
-                      src="/screenshots/5_ADMIN_HIDE ALBUM.png"
+                      src={withBase("/screenshots/5_ADMIN_HIDE ALBUM.png")}
                       alt="Hide album artwork feature - protect kids from inappropriate covers"
                       className="w-full h-auto rounded-lg shadow-2xl border-4 border-gray-800"
                     />
@@ -424,7 +425,7 @@ function LandingPage() {
                 <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-4 flex items-center justify-center">
                   <div className="relative w-full max-w-md">
                     <img
-                      src="/screenshots/KID_REQUEST.png"
+                      src={withBase("/screenshots/KID_REQUEST.png")}
                       alt="Kid request interface - children can request albums for parent approval"
                       className="w-full h-auto rounded-lg shadow-2xl border-4 border-gray-800"
                     />
@@ -446,7 +447,7 @@ function LandingPage() {
                 <div className="order-2 md:order-1 bg-gradient-to-br from-gray-100 to-gray-200 p-4 flex items-center justify-center">
                   <div className="relative w-full max-w-md">
                     <img
-                      src="/screenshots/6-ADMIN_BLOCKED SEARCH.png"
+                      src={withBase("/screenshots/6-ADMIN_BLOCKED SEARCH.png")}
                       alt="Parent notification when child searches for inappropriate content"
                       className="w-full h-auto rounded-lg shadow-2xl border-4 border-gray-800"
                     />
@@ -534,7 +535,7 @@ function LandingPage() {
                 <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-4 flex items-center justify-center">
                   <div className="relative w-full max-w-md">
                     <img
-                      src="/screenshots/KID_BAD CONTENT.png"
+                      src={withBase("/screenshots/KID_BAD CONTENT.png")}
                       alt="Kid blocked search screen with encouraging Bible verses"
                       className="w-full h-auto rounded-lg shadow-2xl border-4 border-gray-800"
                     />

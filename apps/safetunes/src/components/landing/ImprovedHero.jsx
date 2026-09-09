@@ -1,3 +1,4 @@
+import { withBase } from '../../lib/appBase';
 import React from 'react';
 import { Shield, CheckCircle } from 'lucide-react';
 
@@ -83,7 +84,7 @@ function ImprovedHero() {
               {/* CTA Buttons - Mobile-optimized with min 48px height */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
-                  href="/signup"
+                  href={withBase('/signup')}
                   className="btn-brand inline-block px-8 py-4 min-h-[48px] rounded-lg font-bold text-lg shadow-xl hover:shadow-2xl text-center flex items-center justify-center"
                 >
                   Start Free 7-Day Trial
