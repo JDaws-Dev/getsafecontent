@@ -9,6 +9,7 @@
  * - Apps store JWT in localStorage
  * - Apps verify JWT with Marketing for protected routes
  */
+import { withBase } from '../lib/appBase';
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 // Marketing Convex backend URL for auth endpoints
@@ -255,7 +256,7 @@ export function AuthProvider({ children }) {
    */
   const loginWithGoogle = useCallback(() => {
     // Build the return URL with the current path (so we return to the same page)
-    const returnTo = window.location.origin + '/login';
+    const returnTo = window.location.origin + withBase('/login');
     const oauthUrl = new URL(MARKETING_OAUTH_URL);
     oauthUrl.searchParams.set('returnTo', returnTo);
     oauthUrl.searchParams.set('app', 'SafeTube');

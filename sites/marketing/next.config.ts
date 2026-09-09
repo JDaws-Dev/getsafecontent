@@ -9,21 +9,24 @@ import { withSentryConfig } from "@sentry/nextjs";
 //   ONE_SITE_ORIGIN_TUBE=https://safetube-xxxx-family-planner.vercel.app (preview/prod)
 // An unset origin leaves that path alone, so the hub is unaffected until each
 // app is ready.
-const ONE_SITE_APPS: Array<[string, string | undefined]> = [
-  ["tunes", process.env.ONE_SITE_ORIGIN_TUNES],
-  ["tube", process.env.ONE_SITE_ORIGIN_TUBE],
-  ["reads", process.env.ONE_SITE_ORIGIN_READS],
-  ["study", process.env.ONE_SITE_ORIGIN_STUDY],
-  ["spark", process.env.ONE_SITE_ORIGIN_SPARK],
+// kind: a Vite app serves its base only WITH a trailing slash, while a Next app
+// (basePath) redirects a trailing slash away — and the hub relaying that
+// redirect looped forever on bare /reads. So the bare path is mapped per kind.
+const ONE_SITE_APPS: Array<[string, "vite" | "next", string | undefined]> = [
+  ["tunes", "vite", process.env.ONE_SITE_ORIGIN_TUNES],
+  ["tube", "vite", process.env.ONE_SITE_ORIGIN_TUBE],
+  ["study", "vite", process.env.ONE_SITE_ORIGIN_STUDY],
+  ["reads", "next", process.env.ONE_SITE_ORIGIN_READS],
+  ["spark", "next", process.env.ONE_SITE_ORIGIN_SPARK],
 ];
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    const beforeFiles = ONE_SITE_APPS.flatMap(([path, origin]) => {
+    const beforeFiles = ONE_SITE_APPS.flatMap(([path, kind, origin]) => {
       if (!origin) return [];
       const base = origin.replace(/\/$/, "");
       return [
-        { source: `/${path}`, destination: `${base}/${path}/` },
+        { source: `/${path}`, destination: `${base}/${path}${kind === "vite" ? "/" : ""}` },
         { source: `/${path}/:slug*`, destination: `${base}/${path}/:slug*` },
       ];
     });
