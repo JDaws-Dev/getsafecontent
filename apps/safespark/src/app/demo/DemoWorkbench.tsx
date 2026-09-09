@@ -526,7 +526,10 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
     // One kid front door: /make opened directly under the hub (not inside its
     // /play iframe) hands off to /play/spark, code riding along. Covers the
     // signed-in path too — KidLoginGate only mounts when there's no session.
-    if (redirectKidToHubPlay(new URLSearchParams(window.location.search).get('fc'))) return;
+    // The public marketing demo (/demo?code=…) is opened from links by
+    // anyone — never bounce it to the kid front door.
+    const isPublicDemo = /\/demo\/?$/.test(window.location.pathname);
+    if (!isPublicDemo && redirectKidToHubPlay(new URLSearchParams(window.location.search).get('fc'))) return;
     setMounted(true);
     if (typeof window !== 'undefined') {
       setKidSessionToken(localStorage.getItem('lumiKidSession'));
@@ -1619,6 +1622,45 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
     }
   };
 
+  // ORDER MATTERS: the mount placeholder and the kid gate come BEFORE the
+  // sign-up wall. The wall's condition (no parent login AND no kid session)
+  // is a superset of the gate's (no kid session), so with the wall first a
+  // kid arriving at /make?fc=CODE saw "Sign up to start building" instead of
+  // the family-code -> profile picker flow, and the gate below was reachable
+  // only for a signed-in parent. Kids never sign up; they enter the family
+  // code. The wall is kept as a defensive fallback only.
+  // SSR + first-paint placeholder. Avoids hydration mismatch: server
+  // can't know about Clerk session or localStorage token, so render a
+  // neutral placeholder and let the client decide on mount.
+  if (!mounted) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-brand-cream">
+        <div className="text-sm font-semibold uppercase tracking-widest text-accent-400">
+          SafeSpark
+        </div>
+      </main>
+    );
+  }
+
+  // /make is the kid app. If there's no kid session, show the family-
+  // code + profile-picker gate, period. Parent admin lives at /parent.
+  // Show a banner pointing parents there if they're Clerk-signed-in.
+  if (shouldShowGate) {
+    return (
+      <main className="flex min-h-screen flex-col bg-brand-cream">
+        {isSignedIn && (
+          <div className="border-b border-accent-200 bg-accent-50 px-4 py-2 text-center text-xs font-semibold text-accent-900">
+            Looking for the parent admin?{' '}
+            <Link href="/parent" className="underline underline-offset-2 hover:text-accent-700">
+              Go to /parent
+            </Link>
+          </div>
+        )}
+        <KidLoginGate onSession={(token) => setKidSessionToken(token)} />
+      </main>
+    );
+  }
+
   if (!hasIdentity) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-brand-cream px-4 py-10">
@@ -1659,38 +1701,6 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             Back to home
           </Link>
         </section>
-      </main>
-    );
-  }
-
-  // SSR + first-paint placeholder. Avoids hydration mismatch: server
-  // can't know about Clerk session or localStorage token, so render a
-  // neutral placeholder and let the client decide on mount.
-  if (!mounted) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-brand-cream">
-        <div className="text-sm font-semibold uppercase tracking-widest text-accent-400">
-          SafeSpark
-        </div>
-      </main>
-    );
-  }
-
-  // /make is the kid app. If there's no kid session, show the family-
-  // code + profile-picker gate, period. Parent admin lives at /parent.
-  // Show a banner pointing parents there if they're Clerk-signed-in.
-  if (shouldShowGate) {
-    return (
-      <main className="flex min-h-screen flex-col bg-brand-cream">
-        {isSignedIn && (
-          <div className="border-b border-accent-200 bg-accent-50 px-4 py-2 text-center text-xs font-semibold text-accent-900">
-            Looking for the parent admin?{' '}
-            <Link href="/parent" className="underline underline-offset-2 hover:text-accent-700">
-              Go to /parent
-            </Link>
-          </div>
-        )}
-        <KidLoginGate onSession={(token) => setKidSessionToken(token)} />
       </main>
     );
   }
