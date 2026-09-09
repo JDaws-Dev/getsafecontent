@@ -44,7 +44,10 @@ export default function DashboardPage() {
   const active = slug ? entitled.find((a) => a.slug === slug) ?? null : null;
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.replace("/login?returnTo=/dashboard");
+    if (!isLoading && !isAuthenticated) {
+      const here = typeof window !== "undefined" ? window.location.pathname : "/dashboard";
+      router.replace(`/login?returnTo=${encodeURIComponent(here)}`);
+    }
   }, [isLoading, isAuthenticated, router]);
 
   // Unknown or un-entitled app in the URL → back to the overview.

@@ -27,8 +27,20 @@ const CENTRAL_AUTH_URL = "https://adamant-crow-705.convex.site";
 const MARKETING_OAUTH_URL = "https://getsafefamily.com/oauth";
 
 // Storage keys — namespaced so they don't collide with the other 4 apps.
-const JWT_KEY = "safespark_jwt";
-const USER_KEY = "safespark_user";
+// One-site: every Safe Family app shares one sign-in on getsafefamily.com, so
+// the token lives under one key. Older builds stored it per app; migrate once.
+const JWT_KEY = "safefamily_jwt";
+const USER_KEY = "safefamily_user";
+const LEGACY_KEYS = { jwt: "safespark_jwt", user: "safespark_user" };
+if (typeof window !== "undefined") {
+  try {
+    if (!localStorage.getItem(JWT_KEY) && localStorage.getItem(LEGACY_KEYS.jwt)) {
+      localStorage.setItem(JWT_KEY, localStorage.getItem(LEGACY_KEYS.jwt) as string);
+      const u = localStorage.getItem(LEGACY_KEYS.user);
+      if (u) localStorage.setItem(USER_KEY, u);
+    }
+  } catch { /* storage unavailable */ }
+}
 
 interface User {
   id: string;

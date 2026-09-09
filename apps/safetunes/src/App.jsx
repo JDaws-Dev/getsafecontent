@@ -1,3 +1,4 @@
+import { isEmbedded } from './lib/embed';
 import { APP_BASE, withBase } from './lib/appBase';
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -120,7 +121,7 @@ function App() {
               <Router basename={APP_BASE}>
             <FacebookPixel />
             <GoogleAds />
-            <CookieConsent />
+            {!isEmbedded() && <CookieConsent />}
             <SubscriptionSync />
             <Suspense fallback={<PageLoader />}>
               <Routes>
