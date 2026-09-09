@@ -1,3 +1,4 @@
+import { topNavigate } from '../../lib/embed';
 import { withBase } from '../../lib/appBase';
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useAction } from 'convex/react';
@@ -1458,7 +1459,7 @@ function SubscriptionCard({ userData }) {
       });
 
       if (result.url) {
-        window.location.href = result.url;
+        topNavigate(result.url);
       }
     } catch (err) {
       console.error('Failed to create checkout session:', err);
@@ -1479,7 +1480,7 @@ function SubscriptionCard({ userData }) {
       });
 
       if (result.url) {
-        window.location.href = result.url;
+        topNavigate(result.url);
       }
     } catch (err) {
       console.error('Failed to create portal session:', err);
@@ -1513,7 +1514,7 @@ function SubscriptionCard({ userData }) {
         stripeCustomerId: userData.stripeCustomerId,
       });
       if (result.url) {
-        window.location.href = result.url;
+        topNavigate(result.url);
       }
     } catch (err) {
       console.error('Failed to process cancellation:', err);

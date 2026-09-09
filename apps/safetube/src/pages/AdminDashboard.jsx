@@ -1,3 +1,4 @@
+import { isEmbedded, shouldRedirectToHubDashboard, topNavigate, HUB_DASHBOARD } from '../lib/embed';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation } from 'convex/react';
@@ -90,6 +91,12 @@ export default function AdminDashboard() {
 
   // Active tab - consolidated from 8 to 4 tabs
   const [activeTab, setActiveTab] = useState('home');
+  // One admin: inside the hub's dashboard iframe we hide our own chrome; opened
+  // directly under the hub we hand off to the single dashboard.
+  const embedded = isEmbedded();
+  useEffect(() => {
+    if (shouldRedirectToHubDashboard()) window.location.replace(HUB_DASHBOARD);
+  }, []);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Content tab has sub-tabs: 'add' or 'library'
@@ -225,8 +232,8 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Top Bar */}
-          <div className="flex items-center justify-between py-4">
+          {/* Top Bar — hidden when embedded in the hub dashboard (the shell has one) */}
+          {!embedded && (<div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center shadow-md">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -275,12 +282,12 @@ export default function AdminDashboard() {
                 </svg>
               </button>
             </div>
-          </div>
+          </div>)}
 
-          {/* Safe Family cross-app switcher (mobile) — always visible under 1024px */}
-          <div className="lg:hidden flex justify-center pb-3 -mt-1">
+          {/* Safe Family cross-app switcher (mobile) — hidden when embedded */}
+          {!embedded && (<div className="lg:hidden flex justify-center pb-3 -mt-1">
             <SafeFamilyParentSwitcher current="safetube" familyCode={userData.familyCode} tile={38} />
-          </div>
+          </div>)}
 
           {/* Desktop Tabs - Consolidated to 4 tabs */}
           <div className="hidden md:block">
