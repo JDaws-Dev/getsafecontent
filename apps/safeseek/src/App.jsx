@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { APP_BASE } from './lib/appBase';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -98,7 +99,7 @@ export default function App() {
               the root (not on a page) so it runs for every authenticated
               session regardless of which route the parent lands on. */}
           <SubscriptionSync />
-          <BrowserRouter>
+          <BrowserRouter basename={APP_BASE}>
             <AppRoutes />
           </BrowserRouter>
         </ThemeProvider>

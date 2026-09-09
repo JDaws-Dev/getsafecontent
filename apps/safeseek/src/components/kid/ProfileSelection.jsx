@@ -1,3 +1,4 @@
+import { withBase } from '../../lib/appBase';
 import { useRef } from 'react';
 import { Search, Sun, Moon, ArrowLeft, Lock } from 'lucide-react';
 import { getColorClass } from './utils';
@@ -137,7 +138,7 @@ export default function ProfileSelection({
             <div className="mt-8 pt-8 border-t border-gray-200/60 dark:border-gray-700/60">
               <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
                 Are you a parent?{' '}
-                <a href="/login" className="text-accent-500 hover:text-accent-600 dark:text-accent-400 dark:hover:text-accent-300 font-medium">
+                <a href={withBase('/login')} className="text-accent-500 hover:text-accent-600 dark:text-accent-400 dark:hover:text-accent-300 font-medium">
                   Log in here &rarr;
                 </a>
               </p>
