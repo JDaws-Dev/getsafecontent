@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import SafeFamilySwitcher from '../SafeFamilySwitcher';
@@ -53,6 +53,33 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
   );
   const startSession = useMutation(api.kidSessions.start);
   const redeemKidPass = useMutation(api.kidPass.redeemKidPass);
+
+  // Pull the hub's universal family settings the moment a code is submitted
+  // or prefilled, so a kid the parent added on the hub has a tile here. The
+  // picker waits for the pull (capped at a few seconds) rather than flashing
+  // an incomplete list; the action fails open, and the lookup above is live,
+  // so anything it creates shows up either way.
+  const pullFamilySync = useAction(api.familySync.pull);
+  const [syncingCode, setSyncingCode] = useState<string | null>(null);
+  useEffect(() => {
+    if (!submitted) return;
+    let cancelled = false;
+    setSyncingCode(submitted);
+    const done = () => {
+      if (!cancelled) setSyncingCode((current) => (current === submitted ? null : current));
+    };
+    const cap = setTimeout(done, 4000);
+    pullFamilySync({ familyCode: submitted })
+      .catch(() => undefined)
+      .finally(() => {
+        clearTimeout(cap);
+        done();
+      });
+    return () => {
+      cancelled = true;
+      clearTimeout(cap);
+    };
+  }, [submitted, pullFamilySync]);
 
   // Boot: a cross-app kid pass (?kt=) wins, then a bare family code (?fc=).
   //   - ?kt= : the kid arrived from a sibling app already signed in. Redeem it
@@ -213,7 +240,7 @@ export function KidLoginGate({ onSession }: { onSession?: (token: string) => voi
     );
   }
 
-  if (family === undefined) {
+  if (family === undefined || syncingCode === submitted) {
     return <main className="flex-1 flex items-center justify-center text-slate-400">Looking up…</main>;
   }
 

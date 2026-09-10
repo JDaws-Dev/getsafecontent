@@ -16,6 +16,7 @@ import type * as checkpoints from "../checkpoints.js";
 import type * as concernAlerts from "../concernAlerts.js";
 import type * as crons from "../crons.js";
 import type * as families from "../families.js";
+import type * as familySync from "../familySync.js";
 import type * as http from "../http.js";
 import type * as jobs from "../jobs.js";
 import type * as kidPass from "../kidPass.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   concernAlerts: typeof concernAlerts;
   crons: typeof crons;
   families: typeof families;
+  familySync: typeof familySync;
   http: typeof http;
   jobs: typeof jobs;
   kidPass: typeof kidPass;

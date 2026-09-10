@@ -39,6 +39,9 @@ export default defineSchema({
     // SafeTunes/SafeTube/SafeReads/SafeStudy convention of one code per
     // user that works across every Safe Family app.
     familyCode: v.optional(v.string()),
+    // When familySync.apply last mirrored the hub's universal family settings
+    // (kids, PINs, paused flags, timezone) into this parent's family.
+    familySyncAppliedAt: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index('by_clerk_id', ['clerkUserId'])

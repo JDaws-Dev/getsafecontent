@@ -120,6 +120,22 @@ export default function ParentDashboard() {
   const ensureFamily = useMutation(api.families.ensureForParent);
   const [codeCopied, setCodeCopied] = useState(false);
 
+  // Mirror the hub's universal family settings (kids, PINs, paused flags,
+  // timezone) into SafeSpark once per family code. Fire-and-forget: the
+  // action fails open, and the kid/family queries above re-render on their
+  // own when it creates or patches profiles. Same loop-safety rule as the
+  // token sync: the only dep is the stable code string, guarded by a ref.
+  const pullFamilySync = useAction(api.familySync.pull);
+  const familySyncRef = useRef<string | null>(null);
+  const familyCodeForSync = family?.family?.code;
+  useEffect(() => {
+    if (!familyCodeForSync || familySyncRef.current === familyCodeForSync) return;
+    familySyncRef.current = familyCodeForSync;
+    pullFamilySync({ familyCode: familyCodeForSync }).catch(() => {
+      familySyncRef.current = null; // allow retry on transient failure
+    });
+  }, [familyCodeForSync, pullFamilySync]);
+
   // Build a quick lookup so KidRow can pull its stats without iterating.
   const statsByKid = new Map<string, NonNullable<typeof kidStats>[number]>();
   if (kidStats) {
