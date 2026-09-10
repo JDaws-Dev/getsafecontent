@@ -15,6 +15,16 @@ export const bundleByFamilyCode = internalQuery({
     if (!parent) return null;
     const settings = await ctx.db.query("familySettings").withIndex("by_family", (q) => q.eq("familyCode", familyCode)).first();
     const kids = await ctx.db.query("kids").withIndex("by_parent", (q) => q.eq("parentUserId", parent._id)).collect();
+    // Aliases: the identity table already knows "Isabella" and "Bella" are one
+    // child. Apps match local profiles on the name OR any alias, so a kid
+    // named differently in two apps stays one kid instead of becoming two.
+    const identities = await ctx.db.query("kidIdentity").withIndex("by_family", (q) => q.eq("familyCode", familyCode)).collect();
+    const aliasesFor = (name: string) => {
+      const key = name.trim().toLowerCase();
+      const hit = identities.find((row) => row.matchKeys.includes(key) || row.canonicalName.trim().toLowerCase() === key);
+      const set = new Set<string>([key, ...(hit?.matchKeys ?? []), ...(hit ? [hit.canonicalName.trim().toLowerCase()] : [])]);
+      return Array.from(set);
+    };
     return {
       familyCode,
       timezone: settings?.timezone ?? parent.timezone ?? null,
@@ -23,6 +33,7 @@ export const bundleByFamilyCode = internalQuery({
         .filter((k) => !k.archived)
         .map((k) => ({
           name: k.name,
+          aliases: aliasesFor(k.name),
           age: k.age ?? null,
           color: k.color ?? null,
           pinHash: k.pinHash ?? null,
@@ -63,11 +74,18 @@ export const bootstrapKids = internalMutation({
     const parent = await ctx.db.query("users").withIndex("by_familyCode", (q) => q.eq("familyCode", familyCode)).first();
     if (!parent) return { adopted: 0, reason: "unknown_family" };
     const existing = await ctx.db.query("kids").withIndex("by_parent", (q) => q.eq("parentUserId", parent._id)).collect();
-    const known = new Set(existing.map((k) => k.name.trim().toLowerCase()));
+    const identities = await ctx.db.query("kidIdentity").withIndex("by_family", (q) => q.eq("familyCode", familyCode)).collect();
+    const canonical = (raw: string) => {
+      const key = raw.trim().toLowerCase();
+      const hit = identities.find((row) => row.matchKeys.includes(key) || row.canonicalName.trim().toLowerCase() === key);
+      return hit ? hit.canonicalName.trim() : raw.trim();
+    };
+    const known = new Set(existing.map((k) => canonical(k.name).toLowerCase()));
     let adopted = 0;
     const now = Date.now();
     for (const kid of args.kids) {
-      const name = kid.name.trim();
+      // Adopt under the canonical name ("Bella", even if this app calls her "Isabella").
+      const name = canonical(kid.name);
       if (!name || known.has(name.toLowerCase())) continue;
       let pinHash: string | undefined;
       if (kid.pin) pinHash = kid.pin.startsWith("pbkdf2$") ? kid.pin : (/^\d{4}$/.test(kid.pin) ? await hashPin(kid.pin) : undefined);
