@@ -61,3 +61,10 @@ Automation on each project. The local-against-production run above is the simple
 - Stripe return URLs and emails → `/account` and app paths.
 - Chrome extension host permission → getsafefamily.com.
 - Old domains → 301 to hub paths (all except getsafetunes.com).
+
+## Universal settings + one family code (built 2026-09-10)
+- The hub's `kids` table is the one kid model (name, age, colour, hashed PIN, pause, requests, allowed hours); `familySettings` holds timezone + alert emails. Parents manage it all on `/dashboard/family`.
+- Apps pull `GET /family/sync?familyCode&key` (hub, admin-key gated) and mirror locally via each app's `convex/familySync.ts` (`pull` action, `apply` mutation), triggered once on the parent dashboard and once at the kid code screen. Kids match by name OR hub alias (the identity table knows Isabella = Bella). Apps never delete profiles.
+- First contact: an app whose family the hub doesn't know hands its kids up once (`POST /family/kids/bootstrap`); from then on the hub is authoritative — a PIN/age/colour changed inside an app is overwritten on the next pull. Manage them on the hub.
+- One family code: the hub is the only issuer. `familyCode:reconcileFamilyCodes` (hub, internal) pushes every account's code to every app's `/syncFamilyCode`. Run 2026-09-10 for all 49 accounts; SafeSpark's route now repairs its `families` row too.
+- **Deployment state:** the hub and all five app Convex backends were deployed FROM `feature/one-site` on 2026-09-10 (all additive). Do not deploy any Convex backend from `main` until this branch is merged, or these functions roll back.
