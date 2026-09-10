@@ -80,13 +80,30 @@ export const bootstrapKids = internalMutation({
       const hit = identities.find((row) => row.matchKeys.includes(key) || row.canonicalName.trim().toLowerCase() === key);
       return hit ? hit.canonicalName.trim() : raw.trim();
     };
-    const known = new Set(existing.map((k) => canonical(k.name).toLowerCase()));
+    const byCanonical = new Map(existing.filter((k) => !k.archived).map((k) => [canonical(k.name).toLowerCase(), k]));
+    const known = new Set(byCanonical.keys());
     let adopted = 0;
+    let filled = 0;
     const now = Date.now();
     for (const kid of args.kids) {
       // Adopt under the canonical name ("Bella", even if this app calls her "Isabella").
       const name = canonical(kid.name);
-      if (!name || known.has(name.toLowerCase())) continue;
+      if (!name) continue;
+      const have = byCanonical.get(name.toLowerCase());
+      if (have) {
+        // Known child: FILL GAPS only. Each app owns different facts (SafeTunes
+        // has allowed hours, SafeReads has ages, SafeTube has the PIN) and the
+        // first app to hand up shouldn't be the only one heard. Never overwrite
+        // a value the hub already holds.
+        const patch: Record<string, unknown> = {};
+        if (have.age == null && kid.age != null) patch.age = kid.age;
+        if (!have.color && kid.color) patch.color = kid.color;
+        if (!have.allowedStartTime && kid.allowedStartTime) patch.allowedStartTime = kid.allowedStartTime;
+        if (!have.allowedEndTime && kid.allowedEndTime) patch.allowedEndTime = kid.allowedEndTime;
+        if (!have.pinHash && kid.pin) patch.pinHash = kid.pin.startsWith("pbkdf2$") ? kid.pin : (/^\d{4}$/.test(kid.pin) ? await hashPin(kid.pin) : undefined);
+        if (Object.keys(patch).length) { await ctx.db.patch(have._id, { ...patch, updatedAt: now }); filled++; }
+        continue;
+      }
       let pinHash: string | undefined;
       if (kid.pin) pinHash = kid.pin.startsWith("pbkdf2$") ? kid.pin : (/^\d{4}$/.test(kid.pin) ? await hashPin(kid.pin) : undefined);
       await ctx.db.insert("kids", {
@@ -106,7 +123,7 @@ export const bootstrapKids = internalMutation({
       known.add(name.toLowerCase());
       adopted++;
     }
-    console.log(`[familySync] ${args.app} handed up ${adopted} kid(s) for ${familyCode}`);
-    return { adopted };
+    console.log(`[familySync] ${args.app} handed up ${adopted} new kid(s), filled gaps on ${filled}, for ${familyCode}`);
+    return { adopted, filled };
   },
 });

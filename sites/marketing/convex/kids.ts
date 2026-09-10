@@ -186,3 +186,32 @@ export const upsertByNameInternal = internalMutation({
     return { id, created: true };
   },
 });
+
+/** Operator repair: set universal fields on a child by family code + name (or alias). */
+export const adminSetByNameInternal = internalMutation({
+  args: {
+    familyCode: v.string(),
+    name: v.string(),
+    age: v.optional(v.number()),
+    color: v.optional(v.string()),
+    paused: v.optional(v.boolean()),
+    requestsEnabled: v.optional(v.boolean()),
+    allowedStartTime: v.optional(v.string()),
+    allowedEndTime: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const familyCode = args.familyCode.trim().toUpperCase();
+    const parent = await ctx.db.query("users").withIndex("by_familyCode", (q) => q.eq("familyCode", familyCode)).first();
+    if (!parent) throw new Error("unknown family code");
+    const ids = await ctx.db.query("kidIdentity").withIndex("by_family", (q) => q.eq("familyCode", familyCode)).collect();
+    const key = args.name.trim().toLowerCase();
+    const hit = ids.find((r) => r.matchKeys.includes(key) || r.canonicalName.trim().toLowerCase() === key);
+    const target = (hit?.canonicalName ?? args.name).trim().toLowerCase();
+    const kids = await ctx.db.query("kids").withIndex("by_parent", (q) => q.eq("parentUserId", parent._id)).collect();
+    const kid = kids.find((k) => !k.archived && k.name.trim().toLowerCase() === target);
+    if (!kid) throw new Error(`no hub kid named ${args.name}`);
+    const { familyCode: _f, name: _n, ...patch } = args;
+    await ctx.db.patch(kid._id, { ...Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)), updatedAt: Date.now() });
+    return { kid: kid.name, patched: Object.keys(patch).filter((k) => (patch as any)[k] !== undefined) };
+  },
+});
