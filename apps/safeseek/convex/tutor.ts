@@ -45,7 +45,9 @@ export const sendMessage = action({
     if (!searchCheck.canSearch) {
       return {
         response:
-          searchCheck.reason === "outside_hours"
+          searchCheck.reason === "paused"
+            ? "Search is paused right now. Ask your parent."
+            : searchCheck.reason === "outside_hours"
             ? "Tutor time is over for now. Come back during allowed hours!"
             : searchCheck.reason === "family_limit_reached"
               ? "That's all your screen time for today. Come back tomorrow!"

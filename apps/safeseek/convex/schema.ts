@@ -34,6 +34,10 @@ export default defineSchema({
     // exactly one parent and going unacknowledged. A second parent on the
     // thread is the difference between a flag and a conversation.
     alertEmails: v.optional(v.array(v.string())),
+
+    // Hub "universal family settings" sync (see familySync.ts). The hub's
+    // bundle updatedAt we last applied — a bundle no newer than this is skipped.
+    familySyncAppliedAt: v.optional(v.number()),
   })
     .index("email", ["email"])
     .index("by_familyCode", ["familyCode"])
@@ -64,6 +68,9 @@ export default defineSchema({
     // Daily query budget — null/undefined = use strictness default
     // (strict: 15, moderate: 25, light: 50, anything else: unlimited)
     dailyQueryBudget: v.optional(v.number()),
+    // Parent paused this kid from the hub (familySync.ts). Enforced in
+    // timeLimits.canSearch, which every kid-facing AI entry point checks.
+    accessPaused: v.optional(v.boolean()),
     createdAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"]),

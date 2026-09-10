@@ -1,7 +1,7 @@
 import { isEmbedded, shouldRedirectToHubDashboard, topNavigate, HUB_DASHBOARD } from '../lib/embed';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useAuth } from '../contexts/AuthContext';
 import TimeLimits from '../components/admin/TimeLimits';
@@ -1243,6 +1243,20 @@ export default function AdminDashboard() {
     api.topicRequests.getAllRequests,
     userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
+
+  // Mirror the hub's universal family settings (kid PINs, ages, colors,
+  // pauses, request permission, alert recipients) into this app once per
+  // dashboard load. Fire-and-forget — the dashboard never waits on the hub.
+  const pullFamilySync = useAction(api.familySync.pull);
+  const familySyncedFor = useRef('');
+  useEffect(() => {
+    const familyCode = userData?.familyCode;
+    if (!familyCode || familySyncedFor.current === familyCode) return;
+    familySyncedFor.current = familyCode;
+    pullFamilySync({ familyCode }).catch(() => {
+      /* hub down — local settings stay as they are */
+    });
+  }, [userData?.familyCode, pullFamilySync]);
 
   // Auto-provision: if JWT user is authenticated but has no local user record, create one
   useEffect(() => {

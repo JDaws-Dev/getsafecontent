@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query, internalQuery } from "./_generated/server";
 import { cascadeDeleteKidProfile } from "./lib/cascadeDelete";
 import { requireOwnerSoft, requireProfileOwner } from "./identity";
+import { hashPin, verifyPin } from "./safeAuth";
 
 /**
  * Strip sensitive fields (pin, rate-limit internals) from a profile
@@ -90,7 +91,8 @@ export const createProfile = mutation({
     if (args.lexileLevel) data.lexileLevel = args.lexileLevel;
     if (args.accessibilityNeeds) data.accessibilityNeeds = args.accessibilityNeeds;
     if (args.allowTopicRequests !== undefined) data.allowTopicRequests = args.allowTopicRequests;
-    if (args.pin) data.pin = args.pin;
+    // Stored hashed (PBKDF2). verifyKidPin still accepts legacy plaintext rows.
+    if (args.pin) data.pin = await hashPin(args.pin);
 
     const profileId = await ctx.db.insert("kidProfiles", data as any);
 
@@ -148,7 +150,7 @@ export const updateProfile = mutation({
     if (args.allowFollowUp !== undefined) updates.allowFollowUp = args.allowFollowUp;
     if (args.allowTopicRequests !== undefined) updates.allowTopicRequests = args.allowTopicRequests;
     if (args.pin !== undefined) {
-      updates.pin = args.pin === '' ? undefined : args.pin;
+      updates.pin = args.pin === '' ? undefined : await hashPin(args.pin);
       // Reset rate-limit counters when PIN is changed
       updates.pinFailedAttempts = 0;
       updates.pinLockedUntil = undefined;
@@ -194,8 +196,9 @@ export const verifyKidPin = mutation({
       });
     }
 
-    // Verify PIN
-    if (profile.pin === args.pin) {
+    // Verify PIN — hashed (pbkdf2$…, incl. hashes synced from the hub) or a
+    // legacy plaintext row written before PINs were hashed.
+    if (await verifyPin(args.pin, profile.pin)) {
       // Success — reset failed attempts
       if (profile.pinFailedAttempts && profile.pinFailedAttempts > 0) {
         await ctx.db.patch(args.profileId, {

@@ -17,6 +17,7 @@ import type * as concernAlertQueries from "../concernAlertQueries.js";
 import type * as concernAlerts from "../concernAlerts.js";
 import type * as crons from "../crons.js";
 import type * as emails from "../emails.js";
+import type * as familySync from "../familySync.js";
 import type * as http from "../http.js";
 import type * as identity from "../identity.js";
 import type * as intentCache from "../intentCache.js";
@@ -65,6 +66,7 @@ declare const fullApi: ApiFromModules<{
   concernAlerts: typeof concernAlerts;
   crons: typeof crons;
   emails: typeof emails;
+  familySync: typeof familySync;
   http: typeof http;
   identity: typeof identity;
   intentCache: typeof intentCache;

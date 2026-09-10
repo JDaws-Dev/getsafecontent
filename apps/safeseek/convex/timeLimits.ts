@@ -228,6 +228,17 @@ export const canSearch = query({
       return { canSearch: true, reason: null, remainingSearches: null };
     }
 
+    // PAUSED BY PARENT (set from the hub via familySync). Beats every limit
+    // below: nothing is served until the parent un-pauses, whatever the
+    // budget says. Search, expand, tutor and research all pass through here.
+    if (kidProfile.accessPaused === true) {
+      return {
+        canSearch: false,
+        reason: "paused",
+        remainingSearches: null,
+      };
+    }
+
     // Get parent user to get timezone
     const parentUser = await ctx.db.get(kidProfile.userId);
     const timezone = parentUser?.timezone;

@@ -9,6 +9,7 @@ import { isEmbedded, redirectKidToHubPlay } from '../lib/embed';
 import FamilyCodeEntry from '../components/kid/FamilyCodeEntry';
 import ProfileSelection from '../components/kid/ProfileSelection';
 import TimeLimitModal from '../components/kid/TimeLimitModal';
+import PausedNotice from '../components/kid/PausedNotice';
 import SearchHeader from '../components/kid/SearchHeader';
 import SafeFamilySwitcher from '../components/SafeFamilySwitcher';
 import SearchBar from '../components/kid/SearchBar';
@@ -311,6 +312,26 @@ export default function KidSearch() {
   const [showRequestsInbox, setShowRequestsInbox] = useState(false);
   const newApprovedCount = kidRequests?.filter(r => r.status === 'approved').length || 0;
 
+  // Mirror the hub's universal family settings (PINs, ages, pauses, ...) into
+  // this app as soon as the family code resolves — before the kid picks a
+  // profile, so the picker already reflects what the parent set on the hub.
+  // Fire-and-forget: a failed pull leaves the local profiles as they were.
+  const pullFamilySync = useAction(api.familySync.pull);
+  const familySyncedFor = useRef('');
+  useEffect(() => {
+    if (!familyCode || !user) return;
+    if (familySyncedFor.current === familyCode) return;
+    familySyncedFor.current = familyCode;
+    pullFamilySync({ familyCode }).catch(() => {
+      /* hub down — keep whatever we have */
+    });
+  }, [familyCode, user, pullFamilySync]);
+
+  // Live copy of the selected profile — `selectedProfile` is a snapshot taken
+  // at pick time, and a parent can pause a kid from the hub mid-session.
+  const liveProfile = kidProfiles?.find((p) => p._id === selectedProfile?._id);
+  const isPaused = (liveProfile ?? selectedProfile)?.accessPaused === true;
+
   // Validate family code
   useEffect(() => {
     if (familyCode && user === null) {
@@ -362,9 +383,9 @@ export default function KidSearch() {
     };
   }, [selectedProfile?._id, syncSharedScreenTime]);
 
-  // Check time limits
+  // Check time limits ("paused" has its own screen, not the time's-up modal)
   useEffect(() => {
-    if (canSearchStatus && !canSearchStatus.canSearch) {
+    if (canSearchStatus && !canSearchStatus.canSearch && canSearchStatus.reason !== 'paused') {
       setTimesUp(true);
     } else {
       setTimesUp(false);
@@ -870,6 +891,16 @@ export default function KidSearch() {
           navigate('/search');
         }}
         pinRefs={pinRefs}
+      />
+    );
+  }
+
+  // ========== PAUSED BY PARENT ==========
+  if (isPaused || canSearchStatus?.reason === 'paused') {
+    return (
+      <PausedNotice
+        profileName={selectedProfile.name}
+        onSwitchProfile={() => setSelectedProfile(null)}
       />
     );
   }

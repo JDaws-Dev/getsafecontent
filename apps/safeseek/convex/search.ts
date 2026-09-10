@@ -579,6 +579,20 @@ export const searchFromKid = action({
       };
     }
 
+    // Parent paused this kid from the hub (familySync). Checked before
+    // anything else so a paused kid never reaches the AI, whatever else says.
+    if (kidProfile.accessPaused === true) {
+      return {
+        safe: false,
+        results: [],
+        summary: "Search is paused right now. Ask your parent.",
+        flagged: false,
+        blocked: true,
+        reason: "paused",
+        images: [],
+      };
+    }
+
     const subCheck = await ctx.runQuery(internal.users.checkSubscriptionActive, {
       userId: kidProfile.userId,
     });
@@ -603,7 +617,9 @@ export const searchFromKid = action({
       return {
         safe: false,
         results: [],
-        summary: searchCheck.reason === "outside_hours"
+        summary: searchCheck.reason === "paused"
+          ? "Search is paused right now. Ask your parent."
+          : searchCheck.reason === "outside_hours"
           ? "Search time is over for now. Come back during allowed hours!"
           : searchCheck.reason === "family_limit_reached"
           // The family-wide limit is shared with the other Safe Family apps, so
@@ -912,7 +928,9 @@ export const expandSection = action({
     });
     if (!expandCheck.canSearch) {
       return {
-        content: expandCheck.reason === "outside_hours"
+        content: expandCheck.reason === "paused"
+          ? "Search is paused right now. Ask your parent."
+          : expandCheck.reason === "outside_hours"
           ? "Search time is over for now. Come back during allowed hours!"
           : expandCheck.reason === "family_limit_reached"
           ? "That's all your screen time for today. Come back tomorrow!"
