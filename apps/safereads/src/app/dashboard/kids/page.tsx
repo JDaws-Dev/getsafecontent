@@ -184,7 +184,8 @@ export default function KidsPage() {
                       name: editing.name,
                       age: editing.age,
                       color: editing.color,
-                      pin: editing.pin,
+                      // Hashed PINs (synced from the hub) can't be shown back
+                      pin: editing.pin && !editing.pin.startsWith("pbkdf2$") ? editing.pin : undefined,
                       readingLevel: editing.readingLevel,
                     }
                   : undefined

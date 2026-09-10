@@ -26,6 +26,7 @@ import type * as crons from "../crons.js";
 import type * as deleteUser from "../deleteUser.js";
 import type * as emails from "../emails.js";
 import type * as familyCodes from "../familyCodes.js";
+import type * as familySync from "../familySync.js";
 import type * as freeBooks from "../freeBooks.js";
 import type * as generateClassicCovers from "../generateClassicCovers.js";
 import type * as grantLifetime from "../grantLifetime.js";
@@ -85,6 +86,7 @@ declare const fullApi: ApiFromModules<{
   deleteUser: typeof deleteUser;
   emails: typeof emails;
   familyCodes: typeof familyCodes;
+  familySync: typeof familySync;
   freeBooks: typeof freeBooks;
   generateClassicCovers: typeof generateClassicCovers;
   grantLifetime: typeof grantLifetime;

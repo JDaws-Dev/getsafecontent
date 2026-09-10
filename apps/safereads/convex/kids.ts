@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { requireOwner } from "./identity";
+import { hashPin, verifyPin as checkPin } from "./safeAuth";
 
 /**
  * List all kids for a user.
@@ -79,6 +80,10 @@ export const update = mutation({
     const definedUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
     );
+    // A newly set PIN is stored hashed (verifyPin accepts hashed + legacy plaintext).
+    if (typeof definedUpdates.pin === "string" && definedUpdates.pin !== kid.pin) {
+      definedUpdates.pin = await hashPin(definedUpdates.pin);
+    }
     await ctx.db.patch(kidId, definedUpdates);
   },
 });
@@ -154,7 +159,8 @@ export const verifyPin = query({
       return false; // Locked out
     }
 
-    return kid.pin === args.pin;
+    if (!kid.pin) return false;
+    return await checkPin(args.pin, kid.pin);
   },
 });
 
@@ -182,7 +188,8 @@ export const verifyPinWithRateLimit = mutation({
       return { success: false, locked: true, remainingMinutes: remainingMin };
     }
 
-    if (kid.pin === args.pin) {
+    const pinOk = kid.pin ? await checkPin(args.pin, kid.pin) : false;
+    if (pinOk) {
       // Correct PIN — reset failed attempts
       await ctx.db.patch(args.kidId, {
         pinFailedAttempts: 0,
@@ -208,6 +215,22 @@ export const verifyPinWithRateLimit = mutation({
       pinFailedAttempts: failedAttempts,
     } as Record<string, unknown>);
     return { success: false, locked: false, attemptsRemaining: LOCKOUT_THRESHOLD - failedAttempts };
+  },
+});
+
+/**
+ * Kid-side access flags mirrored from the hub's universal family settings.
+ * Deliberately unauthenticated (kid path) and returns only two booleans.
+ */
+export const kidAccess = query({
+  args: { kidId: v.id("kids") },
+  handler: async (ctx, args) => {
+    const kid = await ctx.db.get(args.kidId);
+    if (!kid) return null;
+    return {
+      accessPaused: kid.accessPaused === true,
+      requestsEnabled: kid.requestsEnabled !== false,
+    };
   },
 });
 

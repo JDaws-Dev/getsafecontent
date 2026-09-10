@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Heart, Check, X, Loader2, Clock } from "lucide-react";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -30,6 +30,9 @@ export function RequestButton({
   const createRequest = useMutation(api.bookRequests.create);
   const [isLoading, setIsLoading] = useState(false);
   const [justRequested, setJustRequested] = useState(false);
+  // Universal family setting (hub): parent can turn kid requests off.
+  const access = useQuery(api.kids.kidAccess, { kidId });
+  const requestsOff = access?.requestsEnabled === false;
 
   if (isApproved) {
     return (
@@ -63,6 +66,14 @@ export function RequestButton({
       <span className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-50 to-green-50 px-3.5 py-2 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200">
         <Check className="h-3.5 w-3.5" />
         Approved
+      </span>
+    );
+  }
+
+  if (requestsOff) {
+    return (
+      <span className="flex items-center gap-1.5 rounded-full bg-gray-50 px-3.5 py-2 text-xs font-bold text-gray-400 ring-1 ring-gray-200">
+        Requests are off
       </span>
     );
   }

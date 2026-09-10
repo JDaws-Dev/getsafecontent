@@ -24,6 +24,10 @@ export const create = mutation({
     if (!kid) {
       throw new Error("Kid profile not found");
     }
+    // Universal family setting (hub): parent turned kid requests off.
+    if (kid.requestsEnabled === false) {
+      throw new Error("Book requests are turned off right now. Ask your parent.");
+    }
 
     // Auto-detect free book from googleBookId convention
     const isGutenberg = args.googleBookId.startsWith("gutenberg:");

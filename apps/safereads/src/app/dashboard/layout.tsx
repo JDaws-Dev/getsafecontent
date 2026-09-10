@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "../../../convex/_generated/api";
@@ -27,6 +27,9 @@ export default function DashboardLayout({
   // Track whether we've already attempted to provision the local user
   const [provisionAttempted, setProvisionAttempted] = useState(false);
   const [identitySynced, setIdentitySynced] = useState(false);
+  // Family code we last asked the hub to mirror its universal settings for.
+  const [familySyncedFor, setFamilySyncedFor] = useState<string | null>(null);
+  const pullFamilySettings = useAction(api.familySync.pull);
   const ensureUser = useMutation(api.userSync.ensureSafeReadsUser);
   // Pulls the authoritative family code off the verified login token onto the
   // local users row (docs/UNIFIED-IDENTITY.md) — replaces local code generation.
@@ -78,6 +81,17 @@ export default function DashboardLayout({
         console.warn("[DashboardLayout] Identity sync skipped:", err?.message ?? err);
       });
   }, [token, identitySynced, localUser, syncIdentity]);
+
+  // Once the parent's family code is known, mirror the hub's universal family
+  // settings (kids, PINs, pause, requests) onto this app. Fire-and-forget.
+  const parentFamilyCode = localUser?.familyCode ?? null;
+  useEffect(() => {
+    if (!parentFamilyCode || familySyncedFor === parentFamilyCode) return;
+    setFamilySyncedFor(parentFamilyCode);
+    pullFamilySettings({ familyCode: parentFamilyCode }).catch((err) => {
+      console.warn("[DashboardLayout] Family settings sync skipped:", err?.message ?? err);
+    });
+  }, [parentFamilyCode, familySyncedFor, pullFamilySettings]);
 
   // Combine central auth data with local user data
   const convexUser = localUser ? {

@@ -98,6 +98,8 @@ export default defineSchema({
 
     // Family code for kid login (shared across all Safe Family apps)
     familyCode: v.optional(v.string()),
+    // Newest hub timestamp already applied by familySync.apply (skip when unchanged)
+    familySyncAppliedAt: v.optional(v.number()),
 
     // Pre-approved books comfort level (controls which classics auto-approve for kids)
     preApprovedLevel: v.optional(v.union(
@@ -185,6 +187,9 @@ export default defineSchema({
     favoriteGenres: v.optional(v.array(v.string())),  // e.g. ["Adventure", "Science", "Fantasy"]
     dailyReadingGoalMinutes: v.optional(v.number()),   // e.g. 15, 30, 45, 60
     onboardingCompleted: v.optional(v.boolean()),
+    // Universal family settings mirrored from the hub (convex/familySync.ts)
+    accessPaused: v.optional(v.boolean()),     // true → kid area shows "Reading is paused"
+    requestsEnabled: v.optional(v.boolean()),  // false → kid cannot send book requests
   }).index("by_user", ["userId"]),
 
   wishlists: defineTable({

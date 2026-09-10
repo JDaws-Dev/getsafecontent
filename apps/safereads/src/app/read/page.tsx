@@ -1,9 +1,9 @@
 "use client";
 
 import { withBase } from "@/lib/appBase";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { FamilyCodeEntry } from "@/components/kid/FamilyCodeEntry";
 import { ProfileSelector } from "@/components/kid/ProfileSelector";
@@ -33,6 +33,19 @@ export default function PlayPage() {
     api.familyCodes.validateCode,
     familyCode ? { code: familyCode } : "skip"
   );
+
+  // Mirror the hub's universal family settings (kids, PINs, pause, requests)
+  // once per family code, as soon as we know one. Fire-and-forget: the
+  // profile list re-renders on its own when the sync changes anything.
+  const pullFamilySettings = useAction(api.familySync.pull);
+  const familySyncedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!familyCode || familySyncedFor.current === familyCode) return;
+    familySyncedFor.current = familyCode;
+    pullFamilySettings({ familyCode }).catch((err) => {
+      console.warn("[PlayPage] Family settings sync skipped:", err?.message ?? err);
+    });
+  }, [familyCode, pullFamilySettings]);
 
   // Cross-app kid pass: redeem an inbound ?kt= token so a kid who tapped the
   // switcher in a sibling app lands straight on their SafeReads dashboard —
