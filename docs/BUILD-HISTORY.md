@@ -644,3 +644,9 @@ CONVEX_DEPLOYMENT=prod:xxx npx convex deploy
 ---
 
 *End of Build History Archive*
+
+### 2026-09-10 — Family sync: every app hands its kids up once (all 6 prod backends)
+- **Bug:** the first hub hand-up came from SafeTube only, so the hub had no allowed hours; SafeTunes then mirrored the empty hub and dropped Bella's 08:00–21:00. Restored via `kids:adminSetByNameInternal` on the hub and re-pulled.
+- **Fix:** hub `POST /family/kids/bootstrap` now fills gaps on kids it already knows (never overwrites). Each app hands up once (`users.familySyncBootstrappedAt`) and again whenever the hub reports zero kids. Ages now come from SafeTube/SafeReads/SafeStudy/SafeSpark (range midpoints), hours from SafeTunes, PINs from SafeTube.
+- **State for ERLW4U on the hub:** Bella age 10, hours 08:00–21:00, PIN; Sara age 4, no hours (never had any — checked the 2026-09-09 iCloud backup), PIN. Alert email michelle.e.daws@gmail.com. Timezone unset until the Family tab is opened once.
+- Deployed from `feature/one-site`: adamant-crow-705 (71fa5d38), then all five app backends (de60333c). Main remains behind — merge before any main-based backend deploy.
