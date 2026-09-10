@@ -39,6 +39,7 @@ import type * as emailNotifications from "../emailNotifications.js";
 import type * as emails from "../emails.js";
 import type * as expoPushNotifications from "../expoPushNotifications.js";
 import type * as expoPushTokens from "../expoPushTokens.js";
+import type * as familySync from "../familySync.js";
 import type * as featured from "../featured.js";
 import type * as featuredPlaylists from "../featuredPlaylists.js";
 import type * as findBrokenIds from "../findBrokenIds.js";
@@ -125,6 +126,7 @@ declare const fullApi: ApiFromModules<{
   emails: typeof emails;
   expoPushNotifications: typeof expoPushNotifications;
   expoPushTokens: typeof expoPushTokens;
+  familySync: typeof familySync;
   featured: typeof featured;
   featuredPlaylists: typeof featuredPlaylists;
   findBrokenIds: typeof findBrokenIds;

@@ -49,6 +49,9 @@ export default defineSchema({
     // kid's minutes into the same "YYYY-MM-DD". Unset = UTC, which is what
     // SafeTunes' own daily bucket has always used.
     timezone: v.optional(v.string()),
+    // `updatedAt` of the last hub universal-settings bundle applied by
+    // familySync.apply — lets a repeat pull skip work when nothing changed.
+    familySyncAppliedAt: v.optional(v.number()),
     // Trial expiration tracking
     trialWarningEmailSent: v.optional(v.boolean()), // Whether trial expiring warning email was sent
   })

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { AVATAR_ICONS, COLORS } from '../constants/avatars';
 import musicKitService from '../config/musickit';
@@ -133,6 +133,15 @@ function ChildLoginPage() {
     api.kidProfiles.getKidProfilesByFamilyCode,
     savedFamilyCode ? { familyCode: savedFamilyCode } : 'skip'
   );
+
+  // Once the family code is known, mirror the hub's universal settings so the
+  // picker shows the hub's kids/PINs/pauses. Fire-and-forget; the profiles
+  // query above is reactive and repaints when the sync lands.
+  const pullFamilySync = useAction(api.familySync.pull);
+  useEffect(() => {
+    if (!savedFamilyCode) return;
+    pullFamilySync({ familyCode: savedFamilyCode }).catch(() => {});
+  }, [savedFamilyCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getAvatarIcon = (avatarId) => {
     const icon = AVATAR_ICONS.find(a => a.id === avatarId);

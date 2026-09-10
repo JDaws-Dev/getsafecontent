@@ -1,6 +1,6 @@
 import { isEmbedded, shouldRedirectToHubDashboard, HUB_DASHBOARD } from '../../lib/embed';
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import AlbumSearch from './AlbumSearch';
 import MusicLibrarySeparate from './MusicLibrarySeparate';
@@ -590,6 +590,15 @@ function AdminDashboard({ user, onLogout }) {
       if (tz) setTimezone({ userId: fullUser._id, timezone: tz }).catch(() => {});
     }
   }, [fullUser?._id, fullUser?.timezone, setTimezone]);
+
+  // Mirror the hub's universal family settings (kids, PINs, paused, allowed
+  // hours) once per visit. Fire-and-forget; the queries above are reactive and
+  // repaint when the sync lands. Fails open server-side.
+  const pullFamilySync = useAction(api.familySync.pull);
+  useEffect(() => {
+    if (!fullUser?.familyCode) return;
+    pullFamilySync({ familyCode: fullUser.familyCode }).catch(() => {});
+  }, [fullUser?.familyCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch pending requests from Convex
   const pendingRequests = useQuery(api.albumRequests.getPendingRequests,
