@@ -135,6 +135,11 @@ export default defineSchema({
     pinHash: v.optional(v.string()),
     // Soft-deleted flag so deletions propagate across apps without data loss
     archived: v.optional(v.boolean()),
+    // ── Universal settings (set once on the hub, applied by every app) ──
+    paused: v.optional(v.boolean()),          // "Pause everything" for this child
+    requestsEnabled: v.optional(v.boolean()), // may the child send approval requests
+    allowedStartTime: v.optional(v.string()), // "08:00" — allowed hours, family timezone
+    allowedEndTime: v.optional(v.string()),   // "21:00"
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   })
@@ -318,4 +323,13 @@ export default defineSchema({
     dailyLimitMinutes: v.number(),
     updatedAt: v.number(),
   }).index("by_family_kid", ["familyCode", "kidName"]),
+
+  // Family-wide settings every app applies (one record per family). Kids' own
+  // universal settings live on `kids`; this is what isn't per-child.
+  familySettings: defineTable({
+    familyCode: v.string(),
+    timezone: v.optional(v.string()),            // IANA; drives allowed hours + day boundaries everywhere
+    alertEmails: v.optional(v.array(v.string())), // who gets concern alerts (SafeStudy/SafeSpark)
+    updatedAt: v.number(),
+  }).index("by_family", ["familyCode"]),
 });

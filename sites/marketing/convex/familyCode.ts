@@ -1,6 +1,8 @@
 import { GenericMutationCtx } from "convex/server";
 import { v } from "convex/values";
-import { internalMutation } from "./_generated/server";
+import { internalAction } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { internalMutation, internalQuery } from "./_generated/server";
 import { DataModel } from "./_generated/dataModel";
 
 /**
@@ -74,5 +76,63 @@ export const backfillFamilyCodes = internalMutation({
       }
     }
     return { total: users.length, created };
+  },
+});
+
+
+// ── One family code per family, everywhere ─────────────────────────────────
+// Central is the only issuer. These push the hub's code onto each app's user
+// row (every app exposes GET /syncFamilyCode?key&email&code) so a family can
+// never end up with different codes in different apps.
+const APP_SYNC_ENDPOINTS: Array<[string, string, string]> = [
+  ["safetunes", "https://formal-chihuahua-623.convex.site", "ADMIN_KEY"],
+  ["safetube", "https://rightful-rabbit-333.convex.site", "ADMIN_KEY"],
+  ["safereads", "https://exuberant-puffin-838.convex.site", "ADMIN_KEY"],
+  ["safestudy", "https://strong-scorpion-227.convex.site", "ADMIN_KEY"],
+  ["safespark", "https://giddy-peacock-124.convex.site", "SAFESPARK_ADMIN_KEY"],
+];
+
+export const pushFamilyCodeToApps = internalAction({
+  args: { email: v.string(), familyCode: v.string() },
+  handler: async (_ctx, args) => {
+    const results: Record<string, string> = {};
+    for (const [app, base, keyEnv] of APP_SYNC_ENDPOINTS) {
+      const key = process.env[keyEnv];
+      if (!key) { results[app] = "no_key"; continue; }
+      try {
+        const url = new URL(`${base}/syncFamilyCode`);
+        url.searchParams.set("key", key);
+        url.searchParams.set("email", args.email.toLowerCase());
+        url.searchParams.set("code", args.familyCode.toUpperCase());
+        const res = await fetch(url.toString());
+        const body = await res.text();
+        results[app] = res.ok ? `ok ${body.slice(0, 80)}` : `http_${res.status} ${body.slice(0, 80)}`;
+      } catch (e) {
+        results[app] = `error ${String(e).slice(0, 80)}`;
+      }
+    }
+    return results;
+  },
+});
+
+/** Push every account's code to every app. Run after deploy; safe to re-run. */
+export const reconcileFamilyCodes = internalAction({
+  args: { onlyEmail: v.optional(v.string()) },
+  handler: async (ctx, args): Promise<Record<string, Record<string, string>>> => {
+    const users = await ctx.runQuery(internal.familyCode.listUsersWithCodes, {});
+    const out: Record<string, Record<string, string>> = {};
+    for (const u of users) {
+      if (args.onlyEmail && u.email !== args.onlyEmail.toLowerCase()) continue;
+      out[u.email] = await ctx.runAction(internal.familyCode.pushFamilyCodeToApps, { email: u.email, familyCode: u.familyCode });
+    }
+    return out;
+  },
+});
+
+export const listUsersWithCodes = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    return users.filter((u) => u.email && u.familyCode).map((u) => ({ email: u.email!.toLowerCase(), familyCode: u.familyCode! }));
   },
 });

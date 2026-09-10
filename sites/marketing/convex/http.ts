@@ -1997,6 +1997,48 @@ function screenTimeKeyOk(key: string | null): boolean {
   return Boolean(expected && key === expected);
 }
 
+// GET /family/sync?familyCode=..&key=..
+// Universal settings bundle (family settings + every child incl. PIN hash).
+// Apps pull this to mirror the hub's kids and settings locally.
+http.route({
+  path: "/family/sync",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const url = new URL(request.url);
+    if (!screenTimeKeyOk(url.searchParams.get("key"))) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: screenTimeHeaders });
+    }
+    const familyCode = url.searchParams.get("familyCode");
+    if (!familyCode) {
+      return new Response(JSON.stringify({ error: "familyCode is required" }), { status: 400, headers: screenTimeHeaders });
+    }
+    const bundle = await ctx.runQuery(internal.familySync.bundleByFamilyCode, { familyCode });
+    if (!bundle) {
+      return new Response(JSON.stringify({ error: "Unknown family code" }), { status: 404, headers: screenTimeHeaders });
+    }
+    return new Response(JSON.stringify(bundle), { status: 200, headers: screenTimeHeaders });
+  }),
+});
+
+// POST /family/kids/bootstrap  { familyCode, app, kids: [...], key }
+// An app hands up children the hub doesn't know yet (one-time adoption).
+http.route({
+  path: "/family/kids/bootstrap",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    let body: any;
+    try { body = await request.json(); } catch { body = {}; }
+    if (!screenTimeKeyOk(body?.key ?? null)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: screenTimeHeaders });
+    }
+    if (!body?.familyCode || !Array.isArray(body?.kids)) {
+      return new Response(JSON.stringify({ error: "familyCode and kids are required" }), { status: 400, headers: screenTimeHeaders });
+    }
+    const result = await ctx.runMutation(internal.familySync.bootstrapKids, { familyCode: String(body.familyCode), app: String(body.app || "unknown"), kids: body.kids });
+    return new Response(JSON.stringify(result), { status: 200, headers: screenTimeHeaders });
+  }),
+});
+
 // GET /sharedScreenTime/check?familyCode=..&kidName=..&day=..&key=..
 http.route({
   path: "/sharedScreenTime/check",

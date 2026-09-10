@@ -18,6 +18,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { Loader2, LogOut, Copy } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { clearAppSession } from "@/lib/appSession";
+import { FamilyTab } from "@/components/dashboard/FamilyTab";
 
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 
@@ -37,6 +38,7 @@ export default function DashboardPage() {
   const currentUser = useQuery(api.accounts.getCurrentUser, isAuthenticated ? {} : "skip");
 
   const slug = params?.app?.[0] ?? null;
+  const showFamily = slug === "family";
   const entitled = useMemo(
     () => APPS.filter((a) => (currentUser?.entitledApps ?? []).includes(a.id)),
     [currentUser?.entitledApps]
@@ -52,7 +54,7 @@ export default function DashboardPage() {
 
   // Unknown or un-entitled app in the URL → back to the overview.
   useEffect(() => {
-    if (slug && currentUser && !active) router.replace("/dashboard");
+    if (slug && slug !== "family" && currentUser && !active) router.replace("/dashboard");
   }, [slug, currentUser, active, router]);
 
   if (isLoading || !isAuthenticated || !currentUser) {
@@ -104,6 +106,13 @@ export default function DashboardPage() {
 
         {/* App tabs */}
         <div className="flex items-center gap-1 overflow-x-auto -mb-px">
+          <Link
+            href="/dashboard/family"
+            className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 whitespace-nowrap ${showFamily ? "text-navy border-[#E88B6A]" : "border-transparent text-navy/60 hover:text-navy"}`}
+          >
+            <span className="w-5 h-5 rounded-md bg-gradient-to-br from-[#F5A962] to-[#E88B6A]" />
+            Family
+          </Link>
           {entitled.map((a) => {
             const on = active?.slug === a.slug;
             return (
@@ -122,7 +131,9 @@ export default function DashboardPage() {
       </header>
 
       {/* Content */}
-      {active ? (
+      {showFamily ? (
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-8"><FamilyTab /></main>
+      ) : active ? (
         <iframe
           key={active.slug}
           title={`${active.name} dashboard`}
