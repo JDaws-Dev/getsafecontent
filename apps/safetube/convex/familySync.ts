@@ -155,6 +155,7 @@ export const localFamily = internalQuery({
     return {
       userId: user._id,
       familySyncAppliedAt: user.familySyncAppliedAt ?? null,
+      familySyncBootstrappedAt: user.familySyncBootstrappedAt ?? null,
       kids: profiles.map((p) => ({
         name: p.name,
         age: ageRangeToAge(p.ageRange),
@@ -166,6 +167,14 @@ export const localFamily = internalQuery({
         allowedEndTime: null,
       })),
     };
+  },
+});
+
+/** Stamp the one-time hand-up so we don't repeat it on every load. */
+export const markBootstrapped = internalMutation({
+  args: { userId: v.id("users"), at: v.number() },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, { familySyncBootstrappedAt: args.at });
   },
 });
 
@@ -319,9 +328,9 @@ async function fetchBundle(
  * Fetch the hub's family bundle and apply it locally. Fire-and-forget from the
  * parent dashboard and the kid profile picker.
  *
- * If the hub has never heard of this family's kids (zero kids in the bundle)
- * but we have local profiles, hand ours up once via /family/kids/bootstrap and
- * re-fetch, so the hub becomes the source of truth without losing anything.
+ * Every app hands its kids up ONCE via /family/kids/bootstrap (the hub fills
+ * gaps on kids it already knows and never overwrites), then re-fetches. We
+ * also hand up whenever the hub reports zero kids, so a wiped hub recovers.
  */
 export const pull = action({
   args: { familyCode: v.string() },
@@ -338,9 +347,11 @@ export const pull = action({
       if (!bundle) return { synced: false, reason: `sync_${status}` };
 
       let bootstrapped = false;
-      if (bundle.kids.length === 0) {
-        const local = await ctx.runQuery(internal.familySync.localFamily, { familyCode });
-        if (local && local.kids.length > 0) {
+      const local = await ctx.runQuery(internal.familySync.localFamily, { familyCode });
+      const needsHandUp =
+        local !== null && (bundle.kids.length === 0 || local.familySyncBootstrappedAt === null);
+      if (needsHandUp && local) {
+        if (local.kids.length > 0) {
           const res = await fetch(`${CENTRAL_URL}/family/kids/bootstrap`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -356,6 +367,13 @@ export const pull = action({
             return { synced: false, reason: `bootstrap_${res.status}` };
           }
           bootstrapped = true;
+          // Stamp only after a successful hand-up. With no local kids yet we
+          // leave it unset so the first pull after the parent adds one hands
+          // it up.
+          await ctx.runMutation(internal.familySync.markBootstrapped, {
+            userId: local.userId,
+            at: Date.now(),
+          });
           ({ status, bundle } = await fetchBundle(familyCode, adminKey));
           if (!bundle) return { synced: false, reason: `sync_${status}`, bootstrapped };
         }

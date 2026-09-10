@@ -11,8 +11,9 @@ import { isHashedPin } from "./safeAuth";
  * `pull` fetches the family bundle and `apply` writes it onto the local
  * `users` / `kids` rows, matching kids by name (trim, case-insensitive).
  *
- * Local kids are NEVER deleted. When the hub knows no kids for the family yet
- * but SafeReads does, `pull` bootstraps the hub with the local kids once and
+ * Local kids are NEVER deleted. Every app hands its own kids up to the hub
+ * once (the hub fills gaps on kids it already knows and never overwrites);
+ * `pull` also re-bootstraps whenever the hub reports zero kids, then
  * re-fetches so the hub-issued PIN hashes land locally.
  *
  * FAILS OPEN throughout — a missing ADMIN_KEY, unknown family, or unreachable
@@ -64,7 +65,7 @@ function bundleVersion(bundle: HubBundle): number {
   return Math.max(bundle.updatedAt ?? 0, ...bundle.kids.map((k) => k.updatedAt ?? 0));
 }
 
-/** Local kids for a family (used to decide whether to bootstrap the hub). */
+/** Local kids for a family plus whether we've already handed them up. */
 export const localKids = internalQuery({
   args: { familyCode: v.string() },
   handler: async (ctx, args) => {
@@ -77,7 +78,9 @@ export const localKids = internalQuery({
       .query("kids")
       .withIndex("by_user", (q) => q.eq("userId", parent._id))
       .collect();
-    return kids.map((k) => ({
+    return {
+      bootstrappedAt: parent.familySyncBootstrappedAt ?? null,
+      kids: kids.map((k) => ({
       name: k.name,
       age: k.age ?? null,
       color: k.color ?? null,
@@ -86,7 +89,20 @@ export const localKids = internalQuery({
       pin: k.pin && !isHashedPin(k.pin) ? k.pin : null,
       paused: k.accessPaused === true,
       requestsEnabled: k.requestsEnabled !== false,
-    }));
+      })),
+    };
+  },
+});
+
+/** Remember that this app has handed its kids up to the hub. */
+export const markBootstrapped = internalMutation({
+  args: { familyCode: v.string() },
+  handler: async (ctx, args) => {
+    const parent = await ctx.db
+      .query("users")
+      .withIndex("by_family_code", (q) => q.eq("familyCode", args.familyCode))
+      .first();
+    if (parent) await ctx.db.patch(parent._id, { familySyncBootstrappedAt: Date.now() });
   },
 });
 
@@ -200,19 +216,24 @@ export const pull = action({
       let bundle = await fetchBundle(familyCode, adminKey);
       if (!bundle) return { synced: false, reason: "unknown_family" };
 
-      // Hub knows no kids yet but SafeReads does → adopt ours, then re-fetch.
-      if (bundle.kids.length === 0) {
-        const mine = await ctx.runQuery(internal.familySync.localKids, { familyCode });
-        if (mine && mine.length > 0) {
-          const res = await fetch(`${CENTRAL_URL}/family/kids/bootstrap`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ familyCode, app: APP, key: adminKey, kids: mine }),
-          });
-          if (!res.ok) return { synced: false, reason: `bootstrap_${res.status}` };
-          bundle = await fetchBundle(familyCode, adminKey);
-          if (!bundle) return { synced: false, reason: "unknown_family" };
-        }
+      // Hand SafeReads' own kids up once per app (the hub fills gaps, never
+      // overwrites), and again whenever the hub reports zero kids. Re-fetch
+      // afterwards so hub-issued PIN hashes land locally.
+      // Only stamped once kids were actually sent, so a family that adds its
+      // first SafeReads kid later still gets handed up.
+      const mine = await ctx.runQuery(internal.familySync.localKids, { familyCode });
+      const shouldBootstrap =
+        !!mine && mine.kids.length > 0 && (bundle.kids.length === 0 || mine.bootstrappedAt === null);
+      if (mine && shouldBootstrap) {
+        const res = await fetch(`${CENTRAL_URL}/family/kids/bootstrap`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ familyCode, app: APP, key: adminKey, kids: mine.kids }),
+        });
+        if (!res.ok) return { synced: false, reason: `bootstrap_${res.status}` };
+        await ctx.runMutation(internal.familySync.markBootstrapped, { familyCode });
+        bundle = await fetchBundle(familyCode, adminKey);
+        if (!bundle) return { synced: false, reason: "unknown_family" };
       }
 
       const result = await ctx.runMutation(internal.familySync.apply, {

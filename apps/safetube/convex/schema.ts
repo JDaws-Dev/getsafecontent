@@ -35,6 +35,7 @@ export default defineSchema({
     // Central accounts sync
     centralAccessCacheExpiry: v.optional(v.number()), // When central access cache expires (for 5-min caching)
     familySyncAppliedAt: v.optional(v.number()), // hub bundle.updatedAt last applied by familySync.apply
+    familySyncBootstrappedAt: v.optional(v.number()), // when this app handed its kids up to the hub (once)
     // Trial expiration tracking
     trialWarningEmailSent: v.optional(v.boolean()), // Whether trial expiring warning email was sent
   })

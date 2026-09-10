@@ -145,7 +145,10 @@ export const localKidsForBootstrap = internalQuery({
   // them through `internal.familySync`, and without annotations that cycle
   // (this file → _generated/api → this file) makes TS give up on `internal`
   // for every file checked afterwards.
-  handler: async (ctx, args): Promise<{ kids: BootstrapKid[] } | null> => {
+  handler: async (
+    ctx,
+    args
+  ): Promise<{ kids: BootstrapKid[]; bootstrappedAt: number | null } | null> => {
     const user = await ctx.db
       .query("users")
       .withIndex("by_familyCode", (q) => q.eq("familyCode", args.familyCode))
@@ -156,9 +159,15 @@ export const localKidsForBootstrap = internalQuery({
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
     return {
+      bootstrappedAt: user.familySyncBootstrappedAt ?? null,
       kids: profiles.map((p) => ({
         name: p.name,
-        age: p.ageRange?.min ?? null,
+        // SafeStudy stores a {min,max} range (the UI writes min === max);
+        // the hub wants one number, so send the midpoint.
+        age:
+          typeof p.ageRange?.min === "number" && typeof p.ageRange?.max === "number"
+            ? Math.round((p.ageRange.min + p.ageRange.max) / 2)
+            : null,
         color: p.color ?? null,
         // The hub hashes whatever we send. A PIN this app has ALREADY hashed
         // (see kidProfiles.updateProfile) must not be hashed twice — the hub
@@ -168,6 +177,18 @@ export const localKidsForBootstrap = internalQuery({
         requestsEnabled: p.allowTopicRequests !== false,
       })),
     };
+  },
+});
+
+/** Remember that this app has handed its kids up to the hub. */
+export const markBootstrapped = internalMutation({
+  args: { familyCode: v.string(), at: v.number() },
+  handler: async (ctx, args): Promise<void> => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_familyCode", (q) => q.eq("familyCode", args.familyCode))
+      .first();
+    if (user) await ctx.db.patch(user._id, { familySyncBootstrappedAt: args.at });
   },
 });
 
@@ -322,22 +343,31 @@ export const pull = action({
       let got = await fetchBundle();
       if (!got.ok) return { synced: false, reason: got.reason };
 
-      // Hub knows the family but none of its kids yet: hand ours over so it
-      // becomes the source of truth, then read back what it now holds.
-      if (got.bundle.kids.length === 0) {
-        const local = await ctx.runQuery(internal.familySync.localKidsForBootstrap, {
-          familyCode,
-        });
-        if (local && local.kids.length > 0) {
+      // Hand our kids up to the hub ONCE per app (it fills gaps on kids it
+      // already knows and adopts the rest — never overwrites), and again any
+      // time the hub reports no kids at all. Then read back what it now holds.
+      const local = await ctx.runQuery(internal.familySync.localKidsForBootstrap, {
+        familyCode,
+      });
+      const needsBootstrap =
+        !!local && (got.bundle.kids.length === 0 || local.bootstrappedAt === null);
+      if (needsBootstrap && local) {
+        if (local.kids.length > 0) {
           const res = await fetch(`${CENTRAL_URL}/family/kids/bootstrap`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ familyCode, app: APP, key: adminKey, kids: local.kids }),
           });
           if (!res.ok) return { synced: false, reason: `bootstrap_${res.status}` };
-          got = await fetchBundle();
-          if (!got.ok) return { synced: false, reason: got.reason };
         }
+        // Nothing to hand up still counts: an app with no profiles has nothing
+        // the hub could be missing, and re-posting every pull would be noise.
+        await ctx.runMutation(internal.familySync.markBootstrapped, {
+          familyCode,
+          at: Date.now(),
+        });
+        got = await fetchBundle();
+        if (!got.ok) return { synced: false, reason: got.reason };
       }
 
       const result = await ctx.runMutation(internal.familySync.apply, { bundle: got.bundle });

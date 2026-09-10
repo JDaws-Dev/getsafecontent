@@ -97,8 +97,10 @@ export const localFamily = internalQuery({
       .query('kidProfiles')
       .withIndex('by_family', (q) => q.eq('familyId', family._id))
       .collect();
+    const parent = await ctx.db.get(family.parentUserId);
     return {
       familyId: family._id,
+      bootstrappedAt: parent?.familySyncBootstrappedAt ?? null,
       kids: profiles.map((p) => ({
         name: p.displayName,
         age: p.age ?? null,
@@ -110,6 +112,19 @@ export const localFamily = internalQuery({
         requestsEnabled: true,
       })),
     };
+  },
+});
+
+/** Record that this family's profiles have been handed up to the hub. */
+export const markBootstrapped = internalMutation({
+  args: { familyCode: v.string() },
+  handler: async (ctx, { familyCode }) => {
+    const family = await ctx.db
+      .query('families')
+      .withIndex('by_code', (q) => q.eq('familyCode', familyCode))
+      .first();
+    if (!family) return;
+    await ctx.db.patch(family.parentUserId, { familySyncBootstrappedAt: Date.now() });
   },
 });
 
@@ -262,9 +277,11 @@ export const apply = internalMutation({
  * only answers a request carrying the server-side admin key. The result
  * carries counts, never PINs or emails.
  *
- * When the hub knows the family but has NO kids yet and this app does, the
- * app hands its profiles up once (bootstrap) and re-pulls, so the hub adopts
- * them instead of SafeSpark wiping the picker.
+ * Every app hands its own profiles up to the hub ONCE (bootstrap) — the hub
+ * fills gaps on kids it already knows and never overwrites, so this is safe
+ * to repeat. It also fires whenever the hub reports zero kids, so a family
+ * that only ever set up SafeSpark is adopted instead of having its picker
+ * wiped. Then re-GET and apply.
  */
 export const pull = action({
   args: { familyCode: v.string() },
@@ -299,19 +316,22 @@ export const pull = action({
       if (bundle === 'error') return { synced: false, reason: 'hub_error' };
 
       let bootstrapped = 0;
-      if (bundle.kids.length === 0) {
-        const local = await ctx.runQuery(internal.familySync.localFamily, { familyCode });
-        if (local && local.kids.length > 0) {
-          const res = await fetchWithTimeout(`${CENTRAL_URL}/family/kids/bootstrap`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ familyCode, app: APP, key, kids: local.kids }),
-          });
-          if (res.ok) {
-            bootstrapped = local.kids.length;
-            const again = await getBundle();
-            if (again && again !== 'error') bundle = again;
-          }
+      const local = await ctx.runQuery(internal.familySync.localFamily, { familyCode });
+      const shouldBootstrap =
+        local !== null && (bundle.kids.length === 0 || local.bootstrappedAt === null);
+      // Only a real hand-up counts as done: a family with no local profiles
+      // yet keeps its turn, so kids the parent adds here later still go up.
+      if (shouldBootstrap && local && local.kids.length > 0) {
+        const res = await fetchWithTimeout(`${CENTRAL_URL}/family/kids/bootstrap`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ familyCode, app: APP, key, kids: local.kids }),
+        });
+        if (res.ok) {
+          bootstrapped = local.kids.length;
+          await ctx.runMutation(internal.familySync.markBootstrapped, { familyCode });
+          const again = await getBundle();
+          if (again && again !== 'error') bundle = again;
         }
       }
 

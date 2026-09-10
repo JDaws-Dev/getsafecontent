@@ -52,6 +52,9 @@ export default defineSchema({
     // `updatedAt` of the last hub universal-settings bundle applied by
     // familySync.apply — lets a repeat pull skip work when nothing changed.
     familySyncAppliedAt: v.optional(v.number()),
+    // When this app last handed its local kid profiles up to the hub
+    // (POST /family/kids/bootstrap). Unset = never; pull does it once.
+    familySyncBootstrappedAt: v.optional(v.number()),
     // Trial expiration tracking
     trialWarningEmailSent: v.optional(v.boolean()), // Whether trial expiring warning email was sent
   })

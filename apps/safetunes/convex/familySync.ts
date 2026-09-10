@@ -77,6 +77,17 @@ export function ageToAgeRange(age: number | null | undefined): string | undefine
 
 const normName = (s: string) => s.trim().toLowerCase();
 
+/** SafeTunes ageRange string → a representative age (bucket midpoint) for the hub. */
+export function ageRangeToAge(ageRange: string | null | undefined): number | null {
+  switch (ageRange) {
+    case "3-5": return 4;
+    case "6-8": return 7;
+    case "9-12": return 10;
+    case "13+": return 13;
+    default: return null;
+  }
+}
+
 // ───────────────────────── bundle shape ──────────────────────────────────────
 
 const nullableString = v.union(v.string(), v.null());
@@ -169,8 +180,10 @@ export const localSnapshot = internalQuery({
       .collect();
     return {
       familySyncAppliedAt: parent.familySyncAppliedAt ?? null,
+      familySyncBootstrappedAt: parent.familySyncBootstrappedAt ?? null,
       kids: profiles.map((p) => ({
         name: p.name,
+        age: ageRangeToAge(p.ageRange),
         color: p.color ? LOCAL_TO_HUB_HEX[p.color] ?? null : null,
         pin: p.pin ?? null,
         paused: Boolean(p.musicPaused),
@@ -179,6 +192,18 @@ export const localSnapshot = internalQuery({
         allowedEndTime: p.timeOfDayEnabled ? p.allowedEndTime ?? null : null,
       })),
     };
+  },
+});
+
+/** Record that this app has handed its profiles up to the hub. */
+export const markBootstrapped = internalMutation({
+  args: { familyCode: v.string() },
+  handler: async (ctx, args) => {
+    const parent = await ctx.db
+      .query("users")
+      .withIndex("by_family_code", (q) => q.eq("familyCode", args.familyCode))
+      .first();
+    if (parent) await ctx.db.patch(parent._id, { familySyncBootstrappedAt: Date.now() });
   },
 });
 
@@ -337,23 +362,29 @@ export const pull = action({
       let { status, bundle } = await fetchBundle(familyCode, adminKey);
       if (!bundle) return { ok: false, reason: status };
 
-      // First contact: the hub has no kids for this family but we do → hand
-      // ours up once, then re-pull so the bundle we apply is the hub's copy.
-      if (bundle.kids.length === 0) {
-        const local = await ctx.runQuery(internal.familySync.localSnapshot, { familyCode });
-        if (local && local.kids.length > 0) {
-          const res = await fetchWithTimeout(`${CENTRAL_URL}/family/kids/bootstrap`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ familyCode, app: APP, key: adminKey, kids: local.kids }),
-          });
-          if (res.ok) {
-            const again = await fetchBundle(familyCode, adminKey);
-            if (again.bundle) bundle = again.bundle;
-          } else {
-            console.warn(`[familySync] bootstrap failed for ${familyCode}: HTTP ${res.status}`);
-          }
+      // Hand-up: every app reports its local profiles to the hub ONCE (the hub
+      // adopts unknown kids and fills gaps on known ones, never overwrites).
+      // Also re-run whenever the hub has no kids at all. Then re-pull so the
+      // bundle we apply is the hub's copy.
+      const local = await ctx.runQuery(internal.familySync.localSnapshot, { familyCode });
+      const needsBootstrap =
+        bundle.kids.length === 0 || (local !== null && local.familySyncBootstrappedAt === null);
+      if (needsBootstrap && local && local.kids.length > 0) {
+        const res = await fetchWithTimeout(`${CENTRAL_URL}/family/kids/bootstrap`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ familyCode, app: APP, key: adminKey, kids: local.kids }),
+        });
+        if (res.ok) {
+          await ctx.runMutation(internal.familySync.markBootstrapped, { familyCode });
+          const again = await fetchBundle(familyCode, adminKey);
+          if (again.bundle) bundle = again.bundle;
+        } else {
+          console.warn(`[familySync] bootstrap failed for ${familyCode}: HTTP ${res.status}`);
         }
+      } else if (needsBootstrap && local && local.kids.length === 0) {
+        // Nothing to hand up; don't keep re-checking on every pull.
+        await ctx.runMutation(internal.familySync.markBootstrapped, { familyCode });
       }
 
       const result: { applied: boolean; reason?: string; created?: number; updated?: number } =

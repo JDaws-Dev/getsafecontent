@@ -38,6 +38,9 @@ export default defineSchema({
     // Hub "universal family settings" sync (see familySync.ts). The hub's
     // bundle updatedAt we last applied — a bundle no newer than this is skipped.
     familySyncAppliedAt: v.optional(v.number()),
+    // When this app last handed its own kid profiles up to the hub (the hub
+    // fills gaps on kids it knows and adopts the rest; it never overwrites).
+    familySyncBootstrappedAt: v.optional(v.number()),
   })
     .index("email", ["email"])
     .index("by_familyCode", ["familyCode"])
