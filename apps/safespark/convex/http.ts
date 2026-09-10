@@ -117,10 +117,21 @@ http.route({
     const email = url.searchParams.get('email');
     const code = url.searchParams.get('code');
     if (!email) return ok({ ok: false, error: 'email required' });
-    const result = await ctx.runMutation(internal.safespark.adminSyncFamilyCode, {
-      email,
-      code: code ?? undefined,
-    });
+    if (code) {
+      // Setting a code must fix the FAMILIES row too — that's what the kid
+      // login (/make?fc=) resolves against. adminSyncFamilyCode only touched
+      // the user row, so hub pushes never changed what kids actually type.
+      try {
+        const result = await ctx.runMutation(internal.families.adminRepairFamilyByEmail, {
+          email,
+          familyCode: code,
+        });
+        return ok({ ok: true, email: email.toLowerCase(), code: code.toUpperCase(), ...result });
+      } catch (e) {
+        return ok({ ok: false, error: String((e as Error).message ?? e) });
+      }
+    }
+    const result = await ctx.runMutation(internal.safespark.adminSyncFamilyCode, { email });
     return ok(result);
   }),
 });
