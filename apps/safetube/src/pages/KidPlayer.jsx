@@ -43,6 +43,18 @@ export default function KidPlayer() {
     familyCode ? { familyCode } : 'skip'
   );
 
+  // Pull the hub's universal settings (PIN, paused, requests) onto the local
+  // profiles as soon as the family code is known, so a switch flipped on
+  // getsafefamily.com is live before the kid picks a profile. Once per code,
+  // fire-and-forget — the picker renders from Convex either way.
+  const pullFamilySync = useAction(api.familySync.pull);
+  useEffect(() => {
+    if (!familyCode) return;
+    pullFamilySync({ familyCode }).catch(() => {
+      /* hub unreachable — last-known settings still apply */
+    });
+  }, [familyCode, pullFamilySync]);
+
   // Extract profiles and trial status
   const kidProfiles = kidProfilesData?.profiles;
   const isTrialExpired = kidProfilesData?.isTrialExpired;

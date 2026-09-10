@@ -1,7 +1,7 @@
 import { isEmbedded, shouldRedirectToHubDashboard, topNavigate, HUB_DASHBOARD } from '../lib/embed';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -88,6 +88,20 @@ export default function AdminDashboard() {
 
   // Use the current user from Convex Auth as userData
   const userData = currentUser;
+
+  // Mirror the hub's universal family settings (kid PINs, paused, requests,
+  // colour, age) onto this app's kid profiles. Once per load, fire-and-forget:
+  // a failed pull just leaves the last-known settings in place.
+  const pullFamilySync = useAction(api.familySync.pull);
+  const [familySyncPulled, setFamilySyncPulled] = useState(false);
+  useEffect(() => {
+    const familyCode = userData?.familyCode;
+    if (!familyCode || familySyncPulled) return;
+    setFamilySyncPulled(true);
+    pullFamilySync({ familyCode })
+      .then((result) => console.log('[AdminDashboard] Family sync:', result))
+      .catch((err) => console.warn('[AdminDashboard] Family sync skipped:', err?.message ?? err));
+  }, [userData?.familyCode, familySyncPulled, pullFamilySync]);
 
   // Active tab - consolidated from 8 to 4 tabs
   const [activeTab, setActiveTab] = useState('home');

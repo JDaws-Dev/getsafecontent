@@ -6,7 +6,7 @@ import { internal } from "./_generated/api";
  * Part of the unified-identity rotation path (docs/UNIFIED-IDENTITY.md) — lets
  * Central set this app's family code when a parent rotates ("swaps") it.
  *
- * Auth: requires `?key=` to match SAFETUBE_ADMIN_KEY (set in Convex env).
+ * Auth: requires `?key=` to match ADMIN_KEY or SAFETUBE_ADMIN_KEY (Convex env).
  * Fails closed — if the env var is unset, every request is rejected (no
  * hardcoded fallback secret).
  *
@@ -19,8 +19,12 @@ export default httpAction(async (ctx, request) => {
   const email = url.searchParams.get("email");
   const code = url.searchParams.get("code");
 
-  const ADMIN_SECRET = process.env.SAFETUBE_ADMIN_KEY;
-  if (!ADMIN_SECRET || !key || key !== ADMIN_SECRET) {
+  // The hub only holds ADMIN_KEY; older operator scripts still send
+  // SAFETUBE_ADMIN_KEY. Accept either. Fail closed when neither is set.
+  const accepted = [process.env.ADMIN_KEY, process.env.SAFETUBE_ADMIN_KEY].filter(
+    (k): k is string => Boolean(k)
+  );
+  if (accepted.length === 0 || !key || !accepted.includes(key)) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },

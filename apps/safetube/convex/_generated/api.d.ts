@@ -20,6 +20,7 @@ import type * as crons from "../crons.js";
 import type * as deleteUser from "../deleteUser.js";
 import type * as emails from "../emails.js";
 import type * as extensionApi from "../extensionApi.js";
+import type * as familySync from "../familySync.js";
 import type * as grantLifetime from "../grantLifetime.js";
 import type * as http from "../http.js";
 import type * as httpRateLimit from "../httpRateLimit.js";
@@ -66,6 +67,7 @@ declare const fullApi: ApiFromModules<{
   deleteUser: typeof deleteUser;
   emails: typeof emails;
   extensionApi: typeof extensionApi;
+  familySync: typeof familySync;
   grantLifetime: typeof grantLifetime;
   http: typeof http;
   httpRateLimit: typeof httpRateLimit;

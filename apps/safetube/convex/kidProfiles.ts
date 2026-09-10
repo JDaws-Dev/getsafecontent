@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query, internalMutation, type MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { requireOwner, requireProfileOwner } from "./identity";
 import { hashPin, verifyPin, isHashedPin } from "./safeAuth";
 
@@ -106,6 +107,38 @@ export const createKidProfile = mutation({
   },
 });
 
+// Shared server-side creation path with default icon/settings. Used by the
+// onboarding HTTP endpoint and by familySync.apply when the hub knows a kid we
+// don't. Plain function (not a registered Convex function) so mutations can
+// call it directly without an extra scheduler hop.
+export async function createKidProfileWithDefaults(
+  ctx: MutationCtx,
+  args: { userId: Id<"users">; name: string; color?: string | null }
+): Promise<Id<"kidProfiles">> {
+  // Get existing profiles to pick unique icon
+  const existing = await ctx.db
+    .query("kidProfiles")
+    .withIndex("by_user", (q) => q.eq("userId", args.userId))
+    .collect();
+
+  const usedIcons = new Set(existing.map((p) => p.icon));
+
+  // Pick first unused icon or random
+  const icon = DEFAULT_ICONS.find((i) => !usedIcons.has(i)) || DEFAULT_ICONS[Math.floor(Math.random() * DEFAULT_ICONS.length)];
+  const color = args.color || "blue";
+
+  return await ctx.db.insert("kidProfiles", {
+    userId: args.userId,
+    name: args.name,
+    icon,
+    color,
+    shortsEnabled: true,
+    maxVideosPerChannel: 5,
+    requestsEnabled: true,
+    createdAt: Date.now(),
+  });
+}
+
 // Internal mutation to create kid profile (used by HTTP endpoint for onboarding)
 export const createKidProfileInternal = internalMutation({
   args: {
@@ -114,30 +147,7 @@ export const createKidProfileInternal = internalMutation({
     color: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Get existing profiles to pick unique icon
-    const existing = await ctx.db
-      .query("kidProfiles")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .collect();
-
-    const usedIcons = new Set(existing.map((p) => p.icon));
-
-    // Pick first unused icon or random
-    const icon = DEFAULT_ICONS.find((i) => !usedIcons.has(i)) || DEFAULT_ICONS[Math.floor(Math.random() * DEFAULT_ICONS.length)];
-    const color = args.color || "blue";
-
-    const profileId = await ctx.db.insert("kidProfiles", {
-      userId: args.userId,
-      name: args.name,
-      icon,
-      color,
-      shortsEnabled: true,
-      maxVideosPerChannel: 5,
-      requestsEnabled: true,
-      createdAt: Date.now(),
-    });
-
-    return profileId;
+    return await createKidProfileWithDefaults(ctx, args);
   },
 });
 
