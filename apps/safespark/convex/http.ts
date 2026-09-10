@@ -126,7 +126,7 @@ http.route({
           email,
           familyCode: code,
         });
-        return ok({ ok: true, email: email.toLowerCase(), code: code.toUpperCase(), ...result });
+        return ok({ ...result, ok: true, email: email.toLowerCase(), code: code.toUpperCase() });
       } catch (e) {
         return ok({ ok: false, error: String((e as Error).message ?? e) });
       }
