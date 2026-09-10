@@ -42,6 +42,8 @@ const AVATAR_COLORS = new Set(AVATAR_COLORS_LIST);
 
 type HubKid = {
   name: string;
+  /** Lowercased alternate names for the same child, e.g. ["isabella", "bella"]. */
+  aliases?: string[];
   age: number | null;
   color: string | null;
   pinHash: string | null;
@@ -117,6 +119,7 @@ export const localFamily = internalQuery({
 
 const hubKidValidator = v.object({
   name: v.string(),
+  aliases: v.optional(v.array(v.string())),
   age: v.union(v.number(), v.null()),
   color: v.union(v.string(), v.null()),
   pinHash: v.union(v.string(), v.null()),
@@ -129,7 +132,8 @@ const hubKidValidator = v.object({
 
 /**
  * Field mapping (hub → SafeSpark kidProfiles):
- *   name        → matches displayName (trim, case-insensitive); creates when missing; never renames
+ *   name        → matches displayName (trim, case-insensitive) OR any alias; creates only when
+ *                 neither matches; never renames
  *   age         → age (only when the hub has a number)
  *   color       → avatarColor (only when it is one of the picker's palette names)
  *   pinHash     → pin (null clears the PIN)
@@ -171,8 +175,19 @@ export const apply = internalMutation({
       if (!byName.has(key)) byName.set(key, p);
     }
 
+    // Name first, then any alias — a local "Bella" is the hub's "Isabella".
+    const findLocal = (kid: { name: string; aliases?: string[] }) => {
+      const direct = byName.get(nameKey(kid.name));
+      if (direct) return direct;
+      for (const alias of kid.aliases ?? []) {
+        const hit = byName.get(nameKey(alias));
+        if (hit) return hit;
+      }
+      return undefined;
+    };
+
     const hubStamp = args.kids.reduce((max, k) => Math.max(max, k.updatedAt), args.updatedAt);
-    const everyKidExists = args.kids.every((k) => byName.has(nameKey(k.name)));
+    const everyKidExists = args.kids.every((k) => findLocal(k) !== undefined);
     const appliedAt = parent.familySyncAppliedAt ?? 0;
     if (appliedAt >= hubStamp && everyKidExists) {
       return { applied: false, reason: 'unchanged' as const };
@@ -185,7 +200,7 @@ export const apply = internalMutation({
     for (const kid of args.kids) {
       const name = kid.name.trim();
       if (!name) continue;
-      const local = byName.get(nameKey(name));
+      const local = findLocal(kid);
       const color = kid.color && AVATAR_COLORS.has(kid.color) ? kid.color : undefined;
 
       if (!local) {
@@ -306,6 +321,7 @@ export const pull = action({
         updatedAt: bundle.updatedAt,
         kids: bundle.kids.map((k) => ({
           name: k.name,
+          aliases: Array.isArray(k.aliases) ? k.aliases.map((a) => String(a)) : [],
           age: k.age ?? null,
           color: k.color ?? null,
           pinHash: k.pinHash ?? null,

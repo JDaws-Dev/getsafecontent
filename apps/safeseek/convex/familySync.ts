@@ -38,6 +38,9 @@ const kidValidator = v.object({
   paused: v.boolean(),
   requestsEnabled: v.boolean(),
   updatedAt: v.number(),
+  // Other lowercased names the hub knows this same child by ("isabella" for
+  // "Bella"). Used only for matching — the local profile keeps its own name.
+  aliases: v.optional(v.array(v.string())),
 });
 
 const bundleValidator = v.object({
@@ -56,6 +59,7 @@ type HubKid = {
   paused: boolean;
   requestsEnabled: boolean;
   updatedAt: number;
+  aliases: string[];
 };
 type HubBundle = {
   familyCode: string;
@@ -82,6 +86,9 @@ function shapeBundle(raw: any): HubBundle | null {
       paused: k.paused === true,
       requestsEnabled: k.requestsEnabled !== false,
       updatedAt: typeof k.updatedAt === "number" ? k.updatedAt : 0,
+      aliases: Array.isArray(k.aliases)
+        ? k.aliases.filter((a: unknown) => typeof a === "string" && a.trim()).map(nameKey)
+        : [],
     });
   }
   return {
@@ -215,7 +222,16 @@ export const apply = internalMutation({
     let created = 0;
     let patched = 0;
     for (const kid of bundle.kids) {
-      const local = byName.get(nameKey(kid.name));
+      // Match on the hub's name OR any alias — "Bella" here and "Isabella" in
+      // another app are one child, and an alias hit must never spawn a second
+      // profile for her.
+      let local = byName.get(nameKey(kid.name));
+      if (!local) {
+        for (const alias of kid.aliases ?? []) {
+          local = byName.get(alias);
+          if (local) break;
+        }
+      }
 
       if (!local) {
         const age = kid.age ?? DEFAULT_AGE;

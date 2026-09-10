@@ -29,6 +29,8 @@ interface HubKid {
   age: number | null;
   color: string | null;
   pinHash: string | null;
+  /** Lowercased names for the same child across apps, e.g. ["isabella","bella"]. */
+  aliases?: string[];
   paused: boolean;
   requestsEnabled: boolean;
   allowedStartTime: string | null;
@@ -49,6 +51,7 @@ const hubKidValidator = v.object({
   age: v.union(v.number(), v.null()),
   color: v.union(v.string(), v.null()),
   pinHash: v.union(v.string(), v.null()),
+  aliases: v.optional(v.array(v.string())),
   paused: v.boolean(),
   requestsEnabled: v.boolean(),
   updatedAt: v.number(),
@@ -115,7 +118,15 @@ export const apply = internalMutation({
     for (const hubKid of args.kids) {
       const key = normalizeName(hubKid.name);
       if (!key) continue;
-      const existing = byName.get(key);
+      // One child may go by different names in different apps ("Bella" here,
+      // "Isabella" in SafeTube). Match the hub name OR any alias — an alias
+      // hit must never create a second kid.
+      const candidates = [key, ...(hubKid.aliases ?? []).map(normalizeName)];
+      let existing: (typeof local)[number] | undefined;
+      for (const c of candidates) {
+        existing = byName.get(c);
+        if (existing) break;
+      }
 
       if (!existing) {
         // Same defaults as kids.create.
@@ -212,6 +223,7 @@ export const pull = action({
           age: k.age ?? null,
           color: k.color ?? null,
           pinHash: k.pinHash ?? null,
+          aliases: Array.isArray(k.aliases) ? k.aliases.map(String) : [],
           paused: k.paused === true,
           requestsEnabled: k.requestsEnabled !== false,
           updatedAt: k.updatedAt ?? 0,

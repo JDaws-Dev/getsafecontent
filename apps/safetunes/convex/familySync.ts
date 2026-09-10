@@ -91,6 +91,8 @@ const bundleKidValidator = v.object({
   allowedStartTime: nullableString,
   allowedEndTime: nullableString,
   updatedAt: v.number(),
+  // Lowercased alternate names for the same child (e.g. ["isabella","bella"]).
+  aliases: v.optional(v.array(v.string())),
 });
 
 const bundleValidator = v.object({
@@ -111,6 +113,7 @@ type BundleKid = {
   allowedStartTime: string | null;
   allowedEndTime: string | null;
   updatedAt: number;
+  aliases: string[];
 };
 type Bundle = {
   familyCode: string;
@@ -143,6 +146,9 @@ function normalizeBundle(raw: any): Bundle | null {
         allowedStartTime: str(k.allowedStartTime),
         allowedEndTime: str(k.allowedEndTime),
         updatedAt: typeof k.updatedAt === "number" ? k.updatedAt : 0,
+        aliases: Array.isArray(k.aliases)
+          ? k.aliases.filter((a: unknown) => typeof a === "string").map((a: string) => normName(a))
+          : [],
       })),
   };
 }
@@ -214,7 +220,14 @@ export const apply = internalMutation({
       const color = hubColorToLocal(kid.color);
       const ageRange = ageToAgeRange(kid.age);
 
-      const existing = byName.get(normName(name));
+      // Match on the hub name OR any alias — an alias hit must never create
+      // a duplicate profile.
+      const candidates = [normName(name), ...(kid.aliases ?? []).map(normName)];
+      let existing = undefined as (typeof profiles)[number] | undefined;
+      for (const key of candidates) {
+        existing = byName.get(key);
+        if (existing) break;
+      }
       if (!existing) {
         // Same defaults as kidProfiles.createKidProfile / createKidProfileInternal.
         await ctx.db.insert("kidProfiles", {

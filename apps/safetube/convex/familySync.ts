@@ -14,9 +14,10 @@ import { createKidProfileWithDefaults } from "./kidProfiles";
  * profile-picker load we pull the hub's bundle and overlay the universal
  * fields onto the matching local profiles.
  *
- * Matching is by kid NAME (trimmed, case-insensitive) — the same key the
- * shared screen-time bridge uses. Local profiles are never deleted; a kid the
- * hub knows but we don't gets created with the usual defaults.
+ * Matching is by kid NAME (trimmed, case-insensitive) or any of the hub kid's
+ * `aliases` (e.g. "isabella" ↔ "bella") — the same key the shared screen-time
+ * bridge uses. Local profiles are never deleted; a kid the hub knows but we
+ * don't (by name or alias) gets created with the usual defaults.
  *
  * FAILS OPEN. Missing ADMIN_KEY, unknown family, or an unreachable hub leaves
  * the local rows untouched; the app keeps working on whatever it last had.
@@ -68,6 +69,7 @@ const bundleKidValidator = v.object({
   requestsEnabled: v.optional(v.boolean()),
   allowedStartTime: v.optional(v.union(v.string(), v.null())),
   allowedEndTime: v.optional(v.union(v.string(), v.null())),
+  aliases: v.optional(v.array(v.string())), // lowercased names for the same child
   updatedAt: v.optional(v.number()),
 });
 
@@ -88,6 +90,7 @@ type BundleKid = {
   requestsEnabled?: boolean;
   allowedStartTime?: string | null;
   allowedEndTime?: string | null;
+  aliases?: string[];
   updatedAt?: number;
 };
 type Bundle = {
@@ -115,6 +118,9 @@ function normalizeBundle(raw: any, familyCode: string): Bundle | null {
       requestsEnabled: typeof k.requestsEnabled === "boolean" ? k.requestsEnabled : undefined,
       allowedStartTime: strOrNull(k.allowedStartTime),
       allowedEndTime: strOrNull(k.allowedEndTime),
+      aliases: Array.isArray(k.aliases)
+        ? k.aliases.filter((a: unknown): a is string => typeof a === "string").map(normName)
+        : [],
       updatedAt: num(k.updatedAt),
     });
   }
@@ -219,7 +225,15 @@ export const apply = internalMutation({
     let patched = 0;
     for (const kid of args.bundle.kids) {
       const key = normName(kid.name);
+      // Exact name first, then any alias the hub says means the same child.
+      // An alias hit must never spawn a duplicate profile.
       let profile = byName.get(key);
+      if (!profile) {
+        for (const alias of kid.aliases ?? []) {
+          profile = byName.get(normName(alias));
+          if (profile) break;
+        }
+      }
       let profileId: Id<"kidProfiles">;
       if (!profile) {
         profileId = await createKidProfileWithDefaults(ctx, {
