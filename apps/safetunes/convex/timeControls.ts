@@ -30,6 +30,19 @@ export function dayKeyForTimezone(timezone: string | undefined, at?: number): st
   }
 }
 
+/** Hour and minute right now in an IANA timezone (falls back to US Eastern). */
+export function localTimeOfDay(timezone: string | undefined, at?: number): { currentHour: number; currentMinute: number } {
+  const tz = timezone || "America/New_York";
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "numeric", hour12: false }).formatToParts(at ? new Date(at) : new Date());
+    const get = (t: string) => Number(parts.find((p) => p.type === t)?.value ?? 0);
+    return { currentHour: get("hour") % 24, currentMinute: get("minute") };
+  } catch {
+    const d = at ? new Date(at) : new Date();
+    return { currentHour: d.getUTCHours(), currentMinute: d.getUTCMinutes() };
+  }
+}
+
 // Helper to get today's date string in YYYY-MM-DD format
 const getTodayDateString = () => dayKeyForTimezone(undefined);
 
@@ -229,9 +242,12 @@ export const getTimeLimitSettings = query({
     let isOutsideAllowedHours = false;
     let timeOfDayMessage = null;
     if (profile.timeOfDayEnabled && profile.allowedStartTime && profile.allowedEndTime) {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
+      // The clock must be the FAMILY's, not the server's. Convex runs in UTC, so
+      // `new Date().getHours()` here said 00:28 at 8:28 PM Eastern and locked
+      // every kid out of their evening window. Use the parent's stored timezone;
+      // every family so far is in the US, so fall back to Eastern rather than UTC.
+      const parent = await ctx.db.get(profile.userId);
+      const { currentHour, currentMinute } = localTimeOfDay(parent?.timezone);
       const currentTotalMinutes = currentHour * 60 + currentMinute;
 
       const [startHour, startMin] = profile.allowedStartTime.split(':').map(Number);

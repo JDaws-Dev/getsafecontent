@@ -580,6 +580,17 @@ function AdminDashboard({ user, onLogout }) {
     user ? { userId: user._id } : 'skip'
   );
 
+  // Remember the family's timezone once: allowed hours and the daily-minutes
+  // day boundary are computed in it server-side (was UTC → kids locked out
+  // of their evening window).
+  const setTimezone = useMutation(api.users.setTimezone);
+  useEffect(() => {
+    if (fullUser?._id && !fullUser?.timezone) {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) setTimezone({ userId: fullUser._id, timezone: tz }).catch(() => {});
+    }
+  }, [fullUser?._id, fullUser?.timezone, setTimezone]);
+
   // Fetch pending requests from Convex
   const pendingRequests = useQuery(api.albumRequests.getPendingRequests,
     user ? { userId: user._id, userToken: token ?? undefined } : 'skip'

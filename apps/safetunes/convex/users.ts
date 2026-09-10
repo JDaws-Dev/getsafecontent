@@ -522,3 +522,13 @@ export const syncFamilyCodeByEmailInternal = internalMutation({
   },
 });
 
+
+// Parent's timezone, captured from the browser on dashboard load. Decides the
+// day boundary for listening minutes AND the clock for allowed hours.
+export const setTimezone = mutation({
+  args: { userId: v.id("users"), timezone: v.string() },
+  handler: async (ctx, args) => {
+    if (!/^[A-Za-z_]+\/[A-Za-z_\/+-]+$/.test(args.timezone)) return;
+    await ctx.db.patch(args.userId, { timezone: args.timezone });
+  },
+});

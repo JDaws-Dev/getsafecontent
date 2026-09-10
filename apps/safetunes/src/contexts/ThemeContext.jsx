@@ -10,10 +10,10 @@ export function ThemeProvider({ children }) {
   const [mounted, setMounted] = useState(false);
 
   // Get system preference
-  const getSystemTheme = useCallback(() => {
-    if (typeof window === 'undefined') return 'light';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }, []);
+  // SafeTunes is light-only for now: the dark theme only covers part of the
+  // UI (headlines and kid names went dark-on-dark), so the OS setting is
+  // deliberately ignored until the dark styles are finished.
+  const getSystemTheme = useCallback(() => 'light', []);
 
   // Resolve the actual theme to apply
   const resolveTheme = useCallback((themeValue) => {
@@ -68,9 +68,7 @@ export function ThemeProvider({ children }) {
     // This runs before React hydration completes
     const stored = localStorage.getItem(STORAGE_KEY);
     const initialTheme = stored || 'system';
-    const resolved = initialTheme === 'system'
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : initialTheme;
+    const resolved = initialTheme === 'system' ? 'light' : initialTheme;
     document.documentElement.classList.add(resolved);
   }, []);
 
