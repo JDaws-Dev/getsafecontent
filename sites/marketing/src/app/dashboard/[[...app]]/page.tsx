@@ -22,12 +22,25 @@ import { FamilyTab } from "@/components/dashboard/FamilyTab";
 
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 
-const APPS: { id: AppId; slug: string; name: string; tagline: string; color: string; adminPath: string }[] = [
+// SafeSpark is presented as COMING SOON for now: parents see what it is and that
+// it's on the way, but it does not open. Existing SafeSpark accounts can still
+// reach it directly at getsafespark.com — this only changes the hub.
+const APPS: { id: AppId; slug: string; name: string; tagline: string; color: string; adminPath: string; comingSoon?: boolean; blurb?: string }[] = [
   { id: "safetunes", slug: "tunes", name: "SafeTunes", tagline: "Music", color: "#7C4DE0", adminPath: "/tunes/admin" },
   { id: "safetube", slug: "tube", name: "SafeTube", tagline: "Video", color: "#F0603A", adminPath: "/tube/admin" },
   { id: "safereads", slug: "reads", name: "SafeReads", tagline: "Books", color: "#3AA06B", adminPath: "/reads/dashboard" },
   { id: "safestudy", slug: "study", name: "SafeStudy", tagline: "Search", color: "#2F6BF0", adminPath: "/study/admin" },
-  { id: "safespark", slug: "spark", name: "SafeSpark", tagline: "Build", color: "#F2A413", adminPath: "/spark/parent" },
+  {
+    id: "safespark",
+    slug: "spark",
+    name: "SafeSpark",
+    tagline: "Build",
+    color: "#F2A413",
+    adminPath: "/spark/parent",
+    comingSoon: true,
+    blurb:
+      "A supervised AI lab where kids learn to use AI well, rather than just use it. They practice asking better questions, checking the answers they get, improving the result, and owning the work. Every prompt and every project stays visible to you, with per-kid limits and a parent off-switch. Built for ages 9 to 15.",
+  },
 ];
 
 export default function DashboardPage() {
@@ -39,8 +52,13 @@ export default function DashboardPage() {
 
   const slug = params?.app?.[0] ?? null;
   const showFamily = slug === "family";
+  // Apps the family actually has, plus any coming-soon app (shown to everyone so
+  // parents know what's on the way).
   const entitled = useMemo(
-    () => APPS.filter((a) => (currentUser?.entitledApps ?? []).includes(a.id)),
+    () =>
+      APPS.filter(
+        (a) => a.comingSoon || (currentUser?.entitledApps ?? []).includes(a.id)
+      ),
     [currentUser?.entitledApps]
   );
   const active = slug ? entitled.find((a) => a.slug === slug) ?? null : null;
@@ -124,6 +142,11 @@ export default function DashboardPage() {
               >
                 <span className="w-5 h-5 rounded-md" style={{ background: a.color, opacity: on ? 1 : 0.55 }} />
                 {a.name}
+                {a.comingSoon && (
+                  <span className="ml-1 rounded-full bg-navy/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-navy/60">
+                    Soon
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -133,6 +156,22 @@ export default function DashboardPage() {
       {/* Content */}
       {showFamily ? (
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-8"><FamilyTab /></main>
+      ) : active?.comingSoon ? (
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-10">
+          <div className="max-w-2xl mx-auto rounded-2xl bg-white border border-navy/10 p-8">
+            <div className="flex items-center gap-4 mb-4">
+              <span className="w-12 h-12 rounded-xl shrink-0" style={{ background: active.color }} />
+              <div>
+                <h1 className="text-2xl font-bold text-navy">{active.name}</h1>
+                <p className="text-sm font-semibold uppercase tracking-wider text-navy/50">Coming soon</p>
+              </div>
+            </div>
+            <p className="text-navy/70 leading-relaxed">{active.blurb}</p>
+            <p className="text-sm text-navy/55 mt-5">
+              It isn&rsquo;t open yet. We&rsquo;ll let you know the moment it is.
+            </p>
+          </div>
+        </main>
       ) : active ? (
         <iframe
           key={active.slug}
@@ -158,7 +197,9 @@ export default function DashboardPage() {
                   <span className="w-12 h-12 rounded-xl shrink-0" style={{ background: a.color }} />
                   <span>
                     <span className="block font-bold text-navy">{a.name}</span>
-                    <span className="block text-sm text-navy/60">{a.tagline}</span>
+                    <span className="block text-sm text-navy/60">
+                      {a.comingSoon ? "Coming soon" : a.tagline}
+                    </span>
                   </span>
                 </Link>
               ))}

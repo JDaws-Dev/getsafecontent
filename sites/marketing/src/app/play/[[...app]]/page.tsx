@@ -25,7 +25,18 @@ const APPS = [
   { slug: "tube", name: "Videos", app: "SafeTube", color: "#F0603A", path: "/tube/play" },
   { slug: "reads", name: "Books", app: "SafeReads", color: "#3AA06B", path: "/reads/read" },
   { slug: "study", name: "Search", app: "SafeStudy", color: "#2F6BF0", path: "/study/play" },
-  { slug: "spark", name: "Build", app: "SafeSpark", color: "#F2A413", path: "/spark/make" },
+  // Coming soon: the tab still shows so kids know it's on the way, but it opens a
+  // short explainer instead of the app.
+  {
+    slug: "spark",
+    name: "Build",
+    app: "SafeSpark",
+    color: "#F2A413",
+    path: "/spark/make",
+    comingSoon: true,
+    blurb:
+      "Build your own games, stories and apps, with AI helping you along the way. You ask for what you want, try it out, then make it better.",
+  },
 ];
 
 const Glyph = ({ slug }: { slug: string }) => {
@@ -135,11 +146,29 @@ export default function PlayPage() {
             >
               <span className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: a.color, opacity: on ? 1 : 0.6 }}><Glyph slug={a.slug} /></span>
               {a.name}
+              {a.comingSoon && (
+                <span className="rounded-full bg-navy/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-navy/55">
+                  Soon
+                </span>
+              )}
             </Link>
           );
         })}
       </nav>
-      {active ? (
+      {active?.comingSoon ? (
+        <main className="flex-1 overflow-y-auto px-6 py-10">
+          <div className="max-w-xl mx-auto text-center flex flex-col items-center gap-5">
+            <span className="w-20 h-20 rounded-3xl flex items-center justify-center" style={{ background: active.color }}>
+              <Glyph slug={active.slug} />
+            </span>
+            <h1 className="text-3xl font-bold text-navy">{active.name} is almost ready</h1>
+            <p className="text-lg text-navy/70 leading-relaxed">{active.blurb}</p>
+            <p className="text-base text-navy/55">
+              It&rsquo;s not open yet. Check back soon!
+            </p>
+          </div>
+        </main>
+      ) : active ? (
         <iframe
           key={`${active.slug}-${code}`}
           title={`${active.app} for kids`}
@@ -156,7 +185,7 @@ export default function PlayPage() {
                 <Link key={a.slug} href={`/play/${a.slug}`} className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(34,29,46,0.10)] p-5 flex flex-col items-center gap-3 hover:-translate-y-0.5 transition">
                   <span className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: a.color }}><Glyph slug={a.slug} /></span>
                   <span className="text-lg font-bold text-navy">{a.name}</span>
-                  <span className="text-xs text-navy/50">{a.app}</span>
+                  <span className="text-xs text-navy/50">{a.comingSoon ? "Coming soon" : a.app}</span>
                 </Link>
               ))}
             </div>
