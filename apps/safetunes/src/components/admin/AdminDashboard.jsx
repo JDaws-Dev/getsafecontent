@@ -8,6 +8,7 @@ import AddMusic from './AddMusic';
 import AppleMusicAuth from './AppleMusicAuth';
 import KidProfileManager from './KidProfileManager';
 import RequestsView from './RequestsView';
+import ListeningHistory from './ListeningHistory';
 import Settings from './Settings';
 import GettingStarted from './GettingStarted';
 import ParentDashboardHome from './ParentDashboardHome';
@@ -721,6 +722,19 @@ function AdminDashboard({ user, onLogout }) {
                 <span>Music</span>
               </button>
               <button
+                onClick={() => setActiveTab('history')}
+                className={`${
+                  activeTab === 'history'
+                    ? 'border-b-2 border-accent-600 text-accent-600'
+                    : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
+                } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Activity</span>
+              </button>
+              <button
                 onClick={() => setActiveTab('getting-started')}
                 className={`${
                   activeTab === 'getting-started'
@@ -756,6 +770,18 @@ function AdminDashboard({ user, onLogout }) {
       {showMobileMenu && (
         <div className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-50" onClick={() => setShowMobileMenu(false)}>
           <div className="absolute top-16 right-4 bg-white rounded-lg shadow-xl py-2 min-w-[200px]" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => {
+                setActiveTab('history');
+                setShowMobileMenu(false);
+              }}
+              className="w-full px-4 py-3 text-left hover:bg-gray-100 transition flex items-center gap-3 text-gray-700"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-medium">Activity</span>
+            </button>
             <button
               onClick={() => {
                 setActiveTab('getting-started');
@@ -912,6 +938,11 @@ function AdminDashboard({ user, onLogout }) {
         {/* Album Requests Tab */}
         {activeTab === 'requests' && (
           <RequestsView user={user} />
+        )}
+
+        {/* Activity History Tab — full disclosure of what each kid played, searched, and auto-added */}
+        {activeTab === 'history' && (
+          <ListeningHistory user={user} />
         )}
 
         {/* Kids Tab */}

@@ -61,7 +61,7 @@ function LandingPage() {
           "name": "What devices does SafeTunes work on?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "SafeTunes works on any device with a web browser\u2014iPhone, iPad, Android phones and tablets, Chromebooks, Windows PCs, and Macs. Parents manage everything from their phone or computer. Kids can play their approved music from any device. A native iOS app is coming soon for an even better experience."
+            "text": "SafeTunes works on any device with a web browser\u2014iPhone, iPad, Android phones and tablets, Chromebooks, Windows PCs, and Macs. Parents manage everything from their phone or computer. Kids can play their approved music from any device."
           }
         },
         {
@@ -766,7 +766,7 @@ function LandingPage() {
                   What devices does SafeTunes work on?
                 </h3>
                 <p className="text-gray-600 text-sm">
-                  SafeTunes works on any device with a web browser—iPhone, iPad, Android phones and tablets, Chromebooks, Windows PCs, and Macs. Parents manage everything from their phone or computer. Kids can play their approved music from any device. A native iOS app is coming soon for an even better experience.
+                  SafeTunes works on any device with a web browser—iPhone, iPad, Android phones and tablets, Chromebooks, Windows PCs, and Macs. Parents manage everything from their phone or computer. Kids can play their approved music from any device.
                 </p>
               </div>
 
@@ -815,29 +815,6 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* iOS App Coming Soon */}
-      <section className="bg-white py-8 sm:py-10 border-t border-gray-200">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-accent-50 border-2 border-indigo-200 rounded-xl p-5 sm:p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <svg className="w-8 h-8 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 text-base sm:text-lg mb-2">Native iOS App Coming Soon</h3>
-                  <p className="text-sm sm:text-base text-gray-700">
-                    SafeTunes works perfectly in any browser right now—iPhone, iPad, Chromebook, Android, you name it.
-                    We're building a native iOS app for an even better experience, launching soon.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Final CTA */}
       <section className="py-12 sm:py-16 md:py-20 bg-white">

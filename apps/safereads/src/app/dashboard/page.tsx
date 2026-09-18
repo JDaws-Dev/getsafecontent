@@ -11,6 +11,7 @@ import {
   Search,
   ScanBarcode,
   Camera,
+  Activity,
   BookOpen,
   Users,
   Shield,
@@ -158,6 +159,25 @@ export default function DashboardPage() {
           </p>
           <p className="mt-0.5 text-sm text-ink-500">
             &ldquo;What should my 8-year-old read?&rdquo; &middot; &ldquo;Is this book ok for my kid?&rdquo; &middot; &ldquo;Find safer alternatives&rdquo;
+          </p>
+        </div>
+        <ChevronRight className="h-5 w-5 flex-shrink-0 text-ink-300" />
+      </Link>
+
+      {/* Activity — full disclosure of what kids do */}
+      <Link
+        href="/dashboard/activity"
+        className="mt-4 flex items-center gap-4 rounded-2xl border border-brand-cream-2 bg-white p-4 transition-colors hover:border-accent-300 hover:shadow-sm"
+      >
+        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-accent-100 text-accent-700">
+          <Activity className="h-6 w-6" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-base font-bold text-brand-navy">
+            Activity
+          </p>
+          <p className="mt-0.5 text-sm text-ink-500">
+            See what your kids read, searched for, and requested
           </p>
         </div>
         <ChevronRight className="h-5 w-5 flex-shrink-0 text-ink-300" />
