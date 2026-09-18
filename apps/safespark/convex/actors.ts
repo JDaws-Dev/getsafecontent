@@ -1,4 +1,5 @@
 import type { Id } from './_generated/dataModel';
+import { verifyMarketingToken as verifyHmacMarketingToken } from './safeAuth';
 import type { MutationCtx, QueryCtx } from './_generated/server';
 
 type Ctx = QueryCtx | MutationCtx;
@@ -22,43 +23,32 @@ export async function verifyMarketingToken(
   familyCode?: string;
   entitledApps: string[];
 } | null> {
-  const secret = process.env.MARKETING_JWT_SECRET;
-  if (!secret) return null;
-  try {
-    const { jwtVerify } = await import('jose');
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(secret),
-      // Pin HS256 (Marketing's only signing alg) so a forged header can't
-      // request a different algorithm; require an expiry so a correctly
-      // signed token can never be valid forever.
-      { issuer: 'getsafefamily.com', algorithms: ['HS256'] },
-    );
-    if (typeof payload.exp !== 'number') return null;
-    const userId = typeof payload.sub === 'string' ? payload.sub : null;
-    const email = typeof payload.email === 'string' ? payload.email : null;
-    if (!userId || !email) return null;
-    // Unified family code carried on the login JWT — the authoritative,
-    // same-across-every-app code. Apps must ADOPT this, never mint their own.
-    const familyCode =
-      typeof payload.familyCode === 'string'
-        ? payload.familyCode.toUpperCase().replace(/[^A-Z0-9]/g, '')
-        : undefined;
-    // entitledApps claim drives whether this account may use SafeSpark (the
-    // paid, token-cost tier). Used to gate auto-provisioning so only entitled
-    // accounts get a SafeSpark row created on first login.
-    const entitledApps = Array.isArray(payload.entitledApps)
-      ? (payload.entitledApps.filter((a) => typeof a === 'string') as string[])
-      : [];
-    return {
-      userId,
-      email: email.toLowerCase(),
-      familyCode: familyCode && familyCode.length === 6 ? familyCode : undefined,
-      entitledApps,
-    };
-  } catch {
-    return null;
-  }
+  // Delegate to the vendored WebCrypto verifier (safeAuth.ts). The previous
+  // implementation used `await import('jose')`, but a DYNAMIC import is not
+  // supported in Convex's query/mutation runtime — it throws, gets swallowed
+  // by the catch, and returns null for EVERY call. That silently broke every
+  // parent-facing SafeSpark query (family code, kids, activity, alerts): the
+  // parent page couldn't resolve the signed-in user and wrongly offered to
+  // "create a family code" instead of showing the unified one. safeAuth's
+  // verifier uses crypto.subtle (no import) and is the exact path the other
+  // four apps use, so this also makes SafeSpark consistent with them.
+  const verified = await verifyHmacMarketingToken(
+    token,
+    process.env.MARKETING_JWT_SECRET,
+  );
+  if (!verified) return null;
+  const familyCode =
+    typeof verified.familyCode === 'string'
+      ? verified.familyCode.toUpperCase().replace(/[^A-Z0-9]/g, '')
+      : undefined;
+  return {
+    userId: verified.marketingUserId,
+    email: verified.email.toLowerCase(),
+    familyCode: familyCode && familyCode.length === 6 ? familyCode : undefined,
+    entitledApps: Array.isArray(verified.entitledApps)
+      ? (verified.entitledApps.filter((a) => typeof a === 'string') as string[])
+      : [],
+  };
 }
 
 export type Actor = {

@@ -1,4 +1,5 @@
 import { mutation, query, internalMutation, internalQuery } from './_generated/server';
+import { verifyMarketingToken as verifyHmacMarketingToken } from './safeAuth';
 import { v } from 'convex/values';
 import type { Doc, Id } from './_generated/dataModel';
 
@@ -89,22 +90,18 @@ async function resolveSafeSparkIdentity(
 async function verifyMarketingToken(
   token: string,
 ): Promise<{ userId: string; email: string } | null> {
-  const secret = process.env.MARKETING_JWT_SECRET;
-  if (!secret) return null;
-  try {
-    const { jwtVerify } = await import('jose');
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(secret),
-      { issuer: 'getsafefamily.com' },
-    );
-    const userId = typeof payload.sub === 'string' ? payload.sub : null;
-    const email = typeof payload.email === 'string' ? payload.email : null;
-    if (!userId || !email) return null;
-    return { userId, email: email.toLowerCase() };
-  } catch {
-    return null;
-  }
+  // Uses the WebCrypto verifier in safeAuth.ts. The previous body called
+  // `await import('jose')`, which is unsupported in Convex's query/mutation
+  // runtime — it threw and returned null for every call, so this file's
+  // findUserRowByIdentity could never resolve a parent from their login
+  // token, and every parent-facing SafeSpark query silently came back empty
+  // (the "create a family code" bug). crypto.subtle needs no import.
+  const verified = await verifyHmacMarketingToken(
+    token,
+    process.env.MARKETING_JWT_SECRET,
+  );
+  if (!verified) return null;
+  return { userId: verified.marketingUserId, email: verified.email.toLowerCase() };
 }
 
 export async function findUserRowByIdentity(
