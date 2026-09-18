@@ -57,7 +57,7 @@ function SupportPage() {
     {
       id: 'logged-out',
       question: "Why does my kid keep getting logged out?",
-      answer: "Make sure they're using Safari or Chrome (not private/incognito mode). For the best experience, add SafeTunes to the home screen, or on iPhone, download the native app from the App Store."
+      answer: "Make sure they're using Safari or Chrome (not private/incognito mode). For the best experience, add SafeTunes to the home screen from getsafetunes.com."
     },
     {
       id: 'resent',
@@ -165,24 +165,10 @@ function SupportPage() {
                   </li>
                   <li className="flex gap-3">
                     <span className="font-bold text-green-600 flex-shrink-0">5.</span>
-                    <span>They can now listen to approved music! 🎵</span>
+                    <span>They can now listen to approved music.</span>
                   </li>
                 </ol>
 
-                {/* iPhone App Callout */}
-                <div className="mt-4 bg-accent-50 border border-accent-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-700">
-                    📱 <strong>iPhone Users:</strong> Download the <strong>SafeTunes app</strong> from the App Store for the best experience!{' '}
-                    <a
-                      href="https://apps.apple.com/app/safetunes-kids-music-player/id6744387963"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-accent-600 underline hover:text-accent-700 inline-flex items-center gap-1"
-                    >
-                      Get it here <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </p>
-                </div>
               </div>
 
               {/* QR Code */}
