@@ -11,12 +11,14 @@ import { CoverScanner } from "@/components/CoverScanner";
 import { BookCard, BookCardBook } from "@/components/BookCard";
 import { AuthorCard, AuthorCardData } from "@/components/AuthorCard";
 import { BookOpen, Search, Trash2, BookText, User } from "lucide-react";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
 
 type SearchMode = "title" | "author";
 
 export default function SearchPage() {
-  const { user: authUser } = useAuth();
-  const currentUser = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
+  const { user: authUser, token } = useAuth();
+  const userToken = token ?? undefined;
+  const currentUser = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip");
 
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
@@ -29,7 +31,7 @@ export default function SearchPage() {
 
   const searches = useQuery(
     api.searchHistory.listByUser,
-    currentUser?._id ? { userId: currentUser._id, count: 10 } : "skip"
+    currentUser?._id ? { userId: currentUser._id, count: 10, userToken } : "skip"
   );
 
   const [results, setResults] = useState<BookCardBook[]>([]);
@@ -39,6 +41,7 @@ export default function SearchPage() {
   const [clearing, setClearing] = useState(false);
   const [authorMatch, setAuthorMatch] = useState<AuthorCardData | null>(null);
   const [searchMode, setSearchMode] = useState<SearchMode>("title");
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const autoSearched = useRef(false);
 
   const handleSearch = useCallback(
@@ -120,6 +123,7 @@ export default function SearchPage() {
             userId: currentUser._id,
             query,
             resultCount: bookResults.length,
+            userToken,
           }).catch(() => {
             // Best-effort — don't break search if history recording fails
           });
@@ -130,7 +134,7 @@ export default function SearchPage() {
         setLoading(false);
       }
     },
-    [searchBooks, searchByAuthor, currentUser, recordSearch, searchMode]
+    [searchBooks, searchByAuthor, currentUser, recordSearch, searchMode, userToken]
   );
 
   // Auto-trigger search from ?q= query param
@@ -145,10 +149,14 @@ export default function SearchPage() {
     setLoading(true);
     setError(null);
     try {
-      const books = await identifyCover({ imageBase64 });
+      const books = await identifyCover({ imageBase64, userToken });
       setResults(books as BookCardBook[]);
       setSearched(true);
     } catch (err) {
+      if (err instanceof Error && err.message.includes("UPGRADE_REQUIRED")) {
+        setShowUpgrade(true);
+        return;
+      }
       const message =
         err instanceof Error ? err.message : "Could not identify the book.";
       setError(message);
@@ -161,7 +169,7 @@ export default function SearchPage() {
     if (!currentUser?._id) return;
     setClearing(true);
     try {
-      await clearAllHistory({ userId: currentUser._id });
+      await clearAllHistory({ userId: currentUser._id, userToken });
     } finally {
       setClearing(false);
     }
@@ -282,6 +290,8 @@ export default function SearchPage() {
           </div>
         </div>
       )}
+
+      {showUpgrade && <UpgradePrompt onDismiss={() => setShowUpgrade(false)} />}
     </div>
   );
 }

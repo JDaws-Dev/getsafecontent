@@ -34,14 +34,17 @@ import {
 export default function SettingsPage() {
   const router = useRouter();
   const { logout, user: authUser, token } = useAuth();
-  const user = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
-  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
-  const familyCode = useQuery(api.familyCodes.getByUser, userId ? { userId } : "skip");
+  const user = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip");
+  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip");
+  const familyCode = useQuery(
+    api.familyCodes.getByUser,
+    userId ? { userId, userToken: token ?? undefined } : "skip"
+  );
   const generateFamilyCode = useMutation(api.familyCodes.generate);
   const regenerateFamilyCode = useMutation(api.familyCodes.regenerate);
   const details = useQuery(
     api.subscriptions.getDetails,
-    authUser?.email ? { email: authUser.email } : "skip"
+    authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip"
   ) as {
     isSubscribed: boolean;
     status: string | null;
@@ -65,7 +68,7 @@ export default function SettingsPage() {
   const [deleteError, setDeleteError] = useState("");
 
   async function handleUpgrade() {
-    if (!authUser?.email) {
+    if (!authUser?.email || !token) {
       return;
     }
     setCheckoutLoading(true);
@@ -73,7 +76,7 @@ export default function SettingsPage() {
       const res = await fetch(withBase("/api/stripe/checkout"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: authUser.email }),
+        body: JSON.stringify({ email: authUser.email, userToken: token }),
       });
       const data = (await res.json()) as { url?: string };
       if (data.url) {
@@ -87,7 +90,7 @@ export default function SettingsPage() {
   }
 
   async function handleManage() {
-    if (!authUser?.email) {
+    if (!authUser?.email || !token) {
       return;
     }
     setPortalLoading(true);
@@ -95,7 +98,7 @@ export default function SettingsPage() {
       const res = await fetch(withBase("/api/stripe/portal"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: authUser.email }),
+        body: JSON.stringify({ email: authUser.email, userToken: token }),
       });
       const data = (await res.json()) as { url?: string };
       if (data.url) {
@@ -260,7 +263,7 @@ export default function SettingsPage() {
             </div>
 
             <p className="text-xs text-ink-500">
-              Go to <span className="font-medium">getsafereads.com/read</span> on your kid&apos;s device and enter this code.
+              Go to <span className="font-medium">getsafefamily.com/play</span> on your kid&apos;s device and enter this code.
             </p>
 
             <button
@@ -272,7 +275,7 @@ export default function SettingsPage() {
                 if (!confirmed) return;
                 setCodeGenerating(true);
                 try {
-                  await regenerateFamilyCode({ userId });
+                  await regenerateFamilyCode({ userId, userToken: token ?? undefined });
                 } finally {
                   setCodeGenerating(false);
                 }
@@ -290,7 +293,7 @@ export default function SettingsPage() {
               if (!userId) return;
               setCodeGenerating(true);
               try {
-                await generateFamilyCode({ userId });
+                await generateFamilyCode({ userId, userToken: token ?? undefined });
               } finally {
                 setCodeGenerating(false);
               }
@@ -364,6 +367,7 @@ export default function SettingsPage() {
                     await updatePreApprovedLevel({
                       email: authUser.email,
                       level: option.value,
+                      userToken: token ?? undefined,
                     });
                   }}
                   className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-all ${
@@ -442,7 +446,7 @@ export default function SettingsPage() {
         </a>
 
         <p className="mt-3 text-center text-xs text-ink-500">
-          Add SafeTunes, SafeTube, or manage billing at getsafefamily.com
+          Add SafeTunes, SafeTube, SafeStudy, or SafeSpark, or manage billing at getsafefamily.com
         </p>
       </div>
 

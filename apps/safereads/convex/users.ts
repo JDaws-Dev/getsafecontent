@@ -1,6 +1,7 @@
 import { mutation, query, action, internalQuery, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { ownRowForEmail, requireOwner } from "./identity";
 
 // Central accounts service URL (marketing site)
 const CENTRAL_ACCOUNTS_URL = process.env.CENTRAL_ACCOUNTS_URL || "https://getsafefamily.com";
@@ -17,6 +18,7 @@ export const updatePreApprovedLevel = mutation({
       v.literal("safe_and_caution"),
       v.literal("all_classics")
     ),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db
@@ -25,6 +27,9 @@ export const updatePreApprovedLevel = mutation({
       .first();
 
     if (!user) throw new Error("User not found");
+    // The email is client-supplied; without this anyone could flip another
+    // family's kids onto the "all classics" shelf (Dracula, Frankenstein...).
+    await requireOwner(ctx, args.userToken, user._id, "users.updatePreApprovedLevel");
     await ctx.db.patch(user._id, { preApprovedLevel: args.level });
   },
 });
@@ -37,12 +42,11 @@ const CENTRAL_ACCESS_CACHE_MS = 5 * 60 * 1000;
  * Used by frontend to get user data after JWT auth.
  */
 export const getUserByEmail = query({
-  args: { email: v.string() },
+  args: { email: v.string(), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    return await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
-      .first();
+    // Own row only. The Stripe checkout/portal routes call this server-side
+    // and forward the browser's token.
+    return await ownRowForEmail(ctx, args.userToken, args.email);
   },
 });
 
@@ -52,14 +56,9 @@ export const getUserByEmail = query({
  * The email should be passed from AuthContext.
  */
 export const currentUser = query({
-  args: { email: v.optional(v.string()) },
+  args: { email: v.optional(v.string()), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    if (!args.email) return null;
-    const email = args.email;
-    return await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", email.toLowerCase()))
-      .first();
+    return await ownRowForEmail(ctx, args.userToken, args.email);
   },
 });
 
@@ -68,14 +67,9 @@ export const currentUser = query({
  * Returns the user's Convex ID for use in queries that need it.
  */
 export const currentUserId = query({
-  args: { email: v.optional(v.string()) },
+  args: { email: v.optional(v.string()), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const email = args.email;
-    if (!email) return null;
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", email.toLowerCase()))
-      .first();
+    const user = await ownRowForEmail(ctx, args.userToken, args.email);
     return user?._id ?? null;
   },
 });
@@ -97,7 +91,7 @@ export const getUserByEmailInternal = internalQuery({
  * Mark onboarding as complete for a user by email.
  */
 export const completeOnboarding = mutation({
-  args: { email: v.string() },
+  args: { email: v.string(), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const user = await ctx.db
       .query("users")
@@ -105,6 +99,7 @@ export const completeOnboarding = mutation({
       .first();
 
     if (!user) throw new Error("User not found");
+    await requireOwner(ctx, args.userToken, user._id, "users.completeOnboarding");
     await ctx.db.patch(user._id, { onboardingComplete: true });
   },
 });

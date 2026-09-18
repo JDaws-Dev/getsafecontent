@@ -46,12 +46,24 @@ export const activateSubscription = internalMutation({
   },
 });
 
+/**
+ * Resolve the caller from their Marketing JWT and require an admin address.
+ * The dashboard queries below used to take `adminEmail` as a plain string —
+ * anyone who typed the owner's address got every customer's email and
+ * subscription status. Now the email comes from the verified token only.
+ */
+async function requireAdmin(ctx: QueryCtx | MutationCtx, userToken: string | undefined) {
+  const me = await resolveReaderIdentity(ctx, userToken);
+  if (!me || !isAdminEmail(me.email)) {
+    throw new Error("Not authorized");
+  }
+  return me;
+}
+
 export const getStats = query({
-  args: { adminEmail: v.string() },
+  args: { userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    if (!isAdminEmail(args.adminEmail)) {
-      throw new Error("Not authorized");
-    }
+    await requireAdmin(ctx, args.userToken);
 
     const users = await ctx.db.query("users").collect();
     const books = await ctx.db.query("books").collect();
@@ -99,11 +111,9 @@ export const getStats = query({
 });
 
 export const listUsers = query({
-  args: { adminEmail: v.string() },
+  args: { userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    if (!isAdminEmail(args.adminEmail)) {
-      throw new Error("Not authorized");
-    }
+    await requireAdmin(ctx, args.userToken);
 
     const users = await ctx.db.query("users").order("desc").take(100);
     const kids = await ctx.db.query("kids").collect();
@@ -130,9 +140,10 @@ export const listUsers = query({
 });
 
 export const isAdmin = query({
-  args: { email: v.string() },
+  args: { userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    return isAdminEmail(args.email);
+    const me = await resolveReaderIdentity(ctx, args.userToken);
+    return !!me && isAdminEmail(me.email);
   },
 });
 

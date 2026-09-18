@@ -9,7 +9,8 @@ import { BookCard } from "@/components/kid/BookCard";
 import { GenreBrowser } from "@/components/kid/GenreBrowser";
 import { StylizedCover } from "@/components/kid/StylizedCover";
 import { ReadingStreaks } from "@/components/kid/ReadingStreaks";
-import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star, Clock, Headphones, Wand2, Hourglass } from "lucide-react";
+import { BookOpen, Search, Trophy, TrendingUp, Loader2, Library, Sparkles, Star, Clock, Headphones, Wand2, Hourglass, Flame } from "lucide-react";
+import { AvatarIcon } from "@/components/kid/KidIcons";
 import Link from "next/link";
 import Image from "next/image";
 import { SafeFamilyHeaderSwitcher } from "@/components/SafeFamilySwitcher";
@@ -24,17 +25,6 @@ interface KidProfile {
   age?: number;
   color: string;
 }
-
-const GREETING_EMOJIS: Record<string, string> = {
-  red: "\uD83D\uDC32",
-  blue: "\uD83D\uDE80",
-  green: "\uD83E\uDD89",
-  purple: "\u2B50",
-  orange: "\uD83E\uDD81",
-  pink: "\uD83E\uDD84",
-  teal: "\uD83D\uDC2C",
-  yellow: "\u26A1",
-};
 
 const COLOR_GRADIENTS: Record<string, string> = {
   red: "from-red-400 via-rose-500 to-pink-500",
@@ -146,6 +136,7 @@ export default function KidHomePage() {
   // Inside the hub's /play iframe the shell owns the cross-app tabs.
   const embedded = useIsEmbedded();
   const [kidProfile, setKidProfile] = useState<KidProfile | null>(null);
+  const [savedCode, setSavedCode] = useState<string | null>(null);
   const [freeBooks, setFreeBooks] = useState<FreeBook[]>([]);
   const [freeBooksLoading, setFreeBooksLoading] = useState(false);
   const [freeBooksLoaded, setFreeBooksLoaded] = useState(false);
@@ -210,6 +201,7 @@ export default function KidHomePage() {
 
     try {
       setKidProfile(JSON.parse(profileData));
+      setSavedCode(localStorage.getItem("safereads_family_code"));
     } catch {
       router.replace("/read");
     }
@@ -229,7 +221,9 @@ export default function KidHomePage() {
 
   // Re-validate session against Convex (checks: code still valid, subscription active, profile exists)
   // Also fetches fresh profile data (fixes stale name/color after parent edits)
-  const savedCode = typeof window !== "undefined" ? localStorage.getItem("safereads_family_code") : null;
+  // `savedCode` is read into state alongside the profile (an effect), never
+  // during render — reading localStorage in render makes the server and
+  // client first paint disagree.
   const sessionValidation = useQuery(
     api.familyCodes.revalidateSession,
     kidProfile && savedCode
@@ -432,7 +426,9 @@ export default function KidHomePage() {
         cachedCoverUrl: cachedUrl,
         hasAudio: bookHasAudio,
         isClassic: isWellKnownClassic(book.title),
-        href: "/read/search",
+        // Land on the search page with this title already searched, so the
+        // card opens something instead of an empty search box.
+        href: `/read/search?q=${encodeURIComponent(book.title)}`,
         source: "free",
       });
     }
@@ -458,9 +454,10 @@ export default function KidHomePage() {
         cachedCoverUrl: cachedUrl,
         hasAudio: true,
         isClassic: isWellKnownClassic(book.title),
-        href: "/read/search?tab=audio",
+        href: `/read/listen/${encodeURIComponent(book.id)}`,
         source: "audiobook",
         totalTime: book.totalTime,
+        rssUrl: book.rssUrl,
       });
     }
 
@@ -539,7 +536,6 @@ export default function KidHomePage() {
   }
 
   const gradientClass = COLOR_GRADIENTS[kidProfile.color] || COLOR_GRADIENTS.purple;
-  const greetingEmoji = GREETING_EMOJIS[kidProfile.color] || "\u2B50";
   const pendingCount = pendingRequests?.filter((r) => r.status === "pending").length || 0;
 
   // Match currently reading books with their approved book data
@@ -603,8 +599,8 @@ export default function KidHomePage() {
       <div className={`animate-fade-up overflow-hidden rounded-3xl bg-gradient-to-br ${gradientClass} p-5 text-white shadow-xl sm:p-6`}
            style={{ animationDelay: "0.05s" }}>
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 text-3xl backdrop-blur-sm sm:h-[72px] sm:w-[72px] sm:text-4xl">
-            {greetingEmoji}
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm sm:h-[72px] sm:w-[72px]">
+            <AvatarIcon color={kidProfile.color} className="h-9 w-9 text-white drop-shadow-sm sm:h-10 sm:w-10" />
           </div>
           <div className="min-w-0">
             <h1 className="font-display truncate text-xl font-bold sm:text-2xl">
@@ -640,7 +636,7 @@ export default function KidHomePage() {
           </div>
           {streakData && streakData.currentStreak > 0 && (
             <div className="flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1.5 backdrop-blur-sm sm:px-3">
-              <span className="text-xs sm:text-sm">{"\uD83D\uDD25"}</span>
+              <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
               <span className="text-xs font-bold sm:text-sm">{streakData.currentStreak}</span>
               <span className="text-[10px] text-white/70 sm:text-xs">streak</span>
             </div>
@@ -758,7 +754,7 @@ export default function KidHomePage() {
           <div className="min-w-0 flex-1 text-left">
             <p className="text-base font-bold text-accent-900">Read the Bible</p>
             <p className="mt-0.5 text-xs text-accent-700/70">
-              ESV, NIV, NLT, NKJV, KJV and more
+              ESV, NIV, NLT, NKJV, NASB, and KJV
             </p>
           </div>
           <div className="flex-shrink-0 text-accent-400">
@@ -861,7 +857,7 @@ export default function KidHomePage() {
       {/* 4. Browse by Genre */}
       <section className="animate-fade-up mt-7" style={{ animationDelay: "0.15s" }}>
         <div className="flex items-center gap-2">
-          <span className="text-lg">{"\uD83C\uDF1F"}</span>
+          <Star className="h-4 w-4 text-accent-500" aria-hidden="true" />
           <h2 className="font-display text-lg font-bold text-brand-navy">
             Browse by Genre
           </h2>
@@ -909,7 +905,19 @@ export default function KidHomePage() {
                 return (
                   <button
                     key={book.id}
-                    onClick={() => router.push(book.href)}
+                    onClick={() => {
+                      if (book.source === "audiobook") {
+                        // Same hand-off the "Listen to a Story" cards use.
+                        localStorage.setItem("safereads_listen_book", JSON.stringify({
+                          title: book.title,
+                          author: book.author,
+                          coverUrl: displayUrl,
+                          rssUrl: book.rssUrl,
+                          totalTime: book.totalTime,
+                        }));
+                      }
+                      router.push(book.href);
+                    }}
                     className="group flex flex-shrink-0 flex-col items-start text-left"
                   >
                     <div className="book-tilt relative h-40 w-28 overflow-hidden rounded-xl bg-gray-100 shadow-md ring-1 ring-black/5 transition-all group-active:scale-[0.97]">
@@ -960,7 +968,7 @@ export default function KidHomePage() {
             </div>
           ) : recommendedLoaded ? (
             <div className="flex flex-col items-center rounded-2xl bg-white px-4 py-8 text-center shadow-sm">
-              <span className="text-3xl">{"\uD83D\uDCDA"}</span>
+              <BookOpen className="h-8 w-8 text-accent-300" aria-hidden="true" />
               <p className="mt-2 text-sm font-medium text-gray-500">
                 Recommendations will appear here soon!
               </p>
@@ -1124,7 +1132,7 @@ export default function KidHomePage() {
       <section id="bookshelf" className="animate-fade-up mt-7" style={{ animationDelay: "0.35s" }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-lg">{"\uD83D\uDCDA"}</span>
+            <Library className="h-4 w-4 text-accent-500" aria-hidden="true" />
             <h2 className="font-display text-lg font-bold text-brand-navy">My Bookshelf</h2>
           </div>
           <Link

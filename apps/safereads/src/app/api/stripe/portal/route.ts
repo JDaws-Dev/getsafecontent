@@ -18,8 +18,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get email from request body (with JWT auth, frontend sends user info)
-    let body: { email?: string } = {};
+    // The browser sends its Safe Family login token along with the email; the
+    // account lookup below only returns a row when the token proves ownership.
+    let body: { email?: string; userToken?: string } = {};
     try {
       body = await request.json();
     } catch {
@@ -27,15 +28,16 @@ export async function POST(request: NextRequest) {
     }
 
     const email = body.email;
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    const userToken = body.userToken;
+    if (!email || !userToken) {
+      return NextResponse.json({ error: "Please sign in again." }, { status: 401 });
     }
 
     const stripe = new Stripe(stripeSecretKey, {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    const user = await fetchQuery(api.users.getUserByEmail, { email });
+    const user = await fetchQuery(api.users.getUserByEmail, { email, userToken });
     if (!user?.stripeCustomerId) {
       return NextResponse.json(
         { error: "No subscription found" },
@@ -51,8 +53,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("Portal error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Portal access failed";
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: "Portal access failed. Please try again." }, { status: 500 });
   }
 }

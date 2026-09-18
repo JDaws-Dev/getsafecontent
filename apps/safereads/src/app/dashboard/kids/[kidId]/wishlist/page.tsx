@@ -74,7 +74,7 @@ export default function WishlistPage({
   const { user: authUser, token } = useAuth();
   const currentUser = useQuery(
     api.users.currentUser,
-    authUser?.email ? { email: authUser.email } : "skip"
+    authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip"
   );
   const kid = useQuery(api.kids.getById, {
     kidId: kidId as Id<"kids">,

@@ -8,6 +8,7 @@ import { ConversationList } from "@/components/chat/ConversationList";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { ArrowLeft, Bot, History } from "lucide-react";
 import { ChatInput } from "@/components/chat/ChatInput";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SUGGESTED_PROMPTS = [
@@ -17,15 +18,16 @@ const SUGGESTED_PROMPTS = [
 ];
 
 export default function ChatPage() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, token } = useAuth();
+  const userToken = token ?? undefined;
   const currentUser = useQuery(
     api.users.currentUser,
-    authUser?.email ? { email: authUser.email } : "skip"
+    authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip"
   );
 
   const conversations = useQuery(
     api.chat.listConversations,
-    currentUser?._id ? { userId: currentUser._id } : "skip"
+    currentUser?._id ? { userId: currentUser._id, userToken } : "skip"
   );
 
   const createConversation = useMutation(api.chat.createConversation);
@@ -35,8 +37,19 @@ export default function ChatPage() {
   const [activeConversationId, setActiveConversationId] =
     useState<Id<"conversations"> | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
   // Mobile: show history list (false = show chat/welcome, true = show history)
   const [showHistory, setShowHistory] = useState(false);
+
+  // The advisor is paywalled like every other AI feature; an expired trial
+  // gets the same upgrade prompt as the book review does.
+  const handleSendError = useCallback((err: unknown) => {
+    if (err instanceof Error && err.message.includes("UPGRADE_REQUIRED")) {
+      setShowUpgrade(true);
+    } else {
+      console.error("Failed to send message:", err);
+    }
+  }, []);
 
   const handleSelectConversation = useCallback(
     (id: Id<"conversations">) => {
@@ -48,12 +61,12 @@ export default function ChatPage() {
 
   const handleDeleteConversation = useCallback(
     async (id: Id<"conversations">) => {
-      await deleteConversation({ conversationId: id });
+      await deleteConversation({ conversationId: id, userToken });
       if (activeConversationId === id) {
         setActiveConversationId(null);
       }
     },
-    [deleteConversation, activeConversationId]
+    [deleteConversation, activeConversationId, userToken]
   );
 
   const handleNewChat = useCallback(() => {
@@ -69,14 +82,15 @@ export default function ChatPage() {
         await sendMessage({
           conversationId: activeConversationId,
           content,
+          userToken,
         });
       } catch (err) {
-        console.error("Failed to send message:", err);
+        handleSendError(err);
       } finally {
         setIsSending(false);
       }
     },
-    [activeConversationId, sendMessage]
+    [activeConversationId, sendMessage, userToken, handleSendError]
   );
 
   // Send from the welcome screen — auto-create conversation first
@@ -88,16 +102,17 @@ export default function ChatPage() {
         const id = await createConversation({
           userId: currentUser._id,
           title: "New conversation",
+          userToken,
         });
         setActiveConversationId(id);
-        await sendMessage({ conversationId: id, content });
+        await sendMessage({ conversationId: id, content, userToken });
       } catch (err) {
-        console.error("Failed to send message:", err);
+        handleSendError(err);
       } finally {
         setIsSending(false);
       }
     },
-    [currentUser?._id, createConversation, sendMessage]
+    [currentUser?._id, createConversation, sendMessage, userToken, handleSendError]
   );
 
   if (!currentUser) {
@@ -181,6 +196,7 @@ export default function ChatPage() {
               <div className="flex-1 overflow-hidden">
                 <ChatWindow
                   conversationId={activeConversationId}
+                  userToken={userToken}
                   onSend={handleSend}
                   isSending={isSending}
                 />
@@ -230,6 +246,7 @@ export default function ChatPage() {
           )}
         </div>
       </div>
+      {showUpgrade && <UpgradePrompt onDismiss={() => setShowUpgrade(false)} />}
     </div>
   );
 }

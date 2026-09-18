@@ -4,20 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, Library } from "lucide-react";
 import type { Id } from "../../../convex/_generated/dataModel";
-
-// Fun avatar icons per color — gives each profile personality
-const AVATAR_ICONS: Record<string, string> = {
-  red: "\uD83D\uDC32",     // dragon
-  blue: "\uD83D\uDE80",    // rocket
-  green: "\uD83E\uDD89",   // owl
-  purple: "\u2B50",         // star
-  orange: "\uD83E\uDD81",  // lion
-  pink: "\uD83E\uDD84",    // unicorn
-  teal: "\uD83D\uDC2C",    // dolphin
-  yellow: "\u26A1",         // lightning
-};
+import { AvatarIcon } from "./KidIcons";
 
 // Gradient backgrounds for avatar circles
 const COLOR_GRADIENTS: Record<string, string> = {
@@ -172,9 +161,8 @@ export function ProfileSelector({
 
       {/* Header */}
       <div className="mb-2 text-center">
-        <div className="relative mx-auto mb-4 w-fit">
-          <span className="text-5xl">{"\uD83D\uDCDA"}</span>
-          
+        <div className="relative mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md ring-1 ring-black/5">
+          <Library className="h-8 w-8 text-accent-600" strokeWidth={2.25} aria-hidden="true" />
         </div>
         <h1 className="text-center font-display text-2xl font-bold text-brand-navy">
           {familyName}&apos;s Library
@@ -189,7 +177,6 @@ export function ProfileSelector({
         {kids.map((kid) => {
           const gradientClass = COLOR_GRADIENTS[kid.color] || COLOR_GRADIENTS.purple;
           const ringClass = COLOR_RINGS[kid.color] || COLOR_RINGS.purple;
-          const icon = AVATAR_ICONS[kid.color] || "\u2B50";
           return (
             <button
               key={kid._id}
@@ -198,7 +185,7 @@ export function ProfileSelector({
             >
               {/* Avatar with gradient + icon */}
               <div className={`relative flex h-[84px] w-[84px] items-center justify-center rounded-full bg-gradient-to-br ${gradientClass} ring-4 ${ringClass} shadow-lg transition-transform duration-200 group-hover:scale-110 sm:h-24 sm:w-24`}>
-                <span className="text-4xl sm:text-5xl drop-shadow-sm">{icon}</span>
+                <AvatarIcon color={kid.color} className="h-10 w-10 text-white drop-shadow-sm sm:h-12 sm:w-12" />
                 {kid.hasPin && (
                   <div className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md ring-2 ring-white">
                     <Lock className="h-3.5 w-3.5 text-gray-400" />
@@ -231,7 +218,7 @@ export function ProfileSelector({
           <div className="w-full max-w-xs rounded-3xl bg-white p-6 shadow-2xl">
             <div className="text-center">
               <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${COLOR_GRADIENTS[selectedKid.color] || COLOR_GRADIENTS.purple}`}>
-                <span className="text-3xl">{AVATAR_ICONS[selectedKid.color] || "\u2B50"}</span>
+                <AvatarIcon color={selectedKid.color} className="h-8 w-8 text-white" />
               </div>
               <h2 className="mt-3 font-display text-lg font-bold text-brand-navy">
                 Hi, {selectedKid.name}!

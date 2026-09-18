@@ -213,17 +213,17 @@ function getWelcomeEmailHtml(name: string): string {
               <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
                 <tr>
                   <td style="padding: 12px 0; border-bottom: 1px solid #f0ede8;">
-                    <span style="font-size: 14px; color: #1a1a1a;">✓ Unlimited book reviews</span>
+                    <span style="display: inline-block; width: 8px; height: 8px; margin-right: 10px; border-radius: 50%; background-color: #3AA06B; vertical-align: middle;"></span><span style="font-size: 14px; color: #1a1a1a; vertical-align: middle;">Unlimited book reviews</span>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding: 12px 0; border-bottom: 1px solid #f0ede8;">
-                    <span style="font-size: 14px; color: #1a1a1a;">✓ Full content breakdowns</span>
+                    <span style="display: inline-block; width: 8px; height: 8px; margin-right: 10px; border-radius: 50%; background-color: #3AA06B; vertical-align: middle;"></span><span style="font-size: 14px; color: #1a1a1a; vertical-align: middle;">Full content breakdowns</span>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding: 12px 0;">
-                    <span style="font-size: 14px; color: #1a1a1a;">✓ Priority support</span>
+                    <span style="display: inline-block; width: 8px; height: 8px; margin-right: 10px; border-radius: 50%; background-color: #3AA06B; vertical-align: middle;"></span><span style="font-size: 14px; color: #1a1a1a; vertical-align: middle;">Priority support</span>
                   </td>
                 </tr>
               </table>

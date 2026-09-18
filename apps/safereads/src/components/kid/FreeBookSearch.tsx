@@ -264,8 +264,8 @@ export function FreeBookSearch({ kidId, audioOnly, initialQuery }: FreeBookSearc
                 {/* Audio indicator overlay */}
                 {(book.hasAudio || book.source === "librivox" || book.source === "lit2go") && (
                   <div className="absolute right-1 top-1">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-500 text-[8px] text-white shadow-sm">
-                      {"\uD83C\uDFA7"}
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-500 text-white shadow-sm">
+                      <Headphones className="h-2.5 w-2.5" aria-hidden="true" />
                     </span>
                   </div>
                 )}

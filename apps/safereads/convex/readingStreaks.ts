@@ -5,48 +5,51 @@ import { mutation, query } from "./_generated/server";
 // Badge Definitions
 // ========================================================================
 
+// `icon` is a named key the client maps to an SVG (src/components/kid/
+// KidIcons.tsx). Badges used to ship an emoji string to the browser; house
+// rule is no emoji on any kid screen.
 export const BADGE_DEFINITIONS: Record<
   string,
-  { name: string; emoji: string; description: string }
+  { name: string; icon: string; description: string }
 > = {
   first_book: {
     name: "First Book",
-    emoji: "\uD83D\uDCD6",
+    icon: "book",
     description: "Finished your first book!",
   },
   bookworm_5: {
     name: "Bookworm",
-    emoji: "\uD83D\uDC1B",
+    icon: "bug",
     description: "Finished 5 books",
   },
   bookworm_10: {
     name: "Super Reader",
-    emoji: "\uD83C\uDF1F",
+    icon: "star",
     description: "Finished 10 books",
   },
   streak_3: {
     name: "On a Roll",
-    emoji: "\uD83D\uDD25",
+    icon: "flame",
     description: "3-day reading streak",
   },
   streak_7: {
     name: "Week Warrior",
-    emoji: "\u26A1",
+    icon: "zap",
     description: "7-day reading streak",
   },
   streak_30: {
     name: "Reading Machine",
-    emoji: "\uD83C\uDFC6",
+    icon: "trophy",
     description: "30-day reading streak",
   },
   speed_reader: {
     name: "Speed Reader",
-    emoji: "\uD83D\uDE80",
+    icon: "rocket",
     description: "Finished a book in one day",
   },
   explorer: {
     name: "Genre Explorer",
-    emoji: "\uD83D\uDDFA\uFE0F",
+    icon: "map",
     description: "Read books from 3+ genres",
   },
 };
@@ -419,7 +422,7 @@ export const getBadges = query({
       return {
         badgeId: b.badgeId,
         name: def?.name ?? b.badgeId,
-        emoji: def?.emoji ?? "\uD83C\uDFC5",
+        icon: def?.icon ?? "medal",
         description: def?.description ?? "",
         earnedAt: b.earnedAt,
       };

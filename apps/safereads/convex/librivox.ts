@@ -198,6 +198,50 @@ export const searchLibriVox = action({
 });
 
 /**
+ * Look up ONE audiobook by its LibriVox id. Used when a kid lands on
+ * /read/listen/librivox:123 fresh (nothing in localStorage): the page used to
+ * run a fuzzy TITLE search with the number as the query and usually opened
+ * the wrong book.
+ */
+export const getLibriVoxBook = action({
+  args: { id: v.string() },
+  handler: async (ctx, args): Promise<Record<string, unknown> | null> => {
+    const id = args.id.replace(/^librivox:/, "").trim();
+    if (!/^\d+$/.test(id)) return null;
+
+    const cacheKey = `librivox:book:${id}`;
+    const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
+    if (cached) {
+      return JSON.parse(cached.results);
+    }
+
+    try {
+      const params = new URLSearchParams({ id, format: "json" });
+      const response = await fetch(`${LIBRIVOX_API}?${params.toString()}`, {
+        headers: {
+          "User-Agent": "SafeReads/1.0 (getsafereads.com)",
+          Accept: "application/json",
+        },
+      });
+      if (!response.ok) return null;
+      const data = (await response.json()) as LibriVoxResponse;
+      const book = data.books?.[0];
+      if (!book || !isKidSafe(book)) return null;
+
+      const parsed = parseLibriVoxBook(book);
+      await ctx.runMutation(internal.freeBooks.saveToCache, {
+        cacheKey,
+        results: JSON.stringify(parsed),
+      });
+      return parsed;
+    } catch (error) {
+      console.error("LibriVox book lookup failed:", error);
+      return null;
+    }
+  },
+});
+
+/**
  * Get chapter-level audio details for a LibriVox audiobook.
  * Parses the RSS feed to get individual chapter MP3 URLs.
  *
@@ -274,75 +318,6 @@ export const getLibriVoxChapters = action({
     } catch (error) {
       console.error("LibriVox RSS parse failed:", error);
       return { chapters: [] };
-    }
-  },
-});
-
-/**
- * Browse LibriVox audiobooks by genre/category.
- */
-export const browseLibriVox = action({
-  args: {
-    genre: v.optional(v.string()),
-  },
-  handler: async (ctx, args): Promise<Array<Record<string, unknown>>> => {
-    const genre = args.genre || "children";
-    const cacheKey = `librivox:browse:${genre}`;
-
-    const cached: { results: string } | null = await ctx.runQuery(api.freeBooks.getFromCache, { cacheKey });
-    if (cached) {
-      return JSON.parse(cached.results);
-    }
-
-    try {
-      // LibriVox genre search via title keywords
-      const genreSearchTerms: Record<string, string> = {
-        children: "children",
-        adventure: "adventure",
-        "fairy-tales": "fairy tales",
-        fantasy: "wonderland magic fairy",
-        science: "science nature",
-        history: "history",
-        mystery: "mystery detective",
-        classics: "classic",
-      };
-
-      const searchTerm = genreSearchTerms[genre] || genre;
-      const params = new URLSearchParams({
-        title: searchTerm,
-        format: "json",
-        limit: "20",
-      });
-
-      const url = `${LIBRIVOX_API}?${params.toString()}`;
-
-      const response = await fetch(url, {
-        headers: {
-          "User-Agent": "SafeReads/1.0 (getsafereads.com)",
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) return [];
-
-      const data = (await response.json()) as LibriVoxResponse;
-      if (!data.books || !Array.isArray(data.books)) return [];
-
-      const results = data.books
-        .filter(isKidSafe)
-        .filter((b) => b.language === "English")
-        .slice(0, 20)
-        .map(parseLibriVoxBook);
-
-      await ctx.runMutation(internal.freeBooks.saveToCache, {
-        cacheKey,
-        results: JSON.stringify(results),
-      });
-
-      return results;
-    } catch (error) {
-      console.error("LibriVox browse failed:", error);
-      return [];
     }
   },
 });

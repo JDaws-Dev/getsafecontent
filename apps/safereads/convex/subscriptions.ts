@@ -1,19 +1,61 @@
 import { v } from "convex/values";
-import { query, mutation, internalMutation } from "./_generated/server";
+import { query, mutation, internalMutation, internalQuery } from "./_generated/server";
+import { DataModel } from "./_generated/dataModel";
+import { ownRowForEmail, resolveReaderIdentity } from "./identity";
 
 const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+type UserRow = DataModel["users"]["document"];
+
+/**
+ * The one definition of "may this account run a paid AI call right now".
+ * Trial users get 7 days; active/lifetime get unlimited. Used by the public
+ * access queries below AND by every action that spends OpenAI money (through
+ * identity.requireAiAccess), so the paywall can't drift between call sites.
+ */
+export function computeAccess(user: UserRow) {
+  const now = Date.now();
+  const analysisCount = user.analysisCount ?? 0;
+  const status = user.subscriptionStatus ?? "trial";
+  // Fall back to _creationTime + 7 days if trialExpiresAt not set
+  const trialExpiresAt = user.trialExpiresAt ?? (user._creationTime + TRIAL_DURATION_MS);
+
+  const isSubscribed = status === "active" || status === "lifetime";
+  const isTrialValid = status === "trial" && now < trialExpiresAt;
+  const hasAccess = isSubscribed || isTrialValid;
+
+  const trialDaysRemaining = isTrialValid
+    ? Math.ceil((trialExpiresAt - now) / (24 * 60 * 60 * 1000))
+    : 0;
+
+  return { hasAccess, isSubscribed, status, trialExpiresAt, trialDaysRemaining, analysisCount };
+}
+
+/**
+ * Internal: resolve the caller from their Marketing JWT and report whether
+ * they may run a paid AI call. Actions can't read the db, so this is how
+ * identity.requireAiAccess / requireActionCaller get their answer.
+ */
+export const callerAccess = internalQuery({
+  args: { userToken: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const me = await resolveReaderIdentity(ctx, args.userToken);
+    if (!me) return null;
+    const access = computeAccess(me);
+    return { userId: me._id, email: me.email ?? "", hasAccess: access.hasAccess };
+  },
+});
 
 /**
  * Check whether a user can run an analysis.
  * Trial users get 7 days; subscribed/lifetime users get unlimited.
  */
 export const checkAccess = query({
-  args: { email: v.string() },
+  args: { email: v.string(), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
-      .first();
+    // Own account only; an unverified caller gets the same "no access" shape
+    // an unknown email always got (no status, no dates, nothing to learn).
+    const user = await ownRowForEmail(ctx, args.userToken, args.email);
 
     if (!user) {
       return {
@@ -25,22 +67,7 @@ export const checkAccess = query({
       };
     }
 
-    const now = Date.now();
-    const analysisCount = user.analysisCount ?? 0;
-    const status = user.subscriptionStatus ?? "trial";
-    // Fall back to _creationTime + 7 days if trialExpiresAt not set
-    const trialExpiresAt = user.trialExpiresAt ?? (user._creationTime + TRIAL_DURATION_MS);
-
-    // Determine access
-    const isSubscribed = status === "active" || status === "lifetime";
-    const isTrialValid = status === "trial" && now < trialExpiresAt;
-    const hasAccess = isSubscribed || isTrialValid;
-
-    // Calculate days remaining in trial
-    const trialDaysRemaining = isTrialValid
-      ? Math.ceil((trialExpiresAt - now) / (24 * 60 * 60 * 1000))
-      : 0;
-
+    const { hasAccess, isSubscribed, status, trialDaysRemaining, analysisCount } = computeAccess(user);
     return {
       hasAccess,
       isSubscribed,
@@ -55,12 +82,9 @@ export const checkAccess = query({
  * Get subscription details for the settings/account UI.
  */
 export const getDetails = query({
-  args: { email: v.string() },
+  args: { email: v.string(), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
-      .first();
+    const user = await ownRowForEmail(ctx, args.userToken, args.email);
 
     if (!user) {
       return {
@@ -73,17 +97,7 @@ export const getDetails = query({
       };
     }
 
-    const now = Date.now();
-    const analysisCount = user.analysisCount ?? 0;
-    const status = user.subscriptionStatus ?? "trial";
-    const trialExpiresAt = user.trialExpiresAt ?? (user._creationTime + TRIAL_DURATION_MS);
-
-    const isSubscribed = status === "active" || status === "lifetime";
-    const isTrialValid = status === "trial" && now < trialExpiresAt;
-    const trialDaysRemaining = isTrialValid
-      ? Math.ceil((trialExpiresAt - now) / (24 * 60 * 60 * 1000))
-      : 0;
-
+    const { isSubscribed, status, trialExpiresAt, trialDaysRemaining, analysisCount } = computeAccess(user);
     return {
       isSubscribed,
       status,
@@ -97,8 +111,10 @@ export const getDetails = query({
 
 /**
  * Increment the analysis count for a user after a successful analysis.
+ * Internal: only the analyze action calls it. It was a public mutation keyed
+ * on a caller-supplied email, so anyone could bump any account's counter.
  */
-export const incrementAnalysisCount = mutation({
+export const incrementAnalysisCount = internalMutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
     const user = await ctx.db
@@ -178,8 +194,18 @@ export const setStripeCustomerId = mutation({
   args: {
     email: v.string(),
     stripeCustomerId: v.string(),
+    webhookSecret: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Public because the Next checkout route reaches it with a plain client.
+    // Same shared-secret gate as updateSubscription above (and the same
+    // deliberate "only enforced once STRIPE_BRIDGE_SECRET is set" ordering):
+    // without it anyone could attach any Stripe customer id to any account.
+    const expected = process.env.STRIPE_BRIDGE_SECRET;
+    if (expected && args.webhookSecret !== expected) {
+      throw new Error("Not authorized");
+    }
+
     const user = await ctx.db
       .query("users")
       .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))

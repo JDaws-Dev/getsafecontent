@@ -8,6 +8,7 @@ import {
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import OpenAI from "openai";
+import { requireAiAccess } from "./identity";
 
 type BookResult = {
   _id: Id<"books">;
@@ -557,9 +558,10 @@ export const authorOverview = action({
     authorName: v.string(),
     bookTitles: v.array(v.string()),
     categories: v.array(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<AuthorOverviewResult> => {
-    // Check cache first
+    // Check cache first — cached overviews are free for everyone
     const cached = await ctx.runQuery(
       internal.books.getCachedAuthorOverview,
       { authorName: args.authorName }
@@ -573,6 +575,9 @@ export const authorOverview = action({
         contentPatterns: cached.contentPatterns,
       };
     }
+
+    // A fresh overview is a GPT-4o call: same paywall as a book review.
+    await requireAiAccess(ctx, args.userToken);
 
     const openai = new OpenAI();
 
@@ -693,8 +698,13 @@ export const storeAuthorOverview = internalMutation({
 export const identifyCover = action({
   args: {
     imageBase64: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<BookResult[]> => {
+    // Every call is a GPT-4o vision spend and nothing is cached: paywalled
+    // like the other AI features.
+    await requireAiAccess(ctx, args.userToken);
+
     const openai = new OpenAI();
 
     const completion = await openai.chat.completions.create({

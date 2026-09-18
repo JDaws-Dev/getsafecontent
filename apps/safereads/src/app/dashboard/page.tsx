@@ -43,22 +43,25 @@ export default function DashboardPage() {
       ? subscriptionParam
       : null;
 
-  const convexUser = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
-  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
+  const convexUser = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip");
+  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip");
 
   const kids = useQuery(
     api.kids.listByUser,
     userId ? { userId, userToken: token ?? undefined } : "skip"
   );
 
-  const recentAnalyses = useQuery(api.analyses.listRecent, { count: 5 });
+  const recentAnalyses = useQuery(
+    api.analyses.listRecent,
+    userId ? { userId, count: 5, userToken: token ?? undefined } : "skip"
+  );
   const pendingRequestCount = useQuery(
     api.bookRequests.countPendingByUser,
     userId ? { userId, userToken: token ?? undefined } : "skip"
   );
   const familyCode = useQuery(
     api.familyCodes.getByUser,
-    userId ? { userId } : "skip"
+    userId ? { userId, userToken: token ?? undefined } : "skip"
   );
 
   // Extract first name from user name
@@ -115,7 +118,7 @@ export default function DashboardPage() {
               {familyCode.code}
             </p>
             <p className="mt-0.5 text-[10px] text-accent-500">
-              Kids go to getsafereads.com/read and enter this code
+              Kids go to getsafefamily.com/play and enter this code
             </p>
           </div>
           <button
@@ -187,7 +190,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-display text-lg font-bold text-brand-navy">
             <span className="sm:hidden">Recent Reviews</span>
-            <span className="hidden sm:inline">Recently Reviewed on SafeReads</span>
+            <span className="hidden sm:inline">Your Recent Reviews</span>
           </h2>
           {recentAnalyses && recentAnalyses.length > 0 && (
             <Link

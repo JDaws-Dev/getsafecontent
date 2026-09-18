@@ -25,7 +25,7 @@ const STATUS_OPTIONS: { value: WishlistStatus; label: string; icon: React.ReactN
 
 export function WishlistButton({ bookId }: { bookId: Id<"books"> }) {
   const { user: authUser, token } = useAuth();
-  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
+  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip");
   const kids = useQuery(
     api.kids.listByUser,
     userId ? { userId, userToken: token ?? undefined } : "skip"

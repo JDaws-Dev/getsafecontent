@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireOwner } from "./identity";
 
 /**
  * Family codes for SafeReads.
@@ -28,8 +29,9 @@ function generateCode(): string {
  * Otherwise generates a new unique one.
  */
 export const generate = mutation({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "familyCodes.generate");
     const user = await ctx.db.get(args.userId);
     if (!user) throw new Error("User not found");
 
@@ -58,10 +60,13 @@ export const generate = mutation({
 
 /**
  * Regenerate family code (replaces existing one).
+ * Parent-only: verified via the Marketing JWT. This took a bare user id, so
+ * anyone could rotate another family's code and lock their kids out.
  */
 export const regenerate = mutation({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "familyCodes.regenerate");
     let code = generateCode();
     let attempts = 0;
     while (attempts < 10) {
@@ -83,8 +88,9 @@ export const regenerate = mutation({
  * Get family code for a user.
  */
 export const getByUser = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "familyCodes.getByUser");
     const user = await ctx.db.get(args.userId);
     if (!user?.familyCode) return null;
     return {

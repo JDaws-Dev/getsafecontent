@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { BookOpen, ChevronRight, Loader2, Sparkles } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { UpgradePrompt } from "./UpgradePrompt";
 
 interface Alternative {
   title: string;
@@ -21,6 +23,7 @@ interface AlternativesSuggestionsProps {
 export function AlternativesSuggestions({
   bookId,
 }: AlternativesSuggestionsProps) {
+  const { token } = useAuth();
   const suggestAction = useAction(api.analyses.suggestAlternatives);
   const searchAction = useAction(api.books.search);
   const router = useRouter();
@@ -28,19 +31,20 @@ export function AlternativesSuggestions({
   const [loading, setLoading] = useState(false);
   const [navigatingIdx, setNavigatingIdx] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   async function handleSuggest() {
     setLoading(true);
     setError(null);
     try {
-      const result = await suggestAction({ bookId });
+      const result = await suggestAction({ bookId, userToken: token ?? undefined });
       setAlternatives(result as Alternative[]);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to get suggestions. Please try again."
-      );
+      if (err instanceof Error && err.message.includes("UPGRADE_REQUIRED")) {
+        setShowUpgrade(true);
+      } else {
+        setError("Failed to get suggestions. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -154,6 +158,8 @@ export function AlternativesSuggestions({
           {error}
         </div>
       )}
+
+      {showUpgrade && <UpgradePrompt onDismiss={() => setShowUpgrade(false)} />}
     </div>
   );
 }

@@ -19,10 +19,12 @@ export default function PrivacyPage() {
             What We Collect
           </h2>
           <p className="mt-2 text-sm leading-relaxed">
-            When you sign in with Google via Clerk, we receive your name, email
-            address, and profile photo. We also store the book searches you
-            perform and the AI-generated content reviews associated with those
-            books.
+            You sign in with your Safe Family account (getsafefamily.com),
+            either with an email and password or with Google. From that
+            account we receive your name and email address, and a profile
+            photo if you signed in with Google. We also store the book
+            searches you perform and the AI-generated content reviews
+            associated with those books.
           </p>
         </section>
 
@@ -45,8 +47,9 @@ export default function PrivacyPage() {
             Cookies
           </h2>
           <p className="mt-2 text-sm leading-relaxed">
-            We use cookies managed by Clerk to maintain your authentication
-            session. We do not use advertising or third-party tracking cookies.
+            We keep you signed in with a token stored in your browser (local
+            storage), not with tracking cookies. We do not use advertising or
+            third-party tracking cookies.
           </p>
         </section>
 
@@ -68,7 +71,8 @@ export default function PrivacyPage() {
           </h2>
           <ul className="mt-2 list-inside list-disc space-y-1 text-sm leading-relaxed">
             <li>
-              <strong>Clerk</strong> — authentication and session management
+              <strong>Safe Family accounts</strong> (getsafefamily.com) —
+              sign-in and subscription management, run by us
             </li>
             <li>
               <strong>Convex</strong> — database and backend infrastructure

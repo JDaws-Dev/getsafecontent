@@ -520,7 +520,7 @@ export default function Home() {
             <Feature
               icon={<BookOpen className="h-6 w-6 text-emerald-600" />}
               title="In-App Book Reader"
-              description="Over Free classic books from Project Gutenberg and other sources. Tap any word to see its definition."
+              description="Dozens of free classic books from Project Gutenberg and other sources. Tap any word to see its definition."
             />
             <Feature
               icon={<BookMarked className="h-6 w-6 text-accent-600" />}

@@ -115,7 +115,7 @@ export default function RequestsPage() {
   const { user: authUser, token } = useAuth();
   const currentUser = useQuery(
     api.users.currentUser,
-    authUser?.email ? { email: authUser.email } : "skip"
+    authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip"
   );
   const userId = currentUser?._id;
 

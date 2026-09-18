@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Headphones } from "lucide-react";
+import { Headphones, Sparkles } from "lucide-react";
 import { StylizedCover } from "./StylizedCover";
 
 interface BookCardProps {
@@ -84,8 +84,9 @@ export function BookCard({
               />
             </div>
             {progress >= 100 ? (
-              <p className="mt-0.5 text-center text-[8px] font-bold text-emerald-300">
-                {"\u2728"} Finished!
+              <p className="mt-0.5 flex items-center justify-center gap-0.5 text-center text-[8px] font-bold text-emerald-300">
+                <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />
+                Finished!
               </p>
             ) : (
               <p className="mt-0.5 text-center text-[8px] font-bold text-white/80">
@@ -102,8 +103,8 @@ export function BookCard({
           </div>
         ) : progress === undefined ? (
           /* New book shimmer indicator (no progress means not started) */
-          <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent-500 text-[8px] font-bold text-white shadow-sm">
-            {"\u2728"}
+          <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent-500 text-white shadow-sm">
+            <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />
           </div>
         ) : null}
       </div>

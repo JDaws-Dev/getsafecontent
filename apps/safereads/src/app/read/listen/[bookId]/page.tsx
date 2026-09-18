@@ -53,7 +53,7 @@ export default function ListenPage() {
 
   const getChapters = useAction(api.librivox.getLibriVoxChapters);
 
-  const searchLibriVox = useAction(api.librivox.searchLibriVox);
+  const getLibriVoxBook = useAction(api.librivox.getLibriVoxBook);
 
   // Load book metadata from localStorage, or fetch from LibriVox if missing
   useEffect(() => {
@@ -70,14 +70,14 @@ export default function ListenPage() {
       // Fall through to fetch
     }
 
-    // If no localStorage data or missing rssUrl, try to fetch from LibriVox
+    // If no localStorage data or missing rssUrl, look the book up by its id
+    // (a title search with the numeric id opened the wrong book).
     const librivoxId = bookId.replace(/^librivox:/, "");
     async function fetchMeta() {
       try {
-        // Search by the ID or a broad query
-        const results = await searchLibriVox({ query: librivoxId });
-        if (results && results.length > 0) {
-          const book = results[0] as { title: string; authors?: string[]; coverUrl?: string; rssUrl?: string; totalTime?: string };
+        const result = await getLibriVoxBook({ id: librivoxId });
+        if (result) {
+          const book = result as { title: string; authors?: string[]; coverUrl?: string; rssUrl?: string; totalTime?: string };
           const meta = {
             title: book.title || "Audiobook",
             author: book.authors?.join(", ") || "Unknown",
@@ -93,7 +93,7 @@ export default function ListenPage() {
       }
     }
     fetchMeta();
-  }, [bookId, searchLibriVox]);
+  }, [bookId, getLibriVoxBook]);
 
   // Load chapters from RSS feed
   useEffect(() => {

@@ -35,7 +35,7 @@ export default function KidsPage() {
   const { user: authUser, token } = useAuth();
   const currentUser = useQuery(
     api.users.currentUser,
-    authUser?.email ? { email: authUser.email } : "skip"
+    authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip"
   );
   const kids = useQuery(
     api.kids.listByUser,
@@ -216,6 +216,14 @@ function KidCard({
 }) {
   const wishlistCount = useQuery(api.wishlists.countByKid, { kidId: kid._id, userToken });
   const approvedCount = useQuery(api.approvedBooks.countForKid, { kidId: kid._id, userToken });
+  // The kid's shelf is approved books PLUS the pre-approved classics they can
+  // see (age- and comfort-level filtered, minus any the parent excluded).
+  // Counting only approvals showed "Books (0)" while the kid saw a full shelf.
+  const classics = useQuery(api.preApprovedBooks.getPreApprovedBooks, { kidId: kid._id, age: kid.age });
+  const shelfCount =
+    approvedCount !== undefined && classics !== undefined
+      ? approvedCount + classics.length
+      : undefined;
   const colorClass = COLOR_MAP[kid.color || "purple"] || COLOR_MAP.purple;
   const [showScreenTime, setShowScreenTime] = useState(false);
 
@@ -252,10 +260,15 @@ function KidCard({
           </button>
           <Link
             href={`/dashboard/kids/${kid._id}/books`}
+            title={
+              shelfCount !== undefined
+                ? `${approvedCount} approved by you, ${classics?.length ?? 0} classics on the shelf`
+                : undefined
+            }
             className="flex items-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
           >
             <Library className="h-3.5 w-3.5" />
-            Books{approvedCount !== undefined ? ` (${approvedCount})` : ""}
+            Books{shelfCount !== undefined ? ` (${shelfCount})` : ""}
           </Link>
           <Link
             href={`/dashboard/kids/${kid._id}/wishlist`}

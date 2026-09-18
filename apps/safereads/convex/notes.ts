@@ -20,33 +20,6 @@ export const getByUserAndBook = query({
   },
 });
 
-/** List all notes for a user, newest first, with book data. */
-export const listByUser = query({
-  args: {
-    userId: v.id("users"),
-    count: v.optional(v.number()),
-    userToken: v.optional(v.string()),
-  },
-  handler: async (ctx, { userId, count, userToken }) => {
-    await requireOwner(ctx, userToken, userId, "notes.listByUser");
-    const limit = count ?? 50;
-    const notes = await ctx.db
-      .query("notes")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .order("desc")
-      .take(limit);
-
-    const withBooks = await Promise.all(
-      notes.map(async (note) => {
-        const book = await ctx.db.get(note.bookId);
-        return { ...note, book };
-      })
-    );
-
-    return withBooks.filter((n) => n.book !== null);
-  },
-});
-
 /** Create or update a note for a book. */
 export const upsert = mutation({
   args: {

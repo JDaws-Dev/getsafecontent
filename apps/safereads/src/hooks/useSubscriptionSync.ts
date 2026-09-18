@@ -21,10 +21,10 @@ const SYNC_INTERVAL_MS = 60 * 60 * 1000;
  * - Syncs when tab becomes visible (if stale)
  */
 export function useSubscriptionSync() {
-  const { isAuthenticated, isLoading: isAuthLoading, user: centralUser } = useAuth();
+  const { isAuthenticated, isLoading: isAuthLoading, user: centralUser, token } = useAuth();
   const currentUser = useQuery(
     api.userSync.getSafeReadsUserByEmail,
-    centralUser?.email ? { email: centralUser.email } : "skip"
+    centralUser?.email && token ? { email: centralUser.email, userToken: token } : "skip"
   );
   const verifyCentralAccess = useAction(api.users.verifyCentralAccess);
 

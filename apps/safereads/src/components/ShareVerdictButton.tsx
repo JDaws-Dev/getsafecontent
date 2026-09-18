@@ -12,13 +12,6 @@ const verdictLabels: Record<Verdict, string> = {
   no_verdict: "No Verdict",
 };
 
-const verdictEmoji: Record<Verdict, string> = {
-  safe: "\u2705",
-  caution: "\u26a0\ufe0f",
-  warning: "\ud83d\udea8",
-  no_verdict: "\u2753",
-};
-
 interface ShareVerdictButtonProps {
   bookTitle: string;
   verdict: Verdict;
@@ -33,9 +26,8 @@ function buildShareText({
   summary,
   ageRecommendation,
 }: Omit<ShareVerdictButtonProps, "bookUrl">): string {
-  const emoji = verdictEmoji[verdict];
   const label = verdictLabels[verdict];
-  let text = `${emoji} SafeReads verdict for "${bookTitle}": ${label}`;
+  let text = `SafeReads verdict for "${bookTitle}": ${label}`;
   if (ageRecommendation) {
     text += ` (Ages ${ageRecommendation})`;
   }

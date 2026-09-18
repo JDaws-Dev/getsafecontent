@@ -24,13 +24,14 @@ interface ReportButtonProps {
 }
 
 export function ReportButton({ bookId, analysisId }: ReportButtonProps) {
-  const { user: authUser } = useAuth();
-  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
+  const { user: authUser, token } = useAuth();
+  const userToken = token ?? undefined;
+  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip");
 
   const existingReport = useQuery(
     api.reports.getByUserAndAnalysis,
     userId
-      ? { userId, analysisId }
+      ? { userId, analysisId, userToken }
       : "skip"
   );
 
@@ -57,6 +58,7 @@ export function ReportButton({ bookId, analysisId }: ReportButtonProps) {
         analysisId,
         reason,
         details: details.trim() || undefined,
+        userToken,
       });
       setSubmitted(true);
       setTimeout(() => {
@@ -77,6 +79,7 @@ export function ReportButton({ bookId, analysisId }: ReportButtonProps) {
       await removeReport({
         userId,
         analysisId,
+        userToken,
       });
       setDialogOpen(false);
     } finally {

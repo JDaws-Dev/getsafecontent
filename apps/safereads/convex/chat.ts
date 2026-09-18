@@ -8,13 +8,20 @@ import {
 } from "./_generated/server";
 import { internal } from "./_generated/api";
 import OpenAI from "openai";
+import { requireAiAccess, requireOwner } from "./identity";
+
+// Every conversation endpoint verifies the caller owns the conversation (or
+// the user id) via the Marketing JWT. Before this, list/read/delete took a raw
+// id with no check — any signed-in (or unsigned) caller could read another
+// family's advisor chats, or delete them, just by guessing/obtaining an id.
 
 /**
  * List all conversations for a user, newest first.
  */
 export const listConversations = query({
-  args: { userId: v.id("users") },
+  args: { userId: v.id("users"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "chat.listConversations");
     return await ctx.db
       .query("conversations")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
@@ -27,8 +34,11 @@ export const listConversations = query({
  * Get all messages for a conversation.
  */
 export const getMessages = query({
-  args: { conversationId: v.id("conversations") },
+  args: { conversationId: v.id("conversations"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation) return [];
+    await requireOwner(ctx, args.userToken, conversation.userId, "chat.getMessages");
     return await ctx.db
       .query("messages")
       .withIndex("by_conversation", (q) =>
@@ -45,8 +55,10 @@ export const createConversation = mutation({
   args: {
     userId: v.id("users"),
     title: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "chat.createConversation");
     return await ctx.db.insert("conversations", {
       userId: args.userId,
       title: args.title,
@@ -59,8 +71,11 @@ export const createConversation = mutation({
  * Delete a conversation and all its messages.
  */
 export const deleteConversation = mutation({
-  args: { conversationId: v.id("conversations") },
+  args: { conversationId: v.id("conversations"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation) return;
+    await requireOwner(ctx, args.userToken, conversation.userId, "chat.deleteConversation");
     const messages = await ctx.db
       .query("messages")
       .withIndex("by_conversation", (q) =>
@@ -160,8 +175,23 @@ export const sendMessage = action({
   args: {
     conversationId: v.id("conversations"),
     content: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // 0. Who is this, and may they spend a GPT-4o call? The advisor was the
+    // one AI feature with no paywall at all — an expired trial could chat
+    // forever — and it never checked the conversation belonged to the caller.
+    const me = await requireAiAccess(ctx, args.userToken);
+
+    const conversation = await ctx.runQuery(
+      internal.chat.getConversationInternal,
+      { conversationId: args.conversationId }
+    );
+    if (!conversation) throw new Error("Conversation not found");
+    if (conversation.userId !== me.userId) {
+      throw new Error("You don't have access to that.");
+    }
+
     // 1. Store user message
     await ctx.runMutation(internal.chat.storeMessage, {
       conversationId: args.conversationId,
@@ -169,13 +199,8 @@ export const sendMessage = action({
       content: args.content,
     });
 
-    // 2. Load context
-    const conversation = await ctx.runQuery(
-      internal.chat.getConversationInternal,
-      { conversationId: args.conversationId }
-    );
-    if (!conversation) throw new Error("Conversation not found");
-
+    // 2. Load context — the parent's own kids and the parent's OWN recent
+    // reviews (this used to be the whole deployment's last five reviews).
     const [messages, kids, recentAnalyses] = await Promise.all([
       ctx.runQuery(internal.chat.getMessagesInternal, {
         conversationId: args.conversationId,
@@ -183,7 +208,10 @@ export const sendMessage = action({
       ctx.runQuery(internal.chat.getKidsInternal, {
         userId: conversation.userId,
       }),
-      ctx.runQuery(internal.analyses.listRecentInternal, { count: 5 }),
+      ctx.runQuery(internal.analyses.listRecentInternal, {
+        userId: conversation.userId,
+        count: 5,
+      }),
     ]);
 
     // Build context strings
@@ -199,7 +227,7 @@ export const sendMessage = action({
 
     const analysesContext =
       recentAnalyses.length > 0
-        ? `\n\nRecently reviewed books on SafeReads:\n${recentAnalyses
+        ? `\n\nBooks this parent recently reviewed on SafeReads:\n${recentAnalyses
             .map(
               (a: {
                 book?: { title: string; authors: string[] } | null;

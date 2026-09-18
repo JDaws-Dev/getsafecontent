@@ -1,50 +1,52 @@
 "use client";
 
 import { useState } from "react";
+import { BookOpen, Check, Flame, Medal } from "lucide-react";
+import { BadgeIcon, LockedBadgeIcon } from "./KidIcons";
 
 // Badge definitions mirrored from convex/readingStreaks.ts
 const BADGE_DEFINITIONS: Record<
   string,
-  { name: string; emoji: string; description: string }
+  { name: string; icon: string; description: string }
 > = {
   first_book: {
     name: "First Book",
-    emoji: "\uD83D\uDCD6",
+    icon: "book",
     description: "Finished your first book!",
   },
   bookworm_5: {
     name: "Bookworm",
-    emoji: "\uD83D\uDC1B",
+    icon: "bug",
     description: "Finished 5 books",
   },
   bookworm_10: {
     name: "Super Reader",
-    emoji: "\uD83C\uDF1F",
+    icon: "star",
     description: "Finished 10 books",
   },
   streak_3: {
     name: "On a Roll",
-    emoji: "\uD83D\uDD25",
+    icon: "flame",
     description: "3-day reading streak",
   },
   streak_7: {
     name: "Week Warrior",
-    emoji: "\u26A1",
+    icon: "zap",
     description: "7-day reading streak",
   },
   streak_30: {
     name: "Reading Machine",
-    emoji: "\uD83C\uDFC6",
+    icon: "trophy",
     description: "30-day reading streak",
   },
   speed_reader: {
     name: "Speed Reader",
-    emoji: "\uD83D\uDE80",
+    icon: "rocket",
     description: "Finished a book in one day",
   },
   explorer: {
     name: "Genre Explorer",
-    emoji: "\uD83D\uDDFA\uFE0F",
+    icon: "map",
     description: "Read books from 3+ genres",
   },
 };
@@ -78,7 +80,7 @@ interface StreakData {
 interface Badge {
   badgeId: string;
   name: string;
-  emoji: string;
+  icon: string;
   description: string;
   earnedAt: number;
 }
@@ -122,7 +124,7 @@ export function ReadingStreaks({ streak, badges, kidColor }: ReadingStreaksProps
           <div className="flex items-center gap-2">
             {streak.currentStreak > 0 ? (
               <>
-                <span className="text-2xl">{"\uD83D\uDD25"}</span>
+                <Flame className={`h-7 w-7 ${colors.text}`} strokeWidth={2.25} aria-hidden="true" />
                 <div>
                   <p className={`text-lg font-bold ${colors.text}`}>
                     {streak.currentStreak} day{streak.currentStreak !== 1 ? "s" : ""}
@@ -134,7 +136,7 @@ export function ReadingStreaks({ streak, badges, kidColor }: ReadingStreaksProps
               </>
             ) : (
               <>
-                <span className="text-2xl">{"\uD83D\uDCDA"}</span>
+                <BookOpen className="h-7 w-7 text-gray-500" strokeWidth={2.25} aria-hidden="true" />
                 <div>
                   <p className="text-sm font-bold text-gray-700">
                     Start a streak!
@@ -174,8 +176,9 @@ export function ReadingStreaks({ streak, badges, kidColor }: ReadingStreaksProps
             />
           </div>
           {streak.todayGoalMet && (
-            <p className={`mt-1.5 text-center text-[11px] font-bold ${colors.text}`}>
-              Goal reached! {"\u2705"}
+            <p className={`mt-1.5 flex items-center justify-center gap-1 text-[11px] font-bold ${colors.text}`}>
+              Goal reached!
+              <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
             </p>
           )}
         </div>
@@ -202,7 +205,13 @@ export function ReadingStreaks({ streak, badges, kidColor }: ReadingStreaksProps
                   }`}
                   title={`${day.date}: ${day.minutesRead} min`}
                 >
-                  {day.goalMet ? "\u2713" : day.minutesRead > 0 ? Math.round(day.minutesRead) : ""}
+                  {day.goalMet ? (
+                    <Check className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
+                  ) : day.minutesRead > 0 ? (
+                    Math.round(day.minutesRead)
+                  ) : (
+                    ""
+                  )}
                 </div>
                 <span className={`text-[9px] font-medium ${isToday ? "text-gray-600" : "text-gray-400"}`}>
                   {dayLabel}
@@ -217,7 +226,7 @@ export function ReadingStreaks({ streak, badges, kidColor }: ReadingStreaksProps
       <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="text-base">{"\uD83C\uDFC5"}</span>
+            <Medal className="h-4 w-4 text-amber-500" strokeWidth={2.25} aria-hidden="true" />
             <h3 className="font-display text-sm font-bold text-brand-navy">My Badges</h3>
           </div>
           <span className="text-[10px] font-semibold text-gray-400">
@@ -237,14 +246,19 @@ export function ReadingStreaks({ streak, badges, kidColor }: ReadingStreaksProps
                 onClick={() =>
                   setSelectedBadge(isSelected ? null : badgeId)
                 }
-                className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl text-xl transition-all ${
+                className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-all ${
                   earned
-                    ? `bg-gradient-to-br from-amber-50 to-yellow-100 shadow-sm ring-1 ring-amber-200 hover:shadow-md active:scale-95`
+                    ? `bg-gradient-to-br from-amber-50 to-yellow-100 text-amber-600 shadow-sm ring-1 ring-amber-200 hover:shadow-md active:scale-95`
                     : "bg-gray-100 text-gray-300 ring-1 ring-gray-200"
                 }`}
                 title={earned ? def.name : "Locked"}
+                aria-label={earned ? def.name : `${def.name} (locked)`}
               >
-                {earned ? def.emoji : "\uD83D\uDD12"}
+                {earned ? (
+                  <BadgeIcon icon={def.icon} className="h-6 w-6" />
+                ) : (
+                  <LockedBadgeIcon className="h-5 w-5" />
+                )}
               </button>
             );
           })}
@@ -253,8 +267,8 @@ export function ReadingStreaks({ streak, badges, kidColor }: ReadingStreaksProps
         {/* Badge tooltip / detail */}
         {selectedBadge && (
           <div className="mt-2 rounded-xl bg-gray-50 px-3 py-2.5 text-center">
-            <p className="text-sm font-bold text-gray-800">
-              {BADGE_DEFINITIONS[selectedBadge]?.emoji}{" "}
+            <p className="flex items-center justify-center gap-1.5 text-sm font-bold text-gray-800">
+              <BadgeIcon icon={BADGE_DEFINITIONS[selectedBadge]?.icon ?? "medal"} className="h-4 w-4 text-amber-600" />
               {BADGE_DEFINITIONS[selectedBadge]?.name}
             </p>
             <p className="mt-0.5 text-xs text-gray-500">

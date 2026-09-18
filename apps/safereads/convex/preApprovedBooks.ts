@@ -1,5 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { requireKidOwner } from "./identity";
+import { CLASSICS, LEVEL_FILTERS } from "./lib/classics";
 
 /**
  * Pre-approved classic children's books from Project Gutenberg.
@@ -9,82 +11,14 @@ import { query, mutation } from "./_generated/server";
  * Organized by minimum age range.
  */
 
-type ContentLevel = "safe" | "caution" | "mature";
-
-interface PreApprovedBook {
-  gutenbergId: string;
-  title: string;
-  author: string;
-  minAge: number; // Minimum recommended age
-  coverUrl?: string;
-  contentLevel: ContentLevel; // Content classification for parent controls
-}
-
-// Gutenberg cover URL helper
-function gutenbergCover(id: string): string {
-  return `https://www.gutenberg.org/cache/epub/${id}/pg${id}.cover.medium.jpg`;
-}
-
-const PRE_APPROVED_BOOKS: PreApprovedBook[] = [
-  // === Ages 3-6 (Picture books, nursery rhymes, simple fables) ===
-  { gutenbergId: "11339", title: "Mother Goose's Nursery Rhymes", author: "Various", minAge: 3, coverUrl: gutenbergCover("11339"), contentLevel: "safe" },
-  { gutenbergId: "21", title: "Aesop's Fables", author: "Aesop", minAge: 3, coverUrl: gutenbergCover("21"), contentLevel: "safe" },
-  { gutenbergId: "19993", title: "The Velveteen Rabbit", author: "Margery Williams", minAge: 3, coverUrl: gutenbergCover("19993"), contentLevel: "safe" },
-  { gutenbergId: "17208", title: "The Tale of Peter Rabbit", author: "Beatrix Potter", minAge: 3, coverUrl: gutenbergCover("17208"), contentLevel: "safe" },
-  { gutenbergId: "14838", title: "The Tale of Benjamin Bunny", author: "Beatrix Potter", minAge: 3, coverUrl: gutenbergCover("14838"), contentLevel: "safe" },
-  { gutenbergId: "15234", title: "The Tale of Mrs. Tiggy-Winkle", author: "Beatrix Potter", minAge: 3, coverUrl: gutenbergCover("15234"), contentLevel: "safe" },
-  { gutenbergId: "23661", title: "The Tale of Jemima Puddle-Duck", author: "Beatrix Potter", minAge: 3, coverUrl: gutenbergCover("23661"), contentLevel: "safe" },
-
-  // === Ages 7-9 (Chapter books, fairy tales, early adventures) ===
-  { gutenbergId: "11", title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", minAge: 7, coverUrl: gutenbergCover("11"), contentLevel: "safe" },
-  { gutenbergId: "12", title: "Through the Looking-Glass", author: "Lewis Carroll", minAge: 7, coverUrl: gutenbergCover("12"), contentLevel: "safe" },
-  { gutenbergId: "55", title: "The Wonderful Wizard of Oz", author: "L. Frank Baum", minAge: 7, coverUrl: gutenbergCover("55"), contentLevel: "safe" },
-  { gutenbergId: "54", title: "The Marvelous Land of Oz", author: "L. Frank Baum", minAge: 7, coverUrl: gutenbergCover("54"), contentLevel: "safe" },
-  { gutenbergId: "2591", title: "Grimm's Fairy Tales", author: "Brothers Grimm", minAge: 7, coverUrl: gutenbergCover("2591"), contentLevel: "caution" },
-  { gutenbergId: "902", title: "Hans Christian Andersen's Fairy Tales", author: "Hans Christian Andersen", minAge: 7, coverUrl: gutenbergCover("902"), contentLevel: "caution" },
-  { gutenbergId: "16", title: "Peter Pan (Peter and Wendy)", author: "J.M. Barrie", minAge: 7, coverUrl: gutenbergCover("16"), contentLevel: "safe" },
-  { gutenbergId: "289", title: "The Wind in the Willows", author: "Kenneth Grahame", minAge: 7, coverUrl: gutenbergCover("289"), contentLevel: "safe" },
-  { gutenbergId: "113", title: "The Secret Garden", author: "Frances Hodgson Burnett", minAge: 7, coverUrl: gutenbergCover("113"), contentLevel: "safe" },
-  { gutenbergId: "479", title: "A Little Princess", author: "Frances Hodgson Burnett", minAge: 7, coverUrl: gutenbergCover("479"), contentLevel: "safe" },
-  { gutenbergId: "32", title: "Heidi", author: "Johanna Spyri", minAge: 7, coverUrl: gutenbergCover("32"), contentLevel: "safe" },
-  { gutenbergId: "514", title: "Little Women", author: "Louisa May Alcott", minAge: 7, coverUrl: gutenbergCover("514"), contentLevel: "caution" },
-  { gutenbergId: "766", title: "David Copperfield", author: "Charles Dickens", minAge: 9, coverUrl: gutenbergCover("766"), contentLevel: "caution" },
-  { gutenbergId: "1260", title: "Jane Eyre", author: "Charlotte Bronte", minAge: 9, coverUrl: gutenbergCover("1260"), contentLevel: "mature" },
-  { gutenbergId: "35", title: "The Time Machine", author: "H.G. Wells", minAge: 9, coverUrl: gutenbergCover("35"), contentLevel: "caution" },
-
-  // === Ages 10-12 (Middle grade adventures, classic novels) ===
-  { gutenbergId: "120", title: "Treasure Island", author: "Robert Louis Stevenson", minAge: 10, coverUrl: gutenbergCover("120"), contentLevel: "caution" },
-  { gutenbergId: "1184", title: "The Count of Monte Cristo", author: "Alexandre Dumas", minAge: 10, coverUrl: gutenbergCover("1184"), contentLevel: "mature" },
-  { gutenbergId: "1661", title: "The Adventures of Sherlock Holmes", author: "Arthur Conan Doyle", minAge: 10, coverUrl: gutenbergCover("1661"), contentLevel: "caution" },
-  { gutenbergId: "76", title: "Adventures of Huckleberry Finn", author: "Mark Twain", minAge: 10, coverUrl: gutenbergCover("76"), contentLevel: "caution" },
-  { gutenbergId: "74", title: "The Adventures of Tom Sawyer", author: "Mark Twain", minAge: 10, coverUrl: gutenbergCover("74"), contentLevel: "caution" },
-  { gutenbergId: "1400", title: "Great Expectations", author: "Charles Dickens", minAge: 10, coverUrl: gutenbergCover("1400"), contentLevel: "caution" },
-  { gutenbergId: "46", title: "A Christmas Carol", author: "Charles Dickens", minAge: 10, coverUrl: gutenbergCover("46"), contentLevel: "caution" },
-  { gutenbergId: "345", title: "Dracula", author: "Bram Stoker", minAge: 12, coverUrl: gutenbergCover("345"), contentLevel: "mature" },
-  { gutenbergId: "1342", title: "Pride and Prejudice", author: "Jane Austen", minAge: 12, coverUrl: gutenbergCover("1342"), contentLevel: "caution" },
-  { gutenbergId: "84", title: "Frankenstein", author: "Mary Shelley", minAge: 12, coverUrl: gutenbergCover("84"), contentLevel: "mature" },
-
-  // === Ages 13+ (Young adult classics) ===
-  { gutenbergId: "1232", title: "The Prince", author: "Niccolo Machiavelli", minAge: 13, coverUrl: gutenbergCover("1232"), contentLevel: "mature" },
-  { gutenbergId: "98", title: "A Tale of Two Cities", author: "Charles Dickens", minAge: 13, coverUrl: gutenbergCover("98"), contentLevel: "mature" },
-  { gutenbergId: "2701", title: "Moby Dick", author: "Herman Melville", minAge: 13, coverUrl: gutenbergCover("2701"), contentLevel: "mature" },
-  { gutenbergId: "1952", title: "The Yellow Wallpaper", author: "Charlotte Perkins Gilman", minAge: 13, coverUrl: gutenbergCover("1952"), contentLevel: "mature" },
-  { gutenbergId: "174", title: "The Picture of Dorian Gray", author: "Oscar Wilde", minAge: 13, coverUrl: gutenbergCover("174"), contentLevel: "mature" },
-  { gutenbergId: "1080", title: "A Modest Proposal", author: "Jonathan Swift", minAge: 13, coverUrl: gutenbergCover("1080"), contentLevel: "mature" },
-];
+// The list itself lives in lib/classics.ts (shared with the recommender).
+const PRE_APPROVED_BOOKS = CLASSICS;
 
 // Build a Set for fast lookup
 const PRE_APPROVED_IDS = new Set(PRE_APPROVED_BOOKS.map((b) => b.gutenbergId));
 
 // Build a Map for content level lookup by gutenbergId
 const CONTENT_LEVEL_MAP = new Map(PRE_APPROVED_BOOKS.map((b) => [b.gutenbergId, b.contentLevel]));
-
-/** Which content levels each parent setting allows */
-const LEVEL_FILTERS: Record<string, Set<ContentLevel>> = {
-  safe_only: new Set(["safe"]),
-  safe_and_caution: new Set(["safe", "caution"]),
-  all_classics: new Set(["safe", "caution", "mature"]),
-};
 
 /**
  * Get pre-approved books appropriate for a kid's age and parent's comfort level.
@@ -151,6 +85,24 @@ export function isPreApprovedBookId(googleBookId: string): boolean {
 }
 
 /**
+ * The whole classics list (title/author per Gutenberg id), unfiltered. Static
+ * catalog data, so no auth. The parent "Excluded Classics" list needs titles
+ * for books that getPreApprovedBooks has, by definition, filtered out.
+ */
+export const listAll = query({
+  args: {},
+  handler: async () => {
+    return PRE_APPROVED_BOOKS.map((b) => ({
+      gutenbergId: b.gutenbergId,
+      title: b.title,
+      author: b.author,
+      minAge: b.minAge,
+      contentLevel: b.contentLevel,
+    }));
+  },
+});
+
+/**
  * Quick check if a gutenbergId is in the pre-approved list.
  */
 export const isPreApproved = query({
@@ -187,15 +139,17 @@ export const isPreApprovedByGoogleBookId = query({
 
 /**
  * Parent excludes a pre-approved book for a specific kid.
+ * Parent-only: the caller must own the kid (verified Marketing JWT). Before,
+ * anyone with a kid id could hide or restore classics on that child's shelf.
  */
 export const excludeForKid = mutation({
   args: {
     kidId: v.id("kids"),
     gutenbergId: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const kid = await ctx.db.get(args.kidId);
-    if (!kid) throw new Error("Kid not found");
+    const kid = await requireKidOwner(ctx, args.userToken, args.kidId, "preApprovedBooks.excludeForKid");
 
     const current = kid.excludedPreApproved ?? [];
     if (!current.includes(args.gutenbergId)) {
@@ -213,10 +167,10 @@ export const includeForKid = mutation({
   args: {
     kidId: v.id("kids"),
     gutenbergId: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const kid = await ctx.db.get(args.kidId);
-    if (!kid) throw new Error("Kid not found");
+    const kid = await requireKidOwner(ctx, args.userToken, args.kidId, "preApprovedBooks.includeForKid");
 
     const current = kid.excludedPreApproved ?? [];
     await ctx.db.patch(args.kidId, {

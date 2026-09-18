@@ -23,9 +23,17 @@ export function UpgradePrompt({ onDismiss }: UpgradePromptProps) {
   const redeemCoupon = useMutation(api.coupons.redeemCoupon);
 
   async function handleUpgrade() {
+    if (!authUser?.email || !token) return;
     setLoading(true);
     try {
-      const res = await fetch(withBase("/api/stripe/checkout"), { method: "POST" });
+      // The checkout route needs the account email in the body (same call
+      // Settings makes). Without it the route answered 400 and this button
+      // just spun.
+      const res = await fetch(withBase("/api/stripe/checkout"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: authUser.email, userToken: token }),
+      });
       const data = (await res.json()) as { url?: string; error?: string };
       if (data.url) {
         topNavigate(data.url); // Stripe refuses to load inside a frame

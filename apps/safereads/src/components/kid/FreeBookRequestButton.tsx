@@ -45,7 +45,7 @@ export function FreeBookRequestButton({
     return (
       <span className={`flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 px-3.5 py-2 text-xs font-bold text-amber-700 ring-1 ring-amber-200 ${justRequested ? "animate-bounce-once" : ""}`}>
         <Clock className="h-3.5 w-3.5" />
-        {justRequested ? "Requested! \uD83D\uDE4F" : "Waiting on Parent"}
+        {justRequested ? "Requested!" : "Waiting on Parent"}
       </span>
     );
   }

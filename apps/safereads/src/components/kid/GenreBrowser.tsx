@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import {
-  ArrowLeft, Loader2, BookOpen,
+  ArrowLeft, Loader2, Search,
   Compass, PawPrint, Castle, FlaskConical, Landmark, Crown, Fingerprint,
   Rocket, Leaf, Laugh, Trophy, Palette, Ghost, MessageSquare, Zap,
 } from "lucide-react";
@@ -35,7 +35,8 @@ const GENRES = [
 interface GenreBrowserProps {
   /** "grid" for home page (compact), "pills" for search page (horizontal scroll) */
   layout: "grid" | "pills";
-  onGenreSelect?: (genre: string) => void;
+  /** Called with the genre key and its display label (the label is what the search box should show). */
+  onGenreSelect?: (genre: string, label?: string) => void;
 }
 
 interface FreeBook {
@@ -82,7 +83,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
 
   const handleGenreClick = useCallback(async (genreKey: string) => {
     if (onGenreSelect) {
-      onGenreSelect(genreKey);
+      onGenreSelect(genreKey, GENRES.find((g) => g.key === genreKey)?.label);
       return;
     }
 
@@ -195,7 +196,7 @@ export function GenreBrowser({ layout, onGenreSelect }: GenreBrowserProps) {
               </div>
             ) : (
               <div className="flex flex-col items-center rounded-2xl bg-white px-4 py-8 text-center shadow-sm">
-                <span className="text-3xl">{"\uD83D\uDD0D"}</span>
+                <Search className="h-8 w-8 text-accent-300" aria-hidden="true" />
                 <p className="mt-2 text-sm font-medium text-gray-600">
                   No {selectedGenreData?.label?.toLowerCase()} books found right now
                 </p>

@@ -92,9 +92,10 @@ export default function SavedVersesPage() {
   }, [savedVerses, searchQuery, filterColor, filterBook]);
 
   async function handleRemove(id: Id<"savedVerses">) {
+    if (!kidId) return;
     setRemoving(id);
     try {
-      await unsaveVerse({ savedVerseId: id });
+      await unsaveVerse({ savedVerseId: id, kidId });
     } finally {
       setRemoving(null);
     }

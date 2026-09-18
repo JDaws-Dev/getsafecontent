@@ -173,31 +173,6 @@ export const searchFreeBooks = action({
 });
 
 /**
- * Get a specific book's details and available formats from Project Gutenberg.
- */
-export const getFreeBook = action({
-  args: {
-    gutenbergId: v.string(),
-  },
-  handler: async (_ctx, args) => {
-    const url = `https://gutendex.com/books/${args.gutenbergId}/`;
-
-    const response = await fetch(url);
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error(
-        `Gutendex API error: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const book = (await response.json()) as GutendexBook;
-    return parseGutenbergBook(book);
-  },
-});
-
-/**
  * Fetch the actual HTML content of a Gutenberg book for in-app reading.
  * Strips Gutenberg header/footer boilerplate and returns clean content.
  *
@@ -450,90 +425,6 @@ export const browseByGenre = action({
 
       return results;
     } catch {
-      return [];
-    }
-  },
-});
-
-// ============================================================================
-// StoryWeaver Integration
-// ============================================================================
-
-interface StoryWeaverBook {
-  id: number;
-  title: string;
-  slug: string;
-  coverImage?: { url: string };
-  authors?: Array<{ name: string }>;
-  readingLevel?: string;
-  language?: string;
-  pageCount?: number;
-  description?: string;
-}
-
-interface StoryWeaverResponse {
-  ok: boolean;
-  data: StoryWeaverBook[];
-  metadata?: {
-    totalCount: number;
-  };
-}
-
-/**
- * Search StoryWeaver for free picture books and early readers.
- * Great for ages 3-9.
- */
-export const searchStoryWeaver = action({
-  args: {
-    query: v.string(),
-  },
-  handler: async (_ctx, args) => {
-    const params = new URLSearchParams({
-      query: args.query,
-      reading_levels: "1,2,3,4",
-      languages: "English",
-      page: "1",
-      per_page: "20",
-      sort: "Relevance",
-    });
-
-    const url = `https://storyweaver.org.in/api/v1/books-search?${params.toString()}`;
-
-    try {
-      const response = await fetch(url, {
-        headers: {
-          Accept: "application/json",
-          "User-Agent": "SafeReads/1.0 (getsafereads.com)",
-        },
-      });
-
-      if (!response.ok) {
-        // StoryWeaver can be flaky, degrade gracefully
-        console.error(`StoryWeaver API error: ${response.status}`);
-        return [];
-      }
-
-      const data = (await response.json()) as StoryWeaverResponse;
-
-      if (!data.ok || !data.data) {
-        return [];
-      }
-
-      return data.data.map((book) => ({
-        id: String(book.id),
-        title: book.title,
-        authors: (book.authors || []).map((a) => a.name),
-        coverUrl: book.coverImage?.url || undefined,
-        readingLevel: book.readingLevel || undefined,
-        language: book.language || "English",
-        pageCount: book.pageCount || undefined,
-        description: book.description || undefined,
-        slug: book.slug,
-        source: "storyweaver" as const,
-      }));
-    } catch (error) {
-      // StoryWeaver is optional — don't fail the whole search
-      console.error("StoryWeaver search failed:", error);
       return [];
     }
   },

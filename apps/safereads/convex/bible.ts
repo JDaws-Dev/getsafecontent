@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { action, mutation, query } from "./_generated/server";
-import { api } from "./_generated/api";
+import { action, internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import { api, internal } from "./_generated/api";
 
 // ============================================================================
 // Bible Integration via Bolls.life API
@@ -91,29 +91,6 @@ export const getProgress = query({
       .query("bibleProgress")
       .withIndex("by_kid", (q) => q.eq("kidId", args.kidId))
       .collect();
-  },
-});
-
-/**
- * Get last read position for a kid in a specific book.
- */
-export const getBookProgress = query({
-  args: {
-    kidId: v.id("kids"),
-    translation: v.string(),
-    bookId: v.number(),
-  },
-  handler: async (ctx, args) => {
-    const entries = await ctx.db
-      .query("bibleProgress")
-      .withIndex("by_kid_and_book", (q) =>
-        q.eq("kidId", args.kidId).eq("translation", args.translation).eq("bookId", args.bookId)
-      )
-      .collect();
-
-    // Return the most recently read chapter
-    if (entries.length === 0) return null;
-    return entries.sort((a, b) => b.lastReadAt - a.lastReadAt)[0];
   },
 });
 
@@ -215,10 +192,17 @@ export const saveVerse = mutation({
 
 /**
  * Remove a saved verse.
+ *
+ * Kid path (no parent token), so this is scoped rather than authenticated:
+ * the row must belong to the kid whose session is making the call. It used
+ * to delete any savedVerses id handed to it, from any family.
  */
 export const unsaveVerse = mutation({
-  args: { savedVerseId: v.id("savedVerses") },
+  args: { savedVerseId: v.id("savedVerses"), kidId: v.id("kids") },
   handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.savedVerseId);
+    if (!row) return;
+    if (row.kidId !== args.kidId) throw new Error("That verse isn't yours to remove.");
     await ctx.db.delete(args.savedVerseId);
   },
 });
@@ -310,7 +294,7 @@ export const getBooks = action({
     const cacheKey = `books:${args.translation}`;
 
     // Check cache
-    const cached = await ctx.runQuery(api.bible.getCacheEntry, { cacheKey });
+    const cached = await ctx.runQuery(internal.bible.getCacheEntry, { cacheKey });
     if (cached) {
       return JSON.parse(cached);
     }
@@ -324,7 +308,7 @@ export const getBooks = action({
     const books = await resp.json();
 
     // Cache permanently
-    await ctx.runMutation(api.bible.setCacheEntry, {
+    await ctx.runMutation(internal.bible.setCacheEntry, {
       cacheKey,
       data: JSON.stringify(books),
     });
@@ -359,7 +343,7 @@ export const getChapter = action({
     const cacheKey = `chapter:${args.translation}:${args.bookId}:${args.chapter}`;
 
     // Check cache
-    const cached = await ctx.runQuery(api.bible.getCacheEntry, { cacheKey });
+    const cached = await ctx.runQuery(internal.bible.getCacheEntry, { cacheKey });
     if (cached) {
       return JSON.parse(cached);
     }
@@ -383,7 +367,7 @@ export const getChapter = action({
     }));
 
     // Cache permanently
-    await ctx.runMutation(api.bible.setCacheEntry, {
+    await ctx.runMutation(internal.bible.setCacheEntry, {
       cacheKey,
       data: JSON.stringify(cleaned),
     });
@@ -418,13 +402,13 @@ export const getStudyNotes = action({
     const cacheKey = `study:${args.translation}:${args.bookId}:${args.chapter}:${ageRange}`;
 
     // Check cache
-    const cached = await ctx.runQuery(api.bible.getCacheEntry, { cacheKey });
+    const cached = await ctx.runQuery(internal.bible.getCacheEntry, { cacheKey });
     if (cached) {
       return JSON.parse(cached);
     }
 
     // Get chapter text for context
-    const chapterText = await ctx.runQuery(api.bible.getCacheEntry, {
+    const chapterText = await ctx.runQuery(internal.bible.getCacheEntry, {
       cacheKey: `chapter:${args.translation}:${args.bookId}:${args.chapter}`,
     });
 
@@ -496,7 +480,7 @@ Return JSON only (no markdown formatting):
     const notes = JSON.parse(content);
 
     // Cache permanently
-    await ctx.runMutation(api.bible.setCacheEntry, {
+    await ctx.runMutation(internal.bible.setCacheEntry, {
       cacheKey,
       data: JSON.stringify(notes),
     });
@@ -508,8 +492,12 @@ Return JSON only (no markdown formatting):
 // ============================================================================
 // Cache helpers (called by actions)
 // ============================================================================
+// Internal on purpose. setCacheEntry was a PUBLIC mutation: anyone could call
+// it straight at the deployment URL and overwrite the cached Scripture text
+// that every kid reads (the cache is permanent, so the tampered text would
+// have stayed). Only the actions in this file may read or write the cache.
 
-export const getCacheEntry = query({
+export const getCacheEntry = internalQuery({
   args: { cacheKey: v.string() },
   handler: async (ctx, args) => {
     const entry = await ctx.db
@@ -520,7 +508,7 @@ export const getCacheEntry = query({
   },
 });
 
-export const setCacheEntry = mutation({
+export const setCacheEntry = internalMutation({
   args: {
     cacheKey: v.string(),
     data: v.string(),
@@ -577,7 +565,7 @@ export const searchBible = action({
     const cacheKey = `bible-search:${args.translation}:${args.query.toLowerCase().trim()}:${args.testament || "all"}:${args.page || 1}`;
 
     // Check cache
-    const cached = await ctx.runQuery(api.bible.getCacheEntry, { cacheKey });
+    const cached = await ctx.runQuery(internal.bible.getCacheEntry, { cacheKey });
     if (cached) {
       return JSON.parse(cached);
     }
@@ -672,7 +660,7 @@ export const searchBible = action({
       };
 
       // Cache for 7 days (Bible text doesn't change)
-      await ctx.runMutation(api.bible.setCacheEntry, {
+      await ctx.runMutation(internal.bible.setCacheEntry, {
         cacheKey,
         data: JSON.stringify(searchResult),
       });

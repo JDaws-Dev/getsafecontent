@@ -8,7 +8,7 @@ import {
   BookOpen, ChevronRight, Check, ArrowLeft,
   Compass, PawPrint, Castle, FlaskConical, Landmark, Crown, Fingerprint,
   Rocket, Leaf, Laugh, Trophy, Palette, Ghost, MessageSquare, Zap,
-  Bug, BookCopy, Medal,
+  Bug, BookCopy, Medal, PartyPopper,
 } from "lucide-react";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
@@ -285,7 +285,7 @@ export default function KidOnboardingPage() {
       {step === 3 && (
         <div className="w-full max-w-md animate-in fade-in slide-in-from-right-4 duration-300 text-center">
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-accent-400 to-accent-600 shadow-xl ring-4 ring-accent-200">
-            <span className="text-5xl drop-shadow-sm">{"\uD83C\uDF89"}</span>
+            <PartyPopper className="h-12 w-12 text-white drop-shadow-sm" strokeWidth={2.25} aria-hidden="true" />
           </div>
 
           <h1 className="font-display text-3xl font-bold text-brand-navy">

@@ -17,17 +17,17 @@ export default function OnboardingPage() {
 
   const currentUser = useQuery(
     api.users.currentUser,
-    authUser?.email ? { email: authUser.email } : "skip"
+    authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip"
   );
   const completeOnboarding = useMutation(api.users.completeOnboarding);
   const createKid = useMutation(api.kids.create);
   const userId = useQuery(
     api.users.currentUserId,
-    authUser?.email ? { email: authUser.email } : "skip"
+    authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip"
   );
   const familyCodeData = useQuery(
     api.familyCodes.getByUser,
-    userId ? { userId } : "skip"
+    userId ? { userId, userToken: token ?? undefined } : "skip"
   );
 
   const [step, setStep] = useState(0);
@@ -85,14 +85,14 @@ export default function OnboardingPage() {
       }
       // Save content preferences
       if (authUser?.email) {
-        await updatePreApprovedLevel({ email: authUser.email, level: preApprovedLevel });
+        await updatePreApprovedLevel({ email: authUser.email, level: preApprovedLevel, userToken: token ?? undefined });
       }
 
       // Mark onboarding complete
       if (!authUser?.email) {
         throw new Error("Not authenticated");
       }
-      await completeOnboarding({ email: authUser.email });
+      await completeOnboarding({ email: authUser.email, userToken: token ?? undefined });
       router.replace("/dashboard");
     } catch {
       setSaving(false);
@@ -272,7 +272,7 @@ export default function OnboardingPage() {
               </div>
               <p className="text-sm text-ink-500">
                 Kids go to{" "}
-                <span className="font-semibold text-emerald-700">getsafereads.com/read</span>{" "}
+                <span className="font-semibold text-emerald-700">getsafefamily.com/play</span>{" "}
                 and enter this code.
               </p>
             </div>

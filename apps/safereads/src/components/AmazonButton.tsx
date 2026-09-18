@@ -8,12 +8,22 @@ interface AmazonButtonProps {
   isbn?: string;
 }
 
-function buildAmazonSearchUrl(title: string, authors: string[], isbn?: string): string {
+/**
+ * Amazon search link with the affiliate tag attached. Shared by the parent
+ * "Find on Amazon" button and the kid page's "Find on Kindle" link, so both
+ * carry the tag (the kid link used to be a bare, untagged URL).
+ */
+export function buildAmazonSearchUrl(
+  title: string,
+  authors: string[],
+  isbn?: string,
+  department: "stripbooks" | "digital-text" = "stripbooks",
+): string {
   // If ISBN is available, search by ISBN for an exact match
   const query = isbn ? isbn : `${title} ${authors[0] ?? ""}`;
   const params = new URLSearchParams({
     k: query,
-    i: "stripbooks",
+    i: department,
   });
   const affiliateTag = process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG;
   if (affiliateTag) {

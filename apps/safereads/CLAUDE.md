@@ -6,8 +6,8 @@ AI-powered book content analysis for parents. Search books, get objective conten
 
 - Next.js 15 (App Router, TypeScript, `src/` directory)
 - Convex (backend, real-time DB, actions for external APIs)
-- Convex Auth (authentication, Google OAuth)
-- Stripe (subscriptions, $2.99/mo Pro plan)
+- Safe Family central account (JWT from getsafefamily.com; no local auth provider)
+- Stripe (subscriptions, $4.99/mo; bundle billing lives on getsafefamily.com)
 - Resend (transactional emails - welcome email on subscription)
 - OpenAI GPT-4o (AI verdict engine with structured JSON output)
 - Tailwind CSS (bookish theme: parchment palette, Libre Baskerville + Inter)
@@ -34,7 +34,7 @@ npm run lint         # ESLint
 
 ## Subscription Flow
 
-1. Free users get 3 trial reviews
+1. New accounts get a 7-day free trial (unlimited reviews during the trial)
 2. Upgrade triggers Stripe Checkout (`/api/stripe/checkout`)
 3. Stripe webhook (`/api/webhooks/stripe`) updates user subscription status
 4. Welcome email sent via Resend on `customer.subscription.created`

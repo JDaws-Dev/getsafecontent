@@ -57,10 +57,16 @@ export default function ManageBooksPage({
   const approvedBooks = useQuery(api.approvedBooks.listForKid, {
     kidId: kidId as Id<"kids">,
   });
-  const preApprovedBooks = useQuery(api.preApprovedBooks.getPreApprovedBooks, {
-    kidId: kidId as Id<"kids">,
-    age: kid?.age,
-  });
+  // The full classics catalog (static). getPreApprovedBooks filters out the
+  // excluded ones, so it can't tell us the titles of the very books this page
+  // needs to name in "Excluded Classics".
+  const allClassics = useQuery(api.preApprovedBooks.listAll, {});
+  // What the kid actually sees on the classics shelf (age + comfort level,
+  // minus exclusions).
+  const visibleClassics = useQuery(
+    api.preApprovedBooks.getPreApprovedBooks,
+    kid ? { kidId: kidId as Id<"kids">, age: kid.age } : "skip"
+  );
 
   const removeBook = useMutation(api.approvedBooks.removeForKid);
   const restorePreApproved = useMutation(api.preApprovedBooks.includeForKid);
@@ -92,13 +98,20 @@ export default function ManageBooksPage({
     return [...filteredBooks].sort((a, b) => b.addedAt - a.addedAt);
   }, [filteredBooks]);
 
-  // Get excluded pre-approved books
+  // Excluded pre-approved classics, with their titles. Used to render as
+  // "Classic #11" because only the ids were available on this page.
   const excludedBooks = useMemo(() => {
-    if (!kid?.excludedPreApproved || !preApprovedBooks) return [];
-    // We need to reference the full pre-approved list to get titles
-    // The kid's excludedPreApproved is an array of gutenbergIds
-    return kid.excludedPreApproved;
-  }, [kid, preApprovedBooks]);
+    if (!kid?.excludedPreApproved) return [];
+    const byId = new Map((allClassics ?? []).map((c) => [c.gutenbergId, c]));
+    return kid.excludedPreApproved.map((gutenbergId: string) => {
+      const classic = byId.get(gutenbergId);
+      return {
+        gutenbergId,
+        title: classic?.title ?? `Classic #${gutenbergId}`,
+        author: classic?.author,
+      };
+    });
+  }, [kid, allClassics]);
 
   async function handleRemoveConfirmed() {
     if (!confirmDialog) return;
@@ -125,6 +138,7 @@ export default function ManageBooksPage({
       await excludePreApproved({
         kidId: kidId as Id<"kids">,
         gutenbergId: bookId,
+        userToken: token ?? undefined,
       });
     } finally {
       setRemoving(null);
@@ -137,6 +151,7 @@ export default function ManageBooksPage({
       await restorePreApproved({
         kidId: kidId as Id<"kids">,
         gutenbergId: gutenbergId,
+        userToken: token ?? undefined,
       });
     } finally {
       setRestoring(null);
@@ -183,6 +198,8 @@ export default function ManageBooksPage({
           </h1>
           <p className="mt-1 text-sm text-ink-500">
             {approvedBooks.length} approved book{approvedBooks.length !== 1 ? "s" : ""}
+            {visibleClassics !== undefined &&
+              ` and ${visibleClassics.length} classic${visibleClassics.length !== 1 ? "s" : ""} on the shelf`}
           </p>
         </div>
         <Link
@@ -320,18 +337,19 @@ export default function ManageBooksPage({
             These pre-approved classics have been removed from {kid.name}&apos;s shelf. Restore them below.
           </p>
           <div className="space-y-1.5">
-            {excludedBooks.map((gutenbergId: string) => (
+            {excludedBooks.map(({ gutenbergId, title, author }) => (
               <div
                 key={gutenbergId}
-                className="flex items-center justify-between rounded-lg border border-brand-cream-2 bg-brand-cream px-4 py-2.5"
+                className="flex items-center justify-between gap-3 rounded-lg border border-brand-cream-2 bg-brand-cream px-4 py-2.5"
               >
-                <span className="text-sm text-ink-600">
-                  Classic #{gutenbergId}
-                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-ink-700">{title}</p>
+                  {author && <p className="truncate text-xs text-ink-400">{author}</p>}
+                </div>
                 <button
                   onClick={() => handleRestore(gutenbergId)}
                   disabled={restoring === gutenbergId}
-                  className="flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-medium text-accent-700 shadow-sm transition-colors hover:bg-brand-cream-2 disabled:opacity-50"
+                  className="flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-medium text-accent-700 shadow-sm transition-colors hover:bg-brand-cream-2 disabled:opacity-50"
                 >
                   {restoring === gutenbergId ? (
                     <Loader2 className="h-3 w-3 animate-spin" />

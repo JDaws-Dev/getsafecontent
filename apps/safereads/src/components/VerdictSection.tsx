@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useAction } from "convex/react";
+import { useQuery, useAction, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { VerdictCard, VerdictCardAnalysis } from "./VerdictCard";
@@ -21,11 +21,13 @@ interface VerdictSectionProps {
 }
 
 export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const userToken = token ?? undefined;
   const cachedAnalysis = useQuery(api.analyses.getByBook, { bookId });
+  const recordView = useMutation(api.analyses.recordView);
   const access = useQuery(
     api.subscriptions.checkAccess,
-    user?.email ? { email: user.email } : "skip"
+    user?.email ? { email: user.email, userToken: token ?? undefined } : "skip"
   ) as {
     hasAccess: boolean;
     isSubscribed: boolean;
@@ -52,15 +54,26 @@ export function VerdictSection({ bookId, bookTitle }: VerdictSectionProps) {
     setCurrentUrl(window.location.href);
   }, []);
 
+  // Reviews are cached per book for everyone, so "which reviews has THIS
+  // parent looked at" has to be written down separately. This is what feeds
+  // the dashboard's "Your Recent Reviews" strip and the advisor's context.
+  const cachedAnalysisId = cachedAnalysis?._id;
+  useEffect(() => {
+    if (!cachedAnalysisId || !userToken) return;
+    recordView({ bookId, analysisId: cachedAnalysisId, userToken }).catch(() => {
+      // Best-effort bookkeeping; never interrupt the review itself.
+    });
+  }, [bookId, cachedAnalysisId, userToken, recordView]);
+
   async function handleAnalyze() {
-    if (!user?.email) {
+    if (!user?.email || !userToken) {
       setError("Please log in to analyze books.");
       return;
     }
     setAnalyzing(true);
     setError(null);
     try {
-      const result = await analyzeAction({ bookId, email: user.email });
+      const result = await analyzeAction({ bookId, userToken });
       setActionResult(result as typeof actionResult);
       notify(`SafeReads: ${bookTitle}`, {
         body: `Review complete \u2014 ${(result as { verdict: string }).verdict.replace("_", " ")}`,

@@ -9,13 +9,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { SafeFamilyParentSwitcher } from "@/components/SafeFamilySwitcher";
 
 export function Navbar() {
-  const { user: authUser, isAuthenticated, isLoading, logout } = useAuth();
+  const { user: authUser, token, isAuthenticated, isLoading, logout } = useAuth();
 
   // Family code for the cross-app switcher — authoritative value lives on the
   // local users row (users.familyCode), synced from the verified login token.
   const currentUser = useQuery(
     api.users.currentUser,
-    authUser?.email ? { email: authUser.email } : "skip"
+    authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip"
   );
   const familyCode =
     currentUser?.familyCode ||
@@ -107,8 +107,8 @@ export function Navbar() {
 }
 
 function UserMenu({ onSignOut }: { onSignOut: () => void }) {
-  const { user: authUser } = useAuth();
-  const currentUser = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email } : "skip");
+  const { user: authUser, token } = useAuth();
+  const currentUser = useQuery(api.users.currentUser, authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip");
 
   return (
     <DropdownMenu.Root>

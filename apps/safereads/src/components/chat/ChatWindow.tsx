@@ -10,16 +10,18 @@ import { Bot, Loader2 } from "lucide-react";
 
 type ChatWindowProps = {
   conversationId: Id<"conversations">;
+  userToken?: string;
   onSend: (message: string) => void;
   isSending: boolean;
 };
 
 export function ChatWindow({
   conversationId,
+  userToken,
   onSend,
   isSending,
 }: ChatWindowProps) {
-  const messages = useQuery(api.chat.getMessages, { conversationId });
+  const messages = useQuery(api.chat.getMessages, { conversationId, userToken });
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

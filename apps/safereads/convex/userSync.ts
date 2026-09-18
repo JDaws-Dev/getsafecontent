@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { ownRowForEmail, verifyCallerClaims } from "./identity";
 
 const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -21,12 +22,10 @@ function generateCode(): string {
  * Used by JWT-based auth to get local user data after central auth verification.
  */
 export const getSafeReadsUserByEmail = query({
-  args: { email: v.string() },
+  args: { email: v.string(), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    return await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
-      .first();
+    // Own row only (verified token); see identity.ownRowForEmail.
+    return await ownRowForEmail(ctx, args.userToken, args.email);
   },
 });
 
@@ -46,9 +45,21 @@ export const ensureSafeReadsUser = mutation({
     email: v.string(),
     name: v.optional(v.string()),
     subscriptionStatus: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const email = args.email.toLowerCase();
+    // This was a public mutation that created a users row for ANY email with
+    // a caller-chosen status — "lifetime" included. Now the row is created
+    // for the verified token's email only, and a privileged status is never
+    // taken from the client: the row starts as "trial" and the central sync
+    // (useSubscriptionSync -> verifyCentralAccess) sets the real status from
+    // Marketing Central within moments of the dashboard loading.
+    const claims = await verifyCallerClaims(args.userToken);
+    if (!claims) throw new Error("Please sign in again.");
+    const email = claims.email.toLowerCase();
+    if (email !== args.email.toLowerCase()) {
+      throw new Error("You don't have access to that.");
+    }
 
     // Check if user already exists
     const existing = await ctx.db
@@ -60,24 +71,25 @@ export const ensureSafeReadsUser = mutation({
       return { userId: existing._id, wasCreated: false };
     }
 
-    // Map subscription status to valid union type
-    const validStatuses = ["trial", "active", "lifetime", "canceled", "past_due", "incomplete", "inactive"] as const;
-    type SubscriptionStatus = (typeof validStatuses)[number];
-    const status: SubscriptionStatus = validStatuses.includes(args.subscriptionStatus as SubscriptionStatus)
-      ? (args.subscriptionStatus as SubscriptionStatus)
-      : "trial";
+    // Only non-privileged statuses are accepted from the client. Anything
+    // that would grant access ("active", "lifetime") comes from central sync.
+    type SubscriptionStatus = "trial" | "inactive";
+    const status: SubscriptionStatus = args.subscriptionStatus === "inactive" ? "inactive" : "trial";
 
-    // Auto-generate a unique family code
-    let familyCode = generateCode();
-    let attempts = 0;
-    while (attempts < 10) {
-      const collision = await ctx.db
-        .query("users")
-        .withIndex("by_family_code", (q) => q.eq("familyCode", familyCode))
-        .first();
-      if (!collision) break;
-      familyCode = generateCode();
-      attempts++;
+    // One family code everywhere: prefer the unified code carried on the
+    // verified token; generate a local one only when the token has none.
+    let familyCode = claims.familyCode || generateCode();
+    if (!claims.familyCode) {
+      let attempts = 0;
+      while (attempts < 10) {
+        const collision = await ctx.db
+          .query("users")
+          .withIndex("by_family_code", (q) => q.eq("familyCode", familyCode))
+          .first();
+        if (!collision) break;
+        familyCode = generateCode();
+        attempts++;
+      }
     }
 
     // Create new user with minimal fields

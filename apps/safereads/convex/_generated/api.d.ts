@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as accounts from "../accounts.js";
 import type * as admin from "../admin.js";
 import type * as adminDashboard from "../adminDashboard.js";
 import type * as adminUserEmail from "../adminUserEmail.js";
@@ -24,11 +23,9 @@ import type * as chat from "../chat.js";
 import type * as coupons from "../coupons.js";
 import type * as crons from "../crons.js";
 import type * as deleteUser from "../deleteUser.js";
-import type * as emails from "../emails.js";
 import type * as familyCodes from "../familyCodes.js";
 import type * as familySync from "../familySync.js";
 import type * as freeBooks from "../freeBooks.js";
-import type * as generateClassicCovers from "../generateClassicCovers.js";
 import type * as grantLifetime from "../grantLifetime.js";
 import type * as http from "../http.js";
 import type * as httpRateLimit from "../httpRateLimit.js";
@@ -36,6 +33,7 @@ import type * as identity from "../identity.js";
 import type * as kidPass from "../kidPass.js";
 import type * as kidSearchHistory from "../kidSearchHistory.js";
 import type * as kids from "../kids.js";
+import type * as lib_classics from "../lib/classics.js";
 import type * as lib_doesTheDogDie from "../lib/doesTheDogDie.js";
 import type * as librivox from "../librivox.js";
 import type * as lit2go from "../lit2go.js";
@@ -68,7 +66,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  accounts: typeof accounts;
   admin: typeof admin;
   adminDashboard: typeof adminDashboard;
   adminUserEmail: typeof adminUserEmail;
@@ -84,11 +81,9 @@ declare const fullApi: ApiFromModules<{
   coupons: typeof coupons;
   crons: typeof crons;
   deleteUser: typeof deleteUser;
-  emails: typeof emails;
   familyCodes: typeof familyCodes;
   familySync: typeof familySync;
   freeBooks: typeof freeBooks;
-  generateClassicCovers: typeof generateClassicCovers;
   grantLifetime: typeof grantLifetime;
   http: typeof http;
   httpRateLimit: typeof httpRateLimit;
@@ -96,6 +91,7 @@ declare const fullApi: ApiFromModules<{
   kidPass: typeof kidPass;
   kidSearchHistory: typeof kidSearchHistory;
   kids: typeof kids;
+  "lib/classics": typeof lib_classics;
   "lib/doesTheDogDie": typeof lib_doesTheDogDie;
   librivox: typeof librivox;
   lit2go: typeof lit2go;

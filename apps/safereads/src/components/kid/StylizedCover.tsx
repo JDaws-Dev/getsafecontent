@@ -4,8 +4,17 @@
  * StylizedCover - An elegant text-forward book cover for when no image is available.
  *
  * Inspired by Penguin Classics and Everyman's Library: muted colors, prominent
- * title in a serif font, small decorative emoji accent, subtle texture overlay.
+ * title in a serif font, a small genre glyph (lucide SVG, no emoji), subtle
+ * texture overlay.
  */
+
+import {
+  BookOpen, Brain, Compass, Crown, Drama, FlaskConical, Flower, Ghost, Heart,
+  Image, Landmark, Laugh, Leaf, Moon, Music, PawPrint, Rocket, Search,
+  Sparkles, Star, TreePine, Zap,
+  type LucideProps,
+} from "lucide-react";
+import type { ComponentType } from "react";
 
 interface StylizedCoverProps {
   title: string;
@@ -19,149 +28,149 @@ interface StylizedCoverProps {
 // Each palette uses 2-3 sophisticated colors, no bright neon
 const GENRE_PALETTES: Record<
   string,
-  { bg: string; accent: string; emoji: string }
+  { bg: string; accent: string; Icon: ComponentType<LucideProps> }
 > = {
   adventure: {
     bg: "from-amber-900 to-amber-950",
     accent: "bg-amber-700/40",
-    emoji: "\u2694\uFE0F",
+    Icon: Compass,
   },
   fantasy: {
     bg: "from-indigo-900 to-indigo-950",
     accent: "bg-indigo-700/40",
-    emoji: "\u2728",
+    Icon: Sparkles,
   },
   science: {
     bg: "from-slate-700 to-slate-900",
     accent: "bg-cyan-800/40",
-    emoji: "\uD83D\uDD2C",
+    Icon: FlaskConical,
   },
   "science fiction": {
     bg: "from-slate-800 to-indigo-950",
     accent: "bg-indigo-800/40",
-    emoji: "\uD83D\uDE80",
+    Icon: Rocket,
   },
   nature: {
     bg: "from-emerald-900 to-emerald-950",
     accent: "bg-emerald-700/40",
-    emoji: "\uD83C\uDF3F",
+    Icon: Leaf,
   },
   history: {
     bg: "from-stone-700 to-stone-900",
     accent: "bg-amber-800/40",
-    emoji: "\uD83C\uDFF0",
+    Icon: Landmark,
   },
   "historical fiction": {
     bg: "from-stone-700 to-stone-900",
     accent: "bg-amber-800/40",
-    emoji: "\uD83C\uDFF0",
+    Icon: Landmark,
   },
   mystery: {
     bg: "from-gray-800 to-gray-950",
     accent: "bg-gray-600/40",
-    emoji: "\uD83D\uDD0D",
+    Icon: Search,
   },
   "mystery detective": {
     bg: "from-gray-800 to-gray-950",
     accent: "bg-gray-600/40",
-    emoji: "\uD83D\uDD0D",
+    Icon: Search,
   },
   "fairy tales": {
     bg: "from-purple-900 to-purple-950",
     accent: "bg-rose-800/40",
-    emoji: "\uD83E\uDDD9",
+    Icon: Crown,
   },
   fables: {
     bg: "from-amber-800 to-stone-900",
     accent: "bg-amber-700/40",
-    emoji: "\uD83E\uDD8A",
+    Icon: PawPrint,
   },
   humor: {
     bg: "from-amber-800 to-amber-950",
     accent: "bg-orange-800/40",
-    emoji: "\uD83D\uDE04",
+    Icon: Laugh,
   },
   "nursery rhymes": {
     bg: "from-sky-900 to-sky-950",
     accent: "bg-sky-700/40",
-    emoji: "\uD83C\uDFB5",
+    Icon: Music,
   },
   "children's fiction": {
     bg: "from-teal-800 to-teal-950",
     accent: "bg-teal-700/40",
-    emoji: "\uD83D\uDCDA",
+    Icon: BookOpen,
   },
   "children's picture book": {
     bg: "from-rose-800 to-rose-950",
     accent: "bg-rose-700/40",
-    emoji: "\uD83D\uDDBC\uFE0F",
+    Icon: Image,
   },
   "animal fiction": {
     bg: "from-emerald-800 to-emerald-950",
     accent: "bg-green-700/40",
-    emoji: "\uD83D\uDC3E",
+    Icon: PawPrint,
   },
   "coming-of-age fiction": {
     bg: "from-violet-800 to-violet-950",
     accent: "bg-violet-700/40",
-    emoji: "\uD83C\uDF1F",
+    Icon: Star,
   },
   "classic literature": {
     bg: "from-stone-700 to-stone-900",
     accent: "bg-amber-900/40",
-    emoji: "\uD83D\uDCD6",
+    Icon: BookOpen,
   },
   "gothic romance": {
     bg: "from-rose-900 to-stone-950",
     accent: "bg-rose-800/40",
-    emoji: "\uD83C\uDF39",
+    Icon: Flower,
   },
   "gothic horror": {
     bg: "from-gray-800 to-gray-950",
     accent: "bg-gray-700/40",
-    emoji: "\uD83E\uDDDB",
+    Icon: Ghost,
   },
   "gothic fiction": {
     bg: "from-gray-800 to-gray-950",
     accent: "bg-gray-700/40",
-    emoji: "\uD83D\uDD6F\uFE0F",
+    Icon: Moon,
   },
   "gothic science fiction": {
     bg: "from-teal-900 to-slate-950",
     accent: "bg-teal-800/40",
-    emoji: "\u26A1",
+    Icon: Zap,
   },
   romance: {
     bg: "from-rose-800 to-rose-950",
     accent: "bg-rose-700/40",
-    emoji: "\uD83D\uDC95",
+    Icon: Heart,
   },
   philosophy: {
     bg: "from-zinc-700 to-zinc-900",
     accent: "bg-zinc-600/40",
-    emoji: "\uD83E\uDD14",
+    Icon: Brain,
   },
   "psychological fiction": {
     bg: "from-violet-900 to-indigo-950",
     accent: "bg-violet-800/40",
-    emoji: "\uD83E\uDDE0",
+    Icon: Brain,
   },
   satire: {
     bg: "from-amber-800 to-red-950",
     accent: "bg-orange-800/40",
-    emoji: "\uD83C\uDFAD",
+    Icon: Drama,
   },
   "holiday classic": {
     bg: "from-red-900 to-green-950",
     accent: "bg-red-800/40",
-    emoji: "\uD83C\uDF84",
+    Icon: TreePine,
   },
 };
 
 const DEFAULT_PALETTE = {
   bg: "from-slate-700 to-slate-900",
   accent: "bg-slate-600/40",
-  emoji: "\uD83D\uDCD6",
+  Icon: BookOpen,
 };
 
 /**
@@ -203,11 +212,12 @@ export function StylizedCover({
     lg: "text-[9px]",
   };
 
-  const emojiSizes = {
-    sm: "text-[10px]",
-    md: "text-[12px]",
-    lg: "text-[14px]",
+  const glyphSizes = {
+    sm: "h-2.5 w-2.5",
+    md: "h-3 w-3",
+    lg: "h-3.5 w-3.5",
   };
+  const Glyph = palette.Icon;
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-xl">
@@ -234,9 +244,7 @@ export function StylizedCover({
         {/* Top decorative line */}
         <div className="flex w-full flex-col items-center gap-1 pt-1">
           <div className="h-px w-10 bg-white/20" />
-          <div className={`${emojiSizes[size]} leading-none opacity-60`}>
-            {palette.emoji}
-          </div>
+          <Glyph className={`${glyphSizes[size]} text-white opacity-60`} strokeWidth={2} aria-hidden="true" />
         </div>
 
         {/* Title — the hero element */}
@@ -267,17 +275,3 @@ export function StylizedCover({
   );
 }
 
-/**
- * Exported genre style lookup for use in other components.
- * Returns gradient info compatible with the old API shape.
- */
-export function getGenreStyle(genre?: string, title?: string) {
-  const effectiveGenre = genre || (title ? guessGenre(title) : null);
-  const palette = (effectiveGenre && GENRE_PALETTES[effectiveGenre.toLowerCase()]) || DEFAULT_PALETTE;
-  // Return the same shape other components expect
-  return {
-    gradient: palette.bg.replace("from-", "from-").replace("to-", "to-"),
-    emoji: palette.emoji,
-    pattern: "bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.06)_0%,transparent_50%)]",
-  };
-}

@@ -338,6 +338,22 @@ export default defineSchema({
     comparableBooks: v.optional(v.string()),
   }).index("by_book", ["bookId"]),
 
+  // Which parent opened which review, and when. `analyses` is a per-book
+  // cache shared by every family (one objective review per title), so it has
+  // no owner — which is why "Recently Reviewed" and the advisor chat context
+  // used to show every family's lookups to every other family. This table is
+  // the per-user view of that cache. Additive (Sep 2026); rows are written
+  // from the book page and the analyze action, never migrated.
+  analysisViews: defineTable({
+    userId: v.id("users"),
+    bookId: v.id("books"),
+    analysisId: v.id("analyses"),
+    viewedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_recent", ["userId", "viewedAt"])
+    .index("by_user_and_book", ["userId", "bookId"]),
+
   notes: defineTable({
     userId: v.id("users"),
     bookId: v.id("books"),

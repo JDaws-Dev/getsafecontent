@@ -39,7 +39,7 @@ export default function DashboardLayout({
   // The subscription status comes from centralUser (JWT auth)
   const localUser = useQuery(
     api.userSync.getSafeReadsUserByEmail,
-    centralUser?.email ? { email: centralUser.email } : "skip"
+    centralUser?.email && token ? { email: centralUser.email, userToken: token } : "skip"
   );
 
   // If the user is authenticated via JWT but has no local SafeReads user record,
@@ -49,6 +49,7 @@ export default function DashboardLayout({
       !isLoading &&
       isAuthenticated &&
       centralUser?.email &&
+      token &&
       localUser === null &&
       !provisionAttempted
     ) {
@@ -58,13 +59,14 @@ export default function DashboardLayout({
         email: centralUser.email,
         name: centralUser.name || centralUser.email.split("@")[0],
         subscriptionStatus: centralUser.subscriptionStatus || "trial",
+        userToken: token,
       }).then((result) => {
         console.log("[DashboardLayout] Auto-provisioned local user:", result);
       }).catch((err) => {
         console.error("[DashboardLayout] Failed to auto-provision local user:", err);
       });
     }
-  }, [isLoading, isAuthenticated, centralUser, localUser, provisionAttempted, ensureUser]);
+  }, [isLoading, isAuthenticated, centralUser, token, localUser, provisionAttempted, ensureUser]);
 
   // Once the local user exists and we hold a verified token, sync the unified
   // family code from the token onto the local row (idempotent, fires once).

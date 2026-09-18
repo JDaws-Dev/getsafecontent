@@ -46,11 +46,12 @@ function SortIndicator({
 
 export default function AdminPage() {
   const router = useRouter();
-  const { user: authUser } = useAuth();
-  const adminEmail = authUser?.email || "";
-  const isAdmin = useQuery(api.admin.isAdmin, adminEmail ? { email: adminEmail } : "skip");
-  const stats = useQuery(api.admin.getStats, adminEmail ? { adminEmail } : "skip");
-  const users = useQuery(api.admin.listUsers, adminEmail ? { adminEmail } : "skip");
+  const { token, isLoading: authLoading } = useAuth();
+  // The server decides who is an admin from the verified login token, never
+  // from an email the page sends up.
+  const isAdmin = useQuery(api.admin.isAdmin, token ? { userToken: token } : "skip");
+  const stats = useQuery(api.admin.getStats, isAdmin ? { userToken: token ?? undefined } : "skip");
+  const users = useQuery(api.admin.listUsers, isAdmin ? { userToken: token ?? undefined } : "skip");
 
   // Table state
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,10 +60,10 @@ export default function AdminPage() {
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
 
   useEffect(() => {
-    if (isAdmin === false) {
+    if (isAdmin === false || (!authLoading && !token)) {
       router.replace("/dashboard");
     }
-  }, [isAdmin, router]);
+  }, [isAdmin, authLoading, token, router]);
 
   // Filtered and sorted users
   const filteredUsers = useMemo(() => {

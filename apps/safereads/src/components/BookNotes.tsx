@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export function BookNotes({ bookId }: { bookId: Id<"books"> }) {
   const { user: authUser, token } = useAuth();
-  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email } : "skip");
+  const userId = useQuery(api.users.currentUserId, authUser?.email ? { email: authUser.email, userToken: token ?? undefined } : "skip");
 
   const note = useQuery(
     api.notes.getByUserAndBook,

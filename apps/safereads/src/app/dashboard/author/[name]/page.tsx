@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Id } from "../../../../../convex/_generated/dataModel";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Verdict = "safe" | "caution" | "warning" | "no_verdict";
 
@@ -51,6 +52,7 @@ export default function AuthorDetailPage({
   const { name: encodedName } = use(params);
   const authorName = decodeURIComponent(encodedName);
 
+  const { token } = useAuth();
   const searchByAuthor = useAction(api.books.searchByAuthor);
   const getAuthorOverview = useAction(api.books.authorOverview);
 
@@ -103,15 +105,17 @@ export default function AuthorDetailPage({
           authorName,
           bookTitles: titles,
           categories: uniqueCategories,
+          userToken: token ?? undefined,
         });
         setOverview(result as AuthorOverview);
       } catch {
-        // Non-critical — overview is supplementary
+        // Non-critical — overview is supplementary. An expired trial just
+        // doesn't get a fresh AI overview; the catalog still loads.
       } finally {
         setOverviewLoading(false);
       }
     },
-    [getAuthorOverview, authorName]
+    [getAuthorOverview, authorName, token]
   );
 
   useEffect(() => {

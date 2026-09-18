@@ -15,6 +15,7 @@ import {
 import { WordDefinition } from "./WordDefinition";
 import { ReadingTimeUp } from "./ReadingTimeUp";
 import { useReadingTime } from "@/hooks/useReadingTime";
+import { sanitizeBookHtml } from "@/lib/sanitizeHtml";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 type ThemeMode = "light" | "dark" | "sepia";
@@ -185,7 +186,9 @@ export function BookReader({
         } else if (result.error || !result.content) {
           setError(result.error || "Could not load book content.");
         } else {
-          setContent(result.content);
+          // Gutenberg HTML is third-party markup fetched live; strip anything
+          // that could run before it goes anywhere near innerHTML.
+          setContent(sanitizeBookHtml(result.content));
           // Restore scroll position after content renders
           requestAnimationFrame(() => {
             setTimeout(() => {

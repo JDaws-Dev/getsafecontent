@@ -8,6 +8,7 @@ import { ArrowLeft, BookOpen, Clock, BookMarked, ExternalLink, ShieldAlert, Shie
 import Image from "next/image";
 import Link from "next/link";
 import { BookReader } from "@/components/kid/BookReader";
+import { buildAmazonSearchUrl } from "@/components/AmazonButton";
 import { AudioPlayer } from "@/components/kid/AudioPlayer";
 import { ReadingTimeUp } from "@/components/kid/ReadingTimeUp";
 import { useReadingTime } from "@/hooks/useReadingTime";
@@ -603,7 +604,7 @@ export default function KidReadPage() {
             </p>
             <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
               <a
-                href={`https://www.amazon.com/s?k=${encodeURIComponent(effectiveBook.title + " " + effectiveBook.author)}&i=digital-text`}
+                href={buildAmazonSearchUrl(effectiveBook.title, [effectiveBook.author], undefined, "digital-text")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="kid-touch inline-flex items-center justify-center gap-1.5 rounded-full bg-white px-6 py-3 text-sm font-bold text-accent-700 shadow-sm ring-1 ring-accent-200 transition-all hover:bg-accent-50 hover:shadow-md active:scale-95"

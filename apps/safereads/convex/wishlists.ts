@@ -155,21 +155,6 @@ export const add = mutation({
 });
 
 /**
- * Update the note on a wishlist entry.
- */
-export const updateNote = mutation({
-  args: {
-    wishlistId: v.id("wishlists"),
-    note: v.optional(v.string()),
-    userToken: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    await requireWishlistOwner(ctx, args.userToken, args.wishlistId, "wishlists.updateNote");
-    await ctx.db.patch(args.wishlistId, { note: args.note });
-  },
-});
-
-/**
  * Update the status of a wishlist entry.
  */
 export const updateStatus = mutation({

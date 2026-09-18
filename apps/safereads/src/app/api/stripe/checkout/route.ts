@@ -39,8 +39,9 @@ export async function POST(request: NextRequest) {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    // Get email from request body (with JWT auth, frontend sends user info)
-    let body: { email?: string } = {};
+    // The browser sends its Safe Family login token along with the email; the
+    // account lookup below only returns a row when the token proves ownership.
+    let body: { email?: string; userToken?: string } = {};
     try {
       body = await request.json();
     } catch {
@@ -48,17 +49,18 @@ export async function POST(request: NextRequest) {
     }
 
     const email = body.email;
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    const userToken = body.userToken;
+    if (!email || !userToken) {
+      return NextResponse.json({ error: "Please sign in again." }, { status: 401 });
     }
 
     let user;
     try {
-      user = await fetchQuery(api.users.getUserByEmail, { email });
+      user = await fetchQuery(api.users.getUserByEmail, { email, userToken });
     } catch (queryError) {
       console.error("User query error:", queryError);
       return NextResponse.json(
-        { error: "Failed to fetch user", details: String(queryError) },
+        { error: "Failed to fetch user" },
         { status: 500 }
       );
     }
@@ -87,7 +89,13 @@ export async function POST(request: NextRequest) {
       }
       await fetchMutation(
         api.subscriptions.setStripeCustomerId,
-        { email, stripeCustomerId: customerId }
+        {
+          email,
+          stripeCustomerId: customerId,
+          // Same shared secret the Stripe webhook route sends; the mutation
+          // refuses writes without it once the deployment has it set.
+          webhookSecret: process.env.STRIPE_BRIDGE_SECRET,
+        }
       );
     }
 
@@ -134,23 +142,18 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Checkout error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Checkout failed";
-    const errorType = error?.constructor?.name || "Unknown";
-    const errorStack = error instanceof Error ? error.stack : undefined;
+    // Details (message, stack, which env vars are set) stay in the server
+    // log. The response used to echo all of that to the browser.
+    console.error("Checkout error:", {
+      type: error?.constructor?.name || "Unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+      hasPriceId: !!process.env.STRIPE_PRICE_ID,
+      hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL,
+    });
     return NextResponse.json(
-      {
-        error: errorMessage,
-        type: errorType,
-        // Temporarily include debug info
-        debug: {
-          stack: errorStack?.split("\n").slice(0, 5),
-          hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
-          hasPriceId: !!process.env.STRIPE_PRICE_ID,
-          hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL,
-        },
-      },
+      { error: "Checkout failed. Please try again." },
       { status: 500 }
     );
   }

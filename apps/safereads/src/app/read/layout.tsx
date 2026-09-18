@@ -97,15 +97,15 @@ export default function PlayLayout({
   const isBibleRoute = pathname?.startsWith("/read/bible");
   const isFullScreenRoute = isReaderRoute || isListenRoute;
   const isOnboardingRoute = pathname === "/read/onboarding";
+  // /read is both the family-code screen and the profile picker.
   const showNav =
     pathname !== "/read" &&
-    pathname !== "/read/profiles" &&
     !isFullScreenRoute &&
     !isOnboardingRoute;
 
   // The login / profile picker is never gated — a paused kid must still be
   // able to switch to a sibling who isn't.
-  const isEntryRoute = pathname === "/read" || pathname === "/read/profiles";
+  const isEntryRoute = pathname === "/read";
   const gated = isEntryRoute ? children : <KidPauseGate>{children}</KidPauseGate>;
 
   // Reader and listen routes get a clean full-screen wrapper (no padding, no bg pattern)

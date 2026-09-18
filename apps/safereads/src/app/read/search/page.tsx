@@ -106,12 +106,15 @@ export default function KidSearchPage() {
         ))}
       </div>
 
-      {/* Genre Pills (horizontal scroll) */}
+      {/* Genre Pills (horizontal scroll). Tapping one runs a search for that
+          genre — before, it only switched to the Books tab and left the
+          results empty. */}
       <div className="animate-fade-up mb-4" style={{ animationDelay: "0.1s" }}>
         <GenreBrowser
           layout="pills"
-          onGenreSelect={() => {
+          onGenreSelect={(genreKey, genreLabel) => {
             setActiveTab("books");
+            setInitialQuery(genreLabel ?? genreKey);
           }}
         />
       </div>

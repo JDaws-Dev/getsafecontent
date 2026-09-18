@@ -4,15 +4,19 @@ import {
   internalAction,
   internalMutation,
   internalQuery,
+  mutation,
+  MutationCtx,
   query,
+  QueryCtx,
 } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import OpenAI from "openai";
 import {
   fetchTriggerWarnings,
   formatTriggerWarnings,
 } from "./lib/doesTheDogDie";
+import { requireAiAccess, requireOwner, resolveReaderIdentity } from "./identity";
 
 const verdictValues = v.union(
   v.literal("safe"),
@@ -29,39 +33,102 @@ const severityValues = v.union(
 );
 
 /**
- * List recent analyses with their associated book data.
- * Returns the most recent analyses (newest first), limited by `count`.
+ * The reviews THIS parent has opened, newest first, one entry per book.
+ *
+ * `analyses` is a shared per-book cache with no owner, so the old version of
+ * this query (`ctx.db.query("analyses").order("desc")`) handed every family the
+ * whole deployment's lookups — a new parent's "Recently Reviewed" strip was
+ * some other family's Stephen King searches. Reads `analysisViews` instead,
+ * which the book page writes whenever a signed-in parent sees a review.
  */
+async function recentViewsForUser(
+  ctx: QueryCtx,
+  userId: Id<"users">,
+  limit: number,
+) {
+  // Over-fetch: a parent who reopens the same book creates several view
+  // rows, and we only want the newest per book.
+  const views = await ctx.db
+    .query("analysisViews")
+    .withIndex("by_user_recent", (q) => q.eq("userId", userId))
+    .order("desc")
+    .take(limit * 4);
+
+  const seen = new Set<string>();
+  const results = [];
+  for (const view of views) {
+    const key = view.bookId as string;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const [analysis, book] = await Promise.all([
+      ctx.db.get(view.analysisId),
+      ctx.db.get(view.bookId),
+    ]);
+    if (!analysis || !book) continue;
+    results.push({ ...analysis, book });
+    if (results.length >= limit) break;
+  }
+  return results;
+}
+
 export const listRecent = query({
   args: {
+    userId: v.id("users"),
     count: v.optional(v.number()),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const limit = args.count ?? 10;
-    // Over-fetch to account for duplicates that get filtered out
-    const analyses = await ctx.db
-      .query("analyses")
-      .order("desc")
-      .take(limit * 2);
+    await requireOwner(ctx, args.userToken, args.userId, "analyses.listRecent");
+    return await recentViewsForUser(ctx, args.userId, args.count ?? 10);
+  },
+});
 
-    const results = await Promise.all(
-      analyses.map(async (analysis) => {
-        const book = await ctx.db.get(analysis.bookId);
-        return { ...analysis, book };
-      })
-    );
+/**
+ * Remember that the signed-in parent looked at this review, so their own
+ * "Recently Reviewed" strip and advisor-chat context reflect their books and
+ * nobody else's. Upserts one row per (user, book). Identity comes from the
+ * verified token, never from a client-supplied user id.
+ */
+export const recordView = mutation({
+  args: {
+    bookId: v.id("books"),
+    analysisId: v.id("analyses"),
+    userToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const me = await resolveReaderIdentity(ctx, args.userToken);
+    if (!me) return { recorded: false as const };
+    await upsertView(ctx, me._id, args.bookId, args.analysisId);
+    return { recorded: true as const };
+  },
+});
 
-    // Deduplicate by bookId, keeping only the newest (first seen) per book
-    const seen = new Set<string>();
-    const deduped = results.filter((r) => {
-      if (!r.book) return false;
-      const key = r.bookId as string;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+async function upsertView(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  bookId: Id<"books">,
+  analysisId: Id<"analyses">,
+) {
+  const existing = await ctx.db
+    .query("analysisViews")
+    .withIndex("by_user_and_book", (q) => q.eq("userId", userId).eq("bookId", bookId))
+    .first();
+  if (existing) {
+    await ctx.db.patch(existing._id, { analysisId, viewedAt: Date.now() });
+  } else {
+    await ctx.db.insert("analysisViews", { userId, bookId, analysisId, viewedAt: Date.now() });
+  }
+}
 
-    return deduped.slice(0, limit);
+/** Internal twin of recordView for the analyze action (already-verified user). */
+export const recordViewInternal = internalMutation({
+  args: {
+    userId: v.id("users"),
+    bookId: v.id("books"),
+    analysisId: v.id("analyses"),
+  },
+  handler: async (ctx, args) => {
+    await upsertView(ctx, args.userId, args.bookId, args.analysisId);
   },
 });
 
@@ -180,7 +247,7 @@ export const store = internalMutation({
 export const analyze = action({
   args: {
     bookId: v.id("books"),
-    email: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<AnalysisResult> => {
     // 1. Fetch book
@@ -196,23 +263,40 @@ export const analyze = action({
       bookId: args.bookId,
     });
     if (cached) {
+      // Cheap and best-effort: note the view for a signed-in parent so the
+      // review shows in their own history. Never blocks the cached result.
+      const viewer = await ctx.runQuery(internal.subscriptions.callerAccess, {
+        userToken: args.userToken,
+      });
+      if (viewer) {
+        await ctx.runMutation(internal.analyses.recordViewInternal, {
+          userId: viewer.userId,
+          bookId: args.bookId,
+          analysisId: cached._id,
+        });
+      }
       return cached as AnalysisResult;
     }
 
-    // 3. Paywall check — only for new (non-cached) analyses
-    const access = await ctx.runQuery(api.subscriptions.checkAccess, { email: args.email });
-    if (!access.hasAccess) {
-      throw new Error("UPGRADE_REQUIRED");
-    }
+    // 3. Paywall check — only for new (non-cached) analyses. The caller used
+    // to be identified by a client-supplied email, which let anyone burn a
+    // stranger's trial (or count) by naming them; the verified token now
+    // decides whose account this is.
+    const me = await requireAiAccess(ctx, args.userToken);
 
     // 4. Run analysis (checks data sufficiency, calls OpenAI, returns result)
     const result = await runOpenAIAnalysis(book, args.bookId);
 
     // 5. Store in cache
-    await ctx.runMutation(internal.analyses.store, result);
+    const analysisId = await ctx.runMutation(internal.analyses.store, result);
+    await ctx.runMutation(internal.analyses.recordViewInternal, {
+      userId: me.userId,
+      bookId: args.bookId,
+      analysisId,
+    });
 
     // 6. Increment analysis count
-    await ctx.runMutation(api.subscriptions.incrementAnalysisCount, { email: args.email });
+    await ctx.runMutation(internal.subscriptions.incrementAnalysisCount, { email: me.email });
 
     return result;
   },
@@ -225,49 +309,6 @@ export const getBookById = internalQuery({
   args: { bookId: v.id("books") },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.bookId);
-  },
-});
-
-/**
- * Re-analyze a book, bypassing the cache.
- *
- * Deletes the existing cached analysis (if any), then runs a fresh OpenAI call.
- */
-export const reanalyze = action({
-  args: {
-    bookId: v.id("books"),
-    email: v.string(),
-  },
-  handler: async (ctx, args) => {
-    // 1. Paywall check — re-analysis always counts as new
-    const access = await ctx.runQuery(api.subscriptions.checkAccess, { email: args.email });
-    if (!access.hasAccess) {
-      throw new Error("UPGRADE_REQUIRED");
-    }
-
-    // 2. Delete existing cached analysis
-    await ctx.runMutation(internal.analyses.deleteByBook, {
-      bookId: args.bookId,
-    });
-
-    // 3. Fetch book
-    const book = await ctx.runQuery(internal.analyses.getBookById, {
-      bookId: args.bookId,
-    });
-    if (!book) {
-      throw new Error("Book not found");
-    }
-
-    // 4. Run fresh analysis
-    const result = await runOpenAIAnalysis(book, args.bookId);
-
-    // 5. Store new result
-    await ctx.runMutation(internal.analyses.store, result);
-
-    // 6. Increment analysis count
-    await ctx.runMutation(api.subscriptions.incrementAnalysisCount, { email: args.email });
-
-    return result;
   },
 });
 
@@ -288,8 +329,8 @@ export const getCachedAnalysis = internalQuery({
 });
 
 /**
- * Internal mutation to delete a cached analysis for a book.
- * Used by the reanalyze action to clear the cache before a fresh analysis.
+ * Internal mutation to delete a cached analysis for a book (operator tool for
+ * clearing a bad review so the next parent gets a fresh one).
  */
 export const deleteByBook = internalMutation({
   args: {
@@ -314,8 +355,12 @@ export const deleteByBook = internalMutation({
 export const suggestAlternatives = action({
   args: {
     bookId: v.id("books"),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Never cached, so every call is a GPT-4o spend: same paywall as analyze.
+    await requireAiAccess(ctx, args.userToken);
+
     const book = await ctx.runQuery(internal.analyses.getBookById, {
       bookId: args.bookId,
     });
@@ -377,37 +422,16 @@ export const suggestAlternatives = action({
 });
 
 /**
- * Internal query: recent analyses with book data (for chat context).
- * Returns the most recent unique-book analyses, newest first.
+ * Internal query: THIS parent's recent reviews with book data (advisor chat
+ * context). Scoped per user for the same reason as listRecent above.
  */
 export const listRecentInternal = internalQuery({
   args: {
+    userId: v.id("users"),
     count: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const limit = args.count ?? 5;
-    const analyses = await ctx.db
-      .query("analyses")
-      .order("desc")
-      .take(limit * 2);
-
-    const results = await Promise.all(
-      analyses.map(async (analysis) => {
-        const book = await ctx.db.get(analysis.bookId);
-        return { ...analysis, book };
-      })
-    );
-
-    const seen = new Set<string>();
-    const deduped = results.filter((r) => {
-      if (!r.book) return false;
-      const key = r.bookId as string;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-    return deduped.slice(0, limit);
+    return await recentViewsForUser(ctx, args.userId, args.count ?? 5);
   },
 });
 

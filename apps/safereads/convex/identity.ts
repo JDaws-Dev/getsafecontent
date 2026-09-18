@@ -1,6 +1,7 @@
 import { GenericDatabaseReader } from "convex/server";
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { ActionCtx, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { DataModel, Id } from "./_generated/dataModel";
 import { verifyMarketingToken } from "./safeAuth";
 
@@ -29,6 +30,34 @@ function verifyToken(token: string | undefined) {
 }
 
 type UserRow = DataModel["users"]["document"];
+
+/**
+ * The verified claims on the caller's Marketing JWT (email, unified family
+ * code, entitled apps), or null. For the rare caller that needs the claims
+ * themselves rather than the users row — e.g. provisioning a row that does
+ * not exist yet. Never throws.
+ */
+export async function verifyCallerClaims(userToken: string | undefined) {
+  return await verifyToken(userToken);
+}
+
+/**
+ * The caller's OWN users row, and only if it matches `email` (when given).
+ * The account-read queries below all took a caller-typed email and returned
+ * that user's whole row — subscription status, Stripe ids, family code — to
+ * anyone. The email arg is kept for call-site compatibility; the row comes
+ * from the verified token. Returns null when unverified or mismatched.
+ */
+export async function ownRowForEmail(
+  ctx: { db: Db },
+  userToken: string | undefined,
+  email?: string,
+): Promise<UserRow | null> {
+  const me = await resolveReaderIdentity(ctx, userToken);
+  if (!me) return null;
+  if (email && (me.email ?? "").toLowerCase() !== email.toLowerCase()) return null;
+  return me;
+}
 
 /**
  * Verify the caller's Marketing JWT and resolve it to the SafeReads `users`
@@ -108,6 +137,40 @@ export async function requireKidOwner(
   if (!kid) throw new Error("That child could not be found.");
   await requireOwner(ctx, userToken, kid.userId, label);
   return kid;
+}
+
+/**
+ * Identity + paywall check for ACTIONS, which have no `ctx.db`. Verifies the
+ * Marketing JWT (via an internal query), resolves the SafeReads user, and
+ * confirms their trial or subscription still covers a paid AI call. Every
+ * action that spends OpenAI money on a parent's behalf (review, alternatives,
+ * advisor chat, author overview, cover identification) goes through here, so
+ * an expired trial can't keep running GPT-4o by calling the action directly.
+ *
+ * Throws "Please sign in again." with no/invalid token and "UPGRADE_REQUIRED"
+ * when the account is out of trial — the frontend already maps that string to
+ * the upgrade prompt.
+ */
+export async function requireAiAccess(
+  ctx: { runQuery: ActionCtx["runQuery"] },
+  userToken: string | undefined,
+): Promise<{ userId: Id<"users">; email: string }> {
+  const me = await ctx.runQuery(internal.subscriptions.callerAccess, { userToken });
+  if (!me) throw new Error("Please sign in again.");
+  if (!me.hasAccess) throw new Error("UPGRADE_REQUIRED");
+  return { userId: me.userId, email: me.email };
+}
+
+/**
+ * Identity only (no paywall) for ACTIONS. Same verification as above.
+ */
+export async function requireActionCaller(
+  ctx: { runQuery: ActionCtx["runQuery"] },
+  userToken: string | undefined,
+): Promise<{ userId: Id<"users">; email: string }> {
+  const me = await ctx.runQuery(internal.subscriptions.callerAccess, { userToken });
+  if (!me) throw new Error("Please sign in again.");
+  return { userId: me.userId, email: me.email };
 }
 
 /**

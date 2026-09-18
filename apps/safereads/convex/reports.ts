@@ -1,5 +1,10 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireOwner } from "./identity";
+
+// The caller must prove (via the Marketing JWT) that they are `userId`.
+// These took a bare user id before, so anyone could file, read, or delete
+// reports as any other parent.
 
 const reasonValues = v.union(
   v.literal("too_lenient"),
@@ -20,8 +25,10 @@ export const submit = mutation({
     analysisId: v.id("analyses"),
     reason: reasonValues,
     details: v.optional(v.string()),
+    userToken: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, { userToken, ...args }) => {
+    await requireOwner(ctx, userToken, args.userId, "reports.submit");
     const existing = await ctx.db
       .query("reports")
       .withIndex("by_user_and_analysis", (q) =>
@@ -48,8 +55,10 @@ export const getByUserAndAnalysis = query({
   args: {
     userId: v.id("users"),
     analysisId: v.id("analyses"),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "reports.getByUserAndAnalysis");
     return await ctx.db
       .query("reports")
       .withIndex("by_user_and_analysis", (q) =>
@@ -82,8 +91,10 @@ export const remove = mutation({
   args: {
     userId: v.id("users"),
     analysisId: v.id("analyses"),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "reports.remove");
     const existing = await ctx.db
       .query("reports")
       .withIndex("by_user_and_analysis", (q) =>
