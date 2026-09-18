@@ -568,16 +568,16 @@ function FamilyCodeStep({ data, familyCode, onNext, onBack, saving, error }) {
       {/* Instructions */}
       <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-2">
         <p className="text-sm text-gray-600 mb-3">
-          They enter this code at:
+          Kids go here and enter this code:
         </p>
         <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-3">
           <ExternalLink className="w-4 h-4 text-accent-500 flex-shrink-0" />
           <code className="text-accent-600 font-mono font-semibold text-sm sm:text-base">
-            getsafestudy.com/search
+            getsafefamily.com/play
           </code>
         </div>
         <p className="text-xs text-gray-400 mt-3">
-          They'll pick their profile and start searching right away. All searches are filtered based on the settings you chose.
+          They'll pick their profile, enter their PIN, and start searching. All searches are filtered based on the settings you chose. One family code opens all your family's apps.
         </p>
       </div>
 

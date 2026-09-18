@@ -661,7 +661,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, embedde
           Family Code
         </h3>
         <p className="text-sm text-gray-500 mb-4">
-          Share this code with your kids so they can access SafeStudy on their own devices. Each kid selects their profile after entering the code.
+          Kids go to getsafefamily.com/play and enter this code on their own devices. Each kid picks their profile and enters their PIN. One family code opens all your family's apps.
         </p>
         {userData?.familyCode ? (
           <div className="flex flex-wrap items-center gap-3">

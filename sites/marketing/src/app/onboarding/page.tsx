@@ -519,12 +519,12 @@ function CompletionStep({
       </h2>
       <p className="text-lg text-navy/70 mb-8">
         {isSubmitting
-          ? "We're creating your kid profiles in each app. This only takes a moment."
+          ? "We're creating your kid profiles. This only takes a moment."
           : allSuccess
-          ? "Your kid profiles have been created! Sign in to each app to start using them."
+          ? "Your kid profiles have been created! Sign in once at getsafefamily.com to start using them."
           : anyError
-          ? "Some apps couldn't be set up automatically. You can complete setup when you sign in."
-          : "Sign in to each app with your email to access your subscription."}
+          ? "Some apps couldn't be set up automatically. You can finish setup after you sign in at getsafefamily.com."
+          : "Sign in once at getsafefamily.com with your email to manage every app from one place."}
       </p>
 
       {/* App links with setup status */}
@@ -594,7 +594,7 @@ function CompletionStep({
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
           <p className="text-sm text-amber-800">
             <strong>Note:</strong> Some profiles couldn&apos;t be created automatically.
-            Don&apos;t worry - you can add kids when you first sign in to each app.
+            Don&apos;t worry - you can add kids from your dashboard when you sign in at getsafefamily.com.
           </p>
         </div>
       )}
@@ -603,7 +603,7 @@ function CompletionStep({
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
           <p className="text-sm text-blue-800">
             <strong>Reminder:</strong> Some apps were skipped. You can complete
-            the setup when you first sign in to each app.
+            the setup from your dashboard when you sign in at getsafefamily.com.
           </p>
         </div>
       )}

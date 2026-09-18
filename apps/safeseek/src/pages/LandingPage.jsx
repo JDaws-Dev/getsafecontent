@@ -724,7 +724,7 @@ export default function LandingPage() {
               </div>
               <div className="flex-1 bg-white/20 rounded-lg px-4 py-1.5 flex items-center gap-2">
                 <Lock className="w-3.5 h-3.5 text-white/70" />
-                <span className="text-white/90 text-sm font-medium">getsafestudy.com/search</span>
+                <span className="text-white/90 text-sm font-medium">getsafefamily.com/play</span>
               </div>
             </div>
 

@@ -250,7 +250,7 @@ export default function HomeOverview({
                 <span className="text-sm font-medium text-white/80">Family Code</span>
               </div>
               <p className="text-2xl font-mono font-bold tracking-wider">{userData.familyCode}</p>
-              <p className="text-xs text-white/60 mt-1">Share this code so your kids can access SafeStudy</p>
+              <p className="text-xs text-white/60 mt-1">Kids go to getsafefamily.com/play and enter this code</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <a

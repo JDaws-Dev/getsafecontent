@@ -72,7 +72,7 @@ function SignupPage() {
                     Visit this URL:
                   </p>
                   <p className="text-accent-900 font-mono text-sm break-all">
-                    getsafetunes.com
+                    getsafefamily.com
                   </p>
                 </div>
 

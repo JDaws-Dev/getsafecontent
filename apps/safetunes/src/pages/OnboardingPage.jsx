@@ -238,7 +238,7 @@ function OnboardingPage() {
                   <h3 className="font-display font-semibold text-blue-900 text-lg">Kid Login Website</h3>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText('https://getsafetunes.com/play');
+                      navigator.clipboard.writeText('https://getsafefamily.com/play');
                     }}
                     className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
                   >
@@ -250,11 +250,11 @@ function OnboardingPage() {
                 </div>
                 <div className="bg-white rounded-lg p-4 mb-3">
                   <p className="text-xl font-semibold text-blue-600 text-center break-all">
-                    getsafetunes.com/play
+                    getsafefamily.com/play
                   </p>
                 </div>
                 <p className="text-sm text-blue-800">
-                  Send this link to your kids so they can access their music
+                  Send this link to your kids so they can access their music. One family code opens all your family's apps.
                 </p>
               </div>
 

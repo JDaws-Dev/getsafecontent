@@ -642,7 +642,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
               </svg>
             )}
           </button>
-          <p className="text-xs text-gray-500 mt-1">Kids enter this at getsafetube.com/play</p>
+          <p className="text-xs text-gray-500 mt-1">Kids enter this at getsafefamily.com/play</p>
         </div>
       </div>
 
@@ -839,7 +839,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
               </li>
               <li className="flex gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-medium">4</span>
-                <span>Kids visit <Link to="/play" className="text-accent-600 hover:underline font-medium">getsafetube.com/play</Link> and enter the code</span>
+                <span>Kids visit <a href="https://getsafefamily.com/play" className="text-accent-600 hover:underline font-medium">getsafefamily.com/play</a> and enter the code</span>
               </li>
             </ol>
             <button

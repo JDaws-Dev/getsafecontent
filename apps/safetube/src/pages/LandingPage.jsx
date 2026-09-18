@@ -32,7 +32,7 @@ export default function LandingPage() {
           "name": "Can my kid bypass SafeTube and just use regular YouTube?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No! Your child uses SafeTube at getsafetube.com/play - a completely separate player that only shows approved content. They don't need the YouTube app. You can block YouTube using Screen Time or Family Link."
+            "text": "No! Your child uses SafeTube at getsafefamily.com/play - a completely separate player that only shows approved content. They don't need the YouTube app. You can block YouTube using Screen Time or Family Link."
           }
         },
         {
@@ -178,7 +178,7 @@ export default function LandingPage() {
               {/* Kid access URL */}
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
                 <span className="text-white/80">Kids access at</span>
-                <span className="text-white font-mono font-bold">getsafetube.com/play</span>
+                <span className="text-white font-mono font-bold">getsafefamily.com/play</span>
               </div>
             </div>
 
@@ -279,7 +279,7 @@ export default function LandingPage() {
                       <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
                       <div className="w-3 h-3 rounded-full bg-green-400"></div>
                     </div>
-                    <div className="flex-1 bg-white rounded px-2 py-1 text-xs text-gray-400 text-center">getsafetube.com/admin</div>
+                    <div className="flex-1 bg-white rounded px-2 py-1 text-xs text-gray-400 text-center">getsafefamily.com/dashboard</div>
                   </div>
                   <div className="p-4 space-y-3">
                     {/* Search bar mock */}
@@ -350,7 +350,7 @@ export default function LandingPage() {
                   </span>
                   <h3 className="text-2xl font-display font-bold text-brand-navy mb-2">They Watch Safely</h3>
                   <p className="text-gray-600 mb-4">
-                    Your kids log in at getsafetube.com/play with a PIN. They can only browse and watch content you've approved. No algorithm, no rabbit holes.
+                    Your kids go to getsafefamily.com/play, enter your family code, pick their profile, and enter their PIN. They can only browse and watch content you've approved. No algorithm, no rabbit holes.
                   </p>
                 </div>
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
@@ -723,7 +723,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Your Kid Logs In & Watches</h3>
               <p className="text-gray-600 mb-4">
-                Emma goes to getsafetube.com/play. Types her 4-digit PIN. Sees her approved channels. Taps play. That's it.
+                Emma goes to getsafefamily.com/play, enters your family code, and picks her profile. Types her PIN. Sees her approved channels. Taps play. That's it.
               </p>
               <div className="bg-blue-50 rounded-lg p-3 text-left">
                 <p className="text-blue-800 text-sm font-medium">Key point:</p>
@@ -857,7 +857,7 @@ export default function LandingPage() {
                 {
                   id: 'bypass',
                   question: "Can't my kid just open regular YouTube and bypass this?",
-                  answer: "No! Your child uses SafeTube at getsafetube.com/play—a completely separate player that only shows approved content. They don't need the YouTube app. You can block YouTube using Screen Time or Family Link.",
+                  answer: "No! Your child uses SafeTube at getsafefamily.com/play—a completely separate player that only shows approved content. They don't need the YouTube app. You can block YouTube using Screen Time or Family Link.",
                   featured: true
                 },
                 {

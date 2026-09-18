@@ -313,9 +313,9 @@ export default function ParentDashboard() {
               <>
                 <p className="mt-3 text-sm leading-relaxed text-brand-ink-soft">
                   On your kid&apos;s device, open{' '}
-                  <span className="font-bold text-slate-900">getsafespark.com</span>{' '}
+                  <span className="font-bold text-slate-900">getsafefamily.com/play</span>{' '}
                   and enter <span className="font-mono font-bold text-brand-navy">{code}</span>.
-                  They pick their profile and start building.
+                  They pick their profile, enter their PIN, and start building. One family code opens all your family&apos;s apps.
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
                   Want to try it yourself?{' '}

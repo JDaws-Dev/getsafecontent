@@ -45,6 +45,11 @@ const faqs: FAQItem[] = [
       "SafeTunes has a native iOS app in the App Store and an Android app on Google Play. SafeTube, SafeReads, and SafeStudy run in any mobile browser today — native iOS/Android apps for those three are on the roadmap. Add them to the home screen for an app-like experience in the meantime.",
   },
   {
+    question: "Do I need a separate login for each app?",
+    answer:
+      "No. Sign in once at getsafefamily.com and manage every app you have from one place. Your kids use one family code at getsafefamily.com/play for all of them.",
+  },
+  {
     question: "Can I share with my spouse or co-parent?",
     answer:
       "Yes! One subscription covers your entire household. Both parents can log in, approve content, and manage kid profiles. You'll both see the same approved content library—no need for separate accounts.",

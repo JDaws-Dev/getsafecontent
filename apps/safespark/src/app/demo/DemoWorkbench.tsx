@@ -1691,11 +1691,11 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             Free during early access · No credit card
           </p>
           <p className="mt-3 text-xs leading-relaxed text-brand-ink-soft">
-            Kids on a shared device? Have the parent sign up first, then kids log in with the family code at{' '}
-            <Link href="/start" className="font-semibold text-accent-700 underline">
-              /start
-            </Link>
-            .
+            Kids on a shared device? Have the parent sign up first, then kids go to{' '}
+            <a href="https://getsafefamily.com/play" className="font-semibold text-accent-700 underline">
+              getsafefamily.com/play
+            </a>
+            {' '}and enter the family code.
           </p>
           <Link href="/" className="mt-5 inline-flex text-xs font-semibold text-brand-ink-soft hover:text-brand-navy">
             Back to home

@@ -630,7 +630,7 @@ export default function ComparePage() {
                 {
                   id: 'setup',
                   question: 'Is SafeTube hard to set up?',
-                  answer: 'Most parents get started in 5 minutes. Search for channels your kids already watch, approve them with one tap. Your child logs in at getsafetube.com/play with a PIN.'
+                  answer: 'Most parents get started in 5 minutes. Search for channels your kids already watch, approve them with one tap. Your child goes to getsafefamily.com/play, enters your family code, picks their profile, and enters their PIN.'
                 },
                 {
                   id: 'cost',

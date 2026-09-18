@@ -72,7 +72,7 @@ function SupportPage() {
     {
       id: 'school',
       question: "Can my kid request music from school?",
-      answer: "Yes! If their school device allows access to getsafetunes.com, they can browse and request music. You'll get a notification and can review requests whenever it's convenient for you."
+      answer: "Yes! If their school device allows access to getsafefamily.com/play, they can browse and request music. You'll get a notification and can review requests whenever it's convenient for you."
     }
   ];
 
@@ -135,7 +135,7 @@ function SupportPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg mb-1">Kids Log In & Listen</h3>
-                  <p className="text-accent-100">They go to getsafetunes.com/play, enter your Family Code, and enjoy!</p>
+                  <p className="text-accent-100">They go to getsafefamily.com/play, enter your Family Code, and enjoy!</p>
                 </div>
               </div>
             </div>
@@ -153,7 +153,7 @@ function SupportPage() {
                   </li>
                   <li className="flex gap-3">
                     <span className="font-bold text-green-600 flex-shrink-0">2.</span>
-                    <span>Go to: <code className="bg-white px-2 py-1 rounded font-mono font-bold text-accent-700">getsafetunes.com/play</code></span>
+                    <span>Go to: <code className="bg-white px-2 py-1 rounded font-mono font-bold text-accent-700">getsafefamily.com/play</code></span>
                   </li>
                   <li className="flex gap-3">
                     <span className="font-bold text-green-600 flex-shrink-0">3.</span>
@@ -187,7 +187,7 @@ function SupportPage() {
 
               {/* QR Code */}
               <div className="flex flex-col items-center justify-center gap-2">
-                <QRCode url="https://getsafetunes.com/play" size={140} />
+                <QRCode url="https://getsafefamily.com/play" size={140} />
                 <p className="text-sm text-green-700 font-medium text-center">
                   Scan with kid's device
                 </p>
@@ -288,17 +288,17 @@ function SupportPage() {
                   <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">7</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
-                    <p className="text-gray-600 mb-2">Tap <strong>"Add Website"</strong> and enter:</p>
-                    <div className="bg-accent-50 border-2 border-accent-300 rounded-lg p-4">
-                      <p><strong>Title:</strong> SafeTunes</p>
-                      <p><strong>URL:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafetunes.com</code></p>
+                    <p className="text-gray-600 mb-2">Tap <strong>"Add Website"</strong> and add BOTH of these (tap "Add Website" again for the second):</p>
+                    <div className="bg-accent-50 border-2 border-accent-300 rounded-lg p-4 space-y-2">
+                      <p><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafefamily.com</code></p>
+                      <p><strong>Site 2:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafetunes.com</code></p>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <p className="text-sm text-red-900">
-                    <strong>⚠️ Important:</strong> Do NOT include "https://", "www.", or "/play" - just type: <code className="bg-white px-1 py-0.5 rounded">getsafetunes.com</code>
+                    <strong>⚠️ Important:</strong> Do NOT include "https://", "www.", or "/play" - just type the domains: <code className="bg-white px-1 py-0.5 rounded">getsafefamily.com</code> and <code className="bg-white px-1 py-0.5 rounded">getsafetunes.com</code>
                   </p>
                 </div>
 
@@ -377,7 +377,7 @@ function SupportPage() {
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
                     <p className="text-gray-600">Tap <strong>Manage sites</strong> → <strong>Add a website</strong></p>
-                    <p className="text-gray-600 mt-1">Type: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code> and tap Add</p>
+                    <p className="text-gray-600 mt-1">Add BOTH: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code> (tap Add after each)</p>
                   </div>
                 </div>
 
@@ -455,13 +455,13 @@ function SupportPage() {
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
                     <p className="text-gray-600">Under "Approved sites," tap <strong>Add a website</strong></p>
-                    <p className="text-gray-600 mt-1">Enter: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
+                    <p className="text-gray-600 mt-1">Add BOTH: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
                   </div>
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
-                    💡 <strong>Tip:</strong> You can also set SafeTunes as the Chromebook homepage. On the Chromebook, go to Chrome Settings → On startup → Open a specific page → Add <code className="bg-white px-1 py-0.5 rounded">https://getsafetunes.com/play</code>
+                    💡 <strong>Tip:</strong> You can also set the kids' player as the Chromebook homepage. On the Chromebook, go to Chrome Settings → On startup → Open a specific page → Add <code className="bg-white px-1 py-0.5 rounded">https://getsafefamily.com/play</code>
                   </p>
                 </div>
 
@@ -538,7 +538,7 @@ function SupportPage() {
                   <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
-                    <p className="text-gray-600">Click <strong>Add a website</strong> and type: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
+                    <p className="text-gray-600">Click <strong>Add a website</strong> and add BOTH: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
                   </div>
                 </div>
 
@@ -617,7 +617,7 @@ function SupportPage() {
                   <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">7</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Allow SafeTunes</h3>
-                    <p className="text-gray-600">In "Always Allow", add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
+                    <p className="text-gray-600">In "Always Allow", add BOTH: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
                   </div>
                 </div>
 
@@ -672,13 +672,13 @@ function SupportPage() {
                   <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Allow SafeTunes</h3>
-                    <p className="text-gray-600">Tap <strong>"Approved websites"</strong> → Enter: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code> → Tap Add</p>
+                    <p className="text-gray-600">Tap <strong>"Approved websites"</strong> → add BOTH <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code> → Tap Add after each</p>
                   </div>
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
-                    💡 <strong>Tip:</strong> Open Silk Browser, go to getsafetunes.com/play, tap menu → "Add to Home" to create a shortcut
+                    💡 <strong>Tip:</strong> Open Silk Browser, go to getsafefamily.com/play, tap menu → "Add to Home" to create a shortcut
                   </p>
                 </div>
 

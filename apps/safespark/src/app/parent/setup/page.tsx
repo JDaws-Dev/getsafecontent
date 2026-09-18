@@ -63,8 +63,8 @@ export default function ParentSetupPage() {
             <p className="text-6xl font-bold font-mono tracking-widest">{createdJoinCode}</p>
           </div>
           <p className="text-sm text-brand-ink-soft">
-            On {displayName}&apos;s device, go to <span className="font-mono text-accent-700">/start</span> →
-            enter the code → tap their tile → they&apos;re in.
+            On {displayName}&apos;s device, go to <span className="font-mono text-accent-700">getsafefamily.com/play</span> →
+            enter the code → tap their tile → enter their PIN → they&apos;re in.
           </p>
 
           <div className="flex gap-3 justify-center pt-2">

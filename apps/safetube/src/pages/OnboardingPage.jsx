@@ -316,9 +316,9 @@ export default function OnboardingPage() {
               <div className="bg-gray-50 rounded-lg p-4 text-left">
                 <p className="text-sm text-gray-600 font-medium mb-2">How kids log in:</p>
                 <ol className="text-sm text-gray-500 space-y-1">
-                  <li>1. Go to <code className="bg-accent-50 px-1 rounded text-accent-700">getsafetube.com/play</code></li>
+                  <li>1. Go to <code className="bg-accent-50 px-1 rounded text-accent-700">getsafefamily.com/play</code></li>
                   <li>2. Enter the Family Code</li>
-                  <li>3. Select their profile</li>
+                  <li>3. Select their profile and enter their PIN</li>
                 </ol>
               </div>
 

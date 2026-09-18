@@ -48,7 +48,7 @@ const steps = [
     icon: KeyRound,
     title: "Share your family code with your kids",
     minutes: "~1 min",
-    body: "Your family code is the 6-character code kids type in on their device to access their profile. One code works for all 5 apps. You'll find it in the parent dashboard of each app — it's the same code everywhere.",
+    body: "Your family code is the 6-character code kids type in on their device to access their profile. One code works for all 5 apps. You'll find it in your parent dashboard at getsafefamily.com — the same code opens every app.",
     tip: "Tip: write it on a sticky note on the fridge. Our most-successful families literally do this.",
   },
   {
@@ -162,9 +162,22 @@ export default function SetupPage() {
 
           {/* Jump to apps */}
           <section className="mt-12">
-            <h2 className="text-2xl font-bold text-navy text-center mb-6">
-              Jump into the parent dashboard
+            <h2 className="text-2xl font-bold text-navy text-center mb-2">
+              Manage everything from one dashboard
             </h2>
+            <p className="text-navy/70 text-center max-w-2xl mx-auto mb-6">
+              Sign in once at{" "}
+              <a
+                href="https://getsafefamily.com/dashboard"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-indigo-600 underline underline-offset-2 hover:text-indigo-700"
+              >
+                getsafefamily.com
+              </a>{" "}
+              to approve content, set limits, and manage every app you have from one place.
+              Prefer to jump straight into one app? Open it below.
+            </p>
             <div className="grid sm:grid-cols-2 gap-4">
               {apps.map((app) => {
                 const Icon = app.icon;
@@ -242,9 +255,9 @@ export default function SetupPage() {
                   I set up one app. How do I tell my kids?
                 </dt>
                 <dd className="mt-1 ml-7 text-navy/70 text-sm">
-                  Give them the family code and the URL (e.g. <code>getsafetunes.com/play</code>).
-                  They type the code, pick their profile, and that&rsquo;s it. They&rsquo;ll only
-                  see what you&rsquo;ve approved.
+                  Send them to <code>getsafefamily.com/play</code>. They enter your family code,
+                  pick their profile, and enter their PIN &mdash; that&rsquo;s it. One family code
+                  opens all of your family&rsquo;s apps, and they&rsquo;ll only see what you&rsquo;ve approved.
                 </dd>
               </div>
             </dl>

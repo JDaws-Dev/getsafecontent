@@ -888,7 +888,7 @@ function Settings({ user, onLogout, initialSection }) {
                   </button>
                 </div>
                 <p className="text-sm text-gray-600 mt-3">
-                  Kids use this code at getsafetunes.com/play to access their music.
+                  Kids use this code at getsafefamily.com/play to access their music. One family code opens all your family's apps.
                 </p>
               </div>
             ) : (

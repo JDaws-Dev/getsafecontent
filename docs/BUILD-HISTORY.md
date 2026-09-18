@@ -6,6 +6,34 @@
 
 ---
 
+## Current Status (September 18, 2026)
+
+**ONE-SITE IS LIVE.** getsafefamily.com is now the single site with one login. Deployed
+from `feature/one-site`: all six frontends (hub + 5 apps via `vercel --prod`, each
+auto-aliasing its custom domain) plus the two backends that still needed it — SafeStudy
+(`strong-scorpion-227`) and SafeReads (`exuberant-puffin-838`), which carry the
+daily-program and security work committed this session.
+
+Verified in a browser signed in as a real account: one login at getsafefamily.com lands on
+the combined dashboard and every app tab (Tunes, Tube, Reads, Study, Spark) renders
+signed-in with no second login; one kid code at /play opens Music/Videos/Books/Search/Build
+with the app's own kid picker inside. getsafetunes.com still serves at root, so the native
+shells are unaffected.
+
+Gotcha for next time: deploying a frontend that calls a BRAND-NEW backend query before that
+backend is deployed throws `[CONVEX Q(...)] Server Error`. The "frontends before backends"
+rule assumes the functions already exist; for new functions, ship the backend with (or just
+before) the frontend.
+
+**Deliberately NOT done: the old domains are not yet 301'd to the hub.** They still serve
+standalone. A blunt redirect would break the SafeTube Chrome extension (reads the parent JWT
+from getsafetube.com), and must wait on the YouTube key referrer, Apple Music origin, Stripe
+return URLs, and repointing the hub's ONE_SITE_ORIGIN_* to raw deployment URLs (else a
+redirect loop). getsafetunes.com must never redirect.
+
+Customer heads-up email drafted, not sent.
+---
+
 ## Current Status (September 13, 2026)
 
 **YouTube API quota request: withdrawing it, because we don't need it.** The thread from

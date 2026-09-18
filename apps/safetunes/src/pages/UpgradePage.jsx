@@ -106,7 +106,7 @@ function UpgradePage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="w-6 h-6 bg-accent-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">2</span>
-                    <span>Visit <strong>getsafetunes.com</strong></span>
+                    <span>Visit <strong>getsafefamily.com</strong></span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="w-6 h-6 bg-accent-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">3</span>

@@ -269,16 +269,16 @@ function GettingStarted({ user, onNavigateToTab }) {
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">7.</span>
-                <span>Tap <strong>"Add Website"</strong> and enter:</span>
+                <span>Tap <strong>"Add Website"</strong> and add BOTH of these (tap "Add Website" again for the second):</span>
               </li>
             </ol>
-            <div className="mt-3 ml-8 bg-white border-2 border-accent-300 rounded-lg p-4">
-              <p className="text-sm"><strong>Title:</strong> SafeTunes</p>
-              <p className="text-sm"><strong>URL:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafetunes.com</code></p>
+            <div className="mt-3 ml-8 bg-white border-2 border-accent-300 rounded-lg p-4 space-y-2">
+              <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafefamily.com</code></p>
+              <p className="text-sm"><strong>Site 2:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafetunes.com</code></p>
             </div>
             <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-xs text-red-900">
-                <strong>Important:</strong> Do NOT include "https://", "www.", or "/play" - just type: <code className="bg-white px-1 py-0.5 rounded">getsafetunes.com</code>
+                <strong>Important:</strong> Do NOT include "https://", "www.", or "/play" - just type the domains: <code className="bg-white px-1 py-0.5 rounded">getsafefamily.com</code> and <code className="bg-white px-1 py-0.5 rounded">getsafetunes.com</code>
               </p>
             </div>
           </div>
@@ -325,7 +325,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">6.</span>
-                <span>Type: <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code> and tap Add</span>
+                <span>Add BOTH sites: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code> (tap Add after each)</span>
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">7.</span>
@@ -366,7 +366,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">6.</span>
-                <span>Type: <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code></span>
+                <span>Add BOTH sites: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code></span>
               </li>
             </ol>
           </div>
@@ -399,7 +399,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">5.</span>
-                <span>Click <strong>Add a website</strong> and type: <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code></span>
+                <span>Click <strong>Add a website</strong> and add BOTH: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code></span>
               </li>
             </ol>
           </div>
@@ -437,7 +437,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">7.</span>
-                <span>In "Always Allow", add: <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code></span>
+                <span>In "Always Allow", add BOTH: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code></span>
               </li>
             </ol>
           </div>
@@ -490,7 +490,7 @@ function GettingStarted({ user, onNavigateToTab }) {
                 </li>
                 <li className="flex gap-3">
                   <span className="font-bold text-green-600 flex-shrink-0">2.</span>
-                  <span>Go to: <code className="bg-white px-2 py-1 rounded font-mono font-bold">getsafetunes.com/play</code></span>
+                  <span>Go to: <code className="bg-white px-2 py-1 rounded font-mono font-bold">getsafefamily.com/play</code></span>
                 </li>
                 <li className="flex gap-3">
                   <span className="font-bold text-green-600 flex-shrink-0">3.</span>
@@ -505,11 +505,12 @@ function GettingStarted({ user, onNavigateToTab }) {
                   <span>They can now listen to all the music you've approved!</span>
                 </li>
               </ol>
+              <p className="text-xs text-green-700 mt-3">One family code opens all your family's apps.</p>
             </div>
 
             {/* QR Code */}
             <div className="flex flex-col items-center justify-center gap-2">
-              <QRCode url="https://getsafetunes.com/play" size={120} />
+              <QRCode url="https://getsafefamily.com/play" size={120} />
               <p className="text-xs text-green-700 font-medium text-center">
                 Scan with kid's device
               </p>
@@ -598,7 +599,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               <div className="bg-gray-50 rounded-lg p-4">
                 <h5 className="font-display font-semibold text-brand-navy mb-1 flex items-center gap-2"><XCircleIcon className="w-4 h-4 text-red-500 flex-shrink-0" />Kid can't access SafeTunes</h5>
                 <p className="text-sm text-gray-600">
-                  • Make sure you whitelisted <code className="bg-white px-1 rounded">getsafetunes.com</code> (not safetunesapp.com)<br/>
+                  • Make sure you whitelisted both <code className="bg-white px-1 rounded">getsafefamily.com</code> and <code className="bg-white px-1 rounded">getsafetunes.com</code> (not safetunesapp.com)<br/>
                   • Verify all other websites are blocked/removed<br/>
                   • Try visiting in an incognito/private window to test
                 </p>

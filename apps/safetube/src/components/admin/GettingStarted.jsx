@@ -154,7 +154,7 @@ export default function GettingStarted({ userData, onNavigate }) {
             </ol>
             <div className="mt-3 bg-white border border-accent-200 rounded-lg p-3">
               <p className="text-sm"><strong>Title:</strong> SafeTube</p>
-              <p className="text-sm"><strong>URL:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafetube.com</code></p>
+              <p className="text-sm"><strong>URL:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafefamily.com</code></p>
             </div>
           </div>
         )}
@@ -172,7 +172,7 @@ export default function GettingStarted({ userData, onNavigate }) {
             </ol>
             <div className="mt-3 space-y-2">
               <div className="bg-white border border-accent-200 rounded-lg p-3">
-                <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafetube.com</code></p>
+                <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafefamily.com</code></p>
                 <p className="text-xs text-gray-500 mt-1">SafeTube app (parental controls)</p>
               </div>
               <div className="bg-white border border-accent-200 rounded-lg p-3">
@@ -202,7 +202,7 @@ export default function GettingStarted({ userData, onNavigate }) {
             </ol>
             <div className="mt-3 space-y-2">
               <div className="bg-white border border-accent-200 rounded-lg p-3">
-                <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafetube.com</code></p>
+                <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafefamily.com</code></p>
                 <p className="text-xs text-gray-500 mt-1">SafeTube app (parental controls)</p>
               </div>
               <div className="bg-white border border-accent-200 rounded-lg p-3">
@@ -247,16 +247,16 @@ export default function GettingStarted({ userData, onNavigate }) {
               <h3 className="font-bold text-green-900 mb-3">How Kids Log In:</h3>
               <ol className="space-y-2 text-sm text-gray-700">
                 <li>1. Open their web browser</li>
-                <li>2. Go to: <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono font-bold text-accent-600">getsafetube.com/play</code></li>
+                <li>2. Go to: <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono font-bold text-accent-600">getsafefamily.com/play</code></li>
                 <li>3. Enter Family Code: <strong className="text-accent-600">{userData?.familyCode || '(loading...)'}</strong></li>
-                <li>4. Select their profile</li>
+                <li>4. Select their profile and enter their PIN</li>
                 <li>5. Start watching approved videos!</li>
               </ol>
             </div>
 
             {/* QR Code */}
             <div className="flex flex-col items-center justify-center gap-2">
-              <QRCode url="https://getsafetube.com/play" size={100} />
+              <QRCode url="https://getsafefamily.com/play" size={100} />
               <p className="text-xs text-green-700 font-medium text-center">
                 Scan with kid's device
               </p>

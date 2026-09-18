@@ -172,7 +172,7 @@ function LandingPageSimple() {
                 {/* Clarity line with kid access URL */}
                 <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
                   <span className="text-accent-300">Kids access at</span>
-                  <span className="text-white font-mono font-bold">getsafetunes.com/play</span>
+                  <span className="text-white font-mono font-bold">getsafefamily.com/play</span>
                 </div>
                 <p className="mt-3 text-gray-400 text-sm">
                   Works with your existing Apple Music subscription
@@ -331,7 +331,7 @@ function LandingPageSimple() {
                   </span>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">They Browse Safely</h3>
                   <p className="text-gray-600 mb-4">
-                    Your kids log in at getsafetunes.com/play with a PIN. They can only browse and play music you've approved. Simple, safe, no workarounds.
+                    Your kids log in at getsafefamily.com/play with a PIN. They can only browse and play music you've approved. Simple, safe, no workarounds.
                   </p>
                 </div>
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
@@ -700,7 +700,7 @@ function LandingPageSimple() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Your Kid Logs In & Plays</h3>
               <p className="text-gray-600 mb-4">
-                Emma goes to getsafetunes.com/play. Types her 4-digit PIN. Sees 50 approved albums. Taps play. That's it.
+                Emma goes to getsafefamily.com/play. Types her 4-digit PIN. Sees 50 approved albums. Taps play. That's it.
               </p>
               <div className="bg-blue-50 rounded-lg p-3 text-left">
                 <p className="text-blue-800 text-sm font-medium">Key point:</p>
@@ -837,7 +837,7 @@ function LandingPageSimple() {
               {/* #1 MOST IMPORTANT FAQ - The bypass question */}
               <div className="bg-accent-50 rounded-xl p-5 shadow-sm border-2 border-accent-400">
                 <h3 className="font-bold text-accent-900 mb-2">Can't my kid just open regular Apple Music and bypass this?</h3>
-                <p className="text-accent-800">No! Your child uses SafeTunes at <span className="font-mono font-semibold">getsafetunes.com/play</span>—a completely separate player that only shows approved music. They don't need the Apple Music app installed. You can block the Apple Music app using Screen Time (we'll show you how). It's like giving them a "kid version" of Apple Music that you fully control.</p>
+                <p className="text-accent-800">No! Your child uses SafeTunes at <span className="font-mono font-semibold">getsafefamily.com/play</span>—a completely separate player that only shows approved music. They don't need the Apple Music app installed. You can block the Apple Music app using Screen Time (we'll show you how). It's like giving them a "kid version" of Apple Music that you fully control.</p>
               </div>
 
               <div className="bg-red-50 rounded-xl p-5 shadow-sm border-2 border-red-200">

@@ -639,9 +639,9 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
     if (!familyCode) return;
     try {
       await navigator.clipboard.writeText(familyCode);
-      showToast('Copied! Go to getsafetunes.com/play on your kid\'s device and enter this code.', 'success');
+      showToast('Copied! Go to getsafefamily.com/play on your kid\'s device and enter this code.', 'success');
     } catch (err) {
-      showToast(`Code: ${familyCode} — enter at getsafetunes.com/play`, 'info');
+      showToast(`Code: ${familyCode} — enter at getsafefamily.com/play`, 'info');
     }
   };
 

@@ -362,11 +362,11 @@ export default function SafeTubeOnboarding({
                   <li>
                     1. Go to{" "}
                     <code className="bg-yellow-100 px-1 rounded text-red-600">
-                      getsafetube.com/play
+                      getsafefamily.com/play
                     </code>
                   </li>
                   <li>2. Enter the Family Code</li>
-                  <li>3. Select their profile</li>
+                  <li>3. Pick their profile and enter their PIN</li>
                 </ol>
               </div>
 

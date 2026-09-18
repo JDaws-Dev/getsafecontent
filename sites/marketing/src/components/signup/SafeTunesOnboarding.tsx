@@ -677,7 +677,7 @@ export default function SafeTunesOnboarding({
                 <button
                   type="button"
                   onClick={() =>
-                    copyToClipboard("https://getsafetunes.com/play")
+                    copyToClipboard("https://getsafefamily.com/play")
                   }
                   className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
                 >
@@ -699,7 +699,7 @@ export default function SafeTunesOnboarding({
               </div>
               <div className="bg-white rounded-lg p-4 mb-3">
                 <p className="text-xl font-semibold text-blue-600 text-center break-all">
-                  getsafetunes.com/play
+                  getsafefamily.com/play
                 </p>
               </div>
               <p className="text-sm text-blue-800">
@@ -741,12 +741,12 @@ export default function SafeTunesOnboarding({
 
           <div className="mt-6 flex gap-3">
             <a
-              href="https://getsafetunes.com/admin"
+              href="https://getsafefamily.com/dashboard"
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-4 rounded-lg font-semibold text-lg transition shadow-lg text-center"
             >
-              Open SafeTunes Dashboard
+              Open Parent Dashboard
             </a>
           </div>
         </div>
