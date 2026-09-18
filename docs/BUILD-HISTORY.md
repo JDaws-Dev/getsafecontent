@@ -6,6 +6,97 @@
 
 ---
 
+## Current Status (September 13, 2026)
+
+**YouTube API quota request: withdrawing it, because we don't need it.** The thread from
+`youtube-disputes@google.com` (display name "YouTube API Quota") ran from **17 Dec 2025 to
+2 Sep 2026** and reads like an enforcement action; it is not. It is the compliance audit
+Google runs as the gate on a **quota-increase request** submitted in December. The stated
+consequence of missing the deadline is only that the request isn't approved. Nothing we
+have today is at risk, and three "third and final notice" emails were sent across the
+period with nothing cut off.
+
+The increase isn't needed. Checked against the 10 Sep backup of `rightful-rabbit-333`:
+112 approved channels, 19 kid profiles, and **2 kids watched anything in the last 30 days**.
+The quota maths: default 10,000 units/day; `search.list` costs **100 units**;
+`channels.list` / `videos.list` / `playlistItems.list` cost **1**; and kid playback costs
+**nothing**, because `src/components/kid/VideoPlayer.jsx` is a plain iframe driven by
+postMessage and never touches the Data API. Worst-case channel refresh is under 500
+units/day, leaving room for ~95 parent searches daily.
+
+**Resubmit at roughly 50-100 paying families** (~20-30 parents searching on the same day),
+and include what they asked for three times and never received: a screencast showing
+YouTube videos displayed and played in BOTH the parent and child dashboards, with end
+results.
+
+A withdrawal reply is drafted and saved in the thread on jedaws@gmail.com. **It had not
+been sent as of 13 Sep** — check before assuming this is closed.
+
+Still open and separate: the API key is **referrer-restricted**, so getsafefamily.com must
+be added before SafeTube serves from the hub. Do that once the review thread is closed; an
+earlier round flagged "two client locations" and needed a clarifying reply.
+
+**Also still open: the 10 Sep SafeStudy + SafeReads work is built and verified but remains
+UNCOMMITTED** (131 files on `feature/one-site`) and undeployed, and none of it has been run
+against real data.
+
+---
+
+## Current Status (September 10, 2026)
+
+**SafeStudy got a daily program, SafeReads got a security sweep — both built on `feature/one-site`, NEITHER DEPLOYED.**
+
+Two full product evaluations were written first (`docs/EVAL-SAFESTUDY-2026-09-10.md`,
+`docs/EVAL-SAFEREADS-2026-09-10.md`) after the owner said both apps "feel like filler."
+They do, and the diagnosis was the same for each: careful engineering that stops a kid
+doing the wrong thing, and nothing that tells them what to do next. SafeReads had never
+recorded a single reading-progress row in five months; SafeStudy's tutor forgot the kid on
+every page load and the parent dashboard was a list of query strings.
+
+**SafeStudy — the daily program** (full write-up: `docs/SAFESTUDY-DAILY-PROGRAM.md`).
+A parent puts a kid on subject tracks; each hands over its next topic as a daily lesson
+with an explainer and five questions. Finishing advances the track, records the day,
+extends a streak and feeds a spaced-repetition review deck. Plus quiz-me from any answer,
+a "My Stuff" shelf, tutor memory (resumable sessions and a rolling note per kid), a parent
+dashboard rebuilt around the week with tutor transcripts, a concern-alerts screen and a
+printable US-Letter record, and a weekly digest that leads with what the kid studied.
+Eight new tables, all additive. Two decisions worth remembering: **math answer keys are
+computed in code, never written by the model** (a confident wrong key marking a right
+answer wrong loses the kid and the parent), and **lesson bodies are cached across
+families** by topic + grade so the second family pays nothing.
+
+Fixed alongside, all of them real: **Research mode had no safety screening at all** — no
+injection filter, no intent classifier, no blocked-topics check — so a question the Learn
+tab refused returned rewritten web pages one tab over; the gate moved out of `searchFromKid`
+into `ai/safetyGate.ts` and every surface runs it. **Approved topic requests could still be
+blocked** (`shouldBlockCategory` never received `allowedTopics`, so a parent's "yes" changed
+nothing). **The tutor didn't count toward the daily budget.** **The digest's "hit the daily
+budget on N days" was always zero** because nothing ever wrote the row it counts. **The
+parent's "searches today" was computed in server UTC** while the kid's gate used the family
+timezone. **The Wikipedia lookup was mostly missing**: shortest-first regex alternation
+turned "what is a volcano" into "Is A Volcano", so most answers reached the model ungrounded.
+
+**SafeReads — security + defects.** Closed public-by-email queries returning subscription
+status, Stripe ids and family codes; a public mutation that would create an account for any
+email with a caller-chosen status **including lifetime**; a public action anyone could use to
+run image generation against 38 titles; cross-family leakage in "Recently Reviewed" and the
+advisor chat; unsanitized Gutenberg HTML in the kid reader; and five ungated GPT-4o paths.
+Emoji swept from every kid screen. `convex/accounts.ts` (~1,100 lines of legacy hub code
+containing a public `grantLifetimeAccess`) deleted.
+
+**Deploy notes.** Everything is additive, but **frontends ship before backends** as always:
+several SafeReads queries and every SafeStudy parent read now require the login token, so an
+old cached frontend against a new backend tells parents to sign in again. Tutor transcripts,
+the tutor's note, and acknowledging a concern alert are **hard**-gated (a full transcript is
+the most sensitive thing SafeStudy stores). Nothing here needs a new environment variable.
+`convex/_generated/api.d.ts` in `apps/safeseek` is stale and regenerates on deploy.
+
+**Not verified: none of the new screens has been run against real data.** They compile and
+read correctly; nobody has clicked a lesson, answered a review card, or measured a printed
+page. `scripts/one-site-dev-prod.sh` is the way to do that.
+
+---
+
 ## Current Status (September 7, 2026)
 
 **Central — owner is now notified of direct signups (backend deploy `adamant-crow-705`).** The "new signup" email only ever fired from the Stripe webhook, so free trials started on getsafefamily.com without a card (the normal path since central auth) were silent. A new internal email action is scheduled from both the password and Google signup paths. Also fixed this week: SafeTunes listening minutes (Sep 4), SafeTube "YouTube is blocked" fallback (Sep 2), SafeTube Chrome extension re-auth (Sep 3).

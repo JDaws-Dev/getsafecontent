@@ -7,11 +7,22 @@ Open work + completed milestones across SafeTunes, SafeTube, SafeReads, SafeStud
 ## What's Next
 
 ### SafeStudy
+- [x] **Daily program built 2026-09-10 (NOT deployed)** — Today's Lesson, review deck,
+      progress record, tutor memory, quiz-me, My Stuff. Full write-up:
+      [SAFESTUDY-DAILY-PROGRAM.md](SAFESTUDY-DAILY-PROGRAM.md); the evaluation that
+      prompted it: [EVAL-SAFESTUDY-2026-09-10.md](EVAL-SAFESTUDY-2026-09-10.md)
+- [x] Parent UI for `kidConcernAlerts` (was: backend deployed, needs a surface)
+- [x] Research mode ran with NO safety screening — shared gate now covers every surface
+- [x] Approved topic requests could still be blocked (parent's "yes" now actually unblocks)
+- [x] Tutor didn't count toward the daily budget
+- [ ] Still open from the evaluation: photo/math step checking (P5), writing coach (P6),
+      read-aloud mode for under-8s (P9), printable worksheets (P10), Research report
+      builder (P12). Activity tab "All Time" is really last 50 per kid. `searchSettings`
+      (safe-search level, domain lists) is stored and enforced nowhere.
 - [x] Domain live (getsafestudy.com)
 - [x] KidSearch.jsx refactored (2,435 → 962 lines, 23 components)
 - [x] Security fixes: prompt injection, rate limiting, CORS, PIN security, subscription checks, orphan detection
 - [x] Pinterest-substitute hardening (intent classifier, loop detector, ED tripwire, query budget, weekly digest, etc — see Apr 28 entry below)
-- [ ] Parent UI for `kidConcernAlerts` (backend deployed, needs admin dashboard surface)
 - [ ] Weekly digest opt-out toggle in admin Settings (backend flag deployed, needs UI)
 - [ ] Stripe checkout UI button in admin Settings
 - [ ] UpgradePrompt component (trial countdown)
@@ -19,6 +30,22 @@ Open work + completed milestones across SafeTunes, SafeTube, SafeReads, SafeStud
 - [ ] Promo code validation (DAWSFRIEND, DEWITT)
 - [ ] Landing page polish (testimonials, FAQ, hero images)
 - [ ] Mobile hamburger menu
+
+### SafeReads
+- [x] **Security + defect sweep 2026-09-10 (NOT deployed)** — closed public-by-email
+      account reads returning Stripe ids and family codes, a public mutation that could
+      create a lifetime account for any email, an ungated image-generation action,
+      cross-family advisor-chat and "Recently Reviewed" leakage, and unsanitized book
+      HTML in the kid reader. Emoji swept from kid screens. Evaluation:
+      [EVAL-SAFEREADS-2026-09-10.md](EVAL-SAFEREADS-2026-09-10.md)
+- [ ] Still open from the evaluation, and these are the product problems rather than the
+      bugs: the parent tool and the kid app aren't joined (an approved modern book is a
+      dead cover), the kid catalogue is 38 hard-coded classics scraped live from
+      Gutenberg, zero reading-progress rows have ever been written, and the request →
+      AI vetting → approval loop has been silently failing since April. Recommended
+      first three: a reading log for ANY book, reading earning screen time in the other
+      apps, and a real curated classics library.
+- [ ] `bookRequests.triggerAnalysis` runs GPT-4o with no paywall (system vetting by design)
 
 ### SafeReads Kid Side (NEW — Deployed Apr 3-4)
 Full kid-facing reading platform:
@@ -48,6 +75,21 @@ Full kid-facing reading platform:
 ### SafeTube
 - [x] AI Review enhancement deployed to prod May 5, 2026 (`rightful-rabbit-333`) — adds `parentCommunityNotes`, `knownControversies`, `commonSenseMediaRating` to `channelReviewCache`. **Initial deploy populated empty arrays / null** because gpt-4o-mini was silently dropping the new fields from its JSON response. Fixed same day by adding OpenAI `response_format: { type: "json_schema", strict: true }` to enforce the full schema. Verified live: PewDiePie review returns CSM 3/5, 2 controversies (slurs incident, meme associations), 2 community notes. Existing cached reviews (pre-deploy) still lack these fields; they'll populate as new channels are reviewed.
 - [x] Kid request button (already built — verified Apr 6)
+- [ ] **YouTube API quota request — send the withdrawal** (drafted 2026-09-10, still unsent
+      as of 2026-09-13, saved as a Gmail draft on jedaws@gmail.com in the review thread).
+      The Dec 2025-Sep 2026 "compliance review" from `youtube-disputes@google.com` was only
+      the gate on a quota-increase request, never an enforcement action; the stated
+      downside of letting it lapse is that the request isn't approved, which is the outcome
+      we want. **We don't need the increase:** default is 10,000 units/day, a `search.list`
+      costs 100 units and every other call 1, and kid playback is a plain iframe embed that
+      uses no API at all — so 112 approved channels refreshing on a 6-hour cache is under
+      500 units/day, leaving room for ~95 parent searches. Two kids watched anything in the
+      last 30 days. **Resubmit at roughly 50-100 paying families** (~20-30 parents searching
+      the same day), and expect them to want the thing they asked for three times and never
+      got: a screencast showing videos displayed/played in BOTH the parent and kid dashboards.
+- [ ] **Add getsafefamily.com to the YouTube API key's allowed referrers** before SafeTube
+      serves from the hub, or parent search breaks. Do it *after* the review thread is
+      closed — an earlier round flagged "two client locations" and needed clarifying.
 
 ### Immediate
 

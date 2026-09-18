@@ -78,6 +78,10 @@ backend throws "Please sign in again." for every parent.
 - **Open security work** (residual P0s + why): [`TODO-SECURITY.md`](TODO-SECURITY.md)
 - **Backups** — LOCAL now, not CI: `scripts/backup-convex-local.sh` via launchd → iCloud, daily 3AM, all 6 deployments. GH Actions/R2 is retired: [`docs/CONVEX-BACKUP-SETUP.md`](docs/CONVEX-BACKUP-SETUP.md)
 - **Lyrics** — SafeTunes uses free sources (LRCLIB → lyrics.ovh); Musixmatch cancelled Jul 2026: [`docs/LRCLIB-MIGRATION.md`](docs/LRCLIB-MIGRATION.md)
+- **One-site consolidation** (path-mounting all 5 apps under getsafefamily.com, the single dashboard + kid door, universal family settings): [`docs/ONE-SITE.md`](docs/ONE-SITE.md)
+- **SafeStudy daily program** (Today's Lesson, review deck, tutor memory, parent week view — built 2026-09-10, NOT deployed): [`docs/SAFESTUDY-DAILY-PROGRAM.md`](docs/SAFESTUDY-DAILY-PROGRAM.md)
+- **Product evaluations** (what's actually wrong with each app and what to build): [`docs/EVAL-SAFESTUDY-2026-09-10.md`](docs/EVAL-SAFESTUDY-2026-09-10.md), [`docs/EVAL-SAFEREADS-2026-09-10.md`](docs/EVAL-SAFEREADS-2026-09-10.md)
+- **YouTube API** — SafeTube's quota-increase request is being withdrawn; the default 10,000 units/day is ample (a search costs 100 units, every other call 1, kid playback uses no API at all). Resubmit around 50-100 paying families. The key is **referrer-restricted**: getsafefamily.com must be added before SafeTube serves from the hub.
 - **Marketing strategy**: `docs/MARKETING-STRATEGY-2026-05.md`
 - **In-app roadmap UI**: `/admin/roadmap` on the marketing site (source: `sites/marketing/src/data/roadmap.ts`)
 
