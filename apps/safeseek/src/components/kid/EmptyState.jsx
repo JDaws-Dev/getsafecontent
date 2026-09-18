@@ -6,11 +6,14 @@ export default function EmptyState({
   randomSuggestions,
   onDismissIntro,
   onSuggestionClick,
+  title = 'Search anything',
+  subtitle = 'Explore topics, ask questions, discover new things',
+  topPadding = 'pt-12',
 }) {
   const showIntro = !introDismissed && !localStorage.getItem(`safestudy_kid_intro_${selectedProfile?._id}`);
 
   return (
-    <div className="text-center pt-12">
+    <div className={`text-center ${topPadding}`}>
       {/* First-time walkthrough */}
       {showIntro && (
         <div className="max-w-lg mx-auto mb-8 bg-accent-50 dark:bg-accent-900/20 border border-accent-100 dark:border-accent-800 rounded-2xl p-5 text-left relative">
@@ -67,9 +70,9 @@ export default function EmptyState({
       )}
 
       <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
-        Search anything
+        {title}
       </h2>
-      <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">Explore topics, ask questions, discover new things</p>
+      <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">{subtitle}</p>
 
       <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
         {randomSuggestions.map((suggestion) => (

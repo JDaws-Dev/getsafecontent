@@ -45,4 +45,15 @@ crons.weekly(
   internal.weeklyDigest.sendAll
 );
 
+/**
+ * Clean expired lesson-body cache entries daily at 4:30 AM UTC.
+ * Lesson bodies are shared across families by topic + grade, so the table grows
+ * with the catalogue rather than with users — but stale rows still go.
+ */
+crons.daily(
+  "clean-lesson-cache",
+  { hourUTC: 4, minuteUTC: 30 },
+  internal.lessonQueries.cleanExpiredLessonCache
+);
+
 export default crons;

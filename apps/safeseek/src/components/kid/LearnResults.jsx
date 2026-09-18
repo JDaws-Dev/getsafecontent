@@ -1,4 +1,4 @@
-import { Sparkles, Search, AlertCircle } from 'lucide-react';
+import { Sparkles, Search, AlertCircle, ListChecks, Bookmark, BookmarkCheck, Loader2 } from 'lucide-react';
 import ExpandableSummary from './ExpandableSummary';
 import ReadAloudButton from './ReadAloudButton';
 import ExpandableSection from './ExpandableSection';
@@ -18,6 +18,12 @@ export default function LearnResults({
   onSuggestionClick,
   onImageClick,
   onSwitchToImages,
+  // Daily program hooks: turn a finished answer into a quiz, or keep it on the
+  // kid's My Stuff shelf. Either is optional so the component still works
+  // wherever it is rendered without them.
+  onQuizMe,
+  onKeep,
+  keepState = 'idle', // 'idle' | 'saving' | 'kept'
 }) {
   return (
     <div className="space-y-5">
@@ -34,6 +40,42 @@ export default function LearnResults({
             />
           </div>
           <ExpandableSummary text={aiSummary} />
+
+          {(onQuizMe || onKeep) && (
+            <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex flex-wrap items-center gap-2">
+              {onQuizMe && (
+                <button
+                  type="button"
+                  onClick={onQuizMe}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium transition-colors motion-reduce:transition-none shadow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2"
+                >
+                  <ListChecks className="w-4 h-4" />
+                  Quiz me on this
+                </button>
+              )}
+              {onKeep && (
+                <button
+                  type="button"
+                  onClick={onKeep}
+                  disabled={keepState !== 'idle'}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full border text-sm font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 ${
+                    keepState === 'kept'
+                      ? 'border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 cursor-default'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:border-accent-300 dark:hover:border-accent-600 disabled:opacity-60'
+                  }`}
+                >
+                  {keepState === 'kept' ? (
+                    <BookmarkCheck className="w-4 h-4" />
+                  ) : keepState === 'saving' ? (
+                    <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
+                  ) : (
+                    <Bookmark className="w-4 h-4" />
+                  )}
+                  {keepState === 'kept' ? 'Kept in My Stuff' : keepState === 'saving' ? 'Keeping' : 'Keep this'}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 

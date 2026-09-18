@@ -7,16 +7,87 @@ import { internalAction } from "./_generated/server";
  * Fetch Wikipedia content for a query, preferring Simple English Wikipedia
  * for younger kids.
  */
-// Extract the core topic from a question for Wikipedia lookup
+// Extract the core topic from a question for Wikipedia lookup.
+//
+// Two bugs used to live in these four lines, and together they meant most
+// first-attempt lookups missed and fell through to the slower opensearch
+// fallback — so a lot of answers went to the model with no Wikipedia grounding
+// at all.
+//
+// 1. The alternation was ordered shortest-first, and JavaScript regex
+//    alternation takes the FIRST branch that matches, not the longest. So
+//    "what is a volcano" matched the bare "what" branch and became
+//    "Is A Volcano" — a title that exists nowhere. Longest phrases now come
+//    first, which is the only ordering that works here.
+// 2. Every word was title-cased. Wikipedia capitalizes the first letter of a
+//    title and leaves the rest alone, so "Bees Make Honey" misses where "Bees
+//    make honey" would hit, and title-casing also destroyed real proper nouns
+//    the kid had typed correctly. Only the first letter is touched now.
+const QUESTION_PREFIXES = [
+  "can you tell me about",
+  "tell me about",
+  "what are the",
+  "what is the",
+  "what was the",
+  "what were the",
+  "who is the",
+  "who are the",
+  "who was the",
+  "where is the",
+  "where are the",
+  "how many",
+  "how much",
+  "how big",
+  "how tall",
+  "how long",
+  "how does",
+  "how did",
+  "how do",
+  "what is",
+  "what are",
+  "what was",
+  "what were",
+  "who is",
+  "who are",
+  "who was",
+  "where is",
+  "where are",
+  "when is",
+  "when was",
+  "why is",
+  "why are",
+  "why do",
+  "why does",
+  "explain",
+  "describe",
+  "what",
+  "who",
+  "where",
+  "when",
+  "how",
+  "why",
+]
+  // Defensive: sort by length so the ordering above can never silently regress.
+  .sort((a, b) => b.length - a.length);
+
 function extractTopic(query: string): string {
-  let cleaned = query.trim()
+  let cleaned = query
+    .trim()
     .replace(/[?.!,;:]+$/g, "") // strip trailing punctuation
-    .replace(/^(what|who|where|when|how|why|tell me about|explain|describe|what is|what are|what was|what were|who is|who are|who was|where is|where are|how do|how does|how did|how many|how big|how tall|can you tell me about)\s+/i, "")
-    .replace(/^(a |an |the )/i, "")
     .trim();
-  // Capitalize first letter of each word for Wikipedia title format
-  cleaned = cleaned.replace(/\b\w/g, (c) => c.toUpperCase());
-  return cleaned;
+
+  const lower = cleaned.toLowerCase();
+  for (const prefix of QUESTION_PREFIXES) {
+    if (lower.startsWith(prefix + " ")) {
+      cleaned = cleaned.slice(prefix.length + 1).trim();
+      break;
+    }
+  }
+
+  cleaned = cleaned.replace(/^(a |an |the )/i, "").trim();
+
+  // Wikipedia titles capitalize only the first letter.
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
 
 export const fetchWikipediaContent = internalAction({

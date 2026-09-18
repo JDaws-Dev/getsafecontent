@@ -1,5 +1,7 @@
 import { v } from "convex/values";
 import { internalQuery, internalMutation } from "./_generated/server";
+import { dayKeyForTimezone } from "./timeLimits";
+import { previousDay } from "./lessonQueries";
 
 /**
  * Internal: list parents eligible for the weekly digest.
@@ -24,8 +26,13 @@ export const listEligibleParents = internalQuery({
  * Internal: build the per-parent summary for the past 7 days.
  * Aggregates search history, blocked searches, and concern alerts.
  *
- * Heaviest-day computation is "by calendar day in UTC." Good enough for
- * the digest. If we want family-timezone correctness we can revisit later.
+ * Day bucketing uses the FAMILY's timezone, not UTC. A digest that told an
+ * Eastern-time parent their kid's heaviest day was Tuesday when the evening
+ * sessions all landed on Wednesday's UTC bucket is worse than no digest.
+ *
+ * Since Sep 2026 this also carries the daily program — lessons finished,
+ * review accuracy, subjects covered — because that, not a search count, is
+ * what a parent actually wants to be told on a Sunday evening.
  */
 export const summarizeForParent = internalQuery({
   args: { userId: v.id("users"), since: v.number() },
@@ -35,9 +42,17 @@ export const summarizeForParent = internalQuery({
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .collect();
 
+    const parent = await ctx.db.get(args.userId);
+    const timezone = parent?.timezone;
+    const today = dayKeyForTimezone(timezone);
+    let windowStart = today;
+    for (let i = 0; i < 6; i++) windowStart = previousDay(windowStart);
+
     let totalSearches = 0;
     let totalBlocked = 0;
     let totalConcerning = 0;
+    let totalLessons = 0;
+    let totalCards = 0;
     const perKid = [] as any[];
 
     for (const kid of kids) {
@@ -75,28 +90,68 @@ export const summarizeForParent = internalQuery({
       // Heaviest day (UTC bucket)
       const dayCounts: Record<string, number> = {};
       for (const r of history) {
-        const d = new Date(r.searchedAt);
-        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+        const key = dayKeyForTimezone(timezone, r.searchedAt);
         dayCounts[key] = (dayCounts[key] || 0) + 1;
       }
       const heaviestEntry = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0];
       const heaviestDay = heaviestEntry ? { date: heaviestEntry[0], count: heaviestEntry[1] } : null;
 
-      // Budget-hit days: count of distinct days where the kid has a
-      // "limit_reached" entry in blockedSearches. We don't track a separate
-      // limit-hit log, so this is a proxy.
+      // Budget-hit days: distinct days with a "ran out" row in blockedSearches.
+      // Until Sep 2026 nothing ever wrote one — the gate returned early — so
+      // this line reported zero for every family forever. search.ts now records
+      // it (deduped to one row per reason per day).
       const budgetHitDays = new Set<string>();
       for (const b of blocked) {
-        if (b.blockedReason === "limit_reached") {
-          const d = new Date(b.searchedAt);
-          const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
-          budgetHitDays.add(key);
+        // Both the per-app cap and the family-wide one mean "ran out today".
+        if (b.blockedReason === "limit_reached" || b.blockedReason === "family_limit_reached") {
+          budgetHitDays.add(dayKeyForTimezone(timezone, b.searchedAt));
         }
       }
 
       totalSearches += history.length;
       totalBlocked += blocked.length;
       totalConcerning += concerning;
+
+      // --- The daily program -------------------------------------------------
+      const progressRows = await ctx.db
+        .query("kidProgress")
+        .withIndex("by_kid", (q) => q.eq("kidProfileId", kid._id))
+        .collect();
+      const inWindow = progressRows.filter((r) => r.day >= windowStart && r.day <= today);
+
+      const lessonsCompleted = inWindow.reduce((n, r) => n + r.lessonsCompleted, 0);
+      const cardsReviewed = inWindow.reduce((n, r) => n + r.cardsReviewed, 0);
+      const cardsCorrect = inWindow.reduce((n, r) => n + r.cardsCorrect, 0);
+      const tutorMessages = inWindow.reduce((n, r) => n + r.tutorMessages, 0);
+
+      const lessonRows = await ctx.db
+        .query("lessons")
+        .withIndex("by_kid_created", (q) => q.eq("kidProfileId", kid._id))
+        .order("desc")
+        .take(120);
+      const lessonsInWindow = lessonRows.filter(
+        (l) => l.day >= windowStart && l.day <= today
+      );
+
+      const subjectMap: Record<string, string[]> = {};
+      for (const l of lessonsInWindow) {
+        if (l.status !== "complete") continue;
+        (subjectMap[l.subject] ||= []).push(l.topic);
+      }
+      const subjects = Object.entries(subjectMap).map(([subject, topics]) => ({
+        subject,
+        topics: Array.from(new Set(topics)).slice(0, 8),
+      }));
+
+      const assigned = lessonsInWindow.length;
+
+      const streakRow = await ctx.db
+        .query("kidStreaks")
+        .withIndex("by_kid", (q) => q.eq("kidProfileId", kid._id))
+        .first();
+
+      totalLessons += lessonsCompleted;
+      totalCards += cardsReviewed;
 
       perKid.push({
         kidName: kid.name,
@@ -106,10 +161,27 @@ export const summarizeForParent = internalQuery({
         concerningCount: concerning,
         budgetHits: budgetHitDays.size,
         heaviestDay,
+        // The program
+        lessonsCompleted,
+        lessonsAssigned: assigned,
+        cardsReviewed,
+        cardsCorrect,
+        reviewAccuracy:
+          cardsReviewed > 0 ? Math.round((cardsCorrect / cardsReviewed) * 100) : null,
+        tutorMessages,
+        subjects,
+        currentStreak: streakRow?.currentStreak ?? 0,
       });
     }
 
-    return { totalSearches, totalBlocked, totalConcerning, perKid };
+    return {
+      totalSearches,
+      totalBlocked,
+      totalConcerning,
+      totalLessons,
+      totalCards,
+      perKid,
+    };
   },
 });
 

@@ -4,23 +4,10 @@ import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { internal, api } from "./_generated/api";
 import { sanitizeQuery as sanitizeInput, detectPromptInjection, filterResponse } from "./ai/inputFilter";
-import { classifyIntent, shouldBlockCategory, redirectMessage } from "./ai/intentClassifier";
-
-import { normalizeForIntentCache } from "./intentCache";
-import {
-  isLoop,
-  loopMessage,
-  queryOverlap,
-  CONCERN_REPHRASE_OVERLAP,
-} from "./ai/loopDetector";
+import { queryMatchesAllowedTopic } from "./ai/intentClassifier";
+import { runSafetyGate } from "./ai/safetyGate";
+import { SAFETY_GATE_REFS } from "./ai/gateRefs";
 import { normalizeQuery } from "./lib/utils";
-
-/**
- * How long a concern block (ED / self-harm) suppresses substantially-similar
- * rephrases from the same kid. Long enough to cover a sitting, short enough
- * that it never becomes a silent permanent ban on a topic.
- */
-const CONCERN_REPHRASE_WINDOW_MS = 30 * 60 * 1000;
 
 /**
  * Should we push back on the answering model's refusal?
@@ -222,7 +209,7 @@ RULES:
 - If safe, answer directly. No URLs, no markdown formatting (plain text only, UI handles formatting).
 - "answer": SHORT 2-3 sentence overview. Details go in "sections" array. Don't repeat content.
 - Fun facts go in funFacts array, not in answer.
-- Include a Mermaid diagram (graph TD, emojis, 4-8 nodes) for processes/cycles/systems/comparisons. null for simple facts.
+- Include a Mermaid diagram (graph TD, 4-8 nodes, plain text labels, no emoji) for processes/cycles/systems/comparisons. null for simple facts.
 ${wikiContext ? "- Use the Wikipedia reference above as primary source. Rephrase kid-friendly." : ""}
 
 RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
@@ -347,7 +334,16 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
         ...(parsed.funFacts || []),
       ].join(" ");
 
-      const responseCheck = filterResponse(fullResponseText, blockedTopics);
+      // Parent-approved topics take the word filter out of the loop for this
+      // query. An approved phrase that overlaps a blocked topic ("nails" on a
+      // kid whose parent blocked "nail polish", say) would otherwise pass the
+      // block decision and then be scrubbed here — the approval only half
+      // working, which is worse than not having it.
+      const approvedQuery = queryMatchesAllowedTopic(args.query, allowedTopics);
+      const responseCheck = filterResponse(
+        fullResponseText,
+        approvedQuery ? [] : blockedTopics,
+      );
 
       if (!responseCheck.safe) {
         console.warn(`[performSearch] Response filtered: ${responseCheck.reason}`);
@@ -394,7 +390,7 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
                   ...(rp.funFacts || []),
                 ].join(" ");
                 // Only accept a rewrite that actually clears the filter.
-                if (filterResponse(rtext, blockedTopics).safe) {
+                if (filterResponse(rtext, approvedQuery ? [] : blockedTopics).safe) {
                   parsed = rp;
                   recovered = true;
                 }
@@ -541,6 +537,19 @@ RESPOND WITH VALID JSON ONLY (no markdown, no code fences):
       intentRationale: args.intentRationale,
     });
 
+    // Count the search on the day record too. searchHistory is the budget's
+    // source of truth; kidProgress is what the parent's week view and the
+    // Sunday digest read, and it has to agree with it.
+    try {
+      await ctx.runMutation(internal.progress.recordActivity, {
+        kidProfileId: args.kidProfileId,
+        userId: kidProfile.userId,
+        searches: 1,
+      });
+    } catch (err) {
+      console.warn("[performSearch] failed to record activity:", err);
+    }
+
     // --- Step 8: Write to cache ---
     await ctx.runMutation(internal.searchCache.writeCache, {
       normalizedQuery: normalized,
@@ -614,6 +623,25 @@ export const searchFromKid = action({
     });
 
     if (!searchCheck.canSearch) {
+      // Record the cap being hit.
+      //
+      // Nothing used to write this row: the gate returned early and the only
+      // "limit_reached" reader was the Sunday digest, whose "hit the daily
+      // budget on N days" line was therefore always zero. A parent reading
+      // that line was being told their kid never ran out of searches, which
+      // for a capped kid is exactly backwards. Deduped to one row per reason
+      // per day so a kid retrying ten times doesn't inflate it.
+      if (searchCheck.reason === "limit_reached" || searchCheck.reason === "family_limit_reached") {
+        try {
+          await ctx.runMutation(internal.searchQueries.noteLimitReached, {
+            kidProfileId: args.kidProfileId,
+            reason: searchCheck.reason,
+            query: args.query.slice(0, 200),
+          });
+        } catch (err) {
+          console.warn("[searchFromKid] failed to record limit_reached:", err);
+        }
+      }
       return {
         safe: false,
         results: [],
@@ -646,24 +674,8 @@ export const searchFromKid = action({
       };
     }
 
-    // --- Pre-filter: sanitize and check for prompt injection ---
-    const sanitized = sanitizeInput(trimmedQuery);
-    const injectionCheck = detectPromptInjection(sanitized);
-
-    if (!injectionCheck.safe) {
-      console.warn(`[searchFromKid] Prompt injection blocked: ${injectionCheck.reason} | query: "${trimmedQuery.slice(0, 100)}"`);
-      return {
-        safe: false,
-        results: [],
-        summary: "I can't help with that question. Try asking something else!",
-        flagged: true,
-        blocked: true,
-        reason: "injection_blocked",
-        images: [],
-      };
-    }
-
-    // Rate limit check
+    // Rate limit check (before the gate: a flood shouldn't get free classifier
+    // calls, and the classifier is the expensive part of screening).
     if (kidProfile) {
       const rateCheck = await ctx.runMutation(api.rateLimit.checkAndRecord, {
         userId: kidProfile.userId,
@@ -682,193 +694,37 @@ export const searchFromKid = action({
       }
     }
 
-    // --- Intent classifier: catches synonym-shuffled aesthetic browsing,
-    //     self-image queries, ED/self-harm signals BEFORE the expensive
-    //     search runs. Fails open: classifier errors don't block the kid.
-    //     Cached by normalized query text (30d TTL) — identical queries
-    //     shouldn't re-bill gpt-4o-mini or pay its latency.
-    const intentCacheKey = normalizeForIntentCache(sanitized);
-    let intent = (await ctx.runQuery(internal.intentCache.get, {
-      normalizedQuery: intentCacheKey,
-    })) as Awaited<ReturnType<typeof classifyIntent>> | null;
-    if (!intent) {
-      intent = await classifyIntent(sanitized, process.env.OPENAI_API_KEY);
-      if (!intent.degraded) {
-        // Fire-and-forget; a cache-write failure must not affect the search.
-        try {
-          await ctx.runMutation(internal.intentCache.put, {
-            normalizedQuery: intentCacheKey,
-            category: intent.category,
-            confidence: intent.confidence,
-            rationale: intent.rationale,
-          });
-        } catch (err) {
-          console.warn("[searchFromKid] intent cache write failed:", err);
-        }
-      }
-    }
-
-    // Fail-open is deliberate, but it must not be silent: while degraded,
-    // the always-escalate ED/self-harm alerts can't fire from the LLM path.
-    // Surface to the operator (deduped to one email per 24h).
-    if (intent.degraded) {
-      console.error(
-        `[searchFromKid] intent classifier DEGRADED (${intent.rationale}) — query passed with regex-only screening`
-      );
-      try {
-        const shouldAlert = await ctx.runMutation(internal.opsAlerts.noteClassifierDegraded, {
-          rationale: intent.rationale,
-        });
-        if (shouldAlert) {
-          await ctx.scheduler.runAfter(0, internal.opsAlerts.sendClassifierDownAlert, {
-            rationale: intent.rationale,
-          });
-        }
-      } catch (err) {
-        console.error("[searchFromKid] failed to record classifier degradation:", err);
-      }
-    }
-
-    // --- Concern-rephrase guard -------------------------------------------
-    // A concern block (ED / self-harm) used to last exactly one query. The
-    // classifier judges each query independently, so dropping a single word
-    // re-classified the same attempt as harmless and answered it seconds later
-    // ("legs workouts for women" blocked 14:02 → "leg workouts for women"
-    // answered 14:02; "healthy diet for women weight loss" blocked → full meal
-    // plan four minutes later). The alert fired and the kid got the content
-    // anyway, which made the escalation theatre.
-    //
-    // So: for 30 minutes after a concern block, a query that is substantially
-    // the same question stays blocked. We do NOT re-alert — the parent has
-    // already been told; repeat emails would train them to ignore these.
-    let rephraseOf: { query: string; blockedReason: string; intentCategory?: string } | null = null;
-    try {
-      const recentConcerns = await ctx.runQuery(
-        internal.searchQueries.getRecentConcernBlocks,
-        { kidProfileId: args.kidProfileId, sinceMs: CONCERN_REPHRASE_WINDOW_MS }
-      );
-      for (const prior of recentConcerns) {
-        if (queryOverlap(sanitized, prior.query) >= CONCERN_REPHRASE_OVERLAP) {
-          rephraseOf = prior as any;
-          break;
-        }
-      }
-    } catch (err) {
-      // Fail open — a lookup failure must never block a kid.
-      console.warn("[searchFromKid] concern-rephrase lookup failed:", err);
-    }
-
-    if (rephraseOf) {
-      const now = Date.now();
-      const category =
-        rephraseOf.blockedReason === "self_harm_signal"
-          ? "self_harm_adjacent"
-          : "eating_disorder_adjacent";
-      await ctx.runMutation(internal.searchQueries.insertBlockedSearch, {
-        kidProfileId: args.kidProfileId,
-        query: sanitized,
-        blockedReason: rephraseOf.blockedReason,
-        searchedAt: now,
-        intentCategory: category,
-        intentConfidence: intent.confidence,
-        intentRationale: `Rephrase of a concern query blocked in the last 30 minutes ("${rephraseOf.query.slice(0, 80)}").`,
-      });
-      return {
-        safe: false,
-        results: [],
-        summary: redirectMessage(category as any),
-        flagged: true,
-        blocked: true,
-        reason: rephraseOf.blockedReason,
-        images: [],
-        intentCategory: category,
-      };
-    }
-
-    const decision = shouldBlockCategory(
-      intent.category as any,
-      kidProfile.contentStrictness || "moderate",
-      kidProfile.blockedTopics || [],
-      intent.confidence
-    );
-
-    if (decision.block) {
-      const now = Date.now();
-
-      // Record the block with intent metadata
-      await ctx.runMutation(internal.searchQueries.insertBlockedSearch, {
-        kidProfileId: args.kidProfileId,
-        query: sanitized,
-        blockedReason: decision.reason,
-        searchedAt: now,
-        intentCategory: intent.category,
-        intentConfidence: intent.confidence,
-        intentRationale: intent.rationale,
-      });
-
-      // Concern-level alerts (ED, self-harm) → log + schedule parent email.
-      // Schedule via internalAction so the public action returns fast.
-      if (decision.alert) {
-        await ctx.runMutation(internal.searchQueries.recordConcernAlert, {
-          kidProfileId: args.kidProfileId,
-          userId: kidProfile.userId,
-          query: sanitized,
-          category: intent.category,
-          confidence: intent.confidence,
-          rationale: intent.rationale,
-        });
-        await ctx.scheduler.runAfter(0, internal.concernAlerts.sendParentEmail, {
-          kidProfileId: args.kidProfileId,
-          userId: kidProfile.userId,
-          query: sanitized,
-          category: intent.category,
-          rationale: intent.rationale,
-        });
-      }
-
-      return {
-        safe: false,
-        results: [],
-        summary: redirectMessage(intent.category as any),
-        flagged: decision.alert,
-        blocked: true,
-        reason: decision.reason,
-        images: [],
-        intentCategory: intent.category,
-      };
-    }
-
-    // --- Loop detector: if the kid has searched ~the same thing 4+ times in
-    //     the last 30 minutes, gently redirect them. Catches synonym shuffling
-    //     against the blocker AND innocuous repetition (asking the same thing
-    //     dozens of times). Color-rotation collapses to a single key.
-    const recentQueries = await ctx.runQuery(internal.searchQueries.getRecentQueriesForLoopCheck, {
+    // --- Safety gate --------------------------------------------------------
+    // Sanitize, injection filter, intent classification, concern-rephrase
+    // guard, category block, loop detection. This sequence used to live inline
+    // here, which is why Research mode had none of it; it now lives in
+    // ai/safetyGate.ts and every kid-facing surface runs the same one.
+    const gate = await runSafetyGate(ctx, SAFETY_GATE_REFS, {
       kidProfileId: args.kidProfileId,
-      sinceMs: 30 * 60 * 1000,
+      userId: kidProfile.userId,
+      query: trimmedQuery,
+      contentStrictness: kidProfile.contentStrictness,
+      blockedTopics: kidProfile.blockedTopics || [],
+      allowedTopics: kidProfile.allowedTopics || [],
+      surface: "search",
+      openaiApiKey: process.env.OPENAI_API_KEY,
     });
-    const loopCheck = isLoop(sanitized, recentQueries);
-    if (loopCheck.loop) {
-      const now = Date.now();
-      await ctx.runMutation(internal.searchQueries.insertBlockedSearch, {
-        kidProfileId: args.kidProfileId,
-        query: sanitized,
-        blockedReason: `loop_detected_${loopCheck.matchCount}_in_30min`,
-        searchedAt: now,
-        intentCategory: intent.category,
-        intentConfidence: intent.confidence,
-        intentRationale: intent.rationale,
-      });
+
+    if (!gate.allowed) {
       return {
         safe: false,
         results: [],
-        summary: loopMessage(),
-        flagged: false,
+        summary: gate.message,
+        flagged: gate.alerted,
         blocked: true,
-        reason: "loop_detected",
+        reason: gate.reason,
         images: [],
-        intentCategory: intent.category,
+        intentCategory: gate.category,
       };
     }
+
+    const sanitized = gate.sanitized;
+    const intent = gate.intent;
 
     // Perform the search with sanitized query + intent metadata
     const result = await ctx.runAction(internal.search.performSearch, {
@@ -951,6 +807,29 @@ export const expandSection = action({
     const lexile = kidProfile.lexileLevel || "auto";
     const accessibilityNeeds = kidProfile.accessibilityNeeds || [];
 
+    // --- Cache -------------------------------------------------------------
+    // Every "Read more" used to be an uncached ~1,000-token call, so two kids
+    // in the same family expanding the same section of the same answer paid
+    // twice, and so did the same kid tapping back into it. The deep dive
+    // depends only on topic, subtopic and how the child reads.
+    const expandCacheKey = `expand::${normalizeQuery(sanitizedTopic)}::${normalizeQuery(sanitizedSubtopic)}`;
+    const expandProfileKey = `${age}:${lexile}:${accessibilityNeeds.slice().sort().join(",")}`;
+    const expandAgeGroup = getAgeGroup(age);
+    const expandStrictness = kidProfile.contentStrictness || "moderate";
+
+    const cachedExpand = await ctx.runQuery(api.searchCache.checkCache, {
+      normalizedQuery: expandCacheKey,
+      ageGroup: expandAgeGroup,
+      strictness: expandStrictness,
+      profileKey: expandProfileKey,
+    });
+    if (cachedExpand) {
+      await ctx.runMutation(internal.searchCache.incrementCacheReuse, {
+        cacheId: cachedExpand.cacheId,
+      });
+      return { content: cachedExpand.response };
+    }
+
     let readingInstruction;
     if (lexile !== "auto") {
       readingInstruction = `CRITICAL: Write at a ${lexile} grade reading level. A 2nd grader needs very simple words and short sentences (5-8 words). A 12th grader can handle advanced vocabulary. Match the grade level EXACTLY.`;
@@ -1004,6 +883,20 @@ export const expandSection = action({
 
     // Strip any URLs that leaked through
     const cleanedContent = responseCheck.cleaned || expandedContent;
+
+    try {
+      await ctx.runMutation(internal.searchCache.writeCache, {
+        normalizedQuery: expandCacheKey,
+        ageGroup: expandAgeGroup,
+        strictness: expandStrictness,
+        profileKey: expandProfileKey,
+        response: cleanedContent,
+      });
+    } catch (err) {
+      // A cache miss forever is cheaper than a failed expand.
+      console.warn("[expandSection] cache write failed:", err);
+    }
+
     return { content: cleanedContent };
   },
 });

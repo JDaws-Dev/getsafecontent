@@ -8,352 +8,47 @@ import TimeLimits from '../components/admin/TimeLimits';
 import KidProfileEditor from '../components/admin/KidProfileEditor';
 // KidProfileCustomize merged into KidProfileEditor
 import OnboardingWizard from '../components/admin/OnboardingWizard';
+import HomeOverview from '../components/admin/HomeOverview';
+import FamilyTab from '../components/admin/FamilyTab';
+import WeekView from '../components/admin/WeekView';
+import TutorTranscripts from '../components/admin/TutorTranscripts';
+import ConcernAlerts from '../components/admin/ConcernAlerts';
+import { KidAvatar, formatTimestamp } from '../components/admin/shared';
 import { SafeFamilyParentSwitcher } from '../components/SafeFamilySwitcher';
 import Toast from '../components/common/Toast';
 import ConfirmModal from '../components/common/ConfirmModal';
 import {
   Search, History, Users, Clock, Settings, LogOut, Shield,
   AlertTriangle, ExternalLink, Copy, Check, Plus, Pencil, Trash2,
-  Home, Activity, UserCog, Mail, ChevronRight, Filter,
-  Image, MessageSquare, ShieldAlert, CheckCircle2, Eye, EyeOff,
-  MessageCircle, X,
+  Home, Activity, UserCog, Mail, ChevronRight,
+  MessageSquare, ShieldAlert, Eye, EyeOff,
+  MessageCircle, X, BookOpen, CalendarDays, GraduationCap, Bell, MoreHorizontal,
 } from 'lucide-react';
 
+// Every parent screen. The first four are the mobile bottom bar; the rest sit
+// behind "More" on a phone and all show on desktop.
 const TABS = [
   { id: 'home', label: 'Home', icon: Home },
+  { id: 'family', label: 'Family', icon: BookOpen },
+  { id: 'week', label: 'This Week', icon: CalendarDays },
+  { id: 'tutor', label: 'Tutor', icon: GraduationCap },
+  { id: 'alerts', label: 'Alerts', icon: Bell },
   { id: 'activity', label: 'Activity', icon: Activity },
   { id: 'requests', label: 'Requests', icon: MessageSquare },
   { id: 'profiles', label: 'Kid Profiles', icon: Users },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
+const MOBILE_PRIMARY = 4;
 
-// Color utility - maps color names to Tailwind classes
-const COLOR_MAP = {
-  red: { bg: 'bg-red-500', light: 'bg-red-50', text: 'text-red-600' },
-  orange: { bg: 'bg-orange-500', light: 'bg-orange-50', text: 'text-orange-600' },
-  yellow: { bg: 'bg-yellow-500', light: 'bg-yellow-50', text: 'text-yellow-600' },
-  green: { bg: 'bg-green-500', light: 'bg-green-50', text: 'text-green-600' },
-  blue: { bg: 'bg-accent-500', light: 'bg-accent-50', text: 'text-accent-600' },
-  cyan: { bg: 'bg-cyan-500', light: 'bg-cyan-50', text: 'text-cyan-600' },
-  purple: { bg: 'bg-purple-500', light: 'bg-purple-50', text: 'text-purple-600' },
-  pink: { bg: 'bg-pink-500', light: 'bg-pink-50', text: 'text-pink-600' },
-  teal: { bg: 'bg-teal-500', light: 'bg-teal-50', text: 'text-teal-600' },
-  gray: { bg: 'bg-gray-400', light: 'bg-gray-50', text: 'text-gray-600' },
+// Blocked rows that are a cap, not a bad query. The backend now writes one of
+// these per kid per day when they run out; they get a plain label and none of
+// the "allow this topic" controls, which make no sense for a limit.
+const LIMIT_REASONS = {
+  limit_reached: 'Hit their daily search limit',
+  family_limit_reached: 'Hit the family screen-time limit',
 };
-
-function getColor(colorName) {
-  return COLOR_MAP[colorName] || COLOR_MAP.blue;
-}
-
-function formatTimestamp(ts) {
-  const date = new Date(ts);
-  const now = new Date();
-  const diffMs = now - date;
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffHr = Math.floor(diffMs / 3600000);
-
-  if (diffMin < 1) return 'Just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHr < 24) return `${diffHr}h ago`;
-
-  return date.toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
-
-function isToday(ts) {
-  const date = new Date(ts);
-  const now = new Date();
-  return date.toDateString() === now.toDateString();
-}
-
-// --- Kid Avatar Component ---
-function KidAvatar({ name, color, size = 'md' }) {
-  const initial = (name || '?')[0].toUpperCase();
-  const c = getColor(color);
-  const sizeClasses = {
-    sm: 'w-8 h-8 text-sm',
-    md: 'w-10 h-10 text-base',
-    lg: 'w-12 h-12 text-xl',
-    xl: 'w-14 h-14 text-2xl',
-  };
-
-  return (
-    <div className={`${sizeClasses[size]} ${c.bg} rounded-full flex items-center justify-center text-white font-bold flex-shrink-0`}>
-      {initial}
-    </div>
-  );
-}
-
-// --- Home Tab ---
-function HomeTab({ userData, kidProfiles, searchHistory, blockedSearches, onNavigate, onShowBlocked, onCopyCode, codeCopied }) {
-  const todaySearches = useMemo(() => {
-    if (!searchHistory) return [];
-    return searchHistory.filter((s) => isToday(s.searchedAt));
-  }, [searchHistory]);
-
-  const todayBlocked = useMemo(() => {
-    if (!blockedSearches) return [];
-    return blockedSearches.filter((b) => isToday(b.searchedAt));
-  }, [blockedSearches]);
-
-  const hasProfiles = kidProfiles && kidProfiles.length > 0;
-
-  return (
-    <div className="space-y-6">
-      {/* Welcome */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">
-          Welcome back{userData?.name ? `, ${userData.name.split(' ')[0]}` : ''}
-        </h2>
-        <p className="text-gray-500 mt-1">
-          Here is an overview of your family's search activity.
-        </p>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <button
-          onClick={() => onNavigate('activity')}
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left hover:border-accent-200 hover:shadow-md transition cursor-pointer"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 bg-accent-50 rounded-xl flex items-center justify-center">
-              <Search className="w-4 h-4 text-accent-600" />
-            </div>
-            <span className="text-sm text-gray-500">Searches Today</span>
-          </div>
-          <p className="text-3xl font-bold text-gray-900">{todaySearches.length}</p>
-        </button>
-
-        <button
-          onClick={() => { onNavigate('activity'); onShowBlocked?.(); }}
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left hover:border-red-200 hover:shadow-md transition cursor-pointer"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center">
-              <ShieldAlert className="w-4 h-4 text-red-600" />
-            </div>
-            <span className="text-sm text-gray-500">Blocked Today</span>
-          </div>
-          <p className="text-3xl font-bold text-gray-900">{todayBlocked.length}</p>
-        </button>
-
-        <button
-          onClick={() => onNavigate('profiles')}
-          className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left col-span-2 sm:col-span-1 hover:border-accent-200 hover:shadow-md transition cursor-pointer"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 bg-accent-50 rounded-xl flex items-center justify-center">
-              <Users className="w-4 h-4 text-accent-600" />
-            </div>
-            <span className="text-sm text-gray-500">Kid Profiles</span>
-          </div>
-          <p className="text-3xl font-bold text-gray-900">{kidProfiles?.length || 0}</p>
-        </button>
-      </div>
-
-      {/* Family Code Card */}
-      {userData?.familyCode && (
-        <div className="bg-accent-500 rounded-2xl p-5 text-white shadow-sm">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <Shield className="w-4 h-4 text-white/80" />
-                <span className="text-sm font-medium text-white/80">Family Code</span>
-              </div>
-              <p className="text-2xl font-mono font-bold tracking-wider">{userData.familyCode}</p>
-              <p className="text-xs text-white/60 mt-1">Share this code so your kids can access SafeStudy</p>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <a
-                href={`/play/${userData.familyCode}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden sm:inline-flex items-center gap-1.5 bg-white text-accent-600 hover:bg-accent-50 font-semibold text-sm px-3.5 py-2 rounded-xl transition shadow-sm"
-                title="Open the kid portal in a new tab"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Open Kid Portal
-              </a>
-              <a
-                href={`/play/${userData.familyCode}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="sm:hidden bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-xl transition"
-                title="Open the kid portal in a new tab"
-              >
-                <ExternalLink className="w-5 h-5 text-white" />
-              </a>
-              <button
-                onClick={onCopyCode}
-                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-xl transition"
-                title="Copy code"
-              >
-                {codeCopied ? (
-                  <Check className="w-5 h-5 text-white" />
-                ) : (
-                  <Copy className="w-5 h-5 text-white" />
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Kid Profile Cards */}
-      {hasProfiles ? (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-gray-900">Your Kids</h3>
-            <button
-              onClick={() => onNavigate('profiles')}
-              className="text-sm text-accent-600 hover:text-accent-700 font-medium flex items-center gap-1"
-            >
-              Manage
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {kidProfiles.map((profile) => {
-              const profileSearches = searchHistory
-                ? searchHistory.filter((s) => s.kidName === profile.name && isToday(s.searchedAt))
-                : [];
-              const lastSearch = searchHistory
-                ? searchHistory.find((s) => s.kidName === profile.name)
-                : null;
-
-              return (
-                <div
-                  key={profile._id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <KidAvatar name={profile.name} color={profile.color} size="lg" />
-                    <div className="min-w-0">
-                      <h4 className="font-bold text-gray-900 truncate">{profile.name}</h4>
-                      <p className="text-xs text-gray-500">
-                        {profile.ageRange?.min === profile.ageRange?.max
-                          ? `Age ${profile.ageRange?.min || 4}`
-                          : `Ages ${profile.ageRange?.min || 4}\u2013${profile.ageRange?.max || 18}`}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Searches today</span>
-                      <span className="font-semibold text-gray-900">{profileSearches.length}</span>
-                    </div>
-                    {lastSearch && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500 truncate mr-2">Last search</span>
-                        <span className="text-gray-700 truncate max-w-[140px] text-right font-medium" title={lastSearch.query}>
-                          {lastSearch.query} <span className="text-gray-400 font-normal">&middot; {formatTimestamp(lastSearch.searchedAt)}</span>
-                        </span>
-                      </div>
-                    )}
-                    {!lastSearch && (
-                      <p className="text-xs text-gray-400 italic">No searches yet</p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        /* Getting Started Checklist */
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-accent-50 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <CheckCircle2 className="w-6 h-6 text-accent-500" />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900 text-lg mb-1">Getting Started</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Set up SafeStudy in just a few steps.
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Check className="w-3.5 h-3.5 text-green-600" />
-                  </div>
-                  <span className="text-sm text-gray-600 line-through">Create your account</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-gray-400">2</span>
-                  </div>
-                  <span className="text-sm text-gray-900 font-medium">Create a kid profile</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-gray-400">3</span>
-                  </div>
-                  <span className="text-sm text-gray-600">Share your family code with your kids</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-gray-400">4</span>
-                  </div>
-                  <span className="text-sm text-gray-600">Your kids search safely!</span>
-                </div>
-              </div>
-              <button
-                onClick={() => onNavigate('profiles')}
-                className="mt-5 inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Create First Profile
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Recent Activity Preview */}
-      {searchHistory && searchHistory.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-gray-900">Recent Activity</h3>
-            <button
-              onClick={() => onNavigate('activity')}
-              className="text-sm text-accent-600 hover:text-accent-700 font-medium flex items-center gap-1"
-            >
-              View all
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50 overflow-hidden">
-            {searchHistory.slice(0, 5).map((entry) => (
-              <div key={entry._id} className="px-4 py-3 flex items-center gap-3">
-                <KidAvatar name={entry.kidName} color={entry.kidColor} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">{entry.kidName}</span>
-                    {entry.flagged && (
-                      <span className="inline-flex items-center gap-0.5 bg-red-100 text-red-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
-                        <AlertTriangle className="w-2.5 h-2.5" />
-                        Flagged
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600 truncate">{entry.query}</p>
-                </div>
-                <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
-                  {formatTimestamp(entry.searchedAt)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function isLimitRow(entry) {
+  return !!LIMIT_REASONS[entry?.blockedReason];
 }
 
 // --- Activity Tab ---
@@ -387,10 +82,9 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
   const filteredHistory = useMemo(() => {
     if (!searchHistory) return [];
     let result = searchHistory;
-    if (filterKid !== 'all') {
-      const profile = kidProfiles?.find((p) => p._id === filterKid);
-      if (profile) result = result.filter((s) => s.kidName === profile.name);
-    }
+    // Match on the profile id, not the name: two kids with the same name (or a
+    // renamed kid) used to merge into one.
+    if (filterKid !== 'all') result = result.filter((s) => s.kidProfileId === filterKid);
     if (activityFilter.trim()) {
       const q = activityFilter.trim().toLowerCase();
       result = result.filter((s) => s.query?.toLowerCase().includes(q));
@@ -403,15 +97,12 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
       result = result.filter((s) => s.searchedAt >= cutoff);
     }
     return result;
-  }, [searchHistory, filterKid, kidProfiles, activityFilter, activityDateFilter]);
+  }, [searchHistory, filterKid, activityFilter, activityDateFilter]);
 
   const filteredBlocked = useMemo(() => {
     if (!blockedSearches) return [];
     let result = blockedSearches;
-    if (filterKid !== 'all') {
-      const profile = kidProfiles?.find((p) => p._id === filterKid);
-      if (profile) result = result.filter((b) => b.kidName === profile.name);
-    }
+    if (filterKid !== 'all') result = result.filter((b) => b.kidProfileId === filterKid);
     if (activityFilter.trim()) {
       const q = activityFilter.trim().toLowerCase();
       result = result.filter((b) => b.query?.toLowerCase().includes(q));
@@ -425,7 +116,7 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
     }
     result = result.filter((b) => !dismissedIds.has(b._id));
     return result;
-  }, [blockedSearches, filterKid, kidProfiles, activityFilter, activityDateFilter, dismissedIds]);
+  }, [blockedSearches, filterKid, activityFilter, activityDateFilter, dismissedIds]);
 
   const rawDisplayData = showBlocked ? filteredBlocked : filteredHistory;
 
@@ -436,7 +127,7 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
     for (let i = 0; i < rawDisplayData.length; i++) {
       const entry = rawDisplayData[i];
       const prev = result[result.length - 1];
-      if (prev && prev.query === entry.query && prev.kidName === entry.kidName) {
+      if (prev && prev.query === entry.query && prev.kidProfileId === entry.kidProfileId) {
         prev._consecutiveCount = (prev._consecutiveCount || 1) + 1;
       } else {
         result.push({ ...entry, _consecutiveCount: 1 });
@@ -603,7 +294,9 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
             <div
               key={entry._id}
               className={`px-5 py-4 flex items-start gap-4 transition ${
-                showBlocked
+                showBlocked && isLimitRow(entry)
+                  ? 'bg-gray-50/60 border-l-4 border-l-gray-300'
+                  : showBlocked
                   ? 'bg-red-50/50 border-l-4 border-l-red-400'
                   : entry.flagged
                     ? 'bg-amber-50/50 border-l-4 border-l-amber-400'
@@ -622,7 +315,7 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
                   )}
                 </div>
                 <p className={`text-sm mt-0.5 ${
-                  showBlocked ? 'text-red-700 font-medium' : entry.flagged ? 'text-amber-800 font-medium' : 'text-gray-700'
+                  showBlocked && !isLimitRow(entry) ? 'text-red-700 font-medium' : entry.flagged ? 'text-amber-800 font-medium' : 'text-gray-700'
                 }`}>
                   {entry.query}
                   {entry._consecutiveCount > 1 && (
@@ -632,12 +325,12 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
                   )}
                 </p>
                 {showBlocked && entry.blockedReason && (
-                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                    <ShieldAlert className="w-3 h-3" />
-                    {entry.blockedReason}
+                  <p className={`text-xs mt-1 flex items-center gap-1 ${isLimitRow(entry) ? 'text-gray-500' : 'text-red-500'}`}>
+                    {isLimitRow(entry) ? <Clock className="w-3 h-3" /> : <ShieldAlert className="w-3 h-3" />}
+                    {LIMIT_REASONS[entry.blockedReason] || entry.blockedReason}
                   </p>
                 )}
-                {showBlocked && (
+                {showBlocked && !isLimitRow(entry) && (
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <button
                       onClick={() => handleAllowTopic(entry)}
@@ -856,8 +549,17 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
 }
 
 // --- Settings Tab ---
-function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavigate, embedded }) {
+// Billing and account deletion are central now: both live on the hub's
+// account page. Inside the hub's iframe we move the top window, not the frame.
+const HUB_ACCOUNT = 'https://getsafefamily.com/account';
+
+function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, embedded }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const openAccountPage = (e) => {
+    if (!embedded) return;
+    e.preventDefault();
+    topNavigate(HUB_ACCOUNT);
+  };
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -940,11 +642,14 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
           </div>
         ) : (
           <a
-            href="mailto:jeremiah@getsafefamily.com?subject=SafeStudy%20Subscription"
+            href={HUB_ACCOUNT}
+            onClick={openAccountPage}
+            target={embedded ? undefined : '_blank'}
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-sm text-accent-600 hover:text-accent-700 font-medium"
           >
-            <Mail className="w-3.5 h-3.5" />
             Manage Subscription
+            <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}
       </div>
@@ -1072,10 +777,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
               This action is <span className="font-semibold">irreversible</span>. All your data, kid profiles, search history, and settings will be permanently deleted.
             </p>
             <p className="text-sm text-gray-600 mb-6">
-              To delete your account, please contact{' '}
-              <a href="mailto:jeremiah@getsafefamily.com" className="text-accent-600 hover:text-accent-700 font-medium">
-                jeremiah@getsafefamily.com
-              </a>
+              Your account is shared across every Safe Family app, so deleting it happens on your Safe Family account page.
             </p>
             <div className="flex gap-3 justify-end">
               <button
@@ -1084,6 +786,16 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, onNavig
               >
                 Cancel
               </button>
+              <a
+                href={HUB_ACCOUNT}
+                onClick={openAccountPage}
+                target={embedded ? undefined : '_blank'}
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition"
+              >
+                Go to my account page
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
         </div>
@@ -1181,12 +893,10 @@ export default function AdminDashboard() {
   const [showEditor, setShowEditor] = useState(false);
   const [editingProfile, setEditingProfile] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [activityShowBlocked, setActivityShowBlocked] = useState(false);
-
-  // Reset blocked filter flag when leaving activity tab
-  useEffect(() => {
-    if (activeTab !== 'activity') setActivityShowBlocked(false);
-  }, [activeTab]);
+  // The kid the Family, This Week and Tutor screens are looking at. Shared so
+  // picking Bella on one screen keeps Bella on the next.
+  const [selectedKidId, setSelectedKidId] = useState(null);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   // Convex mutations
   const deleteProfileMutation = useMutation(api.kidProfiles.deleteProfile);
@@ -1244,6 +954,31 @@ export default function AdminDashboard() {
     userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
   );
 
+  // The week at a glance for every kid, one query.
+  const familyOverview = useQuery(
+    api.progress.getFamilyOverview,
+    userData?._id ? { userId: userData._id, userToken: token ?? undefined } : 'skip'
+  );
+
+  // Concern alerts, seen and unseen, so the tab badge and the screen agree.
+  const concernAlerts = useQuery(
+    api.concernAlertQueries.listForUser,
+    userData?._id ? { userId: userData._id, includeAcknowledged: true, userToken: token ?? undefined } : 'skip'
+  );
+  const unacknowledgedAlerts = useMemo(
+    () => (concernAlerts ? concernAlerts.filter((a) => !a.acknowledgedAt).length : 0),
+    [concernAlerts]
+  );
+
+  // Default the per-kid screens to the first kid, and never point at a kid
+  // who has since been deleted.
+  useEffect(() => {
+    if (!kidProfiles || kidProfiles.length === 0) return;
+    if (!selectedKidId || !kidProfiles.some((k) => k._id === selectedKidId)) {
+      setSelectedKidId(kidProfiles[0]._id);
+    }
+  }, [kidProfiles, selectedKidId]);
+
   // Mirror the hub's universal family settings (kid PINs, ages, colors,
   // pauses, request permission, alert recipients) into this app once per
   // dashboard load. Fire-and-forget — the dashboard never waits on the hub.
@@ -1290,6 +1025,13 @@ export default function AdminDashboard() {
       .then((result) => console.log('[AdminDashboard] Identity sync:', result))
       .catch((err) => console.warn('[AdminDashboard] Identity sync skipped:', err?.message ?? err));
   }, [token, identitySynced, userData, syncIdentity]);
+
+  // Red counts on tabs: things waiting for the parent.
+  const tabBadge = (tabId) => {
+    if (tabId === 'requests') return pendingRequestCount || 0;
+    if (tabId === 'alerts') return unacknowledgedAlerts;
+    return 0;
+  };
 
   const handleLogout = () => {
     logout();
@@ -1447,24 +1189,30 @@ export default function AdminDashboard() {
           </div>)}
 
           {/* Desktop Tab Navigation */}
-          <nav className="hidden md:flex gap-1 -mb-px">
+          <nav className="hidden md:flex gap-1 -mb-px overflow-x-auto" aria-label="Dashboard sections">
             {TABS.map((tab) => {
               const Icon = tab.icon;
+              const badge = tabBadge(tab.id);
               return (
                 <button
                   key={tab.id}
+                  type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${
+                  aria-current={activeTab === tab.id ? 'page' : undefined}
+                  className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-accent-500 text-accent-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <Icon className="w-4.5 h-4.5" />
+                  <Icon className="w-4.5 h-4.5" aria-hidden="true" />
                   {tab.label}
-                  {tab.id === 'requests' && pendingRequestCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-semibold">
-                      {pendingRequestCount > 99 ? '99+' : pendingRequestCount}
+                  {badge > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-semibold"
+                      aria-label={`${badge} waiting`}
+                    >
+                      {badge > 99 ? '99+' : badge}
                     </span>
                   )}
                 </button>
@@ -1535,16 +1283,59 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* Mobile "More" menu: the tabs that don't fit in the bottom bar */}
+      {showMoreMenu && (
+        <div className="md:hidden fixed inset-0 z-40 bg-black/40" onClick={() => setShowMoreMenu(false)}>
+          <div
+            role="menu"
+            aria-label="More sections"
+            className="absolute bottom-16 left-4 right-4 bg-white rounded-2xl shadow-xl py-2 border border-gray-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {TABS.slice(MOBILE_PRIMARY).map((tab) => {
+              const Icon = tab.icon;
+              const badge = tabBadge(tab.id);
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setShowMoreMenu(false);
+                  }}
+                  className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition flex items-center gap-3 ${
+                    isActive ? 'text-accent-600' : 'text-gray-700'
+                  }`}
+                >
+                  <Icon className="w-4.5 h-4.5" aria-hidden="true" />
+                  <span className="text-sm font-medium flex-1">{tab.label}</span>
+                  {badge > 0 && (
+                    <span className="bg-red-500 text-white text-[10px] min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full font-semibold">
+                      {badge > 99 ? '99+' : badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50" aria-label="Dashboard sections">
         <div className="grid grid-cols-5 safe-area-inset-bottom">
-          {TABS.map((tab) => {
+          {TABS.slice(0, MOBILE_PRIMARY).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
+            const badge = tabBadge(tab.id);
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                type="button"
+                onClick={() => { setActiveTab(tab.id); setShowMoreMenu(false); }}
+                aria-current={isActive ? 'page' : undefined}
                 className={`relative flex flex-col items-center justify-center gap-0.5 py-2.5 transition ${
                   isActive ? 'bg-accent-50' : ''
                 }`}
@@ -1552,18 +1343,46 @@ export default function AdminDashboard() {
                 {isActive && (
                   <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-500" />
                 )}
-                <Icon className={`w-5 h-5 ${isActive ? 'text-accent-600' : 'text-gray-500'}`} strokeWidth={isActive ? 2.5 : 2} />
+                <Icon className={`w-5 h-5 ${isActive ? 'text-accent-600' : 'text-gray-500'}`} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
                 <span className={`text-[10px] ${isActive ? 'font-semibold text-accent-600' : 'text-gray-500'}`}>
-                  {tab.label === 'Kid Profiles' ? 'Profiles' : tab.label}
+                  {tab.label === 'This Week' ? 'Week' : tab.label}
                 </span>
-                {tab.id === 'requests' && pendingRequestCount > 0 && (
+                {badge > 0 && (
                   <span className="absolute top-1 right-1/4 bg-red-500 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-semibold">
-                    {pendingRequestCount > 9 ? '9+' : pendingRequestCount}
+                    {badge > 9 ? '9+' : badge}
                   </span>
                 )}
               </button>
             );
           })}
+          {(() => {
+            const moreActive = TABS.slice(MOBILE_PRIMARY).some((t) => t.id === activeTab);
+            const moreBadge = TABS.slice(MOBILE_PRIMARY).reduce((sum, t) => sum + tabBadge(t.id), 0);
+            return (
+              <button
+                type="button"
+                onClick={() => setShowMoreMenu((v) => !v)}
+                aria-expanded={showMoreMenu}
+                aria-haspopup="menu"
+                className={`relative flex flex-col items-center justify-center gap-0.5 py-2.5 transition ${
+                  moreActive ? 'bg-accent-50' : ''
+                }`}
+              >
+                {moreActive && (
+                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent-500" />
+                )}
+                <MoreHorizontal className={`w-5 h-5 ${moreActive ? 'text-accent-600' : 'text-gray-500'}`} strokeWidth={moreActive ? 2.5 : 2} aria-hidden="true" />
+                <span className={`text-[10px] ${moreActive ? 'font-semibold text-accent-600' : 'text-gray-500'}`}>
+                  More
+                </span>
+                {moreBadge > 0 && (
+                  <span className="absolute top-1 right-1/4 bg-red-500 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-semibold">
+                    {moreBadge > 9 ? '9+' : moreBadge}
+                  </span>
+                )}
+              </button>
+            );
+          })()}
         </div>
       </nav>
 
@@ -1571,15 +1390,56 @@ export default function AdminDashboard() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-8">
         {/* Home Tab */}
         {activeTab === 'home' && (
-          <HomeTab
+          <HomeOverview
             userData={userData}
             kidProfiles={kidProfiles}
-            searchHistory={searchHistory}
-            blockedSearches={blockedSearches}
+            overview={familyOverview}
+            unacknowledgedAlerts={unacknowledgedAlerts}
             onNavigate={setActiveTab}
-            onShowBlocked={() => setActivityShowBlocked(true)}
+            onSelectKid={setSelectedKidId}
             onCopyCode={copyFamilyCode}
             codeCopied={copiedCode}
+          />
+        )}
+
+        {/* Family Tab: daily lessons per kid */}
+        {activeTab === 'family' && (
+          <FamilyTab
+            kidProfiles={kidProfiles}
+            selectedKidId={selectedKidId}
+            onSelectKid={setSelectedKidId}
+            onNavigate={setActiveTab}
+            showToast={showToast}
+          />
+        )}
+
+        {/* This Week: the per-kid record */}
+        {activeTab === 'week' && (
+          <WeekView
+            kidProfiles={kidProfiles}
+            selectedKidId={selectedKidId}
+            onSelectKid={setSelectedKidId}
+            onNavigate={setActiveTab}
+          />
+        )}
+
+        {/* Tutor chats */}
+        {activeTab === 'tutor' && (
+          <TutorTranscripts
+            kidProfiles={kidProfiles}
+            selectedKidId={selectedKidId}
+            onSelectKid={setSelectedKidId}
+            onNavigate={setActiveTab}
+            showToast={showToast}
+          />
+        )}
+
+        {/* Alerts */}
+        {activeTab === 'alerts' && (
+          <ConcernAlerts
+            alerts={concernAlerts}
+            kidProfiles={kidProfiles}
+            showToast={showToast}
           />
         )}
 
@@ -1589,7 +1449,7 @@ export default function AdminDashboard() {
             searchHistory={searchHistory}
             blockedSearches={blockedSearches}
             kidProfiles={kidProfiles}
-            initialShowBlocked={activityShowBlocked}
+            initialShowBlocked={false}
             pendingRequests={pendingRequests}
             onApproveRequest={async (requestId) => {
               await approveRequestMutation({ requestId, userToken: token ?? undefined });
@@ -1640,7 +1500,6 @@ export default function AdminDashboard() {
             onLogout={handleLogout}
             onCopyCode={copyFamilyCode}
             codeCopied={copiedCode}
-            onNavigate={setActiveTab}
             embedded={embedded}
           />
         )}

@@ -11,7 +11,6 @@ import ProfileSelection from '../components/kid/ProfileSelection';
 import TimeLimitModal from '../components/kid/TimeLimitModal';
 import PausedNotice from '../components/kid/PausedNotice';
 import SearchHeader from '../components/kid/SearchHeader';
-import SafeFamilySwitcher from '../components/SafeFamilySwitcher';
 import SearchBar from '../components/kid/SearchBar';
 import RequestsInbox from '../components/kid/RequestsInbox';
 // SearchHistoryPanel: removed from kid UI Apr 2026 (reinforced loop behavior).
@@ -24,6 +23,13 @@ import TutorChat from '../components/kid/TutorChat';
 import LearnResults from '../components/kid/LearnResults';
 import EmptyState from '../components/kid/EmptyState';
 import ImageLightbox from '../components/kid/ImageLightbox';
+import AppsSheet from '../components/kid/AppsSheet';
+// Daily program (Sep 2026): home-first, with lessons, review, quizzes, My Stuff.
+import KidHome from '../components/kid/KidHome';
+import LessonView from '../components/kid/LessonView';
+import ReviewDeck from '../components/kid/ReviewDeck';
+import QuizView from '../components/kid/QuizView';
+import MyStuff from '../components/kid/MyStuff';
 
 // Utilities
 import {
@@ -31,6 +37,8 @@ import {
   SEARCH_COOLDOWN_MS,
   SpeechRecognition,
   pickCuriosityPrompts,
+  isAccessBlockReason,
+  friendlyFailure,
 } from '../components/kid/utils';
 
 // ========== Main Component ==========
@@ -75,6 +83,21 @@ export default function KidSearch() {
 
   // Search mode: 'learn' (text answers) or 'images' (image grid)
   const [searchMode, setSearchMode] = useState(searchParams.get('mode') || 'learn');
+
+  // Which screen the kid is on. Home-first: the search box is one thing you
+  // can do, not the only thing. A deep link with ?q= or ?mode= still lands
+  // straight in search, exactly as before.
+  //   'home' | 'search' | 'lesson' | 'review' | 'quiz' | 'stuff'
+  const [view, setView] = useState(() =>
+    searchParams.get('q') || searchParams.get('mode') ? 'search' : 'home'
+  );
+  const [activeLessonId, setActiveLessonId] = useState(null);
+  // { topic, subject, context, questions, loading, error }
+  const [quiz, setQuiz] = useState(null);
+  const [keepState, setKeepState] = useState('idle'); // 'idle' | 'saving' | 'kept'
+  // True until ensureToday has had its say, so the home never flashes
+  // "no lesson today" before the day's lessons have been generated.
+  const [lessonsLoading, setLessonsLoading] = useState(true);
 
   // Image state
   const [images, setImages] = useState([]);
@@ -312,6 +335,61 @@ export default function KidSearch() {
   const [showRequestsInbox, setShowRequestsInbox] = useState(false);
   const newApprovedCount = kidRequests?.filter(r => r.status === 'approved').length || 0;
 
+  // ----- Daily program reads -----
+  const kidProfileId = selectedProfile?._id;
+  const kidToday = useQuery(api.progress.getKidToday, kidProfileId ? { kidProfileId } : 'skip');
+  const todayLessons = useQuery(api.lessonQueries.getTodayLessons, kidProfileId ? { kidProfileId } : 'skip');
+  const latestSession = useQuery(api.tutorSessions.getLatestSession, kidProfileId ? { kidProfileId } : 'skip');
+  const ensureToday = useAction(api.lessons.ensureToday);
+  const generateOneOff = useAction(api.lessons.generateOneOff);
+  const regenerateLesson = useAction(api.lessons.regenerate);
+  const quizMe = useAction(api.quiz.quizMe);
+  const saveAnswer = useMutation(api.progress.saveAnswer);
+
+  // Make sure today's lessons exist — once per profile, and only once we know
+  // the kid is allowed to study right now. A paused or out-of-hours kid gets
+  // nothing generated; the server also refuses on an inactive subscription.
+  const ensuredFor = useRef('');
+  const canStudyNow = canSearchStatus ? canSearchStatus.canSearch === true : null;
+  useEffect(() => {
+    if (!kidProfileId || canStudyNow === null) return;
+    if (!canStudyNow) {
+      // Out of time or paused: nothing to generate, nothing to wait for.
+      setLessonsLoading(false);
+      return;
+    }
+    if (ensuredFor.current === kidProfileId) return;
+    ensuredFor.current = kidProfileId;
+    setLessonsLoading(true);
+    // No cancel guard on purpose: the time-limit verdict refreshes every
+    // minute, and a cleanup tied to it would leave the loading flag stuck.
+    ensureToday({ kidProfileId })
+      .catch((err) => {
+        console.error('[KidSearch] ensureToday failed:', err);
+      })
+      .finally(() => setLessonsLoading(false));
+  }, [kidProfileId, canStudyNow, ensureToday]);
+
+  // Switching to another kid starts them on their own home, not the previous
+  // kid's lesson or quiz. The first pick keeps the view chosen from the URL.
+  const viewInitFor = useRef(null);
+  useEffect(() => {
+    if (!kidProfileId) return;
+    if (viewInitFor.current === kidProfileId) return;
+    const first = viewInitFor.current === null;
+    viewInitFor.current = kidProfileId;
+    if (first) return;
+    setView('home');
+    setActiveLessonId(null);
+    setQuiz(null);
+    setKeepState('idle');
+    setLessonsLoading(true);
+    // The new kid's thread is seeded from their own saved session below; the
+    // previous kid's messages must not show while that loads.
+    setTutorMessages([]);
+    setTutorInput('');
+  }, [kidProfileId]);
+
   // Mirror the hub's universal family settings (PINs, ages, pauses, ...) into
   // this app as soon as the family code resolves — before the kid picks a
   // profile, so the picker already reflects what the parent set on the hub.
@@ -392,12 +470,14 @@ export default function KidSearch() {
     }
   }, [canSearchStatus]);
 
-  // Focus search input when profile is selected
+  // Focus search input when profile is selected (results view only — on the
+  // home screen the box sits below the fold and focusing it would scroll past
+  // the lesson).
   useEffect(() => {
-    if (selectedProfile && searchInputRef.current) {
+    if (selectedProfile && view === 'search' && searchInputRef.current) {
       searchInputRef.current.focus();
     }
-  }, [selectedProfile]);
+  }, [selectedProfile, view]);
 
   // Clean up cooldown timer on unmount
   useEffect(() => {
@@ -405,7 +485,7 @@ export default function KidSearch() {
       if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current);
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       if (recognitionRef.current) {
-        try { recognitionRef.current.abort(); } catch {}
+        try { recognitionRef.current.abort(); } catch { /* already stopped */ }
       }
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     };
@@ -492,6 +572,11 @@ export default function KidSearch() {
       setTimesUp(true);
       return;
     }
+
+    // A search always lands on the results screen, wherever it was typed.
+    setView('search');
+    setQuiz(null);
+    setKeepState('idle');
 
     // Update URL with query params
     const params = new URLSearchParams();
@@ -622,6 +707,8 @@ export default function KidSearch() {
 
   const handleModeToggle = (mode) => {
     setSearchMode(mode);
+    // The tutor needs no query, so tapping its tab from home opens it right away.
+    if (mode === 'tutor') setView('search');
     // Update URL mode param if there is a current query
     if (query.trim()) {
       const params = new URLSearchParams();
@@ -671,7 +758,7 @@ export default function KidSearch() {
       silenceTimerRef.current = null;
     }
     if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch {}
+      try { recognitionRef.current.stop(); } catch { /* already stopped */ }
     }
   }, []);
 
@@ -756,16 +843,38 @@ export default function KidSearch() {
 
   // ========== Tutor Handlers ==========
 
-  // Initialize tutor greeting when profile is selected
+  // Seed the tutor thread once per profile, from the saved session:
+  //   - a session from the last day comes back as-is (no greeting, no restart)
+  //   - an older one contributes only its topic ("Last time we worked on...")
+  //   - no session at all gets the plain greeting
+  // The server saves every exchange (convex/tutor.ts), so this is also what
+  // makes a refresh pick up where the kid left off.
+  const tutorSeededFor = useRef('');
   useEffect(() => {
-    if (selectedProfile && tutorMessages.length === 0) {
-      setTutorMessages([{
-        role: 'tutor',
-        content: `Hi ${selectedProfile.name}! I'm your tutor. What are you working on today?`,
-        timestamp: Date.now(),
-      }]);
+    if (!selectedProfile?._id || latestSession === undefined) return;
+    if (tutorSeededFor.current === selectedProfile._id) return;
+    tutorSeededFor.current = selectedProfile._id;
+
+    if (latestSession && !latestSession.stale && latestSession.messages?.length > 0) {
+      setTutorMessages(
+        latestSession.messages.map((m) => ({
+          role: m.role === 'kid' ? 'kid' : 'tutor',
+          content: m.content,
+          timestamp: m.timestamp || latestSession.lastMessageAt || Date.now(),
+        }))
+      );
+      return;
     }
-  }, [selectedProfile?._id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const lastTopic = latestSession?.topic ? String(latestSession.topic).trim().slice(0, 80) : '';
+    setTutorMessages([{
+      role: 'tutor',
+      content: lastTopic
+        ? `Hi ${selectedProfile.name}! Last time we worked on "${lastTopic}". Want to keep going with that, or start something new?`
+        : `Hi ${selectedProfile.name}! I'm your tutor. What are you working on today?`,
+      timestamp: Date.now(),
+    }]);
+  }, [selectedProfile?._id, selectedProfile?.name, latestSession]);
 
   // Auto-scroll tutor chat to bottom
   useEffect(() => {
@@ -857,6 +966,149 @@ export default function KidSearch() {
     recognition.start();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ========== Daily program handlers ==========
+
+  const goHome = useCallback(() => {
+    setView('home');
+    setActiveLessonId(null);
+    setQuiz(null);
+    if (searchParams.get('q') || searchParams.get('mode')) {
+      navigate(`/search/${familyCode}`, { replace: true });
+    }
+    window.scrollTo({ top: 0 });
+  }, [familyCode, navigate, searchParams]);
+
+  // Same gate as a search: no lesson or review for a kid who is out of time.
+  const allowedNow = () => {
+    if (canSearchStatus && !canSearchStatus.canSearch) {
+      setTimesUp(true);
+      return false;
+    }
+    return true;
+  };
+
+  const openLesson = (lessonId) => {
+    if (!allowedNow()) return;
+    setActiveLessonId(lessonId);
+    setView('lesson');
+    window.scrollTo({ top: 0 });
+  };
+
+  const openReview = () => {
+    if (!allowedNow()) return;
+    setView('review');
+    window.scrollTo({ top: 0 });
+  };
+
+  const openStuff = () => {
+    setView('stuff');
+    window.scrollTo({ top: 0 });
+  };
+
+  // Open the tutor; from a lesson, start the kid off with the topic typed in.
+  const openTutor = (topic) => {
+    setSearchMode('tutor');
+    setView('search');
+    if (topic) {
+      setTutorInput(`Can you help me with ${topic}?`);
+      setTimeout(() => tutorInputRef.current?.focus(), 100);
+    }
+    window.scrollTo({ top: 0 });
+  };
+
+  // Generate a brand-new lesson for a topic the kid picked. Returns { opened }
+  // when the screen already moved on, or { error } with the server's reason
+  // code for the caller to word.
+  const generateLesson = async (subject, topic) => {
+    if (!kidProfileId) return { error: 'no_profile' };
+    try {
+      const res = await generateOneOff({ kidProfileId, subject, topic });
+      if (res?.lessonId && !res.error) {
+        setActiveLessonId(res.lessonId);
+        setView('lesson');
+        window.scrollTo({ top: 0 });
+        return { opened: true };
+      }
+      if (isAccessBlockReason(res?.error)) {
+        setTimesUp(true);
+        return { opened: true };
+      }
+      return { error: res?.error || 'generation_failed' };
+    } catch (err) {
+      console.error('[KidSearch] lesson generation failed:', err);
+      return { error: 'generation_failed' };
+    }
+  };
+
+  // Retry a lesson whose body never arrived. Fills the SAME row (no second
+  // lesson for the parent's week view to count); the live getLesson query
+  // picks up the body, so the screen stays on this lesson.
+  const retryLesson = async (lesson) => {
+    try {
+      const res = await regenerateLesson({ lessonId: lesson._id });
+      if (res?.ok) return { opened: true };
+      if (isAccessBlockReason(res?.error)) {
+        setTimesUp(true);
+        return { opened: true };
+      }
+      return { error: res?.error || 'generation_failed' };
+    } catch (err) {
+      console.error('[KidSearch] lesson retry failed:', err);
+      return { error: 'generation_failed' };
+    }
+  };
+
+  const pickTopic = async (topic) => {
+    const res = await generateLesson('custom', topic);
+    if (res?.error) return { error: friendlyFailure(res.error, 'that lesson') };
+    return res;
+  };
+
+  // "Quiz me on this" from a finished Learn answer.
+  const startQuiz = async () => {
+    const topic = (rootQuery || query).trim();
+    if (!topic || !kidProfileId) return;
+    if (!allowedNow()) return;
+    const context = [aiSummary, ...sections.map((sec) => `${sec.heading}: ${sec.content}`)]
+      .filter(Boolean)
+      .join('\n')
+      .slice(0, 4000);
+    setQuiz({ topic, subject: undefined, context, questions: [], loading: true, error: '' });
+    setView('quiz');
+    window.scrollTo({ top: 0 });
+    try {
+      const res = await quizMe({ kidProfileId, topic, context });
+      if (res?.blocked) {
+        if (isAccessBlockReason(res.reason)) {
+          setTimesUp(true);
+          setView('search');
+          setQuiz(null);
+          return;
+        }
+        setQuiz((q) => q && { ...q, loading: false, error: friendlyFailure(res.reason, 'a quiz') });
+        return;
+      }
+      setQuiz((q) => q && { ...q, loading: false, questions: res?.questions || [] });
+    } catch (err) {
+      console.error('[KidSearch] quiz failed:', err);
+      setQuiz((q) => q && { ...q, loading: false, error: friendlyFailure('unavailable', 'a quiz') });
+    }
+  };
+
+  // "Keep this" on a Learn answer -> My Stuff.
+  const keepAnswer = async () => {
+    const title = (rootQuery || query).trim();
+    if (!title || !aiSummary || !kidProfileId || keepState !== 'idle') return;
+    setKeepState('saving');
+    try {
+      await saveAnswer({ kidProfileId, title, summary: aiSummary });
+      setKeepState('kept');
+    } catch (err) {
+      console.error('[KidSearch] keep failed:', err);
+      setKeepState('idle');
+    }
+  };
+
   // ========== FAMILY CODE ENTRY ==========
   if (!familyCode || !user) {
     return (
@@ -918,6 +1170,34 @@ export default function KidSearch() {
     );
   }
 
+  // One set of props for the search bar wherever it is rendered (stuck under
+  // the header on the results screen, inline below the lesson on home).
+  const searchBarProps = {
+    query,
+    setQuery,
+    searching,
+    cooldown,
+    isListening,
+    searchMode,
+    selectedProfile,
+    showSuggestions,
+    filteredSuggestions,
+    selectedSuggestionIndex,
+    searchInputRef,
+    suggestionsRef,
+    onSearch: handleSearch,
+    onClearSearch: handleClearSearch,
+    onToggleListening: toggleListening,
+    onModeToggle: handleModeToggle,
+    onSuggestionClick: handleSuggestionClick,
+    onInputKeyDown: handleInputKeyDown,
+    onInputFocus: () => {
+      if (query.trim().length >= 2 && filteredSuggestions.length > 0) {
+        setShowSuggestions(true);
+      }
+    },
+  };
+
   // ========== MAIN SEARCH INTERFACE ==========
   return (
     <div className="min-h-screen bg-brand-cream dark:bg-gray-900">
@@ -935,7 +1215,7 @@ export default function KidSearch() {
         selectedProfile={selectedProfile}
         familyCode={familyCode}
         kidToken={kidToken}
-        searchStack={searchStack}
+        searchStack={view === 'search' ? searchStack : []}
         isDark={isDark}
         hasSearchLimit={hasSearchLimit}
         isSearchLimitLow={isSearchLimitLow}
@@ -952,38 +1232,17 @@ export default function KidSearch() {
             if (form) form.requestSubmit();
           }, 50);
         }}
+        onHome={view !== 'home' ? goHome : undefined}
         onSwitchProfile={() => setSelectedProfile(null)}
         onOpenApps={embedded ? undefined : () => setAppsOpen(true)}
         onToggleDarkMode={toggleDarkMode}
         onToggleRequestsInbox={() => setShowRequestsInbox(!showRequestsInbox)}
       />
 
-      {/* Sticky Search Bar */}
-      <SearchBar
-        query={query}
-        setQuery={setQuery}
-        searching={searching}
-        cooldown={cooldown}
-        isListening={isListening}
-        searchMode={searchMode}
-        selectedProfile={selectedProfile}
-        showSuggestions={showSuggestions}
-        filteredSuggestions={filteredSuggestions}
-        selectedSuggestionIndex={selectedSuggestionIndex}
-        searchInputRef={searchInputRef}
-        suggestionsRef={suggestionsRef}
-        onSearch={handleSearch}
-        onClearSearch={handleClearSearch}
-        onToggleListening={toggleListening}
-        onModeToggle={handleModeToggle}
-        onSuggestionClick={handleSuggestionClick}
-        onInputKeyDown={handleInputKeyDown}
-        onInputFocus={() => {
-          if (query.trim().length >= 2 && filteredSuggestions.length > 0) {
-            setShowSuggestions(true);
-          }
-        }}
-      />
+      {/* Sticky Search Bar (results view). On home the same bar renders inline below the lesson. */}
+      {view === 'search' && (
+        <SearchBar {...searchBarProps} />
+      )}
 
       <div className="max-w-3xl mx-auto px-4 py-6">
         {/* Requests Inbox */}
@@ -995,143 +1254,193 @@ export default function KidSearch() {
           />
         )}
 
-        {/*
-          Apr 2026: SearchHistoryPanel is no longer rendered on the kid side.
-          Showing kids their prior searches reinforces the synonym-shuffling
-          loop. Parent dashboard (AdminDashboard) still has full history.
-        */}
+        {/* ===== Home ===== */}
+        {view === 'home' && (
+          <KidHome
+            profile={liveProfile ?? selectedProfile}
+            today={kidToday}
+            lessons={todayLessons}
+            lessonsLoading={lessonsLoading}
+            latestSession={latestSession}
+            onOpenLesson={openLesson}
+            onOpenReview={openReview}
+            onOpenStuff={openStuff}
+            onOpenTutor={() => openTutor()}
+            onPickTopic={pickTopic}
+          >
+            <SearchBar {...searchBarProps} sticky={false} autoFocus={false} />
+            <EmptyState
+              selectedProfile={selectedProfile}
+              introDismissed={introDismissed}
+              randomSuggestions={randomSuggestions}
+              onDismissIntro={() => setIntroDismissed(true)}
+              onSuggestionClick={handleSuggestionClick}
+              title="Curious about something?"
+              subtitle="Ask anything, or try one of these"
+              topPadding="pt-6"
+            />
+          </KidHome>
+        )}
 
-        {/* Loading State - Skeleton */}
-        {searching && <SearchSkeleton />}
-
-        {/* Blocked Message */}
-        {blocked && !searching && (
-          <BlockedMessage
-            blockedMessage={blockedMessage}
-            canRequest={canRequest}
-            alreadyRequested={alreadyRequested}
-            requestSent={requestSent}
-            relatedQuestions={relatedQuestions}
-            query={query}
-            selectedProfile={selectedProfile}
-            searchInputRef={searchInputRef}
-            onCreateRequest={async () => {
-              try {
-                await createTopicRequest({
-                  kidProfileId: selectedProfile._id,
-                  query: query.trim(),
-                  reason: blockedMessage,
-                });
-                setRequestSent(true);
-              } catch (err) {
-                console.error('[KidSearch] Topic request error:', err);
-              }
-            }}
-            onSuggestionClick={(q) => {
-              setQuery(q);
-              setBlocked(false);
-              setBlockedMessage('');
-              setRelatedQuestions([]);
-              searchInputRef.current?.focus();
-            }}
-            onClearBlocked={() => {
-              setQuery('');
-              setBlocked(false);
-              searchInputRef.current?.focus();
-            }}
+        {/* ===== Lesson ===== */}
+        {view === 'lesson' && (
+          <LessonView
+            lessonId={activeLessonId}
+            onBack={goHome}
+            onRetry={retryLesson}
+            onAskTutor={openTutor}
           />
         )}
 
-        {/* Results: Images Mode */}
-        {results && !searching && !blocked && searchMode === 'images' && (
-          <ImagesResults
-            images={images}
-            aiSummary={aiSummary}
-            onImageClick={(index) => setLightboxIndex(index)}
-            onSwitchToLearn={() => handleModeToggle('learn')}
+        {/* ===== Review deck ===== */}
+        {view === 'review' && (
+          <ReviewDeck
+            kidProfileId={kidProfileId}
+            profile={liveProfile ?? selectedProfile}
+            onBack={goHome}
           />
         )}
 
-        {/* Results: Research Mode */}
-        {searchMode === 'research' && !searching && !blocked && (
-          <ResearchResults
-            researchResults={researchResults}
-            researchLoading={researchLoading}
-            hasResults={!!results}
-            onSwitchToLearn={() => handleModeToggle('learn')}
+        {/* ===== Quiz ===== */}
+        {view === 'quiz' && quiz && (
+          <QuizView
+            kidProfileId={kidProfileId}
+            topic={quiz.topic}
+            subject={quiz.subject}
+            questions={quiz.questions}
+            loading={quiz.loading}
+            error={quiz.error}
+            onBack={() => { setView('search'); setQuiz(null); window.scrollTo({ top: 0 }); }}
+            onRetry={startQuiz}
+            onReview={openReview}
           />
         )}
 
-        {/* Results: Tutor Mode */}
-        {searchMode === 'tutor' && (
-          <TutorChat
-            tutorMessages={tutorMessages}
-            tutorLoading={tutorLoading}
-            tutorInput={tutorInput}
-            setTutorInput={setTutorInput}
-            tutorEndRef={tutorEndRef}
-            tutorInputRef={tutorInputRef}
-            onSend={() => handleTutorSend()}
-            onVoice={handleTutorVoice}
+        {/* ===== My Stuff ===== */}
+        {view === 'stuff' && (
+          <MyStuff
+            kidProfileId={kidProfileId}
+            onBack={goHome}
+            onOpenLesson={openLesson}
           />
         )}
 
-        {/* Results: Learn Mode */}
-        {results && !searching && !blocked && searchMode === 'learn' && (
-          <LearnResults
-            aiSummary={aiSummary}
-            sections={sections}
-            funFacts={funFacts}
-            relatedQuestions={relatedQuestions}
-            images={images}
-            diagram={diagram}
-            rootQuery={rootQuery}
-            selectedProfile={selectedProfile}
-            expandAction={expandSection}
-            onSuggestionClick={handleSuggestionClick}
-            onImageClick={handleImageClick}
-            onSwitchToImages={() => setSearchMode('images')}
-          />
-        )}
+        {/* ===== Search (Learn / Images / Research / Tutor) ===== */}
+        {view === 'search' && (
+          <>
+            {/* Loading State - Skeleton */}
+            {searching && <SearchSkeleton />}
 
-        {/* Empty state - clean, minimal */}
-        {!results && !searching && !blocked && searchMode !== 'tutor' && (
-          <EmptyState
-            selectedProfile={selectedProfile}
-            introDismissed={introDismissed}
-            randomSuggestions={randomSuggestions}
-            onDismissIntro={() => setIntroDismissed(true)}
-            onSuggestionClick={handleSuggestionClick}
-          />
+            {/* Blocked Message */}
+            {blocked && !searching && (
+              <BlockedMessage
+                blockedMessage={blockedMessage}
+                canRequest={canRequest}
+                alreadyRequested={alreadyRequested}
+                requestSent={requestSent}
+                relatedQuestions={relatedQuestions}
+                query={query}
+                selectedProfile={selectedProfile}
+                searchInputRef={searchInputRef}
+                onCreateRequest={async () => {
+                  try {
+                    await createTopicRequest({
+                      kidProfileId: selectedProfile._id,
+                      query: query.trim(),
+                      reason: blockedMessage,
+                    });
+                    setRequestSent(true);
+                  } catch (err) {
+                    console.error('[KidSearch] Topic request error:', err);
+                  }
+                }}
+                onSuggestionClick={(q) => {
+                  setQuery(q);
+                  setBlocked(false);
+                  setBlockedMessage('');
+                  setRelatedQuestions([]);
+                  searchInputRef.current?.focus();
+                }}
+                onClearBlocked={() => {
+                  setQuery('');
+                  setBlocked(false);
+                  searchInputRef.current?.focus();
+                }}
+              />
+            )}
+
+            {/* Results: Images Mode */}
+            {results && !searching && !blocked && searchMode === 'images' && (
+              <ImagesResults
+                images={images}
+                aiSummary={aiSummary}
+                onImageClick={(index) => setLightboxIndex(index)}
+                onSwitchToLearn={() => handleModeToggle('learn')}
+              />
+            )}
+
+            {/* Results: Research Mode */}
+            {searchMode === 'research' && !searching && !blocked && (
+              <ResearchResults
+                researchResults={researchResults}
+                researchLoading={researchLoading}
+                hasResults={!!results}
+                onSwitchToLearn={() => handleModeToggle('learn')}
+              />
+            )}
+
+            {/* Results: Tutor Mode */}
+            {searchMode === 'tutor' && (
+              <TutorChat
+                tutorMessages={tutorMessages}
+                tutorLoading={tutorLoading}
+                tutorInput={tutorInput}
+                setTutorInput={setTutorInput}
+                tutorEndRef={tutorEndRef}
+                tutorInputRef={tutorInputRef}
+                onSend={() => handleTutorSend()}
+                onVoice={handleTutorVoice}
+              />
+            )}
+
+            {/* Results: Learn Mode */}
+            {results && !searching && !blocked && searchMode === 'learn' && (
+              <LearnResults
+                aiSummary={aiSummary}
+                sections={sections}
+                funFacts={funFacts}
+                relatedQuestions={relatedQuestions}
+                images={images}
+                diagram={diagram}
+                rootQuery={rootQuery}
+                selectedProfile={selectedProfile}
+                expandAction={expandSection}
+                onSuggestionClick={handleSuggestionClick}
+                onImageClick={handleImageClick}
+                onSwitchToImages={() => setSearchMode('images')}
+                onQuizMe={aiSummary ? startQuiz : undefined}
+                onKeep={aiSummary ? keepAnswer : undefined}
+                keepState={keepState}
+              />
+            )}
+
+            {/* Empty state - clean, minimal */}
+            {!results && !searching && !blocked && searchMode !== 'tutor' && (
+              <EmptyState
+                selectedProfile={selectedProfile}
+                introDismissed={introDismissed}
+                randomSuggestions={randomSuggestions}
+                onDismissIntro={() => setIntroDismissed(true)}
+                onSuggestionClick={handleSuggestionClick}
+              />
+            )}
+          </>
         )}
       </div>
 
       {/* Other Safe Family apps — modal sheet */}
       {appsOpen && !embedded && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
-          onClick={() => setAppsOpen(false)}
-        >
-          <div
-            className="relative w-full max-w-md rounded-3xl bg-white dark:bg-gray-900 p-6 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setAppsOpen(false)}
-              aria-label="Close"
-              className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 transition"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <p className="mb-1 text-center text-lg font-bold text-gray-900 dark:text-white">Jump to another app</p>
-            <p className="mb-5 text-center text-sm text-gray-500 dark:text-gray-400">
-              Same family code — no need to type it again.
-            </p>
-            <SafeFamilySwitcher current="safestudy" familyCode={familyCode} />
-          </div>
-        </div>
+        <AppsSheet familyCode={familyCode} onClose={() => setAppsOpen(false)} />
       )}
     </div>
   );

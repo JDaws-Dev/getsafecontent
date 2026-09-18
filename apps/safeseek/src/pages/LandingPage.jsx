@@ -43,7 +43,7 @@ const features = [
   {
     icon: Accessibility,
     title: 'Built for every kind of learner',
-    description: 'Dyslexia-friendly fonts, ADHD-focused layouts, ESL-simplified language, high-contrast for low vision. Every child deserves to learn comfortably — not just the ones who fit the mold.',
+    description: 'Tell us a child has dyslexia, ADHD, is learning English, or reads best with plain words, and every answer and tutor reply is written to match: shorter sentences, plainer words, terms defined, the point up front. Every child deserves to learn comfortably — not just the ones who fit the mold.',
   },
   {
     icon: Eye,
@@ -146,7 +146,7 @@ const faqs = [
   },
   {
     question: 'Does it work for kids with learning differences?',
-    answer: 'Absolutely. SafeStudy includes built-in accessibility adaptations for dyslexia (OpenDyslexic font, increased spacing), ADHD (reduced distractions, focused layouts), ESL learners (simplified language), and low vision (larger text, high contrast). These can be enabled per kid profile. The Built-in Tutor also adapts — using shorter sentences for dyslexia, getting to the point faster for ADHD, and defining terms for ESL learners.',
+    answer: 'Yes. On each kid profile you can note dyslexia, ADHD, that they are learning English, or that they do best with simple language, and SafeStudy writes its answers to match: shorter sentences and plainer words for dyslexia, getting to the point faster for ADHD, defining terms for ESL learners. The Built-in Tutor adapts the same way. These settings change how answers are written, not how the screen looks — for a larger font or high contrast, use your device\'s own display settings.',
   },
   {
     question: 'Can I set a specific reading level?',

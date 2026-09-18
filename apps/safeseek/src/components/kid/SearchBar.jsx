@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import {
   Search, Clock, Loader2, X, Mic,
   Sparkles, BookOpen, GraduationCap,
@@ -26,9 +25,19 @@ export default function SearchBar({
   onSuggestionClick,
   onInputKeyDown,
   onInputFocus,
+  // Home renders the same bar inline below the fold; the results view keeps
+  // it stuck under the header.
+  sticky = true,
+  autoFocus = true,
 }) {
   return (
-    <div className="sticky top-[52px] z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md py-3 px-4 border-b border-gray-100/50 dark:border-gray-800/50">
+    <div
+      className={
+        sticky
+          ? 'sticky top-[52px] z-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md py-3 px-4 border-b border-gray-100/50 dark:border-gray-800/50'
+          : ''
+      }
+    >
       <div className="max-w-3xl mx-auto">
         <form onSubmit={onSearch} className="relative">
           <div className="relative flex items-center">
@@ -42,7 +51,7 @@ export default function SearchBar({
               onFocus={onInputFocus}
               placeholder={isListening ? 'Listening...' : 'What do you want to learn about?'}
               className="w-full text-[16px] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl pl-12 pr-36 py-3.5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-200 dark:focus:ring-accent-500/30 focus:border-accent-400 dark:focus:border-accent-500 transition-all duration-200 shadow-sm"
-              autoFocus
+              autoFocus={autoFocus}
               autoComplete="off"
             />
             {/* Clear button + mic + submit inside search bar */}

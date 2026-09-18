@@ -273,3 +273,40 @@ export const getAllSearchHistory = query({
     return allHistory.slice(0, 100);
   },
 });
+
+/**
+ * Note that a kid hit their daily cap.
+ *
+ * The gate that stops them is a query and cannot write, so this is called from
+ * the action side. Deduped to one row per kid per reason per day: a kid
+ * retrying ten times is one fact ("she ran out today"), not ten.
+ *
+ * Without this row the weekly digest's "hit the daily budget on N days" line
+ * could only ever report zero, because nothing in the codebase wrote the
+ * reason it counts.
+ */
+export const noteLimitReached = internalMutation({
+  args: {
+    kidProfileId: v.id("kidProfiles"),
+    reason: v.string(),
+    query: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    const recent = await ctx.db
+      .query("blockedSearches")
+      .withIndex("by_kid_recent", (q) =>
+        q.eq("kidProfileId", args.kidProfileId).gte("searchedAt", dayAgo)
+      )
+      .collect();
+
+    if (recent.some((r) => r.blockedReason === args.reason)) return null;
+
+    return await ctx.db.insert("blockedSearches", {
+      kidProfileId: args.kidProfileId,
+      query: args.query ?? "",
+      blockedReason: args.reason,
+      searchedAt: Date.now(),
+    });
+  },
+});

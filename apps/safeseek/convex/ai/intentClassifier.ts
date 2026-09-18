@@ -232,14 +232,33 @@ export function shouldBlockCategory(
   category: IntentCategory,
   strictness: string,
   blockedTopics: string[],
-  confidence: number
+  confidence: number,
+  allowedTopics: string[] = []
 ): { block: boolean; reason: string; alert: boolean } {
-  // Always-escalate categories — never silently block, always alert parent
+  // Always-escalate categories — never silently block, always alert parent.
+  // Deliberately ABOVE the allow-list check: a parent approving "diets" does
+  // not turn off the eating-disorder escalation, and never should.
   if (category === "self_harm_adjacent") {
     return { block: true, reason: "self_harm_signal", alert: true };
   }
   if (category === "eating_disorder_adjacent") {
     return { block: true, reason: "eating_disorder_signal", alert: true };
+  }
+
+  // Parent-approved topics (Sep 2026).
+  //
+  // Approving a topic request used to do almost nothing: the approved phrase
+  // was appended to the answering model's prompt, but the block decision here
+  // never saw it. So the kid asked, the parent said yes, the kid tried again
+  // and got "Hold on!" a second time — for a strict-tier kid, forever. The
+  // request feature looked like it worked and didn't.
+  //
+  // An approved phrase now clears the non-concern block for queries that
+  // actually relate to it. Matching is deliberately loose in one direction
+  // only: the approved phrase's significant words must appear in the query, so
+  // "cute fall nails" unblocks "cute fall nails ideas" but not "nail gun".
+  if (allowedTopics.length > 0 && topicIsAllowed(category, allowedTopics)) {
+    return { block: false, reason: "", alert: false };
   }
 
   // Low confidence → don't block on intent alone.
@@ -293,6 +312,48 @@ export function shouldBlockCategory(
   // blockedTopics, both handled above.
 
   return { block: false, reason: "", alert: false };
+}
+
+/**
+ * Does one of the parent's approved topics cover this category?
+ *
+ * Parents approve a *phrase* ("cute fall nails"), not a category, so we map
+ * the phrase back: an approved phrase clears the category the classifier would
+ * have used to block it. Category names are also accepted directly, which is
+ * how the parent dashboard's own "always allow this category" control works.
+ */
+function topicIsAllowed(category: IntentCategory, allowedTopics: string[]): boolean {
+  return allowedTopics.some((raw) => {
+    const norm = raw.toLowerCase().replace(/[-_\s]/g, "");
+    if (!norm) return false;
+    // Direct category naming.
+    if (norm === category.replace(/_/g, "")) return true;
+    if (norm === "selfimage" && category === "self_image") return true;
+    if (norm === "appearance" && (category === "appearance" || category === "self_image")) return true;
+    if ((norm === "aestheticbrowsing" || norm === "aesthetic") && category === "aesthetic_browsing") return true;
+    if ((norm === "celebritygossip" || norm === "celebrities") && category === "celebrity_gossip") return true;
+    return false;
+  });
+}
+
+/**
+ * Would the parent's approved phrases cover this specific query?
+ *
+ * Used by the response word-filter path, which works on phrases rather than
+ * categories: a response about an approved phrase must not then be scrubbed by
+ * the blocked-topics word match.
+ */
+export function queryMatchesAllowedTopic(query: string, allowedTopics: string[]): boolean {
+  if (allowedTopics.length === 0) return false;
+  const q = query.toLowerCase();
+  return allowedTopics.some((raw) => {
+    const phrase = raw.toLowerCase().trim();
+    if (phrase.length < 2) return false;
+    if (q.includes(phrase)) return true;
+    // Every significant word of the approved phrase present in the query.
+    const words = phrase.split(/\s+/).filter((w) => w.length > 2);
+    return words.length > 0 && words.every((w) => q.includes(w));
+  });
 }
 
 /**

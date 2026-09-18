@@ -61,7 +61,14 @@ export const sendForParent = internalAction({
       since,
     });
 
-    if (summary.totalSearches === 0 && summary.totalBlocked === 0) {
+    // A week of finished lessons and no searches at all is a GOOD week, and it
+    // used to produce no email: the old check only looked at search volume.
+    if (
+      summary.totalSearches === 0 &&
+      summary.totalBlocked === 0 &&
+      summary.totalLessons === 0 &&
+      summary.totalCards === 0
+    ) {
       return { sent: false, reason: "no_activity" };
     }
 
@@ -105,13 +112,34 @@ type KidSummary = {
   concerningCount: number;
   budgetHits: number;
   heaviestDay: { date: string; count: number } | null;
+  // The daily program (Sep 2026)
+  lessonsCompleted: number;
+  lessonsAssigned: number;
+  cardsReviewed: number;
+  cardsCorrect: number;
+  reviewAccuracy: number | null;
+  tutorMessages: number;
+  subjects: { subject: string; topics: string[] }[];
+  currentStreak: number;
 };
 
 type DigestSummary = {
   totalSearches: number;
   totalBlocked: number;
   totalConcerning: number;
+  totalLessons: number;
+  totalCards: number;
   perKid: KidSummary[];
+};
+
+const PRETTY_SUBJECT: Record<string, string> = {
+  math: "Math",
+  science: "Science",
+  history: "History",
+  reading: "Reading",
+  writing: "Writing",
+  bible: "Bible",
+  custom: "Other",
 };
 
 const PRETTY_CATEGORY: Record<string, string> = {
@@ -129,42 +157,109 @@ const PRETTY_CATEGORY: Record<string, string> = {
 function renderDigest(parentName: string, s: DigestSummary): string {
   const kidBlocks = s.perKid
     .map((k) => {
+      // Lead with what she studied. The old digest opened with a search count,
+      // which told a parent how much their kid typed, not what they learned.
+      const subjectLines = k.subjects
+        .map(
+          (sub) =>
+            `<li><strong>${escapeHtml(PRETTY_SUBJECT[sub.subject] || sub.subject)}</strong>: ${escapeHtml(
+              sub.topics.join(", ")
+            )}</li>`
+        )
+        .join("");
+
+      const program = k.lessonsAssigned > 0
+        ? `<p style="margin:0 0 10px;color:#1a1a2e;font-size:15px">
+             Finished <strong>${k.lessonsCompleted} of ${k.lessonsAssigned}</strong> ${
+               k.lessonsAssigned === 1 ? "lesson" : "lessons"
+             }${k.currentStreak > 1 ? `, ${k.currentStreak} days in a row` : ""}.
+           </p>`
+        : `<p style="margin:0 0 10px;color:#666;font-size:15px">No lessons set up yet. You can pick subjects and topics for ${escapeHtml(
+            k.kidName
+          )} on the dashboard.</p>`;
+
+      const review =
+        k.cardsReviewed > 0
+          ? `<p style="margin:0 0 10px;color:#1a1a2e;font-size:15px">Reviewed <strong>${k.cardsReviewed}</strong> ${
+              k.cardsReviewed === 1 ? "card" : "cards"
+            } and remembered <strong>${k.cardsCorrect}</strong>${
+              k.reviewAccuracy !== null ? ` (${k.reviewAccuracy}%)` : ""
+            }.</p>`
+          : "";
+
+      const tutor =
+        k.tutorMessages > 0
+          ? `<p style="margin:0 0 10px;color:#444;font-size:14px">Asked the tutor ${k.tutorMessages} ${
+              k.tutorMessages === 1 ? "question" : "questions"
+            }. You can read the conversations on the dashboard.</p>`
+          : "";
+
+      const searchLine = `<p style="margin:0 0 6px;color:#666;font-size:13px">${k.totalSearches} ${
+        k.totalSearches === 1 ? "search" : "searches"
+      }${k.totalBlocked > 0 ? `, ${k.totalBlocked} blocked` : ""}${
+        k.heaviestDay ? `. Busiest day ${k.heaviestDay.date} (${k.heaviestDay.count}).` : "."
+      }</p>`;
+
+      // Concern line stays factual and does not editorialize about the child.
+      const concerning =
+        k.concerningCount > 0
+          ? `<p style="color:#b91c1c;background:#fef2f2;padding:10px 12px;border-radius:6px;margin:10px 0;font-size:14px">
+               ${k.concerningCount} ${
+                 k.concerningCount === 1 ? "question" : "questions"
+               } worth a conversation ${k.concerningCount === 1 ? "was" : "were"} flagged this week.
+               <a href="https://getsafestudy.com/admin" style="color:#b91c1c">See the alerts on your dashboard</a>.
+             </p>`
+          : "";
+
+      const budget =
+        k.budgetHits > 0
+          ? `<p style="font-size:13px;color:#92400e;background:#fffbeb;padding:6px 10px;border-radius:4px;margin:8px 0">Ran out of daily time on ${
+              k.budgetHits
+            } ${k.budgetHits === 1 ? "day" : "days"}.</p>`
+          : "";
+
       const topCat = k.topCategories
         .slice(0, 4)
-        .map((c) => `<li>${PRETTY_CATEGORY[c.category] || c.category}: <strong>${c.count}</strong></li>`)
+        .map(
+          (c) =>
+            `<li>${escapeHtml(PRETTY_CATEGORY[c.category] || c.category)}: <strong>${c.count}</strong></li>`
+        )
         .join("");
-      const concerning = k.concerningCount > 0
-        ? `<p style="color:#b91c1c;background:#fef2f2;padding:8px 12px;border-radius:6px;margin:8px 0">⚠️ ${k.concerningCount} concerning ${k.concerningCount === 1 ? "query" : "queries"} flagged this week. Check the alerts dashboard.</p>`
-        : "";
-      const budget = k.budgetHits > 0
-        ? `<p style="font-size:13px;color:#92400e;background:#fffbeb;padding:6px 10px;border-radius:4px">${k.kidName} hit the daily query budget on ${k.budgetHits} ${k.budgetHits === 1 ? "day" : "days"}.</p>`
-        : "";
-      const heaviest = k.heaviestDay
-        ? `<p style="font-size:13px;color:#666">Heaviest day: ${k.heaviestDay.date} (${k.heaviestDay.count} searches)</p>`
-        : "";
+
       return `
 <div style="border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:12px 0">
-  <h3 style="margin:0 0 8px;color:#1a1a2e">${escapeHtml(k.kidName)}</h3>
-  <p style="margin:0 0 8px;color:#444">${k.totalSearches} ${k.totalSearches === 1 ? "search" : "searches"} this week, ${k.totalBlocked} blocked.</p>
+  <h3 style="margin:0 0 10px;color:#1a1a2e">${escapeHtml(k.kidName)}</h3>
+  ${program}
+  ${review}
+  ${subjectLines ? `<p style="margin:10px 0 4px;font-size:13px;color:#666">What ${escapeHtml(k.kidName)} covered:</p><ul style="margin:4px 0;padding-left:20px;font-size:14px;color:#1a1a2e">${subjectLines}</ul>` : ""}
+  ${tutor}
   ${concerning}
-  ${heaviest}
   ${budget}
-  ${topCat ? `<p style="margin:8px 0 4px;font-size:13px;color:#666">By topic:</p><ul style="margin:4px 0;padding-left:20px;font-size:13px;color:#444">${topCat}</ul>` : ""}
+  <div style="border-top:1px solid #f0f0f0;margin-top:12px;padding-top:10px">
+    ${searchLine}
+    ${topCat ? `<ul style="margin:4px 0;padding-left:20px;font-size:12px;color:#666">${topCat}</ul>` : ""}
+  </div>
 </div>`;
     })
     .join("");
+
+  const headline =
+    s.totalLessons > 0
+      ? `${s.totalLessons} ${s.totalLessons === 1 ? "lesson" : "lessons"} finished${
+          s.totalCards > 0 ? ` and ${s.totalCards} review ${s.totalCards === 1 ? "card" : "cards"}` : ""
+        } this week.`
+      : `${s.totalSearches} ${s.totalSearches === 1 ? "search" : "searches"} this week.`;
 
   return `<!doctype html>
 <html><body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1a2e;line-height:1.55">
   <h2 style="margin:0 0 8px">Hi ${escapeHtml(parentName)},</h2>
   <p>Here's what your kids did on SafeStudy this week.</p>
   <p style="background:#f3f4f6;padding:12px 16px;border-radius:6px;margin:16px 0">
-    <strong>Total this week:</strong> ${s.totalSearches} searches across all profiles.
-    ${s.totalBlocked > 0 ? `${s.totalBlocked} were blocked.` : ""}
-    ${s.totalConcerning > 0 ? `<br><strong style="color:#b91c1c">${s.totalConcerning} concerning queries flagged.</strong>` : ""}
+    <strong>${headline}</strong>
+    ${s.totalConcerning > 0 ? `<br><span style="color:#b91c1c">${s.totalConcerning} ${s.totalConcerning === 1 ? "question" : "questions"} flagged for a conversation.</span>` : ""}
   </p>
   ${kidBlocks}
-  <p style="margin-top:24px"><a href="https://getsafestudy.com/admin" style="color:#3b82f6">Open the parent dashboard →</a></p>
+  <p style="margin-top:24px"><a href="https://getsafestudy.com/admin" style="color:#3b82f6">Open the parent dashboard</a></p>
   <p style="color:#888;font-size:12px;margin-top:32px;border-top:1px solid #e5e7eb;padding-top:16px">
     Don't want these? <a href="https://getsafestudy.com/admin/settings" style="color:#888">Turn off weekly digests</a>.
   </p>

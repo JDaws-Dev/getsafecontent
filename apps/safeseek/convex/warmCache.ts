@@ -104,7 +104,7 @@ RULES:
 - Answer directly. No URLs, no markdown formatting (plain text only).
 - "answer": SHORT 2-3 sentence overview. Details go in "sections" array.
 - Fun facts go in funFacts array.
-- Include a Mermaid diagram (graph TD, emojis, 4-8 nodes) for processes/cycles/systems. null for simple facts.
+- Include a Mermaid diagram (graph TD, 4-8 nodes, plain text labels, no emoji) for processes/cycles/systems. null for simple facts.
 ${wikiContext ? "- Use the Wikipedia reference as primary source. Rephrase kid-friendly." : ""}
 
 RESPOND WITH VALID JSON ONLY:

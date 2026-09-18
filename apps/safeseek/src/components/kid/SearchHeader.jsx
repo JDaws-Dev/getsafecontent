@@ -1,5 +1,5 @@
 import {
-  Search, Clock, Shield, Sun, Moon, Users, ArrowLeft, AlertCircle, LayoutGrid
+  Search, Clock, Shield, Sun, Moon, Users, ArrowLeft, AlertCircle, LayoutGrid, Home
 } from 'lucide-react';
 import { getColorClass } from './utils';
 import AvatarIcon from './AvatarIcon';
@@ -19,6 +19,7 @@ export default function SearchHeader({
   newApprovedCount,
   searchInputRef,
   onBack,
+  onHome,
   onSwitchProfile,
   onOpenApps,
   onToggleDarkMode,
@@ -29,6 +30,17 @@ export default function SearchHeader({
       <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-3">
         {/* Left: back button + logo + brand */}
         <div className="flex items-center gap-2">
+          {onHome && (
+            <button
+              type="button"
+              onClick={onHome}
+              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
+              aria-label="Home"
+              title="Home"
+            >
+              <Home className="w-5 h-5" />
+            </button>
+          )}
           {searchStack.length > 0 && (
             <button
               onClick={onBack}

@@ -1,7 +1,7 @@
 "use node";
 
 import { v } from "convex/values";
-import { action } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { sanitizeQuery, detectPromptInjection, filterResponse } from "./ai/inputFilter";
 import { classifyIntent } from "./ai/intentClassifier";
@@ -104,6 +104,19 @@ export const sendMessage = action({
       accessibilityInstruction = `ACCESSIBILITY: ${parts.join(" ")}`;
     }
 
+    // What the tutor remembers about this kid (tutorNotes.ts). Empty on the
+    // first ever conversation; filled in every few exchanges after that.
+    let tutorMemory = "";
+    try {
+      const notesRow = await ctx.runQuery(internal.tutorNotes.getNotesInternal, {
+        kidProfileId: args.kidProfileId,
+      });
+      if (notesRow?.notes) tutorMemory = notesRow.notes;
+    } catch (err) {
+      // A missing memory is a worse conversation, not a broken one.
+      console.warn("[tutor] could not load tutor notes:", err);
+    }
+
     const systemPrompt = `You are SafeStudy Tutor — a patient, encouraging AI tutor for kids aged ${ageMin}-${ageMax}. Content strictness: ${strictness}.
 
 APPROACH:
@@ -122,6 +135,7 @@ ${readingInstruction ? `\n${readingInstruction}` : ""}
 ${accessibilityInstruction ? `\n${accessibilityInstruction}` : ""}
 ${blockedTopics.length > 0 ? `\nSTRICTLY BLOCKED TOPICS — Do NOT discuss these under any circumstances. If asked, gently redirect: ${blockedTopics.join(", ")}` : ""}
 ${allowedTopics.length > 0 ? `\nALLOWED TOPICS (override blocks): ${allowedTopics.join(", ")}` : ""}
+${tutorMemory ? `\nWHAT YOU REMEMBER ABOUT THIS STUDENT (from your past sessions — use it, but don't recite it back at them): ${tutorMemory}` : ""}
 ${customInstructions ? `\nPARENT INSTRUCTIONS: ${customInstructions}` : ""}
 
 SAFETY:
@@ -326,9 +340,137 @@ RIGHT NOW — this message suggests worry about food, weight, or body. For this 
       console.error("[tutor] Failed to save session:", err);
     }
 
+    // Count the exchange. This is what makes tutor time show up in the parent's
+    // week AND what makes the daily budget apply to the tutor at all — before
+    // this, only searches were counted, so a kid at their cap could chat
+    // indefinitely.
+    try {
+      await ctx.runMutation(internal.progress.recordActivity, {
+        kidProfileId: args.kidProfileId,
+        userId: kidProfile.userId,
+        tutorMessages: 1,
+      });
+    } catch (err) {
+      console.warn("[tutor] failed to record activity:", err);
+    }
+
+    // Every few exchanges, refresh what the tutor remembers about this kid.
+    // Scheduled rather than awaited: the kid should never wait on it.
+    try {
+      const due = await ctx.runMutation(internal.tutorNotes.noteTurn, {
+        kidProfileId: args.kidProfileId,
+      });
+      if (due) {
+        await ctx.scheduler.runAfter(0, internal.tutor.refreshTutorNotes, {
+          kidProfileId: args.kidProfileId,
+        });
+      }
+    } catch (err) {
+      console.warn("[tutor] failed to schedule notes refresh:", err);
+    }
+
     return {
       response: finalContent,
       flagged,
     };
+  },
+});
+
+/**
+ * Refresh what the tutor remembers about a kid.
+ *
+ * Runs every few exchanges, scheduled so the kid never waits on it. Reads the
+ * current session and the existing notes, and rewrites the paragraph.
+ *
+ * The prompt is narrow on purpose. A kid's confidences are not study material:
+ * the summarizer is told in as many words to keep out anything about feelings,
+ * body, food, family trouble or friendship trouble. Those belong in the
+ * concern-alert path, which already handles them properly and tells a parent —
+ * not in a paragraph that gets pasted into every future prompt.
+ */
+export const refreshTutorNotes = internalAction({
+  args: { kidProfileId: v.id("kidProfiles") },
+  handler: async (ctx, args): Promise<void> => {
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+    if (!OPENAI_API_KEY) return;
+
+    const session = await ctx.runQuery(internal.tutorSessions.getLatestSessionInternal, {
+      kidProfileId: args.kidProfileId,
+    });
+    if (!session || !Array.isArray(session.messages) || session.messages.length < 2) return;
+
+    const existing = await ctx.runQuery(internal.tutorNotes.getNotesInternal, {
+      kidProfileId: args.kidProfileId,
+    });
+
+    const transcript = session.messages
+      .slice(-20)
+      .map((m: { role: string; content: string }) =>
+        `${m.role === "kid" ? "Student" : "Tutor"}: ${m.content}`
+      )
+      .join("\n")
+      .slice(0, 6000);
+
+    const prompt = `You keep a short private note about a student for their tutor.
+
+Rewrite the note using the existing note plus the latest conversation. Keep it under 500 characters, plain sentences, no bullet points, no headings.
+
+INCLUDE ONLY:
+- what subjects and topics they are working on
+- what they have understood well
+- what they keep getting stuck on
+- how they like to be taught (examples, step by step, jokes, drawing it out)
+- interests that make good examples (animals, football, Minecraft)
+
+NEVER INCLUDE:
+- anything about their feelings, mood, body, weight, food, or appearance
+- anything about family problems, friendship problems, or anything they confided
+- anything a child would be embarrassed for a parent to read
+If the conversation contains only that kind of material, return the existing note unchanged.
+
+EXISTING NOTE:
+${existing?.notes || "(none yet)"}
+
+LATEST CONVERSATION:
+${transcript}
+
+Return only the new note text.`;
+
+    try {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.2,
+          max_tokens: 220,
+        }),
+      });
+      if (!res.ok) {
+        console.error("[tutor] notes refresh failed:", await res.text());
+        return;
+      }
+      const data = await res.json();
+      const notes = data.choices?.[0]?.message?.content?.trim();
+      if (!notes) return;
+
+      // Same output filter the tutor's own replies go through.
+      const check = filterResponse(notes, []);
+      if (!check.safe) {
+        console.warn("[tutor] notes refresh output filtered — keeping previous note");
+        return;
+      }
+
+      await ctx.runMutation(internal.tutorNotes.saveNotes, {
+        kidProfileId: args.kidProfileId,
+        notes: check.cleaned || notes,
+      });
+    } catch (err) {
+      console.error("[tutor] notes refresh threw:", err);
+    }
   },
 });

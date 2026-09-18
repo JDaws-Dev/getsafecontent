@@ -335,14 +335,28 @@ export const canSearch = query({
       return { canSearch: true, reason: null, remainingSearches: null };
     }
 
-    // Count today's searches (in family timezone)
+    // Count today's activity (in the family's timezone).
+    //
+    // This used to count searchHistory rows ONLY, which meant the daily budget
+    // stopped at the search box: a kid at their 25-search cap could keep
+    // chatting with the tutor indefinitely, limited only by the per-minute rate
+    // limit. The tutor is the more expensive surface and the more absorbing
+    // one, so it counts too — a tutor exchange is one unit, same as a search.
     const history = await ctx.db
       .query("searchHistory")
       .withIndex("by_kid_recent", (q) => q.eq("kidProfileId", args.kidProfileId))
       .filter((q) => q.gte(q.field("searchedAt"), startOfToday))
       .collect();
 
-    const searchCount = history.length;
+    const todayKey = dayKeyForTimezone(timezone);
+    const progressToday = await ctx.db
+      .query("kidProgress")
+      .withIndex("by_kid_day", (q) =>
+        q.eq("kidProfileId", args.kidProfileId).eq("day", todayKey)
+      )
+      .first();
+
+    const searchCount = history.length + (progressToday?.tutorMessages ?? 0);
     const remainingSearches = Math.max(0, dailyLimit - searchCount);
 
     if (remainingSearches <= 0) {
@@ -404,6 +418,16 @@ export const getTimeLimitsForUser = query({
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .collect();
 
+    // "Today" must be the FAMILY's today, exactly as the gate computes it.
+    // This used to be `new Date(now.getFullYear(), ...)`, which is the Convex
+    // server's midnight — UTC. So the parent's "searches today" and the number
+    // the kid was actually being limited by disagreed for several hours every
+    // evening, which is precisely when a parent looks.
+    const parent = await ctx.db.get(args.userId);
+    const timezone = parent?.timezone;
+    const { startOfDay: startOfToday } = getCurrentHourInTimezone(timezone);
+    const todayKey = dayKeyForTimezone(timezone);
+
     // Get time limits and search counts for each
     const limitsWithKids = await Promise.all(
       profiles.map(async (profile) => {
@@ -412,16 +436,23 @@ export const getTimeLimitsForUser = query({
           .withIndex("by_kid", (q) => q.eq("kidProfileId", profile._id))
           .first();
 
-        // Get today's search count
-        const now = new Date();
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
         const history = await ctx.db
           .query("searchHistory")
           .withIndex("by_kid_recent", (q) => q.eq("kidProfileId", profile._id))
           .filter((q) => q.gte(q.field("searchedAt"), startOfToday))
           .collect();
 
-        const searchCountToday = history.length;
+        // Tutor turns count against the budget too (see canSearch), so the
+        // number shown here has to include them or it under-reports what the
+        // kid has actually spent.
+        const progressToday = await ctx.db
+          .query("kidProgress")
+          .withIndex("by_kid_day", (q) =>
+            q.eq("kidProfileId", profile._id).eq("day", todayKey)
+          )
+          .first();
+
+        const searchCountToday = history.length + (progressToday?.tutorMessages ?? 0);
 
         return {
           kidProfileId: profile._id,

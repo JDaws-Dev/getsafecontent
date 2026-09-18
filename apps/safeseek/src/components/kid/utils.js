@@ -180,3 +180,83 @@ export function formatRelativeTime(timestamp) {
   if (days < 7) return `${days}d`;
   return '';
 }
+
+// ---------------------------------------------------------------------------
+// Daily program helpers (lessons, review deck, quizzes, My Stuff)
+// ---------------------------------------------------------------------------
+
+// Parent-picked subject keys (convex/lessonQueries.ts SUBJECTS) -> kid-facing labels.
+export const SUBJECT_LABELS = {
+  math: 'Math',
+  science: 'Science',
+  history: 'History',
+  reading: 'Reading',
+  writing: 'Writing',
+  bible: 'Bible',
+  custom: 'My topic',
+};
+
+export function subjectLabel(subject) {
+  if (!subject) return '';
+  return SUBJECT_LABELS[subject] || subject.charAt(0).toUpperCase() + subject.slice(1);
+}
+
+// Parse a JSON string a row carries without letting a bad blob crash the screen.
+export function parseJsonSafe(text, fallback = null) {
+  if (!text || typeof text !== 'string') return fallback;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return fallback;
+  }
+}
+
+// Reasons that mean "the kid is not allowed right now" rather than "this
+// particular thing failed". These get the same Time's Up / paused screens the
+// search path shows; everything else gets a plain retry message.
+export const ACCESS_BLOCK_REASONS = new Set([
+  'paused',
+  'outside_hours',
+  'limit_reached',
+  'family_limit_reached',
+  'subscription_expired',
+]);
+
+export function isAccessBlockReason(reason) {
+  return ACCESS_BLOCK_REASONS.has(reason);
+}
+
+// Kid-facing wording for a failure reason. Never echoes the raw reason code.
+export function friendlyFailure(reason, what = 'this') {
+  switch (reason) {
+    case 'topic_too_short':
+      return 'Try a topic with a few more letters.';
+    case 'rate_limited':
+      return "You're going fast! Give it a minute and try again.";
+    case 'generation_failed':
+    case 'unavailable':
+    default:
+      return `We couldn't get ${what} ready. Try again in a bit.`;
+  }
+}
+
+// Profiles with a minimum age of 7 or under get the tap-to-reveal review deck
+// instead of typing.
+export function isYoungKid(profile) {
+  const min = profile?.ageRange?.min ?? profile?.age;
+  return typeof min === 'number' && min <= 7;
+}
+
+// "Today", "Yesterday", or a short date for the My Stuff shelf.
+export function formatShelfDate(timestamp) {
+  if (!timestamp) return '';
+  const d = new Date(timestamp);
+  const now = new Date();
+  const sameDay = (a, b) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  if (sameDay(d, now)) return 'Today';
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (sameDay(d, yesterday)) return 'Yesterday';
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}

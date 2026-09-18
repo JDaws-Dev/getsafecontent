@@ -237,6 +237,169 @@ export default defineSchema({
   })
     .index("by_query", ["normalizedQuery"]),
 
+
+  // ===========================================================================
+  // Daily program (Sep 2026) — "Today's Lesson", the review deck, and the
+  // progress record behind them.
+  //
+  // Everything before this was defensive: the classifier, the rephrase guard,
+  // the loop detector. All of it stops a kid doing the wrong thing and none of
+  // it tells them what to do next, which is why a search box with a chat window
+  // has no reason to be opened tomorrow. These tables are the other half — a
+  // parent sets up subjects once, the kid gets one small finishable thing a
+  // day, and both sides can see it happened.
+  // ===========================================================================
+
+  // A subject a parent has put a kid on, with an ordered list of topics to work
+  // through. `currentIndex` is the next topic to assign; a track that runs off
+  // the end simply stops producing lessons (the parent adds more topics).
+  subjectTracks: defineTable({
+    userId: v.id("users"),
+    kidProfileId: v.id("kidProfiles"),
+    subject: v.string(), // "math" | "science" | "history" | "reading" | "writing" | "bible" | "custom"
+    title: v.string(), // parent-facing label, e.g. "Math" or "Fractions unit"
+    topics: v.array(v.string()), // ordered sequence, one lesson each
+    currentIndex: v.number(),
+    active: v.boolean(),
+    // Days of the week this track assigns on (0 = Sunday). Empty/undefined =
+    // every day. Lets a parent run Math daily but History twice a week.
+    days: v.optional(v.array(v.number())),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_kid", ["kidProfileId"])
+    .index("by_kid_active", ["kidProfileId", "active"])
+    .index("by_user", ["userId"]),
+
+  // One assigned lesson for one kid on one day. Content and questions are
+  // stored as JSON strings (same convention as searchHistory.results) so the
+  // shape can evolve without a schema migration.
+  lessons: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    userId: v.id("users"),
+    trackId: v.optional(v.id("subjectTracks")),
+    subject: v.string(),
+    topic: v.string(),
+    day: v.string(), // "YYYY-MM-DD" in the FAMILY's timezone, not UTC
+    gradeKey: v.string(), // grade + reading level, for cross-family cache reuse
+    status: v.string(), // "assigned" | "started" | "complete"
+    content: v.optional(v.string()), // JSON: { intro, sections[], keyPoints[], diagram? }
+    questions: v.optional(v.string()), // JSON: [{ prompt, kind, choices?, answer, explanation }]
+    answers: v.optional(v.string()), // JSON: [{ index, response, correct }]
+    score: v.optional(v.number()),
+    generatedAt: v.optional(v.number()),
+    startedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_kid_day", ["kidProfileId", "day"])
+    .index("by_kid_created", ["kidProfileId", "createdAt"])
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_track", ["trackId"]),
+
+  // Generated lesson bodies, cached across FAMILIES by topic + grade. A lesson
+  // on "the water cycle" for a 5th grader is the same lesson for every 5th
+  // grader, so the second family to reach it pays nothing. Nothing kid-specific
+  // is ever written here.
+  lessonCache: defineTable({
+    cacheKey: v.string(),
+    content: v.string(),
+    questions: v.string(),
+    cachedAt: v.number(),
+    expiresAt: v.number(),
+    timesReused: v.number(),
+  })
+    .index("by_key", ["cacheKey"])
+    .index("by_expires", ["expiresAt"]),
+
+  // Spaced-repetition cards, built from finished lessons and quizzes. Scheduling
+  // is a trimmed SM-2: ease starts at 2.5, a correct answer multiplies the
+  // interval, a miss sends the card back to tomorrow.
+  reviewCards: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    userId: v.id("users"),
+    question: v.string(),
+    answer: v.string(),
+    subject: v.optional(v.string()),
+    topic: v.optional(v.string()),
+    source: v.string(), // "lesson" | "quiz" | "tutor"
+    sourceId: v.optional(v.string()),
+    intervalDays: v.number(),
+    ease: v.number(),
+    reps: v.number(),
+    lapses: v.number(),
+    dueAt: v.number(),
+    lastReviewedAt: v.optional(v.number()),
+    retired: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_kid_due", ["kidProfileId", "retired", "dueAt"])
+    .index("by_kid", ["kidProfileId"])
+    .index("by_source", ["sourceId"]),
+
+  // One row per kid per day — what actually happened. This is what the parent
+  // week view and the Sunday digest read, and it is the honest record a
+  // homeschool parent can put in a portfolio.
+  kidProgress: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    userId: v.id("users"),
+    day: v.string(), // "YYYY-MM-DD" in the family's timezone
+    lessonsCompleted: v.number(),
+    lessonTopics: v.optional(v.array(v.string())),
+    cardsReviewed: v.number(),
+    cardsCorrect: v.number(),
+    quizzesTaken: v.number(),
+    tutorMessages: v.number(),
+    searches: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_kid_day", ["kidProfileId", "day"])
+    .index("by_kid", ["kidProfileId"])
+    .index("by_user_day", ["userId", "day"]),
+
+  // Streak roll-up. Kept separate from kidProgress so the kid home screen reads
+  // one row instead of scanning a month of days.
+  kidStreaks: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    currentStreak: v.number(),
+    longestStreak: v.number(),
+    lastActiveDay: v.optional(v.string()),
+    totalLessons: v.number(),
+    totalCards: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_kid", ["kidProfileId"]),
+
+  // A short rolling paragraph the tutor keeps about each kid — what they are
+  // working on, what they find hard, what they like. Injected into tutor and
+  // lesson prompts so the tutor stops meeting the kid for the first time on
+  // every page load. Deliberately about LEARNING only; concern-category content
+  // never goes in here.
+  tutorNotes: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    notes: v.string(),
+    turnsSinceUpdate: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_kid", ["kidProfileId"]),
+
+  // "My Stuff" — things the kid FINISHED (a lesson, a quiz, an answer they
+  // chose to keep). Deliberately not a raw query log: hiding search history
+  // from the kid screen in Apr 2026 was right, and this is the opposite thing,
+  // a shelf of work rather than a list of attempts.
+  savedItems: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    userId: v.id("users"),
+    kind: v.string(), // "lesson" | "quiz" | "answer"
+    title: v.string(),
+    body: v.string(), // JSON payload, shape depends on kind
+    subject: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_kid", ["kidProfileId"])
+    .index("by_kid_kind", ["kidProfileId", "kind"]),
+
   // Operator-facing system events (e.g. classifier-down alert dedupe markers).
   // See opsAlerts.ts.
   systemEvents: defineTable({
