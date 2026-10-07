@@ -20,9 +20,12 @@ returns null and MusicKit only polls a window that exists, so `authorize()` neve
   login, silently on load for no-PIN kids, or a PIN prompt on Connect. Parent sign-out clears
   it. Deliberate trade-off: passing that check gives use of the parent's Apple Music account.
 - **Blocked popup fails fast** with a plain-English fix on every Connect button.
+- **Follow-up fix (same day, frontend only):** MusicKit's `unauthorize()` cancels the token at
+  Apple on every device, so a kid's Disconnect (or the playlist export signing the parent out)
+  would have cut off the whole family. Those now use `forgetOnThisDevice()`; the export's teen
+  sign-in is marked so it is never shared as the parent's.
 - Also shipped the Sept 18 SafeTunes activity-history tab (its backend was never deployed before).
-- **Not yet proven on a real iPhone.** A parent's token is only saved once they open the SafeTunes
-  dashboard on a device already signed in to Apple Music — nobody has yet.
+- **Verified on real phones** by the owner the same day.
 
 ---
 
