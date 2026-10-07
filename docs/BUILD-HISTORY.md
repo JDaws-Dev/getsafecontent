@@ -6,6 +6,26 @@
 
 ---
 
+## Current Status (October 7, 2026)
+
+**SafeTunes: kids' devices now use the parent's Apple Music — DEPLOYED** (backend
+`formal-chihuahua-623` then frontend, getsafetunes.com + the hub's /tunes both on the new
+build). Trigger: a customer's daughter's iPhone sat on "Connecting..." forever. Root cause in
+Apple's MusicKit JS: sign-in is a `window.open` popup, and when it is blocked `window.open`
+returns null and MusicKit only polls a window that exists, so `authorize()` never settles.
+
+- **Connect once.** The parent's device saves its Apple Music user token
+  (`appleMusicConnections`, its own table — never on `users`). Kid devices borrow it via
+  `appleMusicConnection:claimForKid` (family code + kid PIN, same lockout as kid login): at PIN
+  login, silently on load for no-PIN kids, or a PIN prompt on Connect. Parent sign-out clears
+  it. Deliberate trade-off: passing that check gives use of the parent's Apple Music account.
+- **Blocked popup fails fast** with a plain-English fix on every Connect button.
+- Also shipped the Sept 18 SafeTunes activity-history tab (its backend was never deployed before).
+- **Not yet proven on a real iPhone.** A parent's token is only saved once they open the SafeTunes
+  dashboard on a device already signed in to Apple Music — nobody has yet.
+
+---
+
 ## Current Status (September 18, 2026)
 
 **ONE-SITE IS LIVE.** getsafefamily.com is now the single site with one login. Deployed
