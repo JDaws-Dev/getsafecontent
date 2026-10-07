@@ -114,11 +114,14 @@ export default function ExportPlaylistsModal({ kidProfile, onClose, userToken })
     setIsAuthorizing(true);
     try {
       // First, sign out of any existing session so the teen can use their own Apple ID
+      // Forget the parent's sign-in here without cancelling it at Apple:
+      // the kids' devices are using it.
       if (musicKitService.checkAuthorization()) {
-        await musicKitService.unauthorize();
+        musicKitService.forgetOnThisDevice();
       }
 
-      await musicKitService.authorize(true);
+      // The teen's Apple ID must never be shared with the kids as the parent's.
+      await musicKitService.authorize(true, { otherAccount: true });
       setIsAuthorized(true);
     } catch (error) {
       console.error('Apple Music authorization failed:', error);

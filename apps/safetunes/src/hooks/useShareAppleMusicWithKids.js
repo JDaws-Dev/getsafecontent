@@ -22,6 +22,7 @@ export function useShareAppleMusicWithKids(userToken) {
     let music = null;
 
     const share = () => {
+      if (musicKitService.isSignedInAsSomeoneElse()) return;
       const musicUserToken = musicKitService.getMusicUserToken();
       if (!musicUserToken || musicUserToken === lastSaved.current) return;
       lastSaved.current = musicUserToken;

@@ -1,6 +1,11 @@
 // MusicKit JS Configuration and Initialization
 // Docs: https://developer.apple.com/documentation/musickit/musickit-js
 
+// Set while this device is signed in to someone else's Apple ID (a teen
+// exporting playlists to their own account), so that sign-in is never shared
+// with the kids as the parent's.
+const OTHER_ACCOUNT_KEY = 'safetunes_am_other_account';
+
 const isHomeScreenWebApp = () =>
   window.navigator.standalone === true ||
   window.matchMedia?.('(display-mode: standalone)').matches;
@@ -121,8 +126,10 @@ class MusicKitService {
    * Authorize user with Apple Music
    * Opens Apple Music login flow
    * @param {boolean} requestLibraryAccess - Whether to request library read permission (for playlist import)
+   * @param {{ otherAccount?: boolean }} options - otherAccount: signing in someone
+   *   other than the parent (a teen exporting playlists); never shared with kids
    */
-  async authorize(requestLibraryAccess = false) {
+  async authorize(requestLibraryAccess = false, { otherAccount = false } = {}) {
     if (!this.isInitialized) {
       await this.initialize();
     }
@@ -138,6 +145,7 @@ class MusicKitService {
 
       // For library access (playlists), we need to request explicit permission
       // Note: The user must grant "Media & Apple Music" permission in the authorization flow
+      this.markSignedInAsSomeoneElse(otherAccount);
       const token = await this._authorizeWatchingForBlockedWindow();
       this.isAuthorized = true;
 
@@ -172,6 +180,28 @@ class MusicKitService {
 
       throw error;
     }
+  }
+
+  /**
+   * Drop the Apple Music sign-in on this device only, without telling Apple.
+   * Kid devices borrow the parent's sign-in, so a real sign-out from one of
+   * them would cut off Apple Music for the whole family.
+   */
+  forgetOnThisDevice() {
+    if (!this.music) return;
+    this.music.musicUserToken = '';
+    this.isAuthorized = this.music.isAuthorized;
+  }
+
+  markSignedInAsSomeoneElse(on) {
+    try {
+      if (on) localStorage.setItem(OTHER_ACCOUNT_KEY, '1');
+      else localStorage.removeItem(OTHER_ACCOUNT_KEY);
+    } catch { /* storage blocked */ }
+  }
+
+  isSignedInAsSomeoneElse() {
+    try { return localStorage.getItem(OTHER_ACCOUNT_KEY) === '1'; } catch { return false; }
   }
 
   /** This device's Apple Music user token, if signed in. */
@@ -229,7 +259,9 @@ class MusicKitService {
   }
 
   /**
-   * Unauthorize user (sign out)
+   * Unauthorize user (sign out). This also tells Apple to cancel the sign-in,
+   * which ends it on EVERY device using it, kids' devices included. To drop it
+   * on just this device, use forgetOnThisDevice().
    */
   async unauthorize() {
     if (!this.music) return;
@@ -237,6 +269,7 @@ class MusicKitService {
     try {
       await this.music.unauthorize();
       this.isAuthorized = false;
+      this.markSignedInAsSomeoneElse(false);
     } catch (error) {
       console.error('Unauthorization failed:', error);
       throw error;

@@ -133,11 +133,18 @@ function AppleMusicAuth({ user, showOnlyWhenDisconnected = false, audience = 'pa
     }
 
     try {
+      if (isKidScreen) {
+        // Borrowed from the parent: forget it here only.
+        musicKitService.forgetOnThisDevice();
+        setIsAuthorized(false);
+        return;
+      }
+      const wasSomeoneElse = musicKitService.isSignedInAsSomeoneElse();
       await musicKitService.unauthorize();
       setIsAuthorized(false);
 
       // Stop lending this sign-in to the kids' devices.
-      if (!isKidScreen && token) {
+      if (!wasSomeoneElse && token) {
         await clearForFamily({ userToken: token }).catch((err) =>
           console.warn('[AppleMusic] Could not clear shared sign-in:', err?.message ?? err)
         );

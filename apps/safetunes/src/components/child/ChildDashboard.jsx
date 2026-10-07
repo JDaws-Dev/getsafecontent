@@ -1130,7 +1130,9 @@ function ChildDashboard({ onLogout }) {
 
   const handleDisconnectAppleMusic = async () => {
     try {
-      await musicKitService.unauthorize();
+      // This device borrows the parent's sign-in; a real sign-out would end it
+      // on every device in the family.
+      musicKitService.forgetOnThisDevice();
       setIsMusicKitAuthorized(false);
     } catch (error) {
       console.error('Failed to disconnect from Apple Music:', error);
