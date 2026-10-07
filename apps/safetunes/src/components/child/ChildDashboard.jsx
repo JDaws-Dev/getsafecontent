@@ -6,6 +6,7 @@ import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
 import SafeFamilySwitcher, { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
 import { isEmbedded } from '../../lib/embed';
 import musicKitService from '../../config/musickit';
+import { useKidAppleMusicConnect, KidPinPrompt, applyPendingMusicToken } from '../../hooks/useKidAppleMusicConnect';
 import {
   MiniPlayer,
   FullScreenPlayer,
@@ -172,6 +173,11 @@ function ChildDashboard({ onLogout }) {
   // Apple Music connection state
   const [isMusicKitAuthorized, setIsMusicKitAuthorized] = useState(false);
   const [isConnectingMusic, setIsConnectingMusic] = useState(false);
+  // Kid devices borrow the parent's Apple Music sign-in (no Apple popup).
+  const kidMusicConnect = useKidAppleMusicConnect({
+    onConnected: () => setIsMusicKitAuthorized(musicKitService.checkAuthorization()),
+  });
+  const { connectSilently: connectMusicSilently } = kidMusicConnect;
 
   // New Player state for MiniPlayer/FullScreenPlayer
   const [showFullScreenPlayer, setShowFullScreenPlayer] = useState(false);
@@ -287,6 +293,11 @@ function ChildDashboard({ onLogout }) {
           musicKitService.initialize(),
           timeoutPromise
         ]);
+        // Not signed in yet: use the sign-in borrowed at PIN login, or borrow it
+        // now (works without asking for kids with no PIN).
+        if (!musicKitService.checkAuthorization()) {
+          (await applyPendingMusicToken()) || (await connectMusicSilently());
+        }
         // Check initial authorization status
         setIsMusicKitAuthorized(musicKitService.checkAuthorization());
       } catch (err) {
@@ -1108,11 +1119,10 @@ function ChildDashboard({ onLogout }) {
   const handleConnectAppleMusic = async () => {
     try {
       setIsConnectingMusic(true);
-      await musicKitService.authorize();
-      setIsMusicKitAuthorized(true);
+      await kidMusicConnect.connect();
     } catch (error) {
       console.error('Failed to connect to Apple Music:', error);
-      showToast('Failed to connect to Apple Music. Please try again.', 'error');
+      showToast(error.userMessage || 'Failed to connect to Apple Music. Please try again.', 'error');
     } finally {
       setIsConnectingMusic(false);
     }
@@ -4743,7 +4753,7 @@ function ChildDashboard({ onLogout }) {
                         <p className="text-sm text-gray-600">
                           {isMusicKitAuthorized
                             ? 'You can play your approved music'
-                            : "A parent connects this with their Apple ID"}
+                            : "Uses your parent's Apple Music"}
                         </p>
                       </div>
                     </div>
@@ -4764,6 +4774,7 @@ function ChildDashboard({ onLogout }) {
                       {isConnectingMusic ? 'Connecting...' : 'Connect to Apple Music'}
                     </button>
                   )}
+                  <KidPinPrompt {...kidMusicConnect.pinPrompt} />
                 </div>
               </div>
 

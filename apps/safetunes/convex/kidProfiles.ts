@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { query, mutation, internalMutation } from "./_generated/server";
+import { query, mutation, internalMutation, MutationCtx } from "./_generated/server";
+import { Doc } from "./_generated/dataModel";
 // getKidProfiles + createKidProfile stay SOFT (reachable from the tokenless kid
 // family-code path); all other parent-only endpoints use the hard variants.
 import { requireOwnerSoft, requireOwner, requireProfileOwner } from "./identity";
@@ -90,43 +91,55 @@ export const attemptKidPin = mutation({
   handler: async (ctx, args) => {
     const profile = await ctx.db.get(args.profileId);
     if (!profile?.pin) return { valid: false, locked: false };
-
-    const now = Date.now();
-    if (profile.pinLockedUntil && profile.pinLockedUntil > now) {
-      return {
-        valid: false,
-        locked: true,
-        retryAfterSeconds: Math.ceil((profile.pinLockedUntil - now) / 1000),
-      };
-    }
-
-    const valid = await verifyPin(args.pin, profile.pin);
-    if (valid) {
-      const patch: Record<string, unknown> = {
-        pinFailedAttempts: 0,
-        pinLockedUntil: undefined,
-      };
-      // Lazy migration: re-store legacy plaintext PINs as PBKDF2 hashes.
-      if (!isHashedPin(profile.pin)) {
-        patch.pin = await hashPin(args.pin);
-      }
-      await ctx.db.patch(args.profileId, patch);
-      return { valid: true, locked: false };
-    }
-
-    const attempts = (profile.pinFailedAttempts ?? 0) + 1;
-    const locked = attempts >= PIN_MAX_ATTEMPTS;
-    await ctx.db.patch(args.profileId, {
-      pinFailedAttempts: locked ? 0 : attempts,
-      pinLockedUntil: locked ? now + PIN_LOCK_MS : undefined,
-    });
-    return {
-      valid: false,
-      locked,
-      retryAfterSeconds: locked ? Math.ceil(PIN_LOCK_MS / 1000) : undefined,
-    };
+    return await checkKidPinWithLockout(ctx, profile, args.pin);
   },
 });
+
+/**
+ * The one PIN check with lockout, shared by kid login and anything else that
+ * needs the kid to prove it's them (e.g. borrowing the parent's Apple Music).
+ * Caller guarantees `profile.pin` is set.
+ */
+export async function checkKidPinWithLockout(
+  ctx: MutationCtx,
+  profile: Doc<"kidProfiles">,
+  pin: string,
+): Promise<{ valid: boolean; locked: boolean; retryAfterSeconds?: number }> {
+  const now = Date.now();
+  if (profile.pinLockedUntil && profile.pinLockedUntil > now) {
+    return {
+      valid: false,
+      locked: true,
+      retryAfterSeconds: Math.ceil((profile.pinLockedUntil - now) / 1000),
+    };
+  }
+
+  const valid = await verifyPin(pin, profile.pin!);
+  if (valid) {
+    const patch: Record<string, unknown> = {
+      pinFailedAttempts: 0,
+      pinLockedUntil: undefined,
+    };
+    // Lazy migration: re-store legacy plaintext PINs as PBKDF2 hashes.
+    if (!isHashedPin(profile.pin!)) {
+      patch.pin = await hashPin(pin);
+    }
+    await ctx.db.patch(profile._id, patch);
+    return { valid: true, locked: false };
+  }
+
+  const attempts = (profile.pinFailedAttempts ?? 0) + 1;
+  const locked = attempts >= PIN_MAX_ATTEMPTS;
+  await ctx.db.patch(profile._id, {
+    pinFailedAttempts: locked ? 0 : attempts,
+    pinLockedUntil: locked ? now + PIN_LOCK_MS : undefined,
+  });
+  return {
+    valid: false,
+    locked,
+    retryAfterSeconds: locked ? Math.ceil(PIN_LOCK_MS / 1000) : undefined,
+  };
+}
 
 // One-time migration: hash any legacy plaintext kid PINs (kidProfiles +
 // archivedKidProfiles). Idempotent — already-hashed PINs are skipped.

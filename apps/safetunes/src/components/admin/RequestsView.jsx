@@ -2209,8 +2209,8 @@ function RequestsView({ user }) {
                   try {
                     await musicKitService.authorize();
                     setShowAuthPrompt(false);
-                  } catch {
-                    showToast('Auth failed', 'error');
+                  } catch (err) {
+                    showToast(err.userMessage || 'Failed to connect to Apple Music. Please try again.', 'error');
                   }
                 }}
                 className="flex-1 px-4 py-2 bg-accent-600 text-white rounded-lg font-medium"

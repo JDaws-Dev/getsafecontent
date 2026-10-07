@@ -17,6 +17,7 @@ import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
 import EmptyState from '../common/EmptyState';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useShareAppleMusicWithKids } from '../../hooks/useShareAppleMusicWithKids';
 import { useExpoPushToken } from '../../hooks/useExpoPushToken';
 
 // Compact Kid Card Component - New streamlined design
@@ -494,6 +495,9 @@ function AdminDashboard({ user, onLogout }) {
 
   // Register for push notifications (mobile app)
   useExpoPushToken({ userId: user?._id });
+
+  // Kids' devices borrow this parent's Apple Music sign-in.
+  useShareAppleMusicWithKids(token);
 
   // Pull the authoritative family code off the verified login token onto the
   // local users row (docs/UNIFIED-IDENTITY.md) — replaces local code generation.

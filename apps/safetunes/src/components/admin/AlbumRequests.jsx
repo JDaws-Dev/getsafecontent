@@ -923,7 +923,7 @@ function AlbumRequests({ user }) {
       setShowAuthPrompt(false);
     } catch (err) {
       console.error('Authorization failed:', err);
-      showToast('Failed to authorize with Apple Music. Please try again.', 'error');
+      showToast(err.userMessage || 'Failed to authorize with Apple Music. Please try again.', 'error');
     }
   };
 

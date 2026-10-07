@@ -8,6 +8,7 @@ import ChildDashboard from '../components/child/ChildDashboard';
 import { useIsNativeApp } from '../hooks/useIsNativeApp';
 import SafeFamilySwitcher from '../components/SafeFamilySwitcher';
 import { isEmbedded, redirectKidToHubPlay } from '../lib/embed';
+import { stashPendingMusicToken } from '../hooks/useKidAppleMusicConnect';
 
 function ChildLoginPage() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ function ChildLoginPage() {
   const [error, setError] = useState('');
   const [kidProfile, setKidProfile] = useState(null);
   const attemptKidPin = useMutation(api.kidProfiles.attemptKidPin);
+  const claimParentAppleMusic = useMutation(api.appleMusicConnection.claimForKid);
   const redeemKidPass = useMutation(api.kidPass.redeemKidPass);
   // One kid front door: opened directly under the hub, hand off to /play/tunes
   // (the code rides along); inside the hub's kid tabs, hide our own switcher.
@@ -214,6 +216,14 @@ function ChildLoginPage() {
         pin: pinToVerify,
       });
       if (result?.valid) {
+        // The PIN is in hand, so borrow the parent's Apple Music sign-in now;
+        // the dashboard applies it once MusicKit loads. Never blocks login.
+        const familyCodeForClaim = localStorage.getItem('safetunes_family_code');
+        if (familyCodeForClaim) {
+          await claimParentAppleMusic({ profileId: selectedProfile._id, familyCode: familyCodeForClaim, pin: pinToVerify })
+            .then((claim) => { if (claim?.status === 'ok') stashPendingMusicToken(claim.musicUserToken); })
+            .catch(() => {});
+        }
         // Success - save to localStorage
         localStorage.setItem('safetunes_kid_profile', JSON.stringify(selectedProfile));
         // Clear any saved tab preference to start fresh on home

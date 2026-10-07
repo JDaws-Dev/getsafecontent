@@ -1,6 +1,23 @@
 // MusicKit JS Configuration and Initialization
 // Docs: https://developer.apple.com/documentation/musickit/musickit-js
 
+const isHomeScreenWebApp = () =>
+  window.navigator.standalone === true ||
+  window.matchMedia?.('(display-mode: standalone)').matches;
+
+/**
+ * Error for "Apple's sign-in window never opened". Carries `userMessage` so
+ * every Connect button can show the same plain-English fix.
+ */
+function createPopupBlockedError() {
+  const error = new Error('Apple Music sign-in window was blocked');
+  error.code = 'POPUP_BLOCKED';
+  error.userMessage = isHomeScreenWebApp()
+    ? "Apple's sign-in window couldn't open from the home-screen icon. Open getsafetunes.com in Safari, connect Apple Music there, and keep using SafeTunes in Safari."
+    : "This device blocked Apple's sign-in window. Turn off Block Pop-ups (on iPhone: Settings > Apps > Safari), reload the page, and tap Connect again.";
+  return error;
+}
+
 class MusicKitService {
   constructor() {
     this.music = null;
@@ -121,7 +138,7 @@ class MusicKitService {
 
       // For library access (playlists), we need to request explicit permission
       // Note: The user must grant "Media & Apple Music" permission in the authorization flow
-      const token = await this.music.authorize();
+      const token = await this._authorizeWatchingForBlockedWindow();
       this.isAuthorized = true;
 
       if (requestLibraryAccess) {
@@ -155,6 +172,60 @@ class MusicKitService {
 
       throw error;
     }
+  }
+
+  /** This device's Apple Music user token, if signed in. */
+  getMusicUserToken() {
+    return this.music?.isAuthorized ? this.music.musicUserToken || null : null;
+  }
+
+  /**
+   * Sign this device in with a token from another device (the parent's), no
+   * popup involved. MusicKit validates and persists it exactly as if this
+   * device had signed in itself. Returns whether the device is now signed in.
+   */
+  async useSharedMusicUserToken(token) {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+    if (!this.music || !token) return false;
+    this.music.musicUserToken = token;
+    this.isAuthorized = this.music.isAuthorized;
+    return this.isAuthorized;
+  }
+
+  /**
+   * MusicKit signs in through a window.open popup. When the browser blocks it,
+   * window.open returns null and MusicKit never notices: it only polls a window
+   * that exists, so authorize() stays pending forever and the button spins on
+   * "Connecting...". Watch window.open for the duration of the call and fail
+   * fast with a plain-English message instead.
+   */
+  _authorizeWatchingForBlockedWindow() {
+    const realOpen = window.open;
+    let windowOpened = false;
+    let failBlocked;
+    const blocked = new Promise((_, reject) => {
+      failBlocked = () => reject(createPopupBlockedError());
+    });
+
+    window.open = function (...args) {
+      const opened = realOpen.apply(window, args);
+      if (opened) windowOpened = true;
+      else failBlocked();
+      return opened;
+    };
+
+    // Backstop for browsers that swallow the popup without returning null:
+    // if no sign-in window has appeared after 10s, treat it as blocked.
+    const noWindowTimer = setTimeout(() => {
+      if (!windowOpened) failBlocked();
+    }, 10000);
+
+    return Promise.race([this.music.authorize(), blocked]).finally(() => {
+      clearTimeout(noWindowTimer);
+      if (window.open !== realOpen) window.open = realOpen;
+    });
   }
 
   /**

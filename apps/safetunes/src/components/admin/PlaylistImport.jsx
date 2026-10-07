@@ -70,12 +70,12 @@ function PlaylistImport({ user }) {
   const handleAuthorize = async () => {
     try {
       setLoading(true);
-      await musicKitService.music.authorize();
+      await musicKitService.authorize(true);
       setIsAuthorized(true);
       await loadLibraryPlaylists();
     } catch (err) {
       console.error('Authorization failed:', err);
-      showToast('Failed to connect to Apple Music. Please try again.', 'error');
+      showToast(err.userMessage || 'Failed to connect to Apple Music. Please try again.', 'error');
     } finally {
       setLoading(false);
     }

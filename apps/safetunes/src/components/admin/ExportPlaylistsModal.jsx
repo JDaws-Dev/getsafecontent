@@ -122,7 +122,9 @@ export default function ExportPlaylistsModal({ kidProfile, onClose, userToken })
       setIsAuthorized(true);
     } catch (error) {
       console.error('Apple Music authorization failed:', error);
-      if (error.message?.includes('cancelled') || error.name === 'USER_CANCELLED') {
+      if (error.userMessage) {
+        setAuthError(error.userMessage);
+      } else if (error.message?.includes('cancelled') || error.name === 'USER_CANCELLED') {
         setAuthError('Authorization was cancelled. Please try again.');
       } else {
         setAuthError(

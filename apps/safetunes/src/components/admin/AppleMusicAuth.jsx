@@ -3,6 +3,8 @@ import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import musicKitService from '../../config/musickit';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useKidAppleMusicConnect, KidPinPrompt } from '../../hooks/useKidAppleMusicConnect';
 
 // Apple Music authorization is per-browser, so the kid's device has to be
 // connected too — but ALWAYS with the parent's Apple ID. A child Apple ID
@@ -14,6 +16,12 @@ function AppleMusicAuth({ user, showOnlyWhenDisconnected = false, audience = 'pa
   const isKidScreen = audience === 'kid';
   const { showToast } = useToast();
   const updateUser = useMutation(api.users.updateUser);
+  const clearForFamily = useMutation(api.appleMusicConnection.clearForFamily);
+  const { token } = useAuth();
+  // Kid screen: borrow the parent's sign-in instead of Apple's popup.
+  const kidConnect = useKidAppleMusicConnect({
+    onConnected: () => setIsAuthorized(musicKitService.checkAuthorization()),
+  });
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isMusicKitReady, setIsMusicKitReady] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -46,10 +54,6 @@ function AppleMusicAuth({ user, showOnlyWhenDisconnected = false, audience = 'pa
     try {
       const music = musicKitService.music;
       if (music && music.isAuthorized) {
-        // Try to get the user token which contains user info
-        const musicUserToken = music.musicUserToken;
-        console.log('Music User Token:', musicUserToken);
-
         // MusicKit v3 doesn't directly expose email, but we can show subscription status
         const storefront = music.storefrontId || 'us';
         setUserInfo({
@@ -63,6 +67,14 @@ function AppleMusicAuth({ user, showOnlyWhenDisconnected = false, audience = 'pa
   };
 
   const handleAuthorize = async () => {
+    if (isKidScreen) {
+      try {
+        await kidConnect.connect();
+      } catch (err) {
+        showToast(err.userMessage || 'Could not turn on Apple Music. Please try again.', 'error');
+      }
+      return;
+    }
     try {
       console.log('=== AUTHORIZATION STARTED ===');
       console.log('MusicKit instance:', musicKitService.music);
@@ -94,7 +106,9 @@ function AppleMusicAuth({ user, showOnlyWhenDisconnected = false, audience = 'pa
 
       // More specific error messages
       let errorMessage = 'Failed to authorize with Apple Music.';
-      if (err.message) {
+      if (err.userMessage) {
+        errorMessage = err.userMessage;
+      } else if (err.message) {
         if (err.message.includes('popup') || err.message.includes('blocked')) {
           errorMessage = 'Popup was blocked. Please allow popups for this site in your browser settings and try again.';
         } else if (err.message.includes('subscription')) {
@@ -111,13 +125,23 @@ function AppleMusicAuth({ user, showOnlyWhenDisconnected = false, audience = 'pa
   };
 
   const handleUnauthorize = async () => {
-    if (!window.confirm('Are you sure you want to sign out of Apple Music?')) {
+    const confirmText = isKidScreen
+      ? 'Are you sure you want to sign out of Apple Music?'
+      : "Sign out of Apple Music? Your kids' devices use your Apple Music, so they'll stop playing until you connect again.";
+    if (!window.confirm(confirmText)) {
       return;
     }
 
     try {
       await musicKitService.unauthorize();
       setIsAuthorized(false);
+
+      // Stop lending this sign-in to the kids' devices.
+      if (!isKidScreen && token) {
+        await clearForFamily({ userToken: token }).catch((err) =>
+          console.warn('[AppleMusic] Could not clear shared sign-in:', err?.message ?? err)
+        );
+      }
 
       // Update database if user is logged in
       if (user) {
@@ -184,14 +208,14 @@ function AppleMusicAuth({ user, showOnlyWhenDisconnected = false, audience = 'pa
           </div>
           <div className="ml-4 flex-1">
             <h3 className="text-lg font-display font-bold text-brand-navy mb-2">
-              {isKidScreen ? 'Ask a parent to connect Apple Music' : 'Connect to Apple Music'}
+              {isKidScreen ? 'Turn on Apple Music' : 'Connect to Apple Music'}
             </h3>
             <p className="text-gray-600 mb-4">
               {isKidScreen ? (
                 <>
-                  A parent signs in here with their own Apple ID — the one that pays for
-                  Apple Music. A kid&apos;s Apple ID won&apos;t work. You only have to do
-                  this once on this device.
+                  This uses your parent&apos;s Apple Music. Once a parent has connected
+                  Apple Music in SafeTunes on their own phone or computer, tap the button.
+                  You might need your PIN.
                 </>
               ) : (
                 <>
@@ -204,10 +228,11 @@ function AppleMusicAuth({ user, showOnlyWhenDisconnected = false, audience = 'pa
               onClick={handleAuthorize}
               className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-2 rounded-xl font-semibold transition shadow-lg"
             >
-              Sign in with Apple Music
+              {isKidScreen ? 'Turn on Apple Music' : 'Sign in with Apple Music'}
             </button>
           </div>
         </div>
+        {isKidScreen && <KidPinPrompt {...kidConnect.pinPrompt} />}
       </div>
     );
   }

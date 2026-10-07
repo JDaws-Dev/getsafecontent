@@ -537,4 +537,14 @@ export default defineSchema({
     emailReason: v.string(), // "delta" | "heartbeat" | "first-run" | "silent"
   })
     .index("by_checkedAt", ["checkedAt"]),
+
+  // The parent's Apple Music sign-in, kept so a kid's device can use it without
+  // opening Apple's sign-in window (which iPhones block in home-screen web apps).
+  // Its own table, never on `users`: many queries return whole user rows.
+  appleMusicConnections: defineTable({
+    userId: v.id("users"),
+    musicUserToken: v.string(),
+    savedAt: v.number(),
+  })
+    .index("by_user", ["userId"]),
 }, { schemaValidation: false }); // Disable schema validation temporarily to allow legacy data
