@@ -6,6 +6,33 @@
 
 ---
 
+## Current Status (October 11, 2026)
+
+**SafeTube buttoned up after a real escape — DEPLOYED** (hub backend+frontend, then SafeTube
+backend → frontend; both domains verified by content markers). Trigger: Isabella had full
+YouTube on her Family Link Chromebook for weeks because **youtube.com was on her approved
+sites** (no request email ever came; most likely added while troubleshooting playback, with
+googlevideo.com). Research (Chromium source): Family Link filters page + iframe loads only, so
+SafeTube needs just getsafetube.com/getsafefamily.com + youtube-nocookie.com. Chromebook **Guest
+mode** bypasses Family Link entirely (owner must disable it on the device).
+
+- SafeTube kid side: revoked videos stop playing everywhere (new `convex/playability.ts`;
+  canWatch re-checks the playing video); watch-time clamps; timezone/updateUser/onboarding need
+  the parent token; verifyParentPin (leaked the PIN hash) internal; playlists approval-checked;
+  mintKidPass needs the kid's own session for PIN profiles (`convex/kidSession.ts`); pause
+  server-enforced. Deploy order for this one was backend FIRST (strict validators).
+- Parents: setup guide + support warn never to approve youtube.com; kid failure copy no longer
+  says "fix YouTube"; one email/day per kid naming the exact site (`playbackAlerts.ts`).
+- Hub: `/guides/lock-down` guide (per device, Guest mode, Play apps); "Check a kid's device"
+  one-time link on the Family tab; daily quiet-days alerts (11:00 UTC, SafeTube + SafeTunes).
+  A prod dry run would have emailed stale 17-23-day silences — fixed: only silences within 3
+  days of threshold send; older ones are marked handled.
+- Still open: sibling apps' mintKidPass is unguarded (SafeTube trusts their passes); a video's
+  channel is client-asserted; some watch-history reads are unauthenticated. **Bella's Family Link
+  still has youtube.com approved** pending the owner's go-ahead.
+
+---
+
 ## Current Status (October 7, 2026)
 
 **SafeTunes: kids' devices now use the parent's Apple Music — DEPLOYED** (backend
