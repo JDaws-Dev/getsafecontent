@@ -52,6 +52,11 @@ const WINDOW_DAYS = 14;
 const REGULAR_MIN_DAYS = 4;
 const MIN_SILENCE = 4;
 const MAX_SILENCE = 10;
+// Only email about a silence that has JUST crossed its threshold. A silence
+// already this many days past it (e.g. one that began before alerts existed)
+// is recorded as handled without sending, so nobody gets a pile of stale
+// "hasn't used it in 3 weeks" emails on day one.
+const STALE_GRACE_DAYS = 3;
 const LOOKBACK_DAYS = 60;
 const DEFAULT_TZ = "America/New_York";
 const SNOOZE_ROW_APP = "all";
@@ -212,7 +217,7 @@ type Pending = {
  * actually goes out, so a failed send is retried the next day.
  */
 export const evaluateFamily = internalMutation({
-  args: { familyCode: v.string() },
+  args: { familyCode: v.string(), dryRun: v.optional(v.boolean()) },
   handler: async (ctx, args) => {
     const now = Date.now();
     const familyCode = args.familyCode.trim().toUpperCase();
@@ -309,6 +314,17 @@ export const evaluateFamily = internalMutation({
         if (row?.snoozedUntil && row.snoozedUntil > now) continue;
         // One email per silence.
         if (row?.alertedAt && row.silenceStartDay === a.silenceStartDay) continue;
+
+        // Stale: too long past the threshold to be news. Mark it handled
+        // (without emailing) so it never fires; a fresh silence re-arms.
+        if (a.silentDays > a.threshold + STALE_GRACE_DAYS) {
+          if (!args.dryRun) {
+            const patch = { silenceStartDay: a.silenceStartDay, alertedAt: now, silentDays: a.silentDays, rearmedAt: undefined, updatedAt: now };
+            if (row) await ctx.db.patch(row._id, patch);
+            else await ctx.db.insert("inactivityAlerts", { familyCode, kidKey, app, ...patch });
+          }
+          continue;
+        }
 
         const silenceDays = days.slice(days.length - a.silentDays);
         const otherApps = ALL_APPS.filter((o) => o !== app)
@@ -507,7 +523,7 @@ export const runDaily = internalAction({
 
     for (const familyCode of codes) {
       try {
-        const res = await ctx.runMutation(internal.inactivityAlerts.evaluateFamily, { familyCode });
+        const res = await ctx.runMutation(internal.inactivityAlerts.evaluateFamily, { familyCode, dryRun: args.dryRun });
         if (!res.pending.length) continue;
         if (!res.recipients.length) {
           console.warn(`[inactivityAlerts] ${familyCode}: ${res.pending.length} alert(s) but no recipient`);
