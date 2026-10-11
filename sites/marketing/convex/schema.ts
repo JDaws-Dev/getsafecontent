@@ -332,4 +332,56 @@ export default defineSchema({
     alertEmails: v.optional(v.array(v.string())), // who gets concern alerts (SafeStudy/SafeSpark)
     updatedAt: v.number(),
   }).index("by_family", ["familyCode"]),
+
+  // ---------------------------------------------------------------------
+  // Quiet-days alerts. A kid who used an app most days and then stops cold is
+  // often a kid who found a way around it (a real family's daughter had full
+  // YouTube on a Family Link Chromebook for weeks and simply stopped opening
+  // SafeTube). One row per family + kid + app holds the last silence we
+  // emailed about, so each quiet stretch produces exactly one email.
+  //
+  // app === "all" is a per-kid snooze row (parent paused alerts for that
+  // child); it never carries an alert itself.
+  // ---------------------------------------------------------------------
+  inactivityAlerts: defineTable({
+    familyCode: v.string(),
+    kidKey: v.string(),             // canonical identity key, e.g. "id:..."
+    app: v.string(),                // "safetube" | "safetunes" | ... | "all"
+    silenceStartDay: v.optional(v.string()), // first silent day of the alerted stretch
+    alertedAt: v.optional(v.number()),
+    silentDays: v.optional(v.number()),      // length of the stretch when we emailed
+    rearmedAt: v.optional(v.number()),       // activity resumed after an alert
+    snoozedUntil: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index("by_family", ["familyCode"])
+    .index("by_family_kid_app", ["familyCode", "kidKey", "app"]),
+
+  // ---------------------------------------------------------------------
+  // "Check a kid's device". The parent mints a one-time token on the
+  // dashboard, opens /check/<token> on the kid's device, and that page reports
+  // whether SafeTube's player works and whether regular YouTube is reachable.
+  // The token is the only credential on the kid side, so it is single-device
+  // (claimed by the first browser that opens it), expires, and only ever
+  // exposes this one check's own results.
+  // ---------------------------------------------------------------------
+  deviceChecks: defineTable({
+    familyCode: v.string(),
+    parentUserId: v.id("users"),
+    token: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),          // must be opened (claimed) before this
+    parentUserAgent: v.optional(v.string()),
+    claimedAt: v.optional(v.number()),
+    deviceNonce: v.optional(v.string()),
+    deviceKind: v.optional(v.string()), // chromebook | android | ios | windows | mac | other
+    userAgent: v.optional(v.string()),
+    looksLikeParentDevice: v.optional(v.boolean()),
+    safeEmbed: v.optional(v.string()),   // "ok" | "failed"
+    directEmbed: v.optional(v.string()), // "silent" | "talked"
+    manualOpen: v.optional(v.string()),  // "blocked" | "opened"
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_token", ["token"])
+    .index("by_parent", ["parentUserId", "createdAt"]),
 });

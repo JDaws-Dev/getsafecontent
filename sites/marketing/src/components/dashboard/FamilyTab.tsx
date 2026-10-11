@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
+import { DeviceCheckCard } from "./DeviceCheckCard";
 
 const COLORS = ["#F0603A", "#7C4DE0", "#3AA06B", "#2F6BF0", "#F2A413", "#E0457B", "#0EA5A4"];
 
@@ -22,6 +23,8 @@ export function FamilyTab() {
   const setPin = useMutation(api.kids.setPin);
   const archiveKid = useMutation(api.kids.archive);
   const updateSettings = useMutation(api.familySettings.updateMine);
+  const quietAlerts = useQuery(api.inactivityAlerts.listMine, {});
+  const setQuietSnooze = useMutation(api.inactivityAlerts.setSnooze);
 
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -39,6 +42,15 @@ export function FamilyTab() {
       if (tz) updateSettings({ timezone: tz }).catch(() => {});
     }
   }, [settings, updateSettings]);
+
+  // Email links land on #check-device / #quiet-alerts; the sections render
+  // after the data loads, so scroll once they exist.
+  const loaded = kids !== undefined && settings !== undefined;
+  useEffect(() => {
+    if (!loaded || typeof window === "undefined" || !window.location.hash) return;
+    const el = document.getElementById(window.location.hash.slice(1));
+    if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  }, [loaded]);
 
   const run = async (fn: () => Promise<unknown>) => {
     setError(null);
@@ -135,6 +147,50 @@ export function FamilyTab() {
         </div>
       </section>
 
+      {/* Device check */}
+      <section id="check-device" className="space-y-4 scroll-mt-4">
+        <h2 className="text-lg font-bold text-navy">Devices</h2>
+        <DeviceCheckCard />
+      </section>
+
+      {/* Quiet-days alerts */}
+      <section id="quiet-alerts" className="space-y-4 scroll-mt-4">
+        <h2 className="text-lg font-bold text-navy">Quiet-days alerts</h2>
+        <div className="rounded-2xl bg-white border border-navy/10 p-5 text-sm space-y-4">
+          <p className="text-navy/60">
+            If a child who normally uses SafeTube or SafeTunes most days suddenly stops, we email you once. Often it&rsquo;s
+            nothing, but sometimes it means a device can reach regular YouTube or another app directly. Emails go to the
+            addresses under Concern alerts below.
+          </p>
+          {kids.length === 0 ? (
+            <div className="text-navy/50">Add a child to turn these on.</div>
+          ) : (
+            <ul className="divide-y divide-navy/5">
+              {kids.map((k) => {
+                const q = quietAlerts?.find((a) => a.kidId === k._id);
+                const until = q?.snoozedUntil ? new Date(q.snoozedUntil).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : null;
+                return (
+                  <li key={k._id} className="py-3 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="font-semibold text-navy">{k.name}</div>
+                      <div className="text-navy/60">
+                        {until ? `Paused until ${until}` : "On"}
+                        {q?.lastAlert && ` · Last alert: ${q.lastAlert.app}, ${q.lastAlert.silentDays} quiet days${q.lastAlert.resolved ? " (back since)" : ""}`}
+                      </div>
+                    </div>
+                    {until ? (
+                      <button onClick={() => run(() => setQuietSnooze({ kidId: k._id, days: 0 }))} className="rounded-full border border-navy/15 text-navy font-semibold px-4 py-2">Turn back on</button>
+                    ) : (
+                      <button onClick={() => run(() => setQuietSnooze({ kidId: k._id, days: 14 }))} className="rounded-full border border-navy/15 text-navy/80 font-semibold px-4 py-2">Pause for 2 weeks</button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </section>
+
       {/* Family-wide */}
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-navy">Family settings</h2>
@@ -159,7 +215,7 @@ export function FamilyTab() {
                 placeholder="you@example.com, partner@example.com"
               />
             </label>
-            <div className="text-navy/60 mt-1">Comma-separated. Used by SafeStudy and SafeSpark when a search or chat raises a concern.</div>
+            <div className="text-navy/60 mt-1">Comma-separated. Used by SafeStudy and SafeSpark when a search or chat raises a concern, and for quiet-days alerts.</div>
           </div>
         </div>
       </section>
