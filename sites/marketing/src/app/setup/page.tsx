@@ -12,6 +12,7 @@ import {
   PlaySquare,
   Book,
   Search,
+  ShieldAlert,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -159,6 +160,37 @@ export default function SetupPage() {
               );
             })}
           </ol>
+
+          {/* Lock down the device — the apps can't stop a kid who goes around them */}
+          <section className="mt-12 rounded-2xl border-2 border-red-300 bg-red-50 p-6 sm:p-8">
+            <div className="flex gap-4">
+              <ShieldAlert className="w-8 h-8 text-red-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <h2 className="text-xl sm:text-2xl font-bold text-red-900 mb-2">
+                  Then lock down your kid&rsquo;s device
+                </h2>
+                <p className="text-red-900/90 leading-relaxed">
+                  Use Family Link or Screen Time to allow only{" "}
+                  <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">getsafefamily.com</code>,{" "}
+                  <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">getsafetube.com</code> and{" "}
+                  <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">youtube-nocookie.com</code>{" "}
+                  (SafeTube&rsquo;s video player only, no search or browsing).
+                </p>
+                <p className="mt-2 text-red-900/90 leading-relaxed">
+                  <strong>Never approve youtube.com or m.youtube.com</strong>, even if a video
+                  won&rsquo;t play. One approval unlocks all of YouTube. On a Chromebook, also turn off
+                  Guest browsing.
+                </p>
+                <Link
+                  href="/guides/lock-down"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-2.5 font-semibold text-white hover:bg-red-700 transition-colors"
+                >
+                  Step-by-step for each device
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </section>
 
           {/* Jump to apps */}
           <section className="mt-12">
