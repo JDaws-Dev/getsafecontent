@@ -18,7 +18,9 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
       const result = await attemptKidPin({ profileId: profile._id, pin });
       if (result?.valid) {
         setIsLoading(true);
-        onSelect(profile);
+        // kidSession proves this device entered this kid's PIN; KidHome needs
+        // it to mint the cross-app kid pass for the header switcher.
+        onSelect(profile, result.kidSession ?? null);
         return;
       }
       if (result?.locked) {

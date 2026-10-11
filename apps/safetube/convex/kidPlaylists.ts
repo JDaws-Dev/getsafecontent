@@ -1,5 +1,25 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import { approvedChannelFor, isPlayableWith, loadKidApprovals } from "./playability";
+
+/**
+ * Kid-path playlist endpoints. The kid side has no parent token (family-code
+ * login), so these can't do a hard owner check. What they CAN enforce: every
+ * write names the kid profile it acts for, and the playlist must belong to that
+ * profile — a playlist id alone is no longer enough to edit someone's list.
+ */
+async function requirePlaylistForKid(
+  ctx: { db: any },
+  playlistId: Id<"kidPlaylists">,
+  kidProfileId: Id<"kidProfiles">,
+) {
+  const playlist = await ctx.db.get(playlistId);
+  if (!playlist || playlist.kidProfileId !== kidProfileId) {
+    throw new Error("That playlist isn't yours.");
+  }
+  return playlist;
+}
 
 // Get all playlists for a kid
 export const getPlaylists = query({
@@ -10,13 +30,17 @@ export const getPlaylists = query({
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
       .collect();
 
-    // Get video count and first video thumbnail for each playlist
+    // Get video count and first video thumbnail for each playlist (counting
+    // only videos that are still approved — see getPlaylistVideos).
+    const approvals = await loadKidApprovals(ctx, args.kidProfileId);
     const playlistsWithMeta = await Promise.all(
       playlists.map(async (playlist) => {
-        const videos = await ctx.db
-          .query("kidPlaylistVideos")
-          .withIndex("by_playlist_order", (q) => q.eq("playlistId", playlist._id))
-          .collect();
+        const videos = (
+          await ctx.db
+            .query("kidPlaylistVideos")
+            .withIndex("by_playlist_order", (q) => q.eq("playlistId", playlist._id))
+            .collect()
+        ).filter((v) => isPlayableWith(approvals, v));
 
         return {
           ...playlist,
@@ -30,17 +54,24 @@ export const getPlaylists = query({
   },
 });
 
-// Get videos in a specific playlist
+// Get videos in a specific playlist. Only videos still approved for the
+// playlist's kid are returned, so a removed video/channel can't be replayed
+// from a saved playlist.
 export const getPlaylistVideos = query({
   args: { playlistId: v.id("kidPlaylists") },
   handler: async (ctx, args) => {
+    const playlist = await ctx.db.get(args.playlistId);
+    if (!playlist) return [];
     const videos = await ctx.db
       .query("kidPlaylistVideos")
       .withIndex("by_playlist_order", (q) => q.eq("playlistId", args.playlistId))
       .collect();
 
+    const approvals = await loadKidApprovals(ctx, playlist.kidProfileId);
     // Sort by sortOrder
-    return videos.sort((a, b) => a.sortOrder - b.sortOrder);
+    return videos
+      .filter((v) => isPlayableWith(approvals, v))
+      .sort((a, b) => a.sortOrder - b.sortOrder);
   },
 });
 
@@ -52,6 +83,8 @@ export const createPlaylist = mutation({
     emoji: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const profile = await ctx.db.get(args.kidProfileId);
+    if (!profile) throw new Error("Profile not found");
     const now = Date.now();
 
     const playlistId = await ctx.db.insert("kidPlaylists", {
@@ -70,10 +103,12 @@ export const createPlaylist = mutation({
 export const renamePlaylist = mutation({
   args: {
     playlistId: v.id("kidPlaylists"),
+    kidProfileId: v.id("kidProfiles"),
     name: v.string(),
     emoji: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requirePlaylistForKid(ctx, args.playlistId, args.kidProfileId);
     await ctx.db.patch(args.playlistId, {
       name: args.name,
       emoji: args.emoji,
@@ -84,8 +119,9 @@ export const renamePlaylist = mutation({
 
 // Delete a playlist and all its videos
 export const deletePlaylist = mutation({
-  args: { playlistId: v.id("kidPlaylists") },
+  args: { playlistId: v.id("kidPlaylists"), kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
+    await requirePlaylistForKid(ctx, args.playlistId, args.kidProfileId);
     // Delete all videos in playlist
     const videos = await ctx.db
       .query("kidPlaylistVideos")
@@ -110,9 +146,20 @@ export const addVideoToPlaylist = mutation({
     title: v.string(),
     thumbnailUrl: v.string(),
     channelTitle: v.string(),
+    channelId: v.optional(v.string()),
     durationSeconds: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requirePlaylistForKid(ctx, args.playlistId, args.kidProfileId);
+
+    // Only videos this kid may actually watch can be saved — otherwise a
+    // playlist becomes a way to play anything on YouTube.
+    const approvals = await loadKidApprovals(ctx, args.kidProfileId);
+    if (!isPlayableWith(approvals, args)) {
+      throw new Error("That video isn't in your approved videos yet.");
+    }
+    const channelId = approvedChannelFor(approvals, args) ?? args.channelId ?? undefined;
+
     // Check if video already in playlist
     const existing = await ctx.db
       .query("kidPlaylistVideos")
@@ -141,6 +188,7 @@ export const addVideoToPlaylist = mutation({
       title: args.title,
       thumbnailUrl: args.thumbnailUrl,
       channelTitle: args.channelTitle,
+      channelId,
       durationSeconds: args.durationSeconds,
       sortOrder: maxOrder + 1,
       addedAt: Date.now(),
@@ -157,9 +205,11 @@ export const addVideoToPlaylist = mutation({
 export const removeVideoFromPlaylist = mutation({
   args: {
     playlistId: v.id("kidPlaylists"),
+    kidProfileId: v.id("kidProfiles"),
     videoId: v.string(),
   },
   handler: async (ctx, args) => {
+    await requirePlaylistForKid(ctx, args.playlistId, args.kidProfileId);
     const video = await ctx.db
       .query("kidPlaylistVideos")
       .withIndex("by_playlist", (q) => q.eq("playlistId", args.playlistId))
@@ -194,10 +244,12 @@ export const getVideoPlaylistStatus = query({
 export const reorderPlaylistVideo = mutation({
   args: {
     playlistId: v.id("kidPlaylists"),
+    kidProfileId: v.id("kidProfiles"),
     videoId: v.string(),
     newSortOrder: v.number(),
   },
   handler: async (ctx, args) => {
+    await requirePlaylistForKid(ctx, args.playlistId, args.kidProfileId);
     const videos = await ctx.db
       .query("kidPlaylistVideos")
       .withIndex("by_playlist", (q) => q.eq("playlistId", args.playlistId))

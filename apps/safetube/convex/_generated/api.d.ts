@@ -28,6 +28,7 @@ import type * as identity from "../identity.js";
 import type * as kidPass from "../kidPass.js";
 import type * as kidPlaylists from "../kidPlaylists.js";
 import type * as kidProfiles from "../kidProfiles.js";
+import type * as playbackAlerts from "../playbackAlerts.js";
 import type * as provisionUser from "../provisionUser.js";
 import type * as rateLimit from "../rateLimit.js";
 import type * as safeAuth from "../safeAuth.js";
@@ -75,6 +76,7 @@ declare const fullApi: ApiFromModules<{
   kidPass: typeof kidPass;
   kidPlaylists: typeof kidPlaylists;
   kidProfiles: typeof kidProfiles;
+  playbackAlerts: typeof playbackAlerts;
   provisionUser: typeof provisionUser;
   rateLimit: typeof rateLimit;
   safeAuth: typeof safeAuth;

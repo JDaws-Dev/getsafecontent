@@ -1,8 +1,14 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { evaluateTimeLimit } from "./timeLimits";
+import { approvedChannelFor, isPlayableWith, loadKidApprovals } from "./playability";
 
 // Record a video watch
+//
+// Time accounting fails OPEN: the row is always written so the minutes count,
+// even for a video that isn't (or is no longer) approved. Safety fails CLOSED
+// on READ instead — getWatchHistory only returns rows that are playable right
+// now, so recording an arbitrary videoId can't plant it in "Recently Watched".
 export const recordWatch = mutation({
   args: {
     kidProfileId: v.id("kidProfiles"),
@@ -10,18 +16,33 @@ export const recordWatch = mutation({
     title: v.string(),
     thumbnailUrl: v.string(),
     channelTitle: v.string(),
+    channelId: v.optional(v.string()),
     watchDurationSeconds: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    // Pin the channel at record time when we can place the video, so later
+    // reads don't depend on the title fallback.
+    const approvals = await loadKidApprovals(ctx, args.kidProfileId);
+    const channelId =
+      approvedChannelFor(approvals, args) ?? args.channelId ?? undefined;
+    const playable = isPlayableWith(approvals, args);
+
     const watchId = await ctx.db.insert("watchHistory", {
       kidProfileId: args.kidProfileId,
       videoId: args.videoId,
       title: args.title,
       thumbnailUrl: args.thumbnailUrl,
       channelTitle: args.channelTitle,
+      channelId,
       watchedAt: Date.now(),
-      watchDurationSeconds: args.watchDurationSeconds,
+      // Never trust a client-supplied starting duration: it would let a caller
+      // book (or, with negatives, erase) minutes in one call. Duration only
+      // grows through updateWatchDuration, which clamps to elapsed time.
+      watchDurationSeconds: 0,
     });
+    if (!playable) {
+      console.warn(`[safetube] recordWatch for unapproved video ${args.videoId} (kid ${args.kidProfileId})`);
+    }
 
     // We record FIRST and never reject, even when the kid is over their cap.
     // Rejecting here would be self-defeating: unrecorded minutes don't count
@@ -32,24 +53,48 @@ export const recordWatch = mutation({
     const timeStatus = await evaluateTimeLimit(ctx, args.kidProfileId);
 
     // Returned as an object; callers that only need the id read `.watchId`.
-    return { watchId, blocked: !timeStatus.canWatch, timeStatus };
+    return { watchId, blocked: !timeStatus.canWatch, timeStatus, playable };
   },
 });
 
+// Grace on top of wall-clock time since the row was written, for clock skew
+// and the gap between recordWatch landing and the player's own timer starting.
+const WATCH_DURATION_SLACK_SECONDS = 60;
+
 // Update watch duration (called when video ends or is stopped)
+//
+// Unauthenticated kid-path call, so it is constrained instead: the value is
+// clamped to 0..(time since the watch started + slack) and may only GROW. A
+// caller can no longer zero out or shrink today's minutes to dodge the daily
+// limit. When kidProfileId is passed it must match the row.
 export const updateWatchDuration = mutation({
   args: {
     watchId: v.id("watchHistory"),
     watchDurationSeconds: v.number(),
+    kidProfileId: v.optional(v.id("kidProfiles")),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.watchId, {
-      watchDurationSeconds: args.watchDurationSeconds,
-    });
+    const row = await ctx.db.get(args.watchId);
+    if (!row) return;
+    if (args.kidProfileId && args.kidProfileId !== row.kidProfileId) {
+      throw new Error("That video belongs to a different profile.");
+    }
+    if (!Number.isFinite(args.watchDurationSeconds)) return;
+
+    const maxSeconds = Math.max(
+      0,
+      Math.floor((Date.now() - row.watchedAt) / 1000) + WATCH_DURATION_SLACK_SECONDS,
+    );
+    const next = Math.min(Math.max(0, Math.round(args.watchDurationSeconds)), maxSeconds);
+    if (next <= (row.watchDurationSeconds ?? 0)) return; // only ever increases
+
+    await ctx.db.patch(args.watchId, { watchDurationSeconds: next });
   },
 });
 
-// Get recent watch history for a kid
+// Get recent watch history for a kid (kid-facing "Recently Watched").
+// Only returns videos that are still playable for this kid, so a video or
+// channel the parent removed can't be replayed from history.
 export const getWatchHistory = query({
   args: {
     kidProfileId: v.id("kidProfiles"),
@@ -58,13 +103,15 @@ export const getWatchHistory = query({
   handler: async (ctx, args) => {
     const limit = args.limit || 50;
 
+    // Over-fetch so filtering out revoked rows doesn't starve the list.
     const history = await ctx.db
       .query("watchHistory")
       .withIndex("by_kid_recent", (q) => q.eq("kidProfileId", args.kidProfileId))
       .order("desc")
-      .take(limit);
+      .take(Math.min(limit * 4, 200));
 
-    return history;
+    const approvals = await loadKidApprovals(ctx, args.kidProfileId);
+    return history.filter((h) => isPlayableWith(approvals, h)).slice(0, limit);
   },
 });
 

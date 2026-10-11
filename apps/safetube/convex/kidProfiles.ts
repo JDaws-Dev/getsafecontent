@@ -3,6 +3,7 @@ import { mutation, query, internalMutation, type MutationCtx } from "./_generate
 import type { Id } from "./_generated/dataModel";
 import { requireOwner, requireProfileOwner } from "./identity";
 import { hashPin, verifyPin, isHashedPin } from "./safeAuth";
+import { signKidSession } from "./kidSession";
 
 // PINs are 4 digits (10k combinations) — the lockout is the real defense,
 // hashing removes the at-rest plaintext. See safeAuth.ts.
@@ -189,30 +190,25 @@ export const updateKidProfile = mutation({
   },
 });
 
-// Verify a kid's PIN (read-only compat shim — prefer attemptKidPin, which
-// enforces the failed-attempt lockout).
-export const verifyKidPin = query({
-  args: {
-    profileId: v.id("kidProfiles"),
-    pin: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const profile = await ctx.db.get(args.profileId);
-    if (!profile) return { valid: false, error: "Profile not found" };
+// (verifyKidPin — a public read-only PIN check — was removed: it never counted
+// failed attempts, so it let anyone brute-force a 4-digit PIN. It had no
+// callers; attemptKidPin below is the only PIN check.)
 
-    // If no PIN is set, always valid
-    if (!profile.pin) return { valid: true };
-    if (profile.pinLockedUntil && profile.pinLockedUntil > Date.now()) {
-      return { valid: false };
-    }
-
-    return { valid: await verifyPin(args.pin, profile.pin) };
-  },
-});
+// Short-lived kid session for a profile that just proved itself (see
+// kidSession.ts). Lets the cross-app switcher mint a kid pass for THIS kid only.
+async function kidSessionFor(
+  ctx: { db: MutationCtx["db"] },
+  profile: { _id: Id<"kidProfiles">; userId: Id<"users"> },
+): Promise<string | null> {
+  const parent = await ctx.db.get(profile.userId);
+  if (!parent?.familyCode) return null;
+  return await signKidSession({ fc: parent.familyCode, pid: profile._id });
+}
 
 // Verify a kid's PIN with lockout enforcement. 5 wrong attempts locks the
 // profile's PIN entry for 5 minutes. Successful verification resets the
 // counter and transparently upgrades legacy plaintext PINs to PBKDF2.
+// On success also returns `kidSession` (see kidSessionFor).
 export const attemptKidPin = mutation({
   args: {
     profileId: v.id("kidProfiles"),
@@ -221,7 +217,9 @@ export const attemptKidPin = mutation({
   handler: async (ctx, args) => {
     const profile = await ctx.db.get(args.profileId);
     if (!profile) return { valid: false, locked: false };
-    if (!profile.pin) return { valid: true, locked: false };
+    if (!profile.pin) {
+      return { valid: true, locked: false, kidSession: await kidSessionFor(ctx, profile) };
+    }
 
     const now = Date.now();
     if (profile.pinLockedUntil && profile.pinLockedUntil > now) {
@@ -243,7 +241,7 @@ export const attemptKidPin = mutation({
         patch.pin = await hashPin(args.pin);
       }
       await ctx.db.patch(args.profileId, patch);
-      return { valid: true, locked: false };
+      return { valid: true, locked: false, kidSession: await kidSessionFor(ctx, profile) };
     }
 
     const attempts = (profile.pinFailedAttempts ?? 0) + 1;

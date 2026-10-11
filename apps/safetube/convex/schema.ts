@@ -139,6 +139,7 @@ export default defineSchema({
     channelTitle: v.string(),
     watchedAt: v.number(),
     watchDurationSeconds: v.optional(v.number()),
+    channelId: v.optional(v.string()), // YouTube channel id, when known (playability check)
   })
     .index("by_kid", ["kidProfileId"])
     .index("by_kid_recent", ["kidProfileId", "watchedAt"]),
@@ -155,7 +156,7 @@ export default defineSchema({
     duration: v.optional(v.string()),
     durationSeconds: v.optional(v.number()),
     requestedAt: v.number(),
-    status: v.string(), // 'pending', 'approved', 'denied'
+    status: v.string(), // 'pending', 'approved', 'denied', 'revoked' (approved, then parent removed it)
     respondedAt: v.optional(v.number()),
     denyReason: v.optional(v.string()),
   })
@@ -212,6 +213,7 @@ export default defineSchema({
     title: v.string(),
     thumbnailUrl: v.string(),
     channelTitle: v.string(),
+    channelId: v.optional(v.string()), // YouTube channel id, when known (playability check)
     durationSeconds: v.optional(v.number()),
     sortOrder: v.number(), // For ordering videos in playlist
     addedAt: v.number(),
@@ -294,4 +296,21 @@ export default defineSchema({
     timestamps: v.array(v.number()),
   })
     .index("by_identifier", ["identifier"]),
+
+  // Kid's device couldn't reach the video player (see playbackAlerts.ts).
+  // One row per kid per device per family-day; the parent is emailed at most
+  // once per kid per day.
+  playbackFailures: defineTable({
+    kidProfileId: v.id("kidProfiles"),
+    userId: v.id("users"), // parent, resolved server-side from the kid
+    day: v.string(), // "YYYY-MM-DD" in the family's timezone
+    deviceLabel: v.string(), // fixed set: Chromebook, iPad, iPhone, Android, Mac, Windows, device
+    count: v.number(),
+    firstAt: v.number(),
+    lastAt: v.number(),
+    emailedAt: v.optional(v.number()),
+    dismissedAt: v.optional(v.number()), // parent hid the dashboard banner
+  })
+    .index("by_kid_day", ["kidProfileId", "day"])
+    .index("by_user_recent", ["userId", "lastAt"]),
 }, { schemaValidation: false });

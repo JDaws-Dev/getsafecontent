@@ -38,7 +38,7 @@ function formatTimeAgo(dateStr) {
   return `${years} year${years !== 1 ? 's' : ''} ago`;
 }
 
-export default function KidHome({ profile, channels, videos, onBack, onPlayVideo, userId, canWatchStatus, onSwitchProfile }) {
+export default function KidHome({ profile, channels, videos, onBack, onPlayVideo, userId, canWatchStatus, onSwitchProfile, kidSession }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('home'); // 'home', 'channels', 'mylist', 'requests'
   const [selectedChannel, setSelectedChannel] = useState(null);
@@ -62,6 +62,9 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
   // Cross-app kid pass: mint a short-lived token for the current kid so the
   // header switcher can hand it to a sibling app (one-tap, no PIN re-entry).
   // Refreshed well inside the token TTL so the links never go stale.
+  // A PIN-protected kid must present their own kidSession (from entering their
+  // PIN); without it the server returns no token and the switcher falls back
+  // to a plain link where the sibling app asks for the PIN.
   const [kidToken, setKidToken] = useState(null);
   const mintKidPass = useMutation(api.kidPass.mintKidPass);
   useEffect(() => {
@@ -74,8 +77,9 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
           kidName: profile.name,
           avatar: profile.icon || profile.avatar,
           color: profile.color,
+          kidSession: kidSession || undefined,
         });
-        if (active && res?.token) setKidToken(res.token);
+        if (active) setKidToken(res?.token || null);
       } catch {
         // non-fatal — the switcher still works; the destination just asks for the PIN
       }
@@ -86,7 +90,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
       active = false;
       clearInterval(id);
     };
-  }, [familyCode, profile?.name, profile?.icon, profile?.avatar, profile?.color, mintKidPass]);
+  }, [familyCode, profile?.name, profile?.icon, profile?.avatar, profile?.color, kidSession, mintKidPass]);
 
   const handleAddVideoToPlaylist = async (playlistId, video) => {
     if (!profile?._id) return;
@@ -98,6 +102,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
         title: video.title,
         thumbnailUrl: video.thumbnailUrl,
         channelTitle: video.channelTitle,
+        channelId: video.channelId || undefined,
         durationSeconds: video.durationSeconds,
       });
       setShowAddToPlaylistModal(null);
@@ -1087,6 +1092,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
         title: video.title,
         thumbnailUrl: video.thumbnailUrl,
         channelTitle: video.channelTitle,
+        channelId: video.channelId || undefined,
         durationSeconds: video.durationSeconds,
       });
       setShowAddToPlaylist(null);
@@ -2238,7 +2244,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
   const handleDeletePlaylist = async (playlistId) => {
     if (!confirm('Delete this playlist?')) return;
     try {
-      await deletePlaylist({ playlistId });
+      await deletePlaylist({ playlistId, kidProfileId: profileId });
       if (selectedPlaylist?._id === playlistId) {
         setSelectedPlaylist(null);
         setActiveView('playlists');
@@ -2257,6 +2263,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
         title: video.title,
         thumbnailUrl: video.thumbnailUrl,
         channelTitle: video.channelTitle,
+        channelId: video.channelId || undefined,
         durationSeconds: video.durationSeconds,
       });
       setShowAddToPlaylist(null);
@@ -2270,6 +2277,7 @@ function MyListTab({ requests, videos, playlists, profileId, onPlayVideo, onGoTo
     try {
       await removeVideoFromPlaylist({
         playlistId: selectedPlaylist._id,
+        kidProfileId: profileId,
         videoId: video.videoId,
       });
       setShowRemoveConfirm(null);
@@ -2738,9 +2746,9 @@ function RequestsTab({ requests, profileId, userId }) {
 
   const totalPending = pendingVideoRequests.length + pendingChannelRequests.length;
 
-  // Track already-requested IDs
+  // Track already-requested IDs (a revoked request can be asked for again)
   useEffect(() => {
-    const videoIds = new Set(requests.map(r => r.videoId));
+    const videoIds = new Set(requests.filter(r => r.status !== 'revoked').map(r => r.videoId));
     setRequestedVideoIds(videoIds);
   }, [requests]);
 

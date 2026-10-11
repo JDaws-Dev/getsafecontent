@@ -17,6 +17,124 @@ function QRCode({ url, size = 120 }) {
   );
 }
 
+// Full per-device walkthrough lives on the hub so every app links one place.
+export const LOCK_DOWN_GUIDE_URL = 'https://getsafefamily.com/guides/lock-down';
+
+const siteCode = 'bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600 break-all';
+
+function WarningIcon({ className }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+    </svg>
+  );
+}
+
+// Approving youtube.com (often while troubleshooting playback) unlocks ALL of
+// YouTube on a Family Link device. SafeTube never needs it.
+function NeverApproveYouTube() {
+  return (
+    <div className="mb-6 bg-red-50 border-2 border-red-300 rounded-lg p-4">
+      <div className="flex gap-3">
+        <WarningIcon className="w-6 h-6 text-red-600 flex-shrink-0" />
+        <div className="text-sm text-red-900 space-y-1">
+          <p className="font-bold">Never approve youtube.com or m.youtube.com, even if a video won't play.</p>
+          <p>One approval unlocks all of YouTube. SafeTube only needs <code className={siteCode}>youtube-nocookie.com</code>, which is just the video player: no search, no browsing.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AllowedSites() {
+  const sites = [
+    ['getsafefamily.com', 'Safe Family and SafeTube'],
+    ['getsafetube.com', 'SafeTube'],
+    ['youtube-nocookie.com', 'Video player only (no search, no browsing)'],
+  ];
+  return (
+    <div className="mt-3 space-y-2">
+      {sites.map(([site, why]) => (
+        <div key={site} className="bg-white border border-accent-200 rounded-lg p-3">
+          <p className="text-sm"><code className={siteCode}>{site}</code></p>
+          <p className="text-xs text-gray-500 mt-1">{why}</p>
+        </div>
+      ))}
+      <p className="text-xs text-gray-600">That's all SafeTube needs. Add your child's school sites if they use them.</p>
+    </div>
+  );
+}
+
+function BlockedSites() {
+  return (
+    <div className="mt-3 bg-white border border-red-200 rounded-lg p-3">
+      <p className="text-sm font-semibold text-gray-900 mb-1">Then, under <strong>Manage sites</strong> → <strong>Blocked</strong>, add:</p>
+      <p className="text-sm"><code className={siteCode}>youtube.com</code> and <code className={siteCode}>m.youtube.com</code></p>
+      <p className="text-xs text-gray-500 mt-1">A second lock in case YouTube is ever approved by mistake.</p>
+    </div>
+  );
+}
+
+function FamilyLinkSiteSteps() {
+  return (
+    <ol className="space-y-2 text-sm text-gray-700">
+      <li>1. Open the <strong>Family Link</strong> app on your phone</li>
+      <li>2. Select your child's account</li>
+      <li>3. Tap <strong>Controls</strong> → <strong>Content restrictions</strong> → <strong>Google Chrome</strong></li>
+      <li>4. Select <strong>"Only allow approved sites"</strong></li>
+      <li>5. Tap <strong>Manage sites</strong> → <strong>Approved</strong> and add these:</li>
+    </ol>
+  );
+}
+
+function PlayStoreSteps() {
+  return (
+    <div>
+      <h4 className="font-semibold text-gray-900 mb-2 text-sm">Lock down Google Play</h4>
+      <ol className="space-y-2 text-sm text-gray-700">
+        <li>1. In Family Link: <strong>Controls</strong> → <strong>Content restrictions</strong> → <strong>Google Play</strong> → set <strong>Require approval for</strong> to <strong>All content</strong></li>
+        <li>2. In <strong>Controls</strong> → <strong>Apps</strong>, <strong>block</strong> YouTube, YouTube Kids and any other browser apps</li>
+      </ol>
+    </div>
+  );
+}
+
+function GuestModeWarning() {
+  return (
+    <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
+      <div className="flex gap-3">
+        <WarningIcon className="w-6 h-6 text-amber-600 flex-shrink-0" />
+        <div className="text-sm text-amber-900">
+          <p className="font-bold mb-1">Turn off Guest mode</p>
+          <p className="mb-2">A guest on a Chromebook gets Chrome with no Family Link at all: no filter, no time limits. Only the owner (the first account ever signed in to this Chromebook) can turn it off:</p>
+          <ol className="space-y-1">
+            <li>1. Sign in as the owner → <strong>Settings</strong> → <strong>Security and privacy</strong> (older: <strong>Privacy and security</strong>) → <strong>Manage other people</strong></li>
+            <li>2. Turn <strong>off</strong> "Enable Guest browsing"</li>
+            <li>3. Turn <strong>on</strong> "Restrict sign-in to the following users" and list only your child and you</li>
+          </ol>
+          <p className="mt-2 text-xs">Check: after signing out, the login screen shows no "Browse as Guest".</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FullGuideLink({ anchor }) {
+  return (
+    <a
+      href={`${LOCK_DOWN_GUIDE_URL}#${anchor}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 text-sm font-semibold text-accent-600 hover:underline"
+    >
+      Full step-by-step guide, plus a 5-minute check
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
+    </a>
+  );
+}
+
 export default function GettingStarted({ userData, onNavigate }) {
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -139,83 +257,60 @@ export default function GettingStarted({ userData, onNavigate }) {
           </button>
         </div>
 
+        {/* Shown for every device: the one mistake that undoes everything */}
+        <NeverApproveYouTube />
+
         {/* Device Instructions */}
         {selectedDevice === 'ios' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6">
-            <h3 className="font-bold text-gray-900 mb-3">iPhone/iPad Setup</h3>
-            <ol className="space-y-2 text-sm text-gray-700">
-              <li>1. Open <strong>Settings</strong> → <strong>Screen Time</strong></li>
-              <li>2. Turn on Screen Time and set a passcode</li>
-              <li>3. Tap <strong>Content & Privacy Restrictions</strong> → Turn ON</li>
-              <li>4. Tap <strong>Content Restrictions</strong> → <strong>Web Content</strong></li>
-              <li>5. Select <strong>"Allowed Websites Only"</strong></li>
-              <li>6. Delete ALL pre-added websites (swipe left to delete)</li>
-              <li>7. Tap <strong>"Add Website"</strong> and add:</li>
-            </ol>
-            <div className="mt-3 bg-white border border-accent-200 rounded-lg p-3">
-              <p className="text-sm"><strong>Title:</strong> SafeTube</p>
-              <p className="text-sm"><strong>URL:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafefamily.com</code></p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6 space-y-4">
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3">iPhone/iPad Setup (Screen Time)</h3>
+              <ol className="space-y-2 text-sm text-gray-700">
+                <li>1. Open <strong>Settings</strong> → <strong>Screen Time</strong></li>
+                <li>2. Turn on Screen Time and set a passcode your child doesn't know</li>
+                <li>3. Tap <strong>Content & Privacy Restrictions</strong> → Turn ON</li>
+                <li>4. Tap <strong>App Store, Media, Web & Games</strong> (older iOS: <strong>Content Restrictions</strong>) → <strong>Web Content</strong></li>
+                <li>5. Select <strong>"Allowed Websites Only"</strong></li>
+                <li>6. Delete ALL pre-added websites (swipe left to delete)</li>
+                <li>7. Tap <strong>"Add Website"</strong> for each of these:</li>
+              </ol>
+              <AllowedSites />
             </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-2 text-sm">Then remove YouTube</h4>
+              <ol className="space-y-2 text-sm text-gray-700">
+                <li>1. Delete the <strong>YouTube</strong> and <strong>YouTube Kids</strong> apps if they're installed</li>
+                <li>2. In <strong>Content & Privacy Restrictions</strong> → <strong>iTunes & App Store Purchases</strong>, set <strong>Installing Apps</strong> to <strong>Don't Allow</strong></li>
+              </ol>
+            </div>
+            <FullGuideLink anchor="ios" />
           </div>
         )}
 
         {selectedDevice === 'android' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6">
-            <h3 className="font-bold text-gray-900 mb-3">Android Setup (Family Link)</h3>
-            <ol className="space-y-2 text-sm text-gray-700">
-              <li>1. Open the <strong>Family Link</strong> app on your phone</li>
-              <li>2. Select your child's account</li>
-              <li>3. Tap <strong>Controls</strong> → <strong>Content restrictions</strong> → <strong>Google Chrome</strong></li>
-              <li>4. Select <strong>"Only allow certain sites"</strong></li>
-              <li>5. Tap <strong>Manage sites</strong> → <strong>Add a website</strong></li>
-              <li>6. Add <strong>both</strong> of these websites:</li>
-            </ol>
-            <div className="mt-3 space-y-2">
-              <div className="bg-white border border-accent-200 rounded-lg p-3">
-                <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafefamily.com</code></p>
-                <p className="text-xs text-gray-500 mt-1">SafeTube app (parental controls)</p>
-              </div>
-              <div className="bg-white border border-accent-200 rounded-lg p-3">
-                <p className="text-sm"><strong>Site 2:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">youtube-nocookie.com</code></p>
-                <p className="text-xs text-gray-500 mt-1">Video playback (embed-only, no browsing)</p>
-              </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6 space-y-4">
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3">Android Setup (Family Link)</h3>
+              <FamilyLinkSiteSteps />
+              <AllowedSites />
+              <BlockedSites />
             </div>
-            <div className="mt-4 bg-green-100 border border-green-300 rounded-lg p-3">
-              <p className="text-xs text-green-800">
-                <strong>Why two sites?</strong> youtube-nocookie.com is YouTube's privacy-enhanced embed domain.
-                It <em>only</em> plays videos embedded in SafeTube — your child <strong>cannot</strong> browse or search YouTube directly with this domain.
-              </p>
-            </div>
+            <PlayStoreSteps />
+            <FullGuideLink anchor="android" />
           </div>
         )}
 
         {selectedDevice === 'chromebook' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6">
-            <h3 className="font-bold text-gray-900 mb-3">Chromebook Setup (Family Link)</h3>
-            <ol className="space-y-2 text-sm text-gray-700">
-              <li>1. Open the <strong>Family Link</strong> app on your phone</li>
-              <li>2. Select your child's account</li>
-              <li>3. Tap <strong>Controls</strong> → <strong>Content restrictions</strong> → <strong>Google Chrome</strong></li>
-              <li>4. Select <strong>"Only allow certain sites"</strong></li>
-              <li>5. Tap <strong>Manage sites</strong> → <strong>Add a website</strong></li>
-              <li>6. Add <strong>both</strong> of these websites:</li>
-            </ol>
-            <div className="mt-3 space-y-2">
-              <div className="bg-white border border-accent-200 rounded-lg p-3">
-                <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">getsafefamily.com</code></p>
-                <p className="text-xs text-gray-500 mt-1">SafeTube app (parental controls)</p>
-              </div>
-              <div className="bg-white border border-accent-200 rounded-lg p-3">
-                <p className="text-sm"><strong>Site 2:</strong> <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-600">youtube-nocookie.com</code></p>
-                <p className="text-xs text-gray-500 mt-1">Video playback (embed-only, no browsing)</p>
-              </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6 space-y-4">
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3">Chromebook Setup (Family Link)</h3>
+              <FamilyLinkSiteSteps />
+              <AllowedSites />
+              <BlockedSites />
             </div>
-            <div className="mt-4 bg-green-100 border border-green-300 rounded-lg p-3">
-              <p className="text-xs text-green-800">
-                <strong>Why two sites?</strong> youtube-nocookie.com is YouTube's privacy-enhanced embed domain.
-                It <em>only</em> plays videos embedded in SafeTube — your child <strong>cannot</strong> browse or search YouTube directly with this domain.
-              </p>
-            </div>
+            <GuestModeWarning />
+            <PlayStoreSteps />
+            <FullGuideLink anchor="chromebook" />
           </div>
         )}
 

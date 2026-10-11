@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { signKidPass, verifyKidPass } from "./safeAuth";
+import { signKidSession, verifyKidSession } from "./kidSession";
 
 /**
  * Cross-app "kid pass" endpoints — the kid-side twin of the parent Marketing
@@ -21,11 +22,17 @@ function secret() {
 }
 
 /**
- * Mint a short-lived pass for the CURRENTLY signed-in kid. The caller (the kid
- * dashboard) already knows its own family code + profile — the server just
- * signs those claims so a sibling app can trust them. No PIN is re-checked
- * here: the kid is already authenticated in this app, and the pass only carries
- * them sideways as the same kid.
+ * Mint a short-lived pass for the CURRENTLY signed-in kid, so a sibling app
+ * can trust "this is Bella" without asking for her PIN again.
+ *
+ * The caller must prove it IS that kid: for a PIN-protected profile it has to
+ * present the kid session token issued when the kid entered their own PIN
+ * (attemptKidPin) or redeemed a pass (redeemKidPass) on this device. Before
+ * this, anyone with the family code could mint a pass for any sibling's name
+ * and skip their PIN via /play?kt=. Profiles without a PIN need no session —
+ * there is no PIN to bypass. Returns { token: null } (never throws) when the
+ * caller can't prove it, so the switcher falls back to a plain link and the
+ * destination app asks for the PIN.
  */
 export const mintKidPass = mutation({
   args: {
@@ -33,12 +40,33 @@ export const mintKidPass = mutation({
     kidName: v.string(),
     avatar: v.optional(v.string()),
     color: v.optional(v.string()),
+    kidSession: v.optional(v.string()),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
+    const none = { token: null as string | null };
     const fc = args.familyCode.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
-    if (fc.length !== 6 || !args.kidName.trim()) return { token: null as string | null };
+    if (fc.length !== 6 || !args.kidName.trim()) return none;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_familyCode", (q) => q.eq("familyCode", fc))
+      .first();
+    if (!user) return none;
+    const profiles = await ctx.db
+      .query("kidProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    const want = args.kidName.trim().toLowerCase();
+    const profile = profiles.find((p) => (p.name ?? "").trim().toLowerCase() === want);
+    if (!profile) return none;
+
+    if (profile.pin) {
+      const session = await verifyKidSession(args.kidSession);
+      if (!session || session.pid !== profile._id || session.fc !== fc) return none;
+    }
+
     const token = await signKidPass(
-      { fc, kid: args.kidName.trim(), av: args.avatar, col: args.color },
+      { fc, kid: profile.name.trim(), av: args.avatar, col: args.color },
       secret(),
     );
     return { token };
@@ -76,11 +104,17 @@ export const redeemKidPass = mutation({
       return { ok: false as const, reason: "no-profile" as const, familyCode: claims.fc };
     }
 
+    // NB: everything below the pass is only as strong as the app that minted
+    // it. SafeTube now requires the kid's own session to mint; sibling apps
+    // must do the same, or their passes remain a PIN bypass into SafeTube.
     const { pin, ...rest } = match;
     return {
       ok: true as const,
       familyCode: claims.fc,
       profile: { ...rest, hasPin: Boolean(pin) },
+      // The pass proves the kid, so this device gets a kid session too — keeps
+      // one-tap switching working onward from SafeTube.
+      kidSession: await signKidSession({ fc: claims.fc, pid: match._id }),
     };
   },
 });

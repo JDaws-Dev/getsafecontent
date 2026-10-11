@@ -152,6 +152,7 @@ export default function Settings({ userData, onLogout }) {
       await updateUser({
         userId: userData._id,
         name: editName.trim(),
+        userToken: token ?? undefined,
       });
 
       setEditNameSuccess('Name updated successfully!');

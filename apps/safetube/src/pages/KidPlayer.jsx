@@ -25,6 +25,9 @@ export default function KidPlayer() {
   const [familyCode, setFamilyCode] = useState(urlFamilyCode || '');
   const [codeInput, setCodeInput] = useState('');
   const [selectedProfile, setSelectedProfile] = useState(null);
+  // Short-lived proof that this device signed in as selectedProfile (PIN or
+  // kid pass). Kept in memory only, like the selected profile itself.
+  const [kidSession, setKidSession] = useState(null);
   const [playingVideo, setPlayingVideo] = useState(null);
   const [playContext, setPlayContext] = useState(null); // { shortsList, isFromChannel }
   const [error, setError] = useState('');
@@ -150,6 +153,7 @@ export default function KidPlayer() {
             // the selected kid, then KidHome renders straight away.
             setFamilyCode(res.familyCode);
             setSelectedProfile(res.profile);
+            setKidSession(res.kidSession ?? null);
             setCodeInput(res.familyCode);
             return;
           }
@@ -198,12 +202,14 @@ export default function KidPlayer() {
     setFamilyCode(trimmed.toUpperCase());
   };
 
-  const handleProfileSelect = (profile) => {
+  const handleProfileSelect = (profile, session = null) => {
     setSelectedProfile(profile);
+    setKidSession(session);
   };
 
   const handleBackToProfiles = () => {
     setSelectedProfile(null);
+    setKidSession(null);
     setPlayingVideo(null);
   };
 
@@ -376,6 +382,7 @@ export default function KidPlayer() {
           canWatchStatus={canWatchStatus}
           userId={user?._id}
           onSwitchProfile={handleBackToProfiles}
+          kidSession={kidSession}
         />
       </div>
 

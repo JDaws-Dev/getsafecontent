@@ -46,7 +46,7 @@ export default function ContentLibrary({ userId, kidProfiles, selectedKidId, onS
 
   const videos = useQuery(
     api.videos.getApprovedVideos,
-    selectedKidId ? { kidProfileId: selectedKidId } : 'skip'
+    selectedKidId ? { kidProfileId: selectedKidId, userToken: token ?? undefined } : 'skip'
   );
 
   // Mutations

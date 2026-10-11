@@ -94,7 +94,7 @@ export default function OnboardingPage() {
       }
 
       // Mark onboarding complete
-      await completeOnboarding({ userId: user._id });
+      await completeOnboarding({ userId: user._id, userToken: token ?? undefined });
 
       // Show family code modal
       setShowFamilyCodeModal(true);

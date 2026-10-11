@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireOwner, requireProfileOwner } from "./identity";
+import { reconcileKidContent } from "./playability";
 
 // Get all approved channels for a kid
 export const getApprovedChannels = query({
@@ -136,7 +137,9 @@ export const addChannelToMultipleKids = mutation({
   },
 });
 
-// Remove a channel from approved list
+// Remove a channel from approved list. Also drops that channel's videos from
+// the kid's playlists and marks matching approved requests "revoked" — except
+// videos the parent approved individually, which stay playable.
 export const removeApprovedChannel = mutation({
   args: {
     kidProfileId: v.id("kidProfiles"),
@@ -155,5 +158,7 @@ export const removeApprovedChannel = mutation({
     if (channel) {
       await ctx.db.delete(channel._id);
     }
+
+    await reconcileKidContent(ctx, args.kidProfileId);
   },
 });

@@ -200,7 +200,7 @@ export default function YouTubeSearch({ userId, kidProfiles, selectedKidId, onSe
   );
   const existingVideos = useQuery(
     api.videos.getApprovedVideos,
-    selectedKidId ? { kidProfileId: selectedKidId } : 'skip'
+    selectedKidId ? { kidProfileId: selectedKidId, userToken: token ?? undefined } : 'skip'
   );
 
   // Create sets for quick lookup

@@ -10,6 +10,25 @@ import { api } from '../../../convex/_generated/api';
  */
 const STALL_GRACE_MS = 5000;
 
+/**
+ * A friendly name for the kid's device, for the parent's "couldn't play on
+ * Isabella's Chromebook" alert. Only ever one of a fixed set of words; the
+ * server re-checks it against the same list.
+ */
+function friendlyDeviceLabel() {
+  if (typeof navigator === 'undefined') return 'device';
+  const ua = navigator.userAgent || '';
+  if (/CrOS/i.test(ua)) return 'Chromebook';
+  if (/iPad/i.test(ua)) return 'iPad';
+  // iPadOS 13+ reports itself as a Mac; touch support gives it away.
+  if (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1) return 'iPad';
+  if (/iPhone|iPod/i.test(ua)) return 'iPhone';
+  if (/Android/i.test(ua)) return 'Android';
+  if (/Macintosh|Mac OS X/i.test(ua)) return 'Mac';
+  if (/Windows/i.test(ua)) return 'Windows';
+  return 'device';
+}
+
 // Custom YouTube player using postMessage API (no youtube.com/iframe_api script needed)
 // This allows playback on Family Link devices without whitelisting youtube.com
 // Props:
@@ -67,13 +86,26 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
   // Watch history mutations
   const recordWatch = useMutation(api.watchHistory.recordWatch);
   const updateWatchDuration = useMutation(api.watchHistory.updateWatchDuration);
+  const reportPlaybackFailure = useMutation(api.playbackAlerts.reportPlaybackFailure);
+  // Once per player: retries and re-renders shouldn't re-report. The server
+  // also caps it at one parent email per kid per day.
+  const failureReportedRef = useRef(false);
 
   // Apr 2026: reactive canWatch check. Updates when periodic saves push new
   // watchDurationSeconds to the DB. When the limit is hit mid-playback we
   // auto-close instead of waiting for the next video to gate.
+  // Passing the video also makes the server re-check it is still approved, so a
+  // video the parent removes stops mid-play.
   const canWatchStatus = useQuery(
     api.timeLimits.canWatch,
-    kidProfileId ? { kidProfileId } : 'skip'
+    kidProfileId
+      ? {
+          kidProfileId,
+          videoId: video.videoId,
+          channelId: video.channelId || undefined,
+          channelTitle: video.channelTitle || undefined,
+        }
+      : 'skip'
   );
 
   useEffect(() => {
@@ -143,11 +175,12 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
       await updateWatchDuration({
         watchId: watchIdRef.current,
         watchDurationSeconds,
+        kidProfileId: kidProfileId || undefined,
       });
     } catch (err) {
       console.error('Failed to update watch duration:', err);
     }
-  }, [updateWatchDuration, getActivePlayMs]);
+  }, [updateWatchDuration, getActivePlayMs, kidProfileId]);
 
   // Auto-hide controls after 3 seconds
   const resetControlsTimeout = useCallback(() => {
@@ -260,6 +293,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
               title: video.title,
               thumbnailUrl: video.thumbnailUrl,
               channelTitle: video.channelTitle,
+              channelId: video.channelId || undefined,
             }).then(result => {
               // recordWatch now returns { watchId, blocked, timeStatus }.
               // Tolerate the bare-id shape too, so a stale cached bundle talking
@@ -367,6 +401,7 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
               title: video.title,
               thumbnailUrl: video.thumbnailUrl,
               channelTitle: video.channelTitle,
+              channelId: video.channelId || undefined,
             }).then(result => {
               // recordWatch now returns { watchId, blocked, timeStatus }.
               // Tolerate the bare-id shape too, so a stale cached bundle talking
@@ -415,6 +450,17 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
       if (styleEl) styleEl.remove();
     };
   }, [video.videoId, kidProfileId, recordWatch, saveWatchDuration, beginPlaySpan, endPlaySpan, loadAttempt]);
+
+  // The device couldn't reach the video player at all (usually a Family Link /
+  // Screen Time allow-list without youtube-nocookie.com). Tell the parent, so
+  // the kid isn't the one left to "fix YouTube". Fire-and-forget: a failed
+  // report must never get in the way of the kid's screen.
+  useEffect(() => {
+    if (loadFailed !== 'unreachable' || !kidProfileId || failureReportedRef.current) return;
+    failureReportedRef.current = true;
+    reportPlaybackFailure({ kidProfileId, deviceLabel: friendlyDeviceLabel() })
+      .catch((err) => console.warn('[VideoPlayer] Playback-failure report skipped:', err?.message ?? err));
+  }, [loadFailed, kidProfileId, reportPlaybackFailure]);
 
   // Control handlers
   const togglePlayPause = () => {
@@ -759,9 +805,9 @@ export default function VideoPlayer({ video, kidProfileId, onClose, shortsList =
           </div>
           {loadFailed === 'unreachable' ? (
             <>
-              <p className="text-white font-semibold text-xl mb-2">Hmm, this video won't load.</p>
+              <p className="text-white font-semibold text-xl mb-2">This video can't play on this device right now.</p>
               <p className="text-gray-300 mb-6 max-w-sm">
-                It looks like YouTube is blocked on this device, so SafeTube can't play videos here. Ask a grown-up to check.
+                Ask a grown-up to open SafeTube's setup help.
               </p>
             </>
           ) : (

@@ -1,12 +1,16 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { requireOwner, requireProfileOwner } from "./identity";
+import type { Id } from "./_generated/dataModel";
+import { internalQuery, mutation, query } from "./_generated/server";
+import { requireOwner, requireProfileOwner, requireProfileOwnerSoft } from "./identity";
 import { evaluateTimeLimit } from "./timeLimits";
+import { reconcileKidContent } from "./playability";
 
-// Get all approved videos for a kid
+// Get all approved videos for a kid (parent dashboard: ContentLibrary,
+// YouTubeSearch). Soft owner check: enforced whenever a token is sent.
 export const getApprovedVideos = query({
-  args: { kidProfileId: v.id("kidProfiles") },
+  args: { kidProfileId: v.id("kidProfiles"), userToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    await requireProfileOwnerSoft(ctx, args.userToken, args.kidProfileId, "videos.getApprovedVideos");
     const videos = await ctx.db
       .query("approvedVideos")
       .withIndex("by_kid", (q) => q.eq("kidProfileId", args.kidProfileId))
@@ -17,7 +21,8 @@ export const getApprovedVideos = query({
 });
 
 // Get approved videos from a specific channel
-export const getApprovedVideosByChannel = query({
+// Internal-only: no client callers (was a public, unauthenticated read).
+export const getApprovedVideosByChannel = internalQuery({
   args: {
     kidProfileId: v.id("kidProfiles"),
     channelId: v.string(),
@@ -221,7 +226,13 @@ export const addVideoToMultipleKids = mutation({
   },
 });
 
-// Remove a video from approved list (also clears watch history for that video)
+// Remove a video from approved list.
+//
+// Also drops it from the kid's playlists and marks the kid's approved request
+// for it "revoked" (unless it's still allowed via a fully approved channel), so
+// it can't be replayed from My List / playlists. Watch history is KEPT: it is
+// filtered out of the kid's "Recently Watched" on read, and deleting it used to
+// erase today's minutes for that video (refunding screen time).
 export const removeApprovedVideo = mutation({
   args: {
     kidProfileId: v.id("kidProfiles"),
@@ -241,16 +252,7 @@ export const removeApprovedVideo = mutation({
       await ctx.db.delete(video._id);
     }
 
-    // Also remove from watch history so it doesn't show in "Recently Watched"
-    const watchHistory = await ctx.db
-      .query("watchHistory")
-      .withIndex("by_kid_recent", (q) => q.eq("kidProfileId", args.kidProfileId))
-      .filter((q) => q.eq(q.field("videoId"), args.videoId))
-      .collect();
-
-    for (const h of watchHistory) {
-      await ctx.db.delete(h._id);
-    }
+    await reconcileKidContent(ctx, args.kidProfileId);
   },
 });
 
@@ -270,9 +272,14 @@ export const clearAllApprovedVideosForUser = mutation({
 
     // Delete them all
     let deleted = 0;
+    const kidIds = new Set<Id<"kidProfiles">>();
     for (const video of videos) {
       await ctx.db.delete(video._id);
+      kidIds.add(video.kidProfileId);
       deleted++;
+    }
+    for (const kidProfileId of kidIds) {
+      await reconcileKidContent(ctx, kidProfileId);
     }
 
     return { deleted };

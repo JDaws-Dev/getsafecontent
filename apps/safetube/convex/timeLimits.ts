@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { requireOwner, requireProfileOwner } from "./identity";
+import { isVideoPlayableForKid } from "./playability";
 
 // Get time limit settings for a kid — parent-only (the kid side reads its own
 // status through `canWatch`, which is deliberately open; see the note there).
@@ -191,6 +192,21 @@ export async function evaluateTimeLimit(
   ctx: { db: any },
   kidProfileId: Id<"kidProfiles">,
 ) {
+  // PARENT PAUSE BEATS EVERYTHING. Previously only the client checked
+  // videoPaused, so a tampered client (or a video already playing when the
+  // parent flipped the switch) kept going. Folding it in here makes
+  // getPlayableContent stop serving content and canWatch report blocked, which
+  // the player's auto-close reacts to.
+  const pausedProfile = await ctx.db.get(kidProfileId);
+  if (pausedProfile?.videoPaused) {
+    return {
+      canWatch: false,
+      reason: "paused_by_parent",
+      remainingMinutes: null,
+      minutesRemaining: null,
+    };
+  }
+
   // FAMILY-WIDE LIMIT TAKES PRECEDENCE.
   //
   // Parents set EITHER a per-app limit OR one overall limit across all five
@@ -315,12 +331,31 @@ export async function evaluateTimeLimit(
 // (no PII, nothing cross-family), and knowing your own remaining minutes grants
 // no extra access — the actual gate is videos.getPlayableContent, which refuses
 // to serve content once the cap is hit.
+//
+// Optional videoId (+ channelId / channelTitle): when the player passes the
+// video it is showing, canWatch also reports blocked (reason "not_approved")
+// if that video is no longer approved for this kid — a play-time guard, so a
+// video the parent removes mid-playback stops the same way a time limit does.
 export const canWatch = query({
-  args: { kidProfileId: v.id("kidProfiles") },
+  args: {
+    kidProfileId: v.id("kidProfiles"),
+    videoId: v.optional(v.string()),
+    channelId: v.optional(v.string()),
+    channelTitle: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     // Delegates to the shared evaluator so the UI can never disagree with what
     // the content feed enforces.
-    return await evaluateTimeLimit(ctx, args.kidProfileId);
+    const status = await evaluateTimeLimit(ctx, args.kidProfileId);
+    if (status.canWatch && args.videoId) {
+      const playable = await isVideoPlayableForKid(ctx, args.kidProfileId, {
+        videoId: args.videoId,
+        channelId: args.channelId,
+        channelTitle: args.channelTitle,
+      });
+      if (!playable) return { ...status, canWatch: false, reason: "not_approved" };
+    }
+    return status;
   },
 });
 

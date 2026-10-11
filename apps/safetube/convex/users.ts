@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { api } from "./_generated/api";
+import { requireOwner } from "./identity";
 
 // Generate a random 6-character family code
 function generateFamilyCode(): string {
@@ -122,7 +123,9 @@ export const getUserByFamilyCode = query({
 });
 
 // Set parent PIN
-export const setParentPin = mutation({
+// Internal-only: no callers; as a public mutation anyone could overwrite any
+// parent's PIN by userId.
+export const setParentPin = internalMutation({
   args: {
     userId: v.id("users"),
     pinHash: v.string(),
@@ -135,7 +138,9 @@ export const setParentPin = mutation({
 });
 
 // Verify parent PIN
-export const verifyParentPin = query({
+// Internal-only: no callers; as a public query it handed the stored PIN hash to
+// anyone who knew a userId.
+export const verifyParentPin = internalQuery({
   args: {
     userId: v.id("users"),
   },
@@ -149,8 +154,10 @@ export const verifyParentPin = query({
 export const completeOnboarding = mutation({
   args: {
     userId: v.id("users"),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "users.completeOnboarding");
     await ctx.db.patch(args.userId, {
       onboardingCompleted: true,
     });
@@ -184,12 +191,23 @@ export const checkOnboardingStatus = query({
 });
 
 // Set user timezone
+// Parent-only: the timezone decides when "today" starts and when allowed
+// hours apply, so an unauthenticated caller could shift a kid's bedtime or
+// reset their daily minutes.
 export const setTimezone = mutation({
   args: {
     userId: v.id("users"),
     timezone: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "users.setTimezone");
+    // Reject junk so a bad value can't break day/hour maths.
+    try {
+      new Intl.DateTimeFormat("en-US", { timeZone: args.timezone });
+    } catch {
+      throw new Error("Unknown timezone.");
+    }
     await ctx.db.patch(args.userId, {
       timezone: args.timezone,
     });
@@ -287,8 +305,10 @@ export const updateUser = mutation({
   args: {
     userId: v.id("users"),
     name: v.string(),
+    userToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireOwner(ctx, args.userToken, args.userId, "users.updateUser");
     const user = await ctx.db.get(args.userId);
     if (!user) {
       throw new Error("User not found");

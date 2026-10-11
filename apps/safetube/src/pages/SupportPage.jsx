@@ -84,6 +84,29 @@ export default function SupportPage() {
           </div>
         </div>
 
+        {/* Most common setup question: videos won't play on a locked-down device */}
+        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-8">
+          <div className="flex gap-4">
+            <svg className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+            </svg>
+            <div className="text-sm text-red-900 space-y-2">
+              <h3 className="font-semibold text-base">Videos won't play on your child's device?</h3>
+              <p>
+                On Family Link or Screen Time, approve <strong>youtube-nocookie.com</strong> (the video player
+                only: no search, no browsing). <strong>Never approve youtube.com or m.youtube.com</strong>, even
+                if a video won't play. One approval unlocks all of YouTube.
+              </p>
+              <a
+                href="https://getsafefamily.com/guides/lock-down"
+                className="inline-block font-semibold text-red-700 underline underline-offset-2"
+              >
+                Step-by-step setup help for each device
+              </a>
+            </div>
+          </div>
+        </div>
+
         {/* Contact Form */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Send a Message</h2>

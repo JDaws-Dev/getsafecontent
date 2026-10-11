@@ -11,6 +11,7 @@ import ContentLibrary from '../components/admin/ContentLibrary';
 import VideoRequests from '../components/admin/VideoRequests';
 import Settings from '../components/admin/Settings';
 import GettingStarted from '../components/admin/GettingStarted';
+import PlaybackAlertBanner from '../components/admin/PlaybackAlertBanner';
 import UpgradePrompt from '../components/UpgradePrompt';
 import { SafeFamilyParentSwitcher } from '../components/SafeFamilySwitcher';
 
@@ -141,13 +142,15 @@ export default function AdminDashboard() {
 
   // Auto-detect and save user's timezone
   useEffect(() => {
-    if (userData?._id && !userData?.timezone) {
+    // Parent-only on the server, so wait for the login token.
+    if (userData?._id && !userData?.timezone && token) {
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (detectedTimezone) {
-        setTimezone({ userId: userData._id, timezone: detectedTimezone });
+        setTimezone({ userId: userData._id, timezone: detectedTimezone, userToken: token })
+          .catch((err) => console.warn('[AdminDashboard] Timezone save skipped:', err?.message ?? err));
       }
     }
-  }, [userData, setTimezone]);
+  }, [userData, setTimezone, token]);
 
   // Set first kid as selected by default
   useEffect(() => {
@@ -614,6 +617,9 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
 
   return (
     <div className="space-y-6">
+      {/* A kid's device couldn't play videos: tell the parent the right fix */}
+      <PlaybackAlertBanner token={token} />
+
       {/* Header with Welcome and Family Code */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

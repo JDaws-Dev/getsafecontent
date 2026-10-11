@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireOwner, requireProfileOwner } from "./identity";
+import { isPlayableWith, loadKidApprovals } from "./playability";
 
 // Create a video request from a kid
 export const createRequest = mutation({
@@ -126,7 +127,10 @@ export const getAllRequests = query({
   },
 });
 
-// Get request status for a kid (to show them their pending requests)
+// Get request status for a kid (to show them their pending requests).
+// The kid's "My List" plays approved requests directly, so an approved request
+// whose video the parent has since removed is reported as "revoked" (covers
+// removals made before removal started marking rows — see reconcileKidContent).
 export const getKidRequests = query({
   args: { kidProfileId: v.id("kidProfiles") },
   handler: async (ctx, args) => {
@@ -136,7 +140,12 @@ export const getKidRequests = query({
       .order("desc")
       .take(20);
 
-    return requests;
+    const approvals = await loadKidApprovals(ctx, args.kidProfileId);
+    return requests.map((r) =>
+      r.status === "approved" && !isPlayableWith(approvals, r)
+        ? { ...r, status: "revoked" }
+        : r,
+    );
   },
 });
 
