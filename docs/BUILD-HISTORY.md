@@ -6,6 +6,14 @@
 
 ---
 
+## Current Status (November 2, 2026)
+
+**SafeTunes: one-tap Add to Discover + kid playlist reordering — DEPLOYED** (commit 90b0065a, backend `formal-chihuahua-623` then frontend; live on getsafetunes.com and getsafefamily.com/tunes, verified by content markers in the AdminPage and ChildLoginPage chunks). Asked for by Michael K (support email, Nov 1).
+- Album action sheet now has **Add to Discover** under Quick Add; it opens AlbumInspector straight to the destination sheet with Discover preselected (`startDestination` prop). Previously Discover was only reachable via Review Album -> Next.
+- Kid playlist view has a reorder toggle (up/down arrows per song, optimistic with rollback).
+- `playlists.reorderPlaylistSongs` rewritten: takes `{playlistId, kidProfileId, order: appleSongId[]}`, must match the playlist's kid, and only permutes existing songs. The old version (no callers) replaced the whole song array — a way to inject unapproved songs. Tested on dev: swap works, injected id ignored, bad kid id refused.
+- Other playlist mutations (add/remove/rename/delete) still have no ownership check — same class as the open kid-path items.
+
 ## Current Status (October 11, 2026)
 
 **SafeTube buttoned up after a real escape — DEPLOYED** (hub backend+frontend, then SafeTube
