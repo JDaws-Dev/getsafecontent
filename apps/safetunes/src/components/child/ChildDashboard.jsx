@@ -156,6 +156,9 @@ function ChildDashboard({ onLogout }) {
   const [selectedSongForPlaylist, setSelectedSongForPlaylist] = useState(null);
   const [selectedAlbumForPlaylist, setSelectedAlbumForPlaylist] = useState(null);
   const [selectedPlaylistView, setSelectedPlaylistView] = useState(null);
+  const [isReorderingPlaylist, setIsReorderingPlaylist] = useState(false);
+  // Reorder mode is per visit: leaving or switching playlists turns it off.
+  useEffect(() => { setIsReorderingPlaylist(false); }, [selectedPlaylistView?._id]);
   const [songToRemoveFromPlaylist, setSongToRemoveFromPlaylist] = useState(null); // { playlistId, song } for confirmation
   const [songContextMenu, setSongContextMenu] = useState(null); // { song, x, y } for context menu
 
@@ -341,6 +344,7 @@ function ChildDashboard({ onLogout }) {
   const addSongsToPlaylistMutation = useMutation(api.playlists.addSongsToPlaylist);
   const deletePlaylistMutation = useMutation(api.playlists.deletePlaylist);
   const removeSongFromPlaylistMutation = useMutation(api.playlists.removeSongFromPlaylist);
+  const reorderPlaylistSongsMutation = useMutation(api.playlists.reorderPlaylistSongs);
   const addRecentlyPlayedMutation = useMutation(api.recentlyPlayed.addRecentlyPlayed);
   const logBlockedSearch = useMutation(api.blockedSearches.logBlockedSearch);
   const addListeningTimeMutation = useMutation(api.timeControls.addListeningTime);
@@ -2012,6 +2016,29 @@ function ChildDashboard({ onLogout }) {
     } catch (err) {
       console.error('Failed to remove song:', err);
       showToast('Failed to remove song', 'error');
+    }
+  };
+
+  // Move a song up (-1) or down (+1). The screen updates right away; if the
+  // save fails it snaps back.
+  const handleMoveSongInPlaylist = async (index, direction) => {
+    const playlist = selectedPlaylistView;
+    const target = index + direction;
+    if (!playlist || target < 0 || target >= playlist.songs.length) return;
+    const previousSongs = playlist.songs;
+    const songs = [...previousSongs];
+    [songs[index], songs[target]] = [songs[target], songs[index]];
+    setSelectedPlaylistView(prev => (prev && prev._id === playlist._id ? { ...prev, songs } : prev));
+    try {
+      await reorderPlaylistSongsMutation({
+        playlistId: playlist._id,
+        kidProfileId: kidProfile._id,
+        order: songs.map(s => s.appleSongId),
+      });
+    } catch (err) {
+      console.error('Failed to reorder playlist:', err);
+      setSelectedPlaylistView(prev => (prev && prev._id === playlist._id ? { ...prev, songs: previousSongs } : prev));
+      showToast("Couldn't move that song. Try again.", 'error');
     }
   };
 
@@ -3944,6 +3971,23 @@ function ChildDashboard({ onLogout }) {
                               </svg>
                               Play All
                             </button>
+                            {selectedPlaylistView.songs?.length > 1 && (
+                              <button
+                                onClick={() => setIsReorderingPlaylist(v => !v)}
+                                className={`px-4 py-3 font-semibold rounded-lg transition ${
+                                  isReorderingPlaylist
+                                    ? 'bg-accent-600 hover:bg-accent-700 text-white'
+                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                }`}
+                                title={isReorderingPlaylist ? 'Done reordering' : 'Change song order'}
+                              >
+                                {isReorderingPlaylist ? 'Done' : (
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                  </svg>
+                                )}
+                              </button>
+                            )}
                             <button
                               onClick={() => handleDeletePlaylist(selectedPlaylistView._id)}
                               className="px-4 py-3 bg-red-100 hover:bg-red-200 text-red-600 font-semibold rounded-lg transition"
@@ -4008,15 +4052,42 @@ function ChildDashboard({ onLogout }) {
                                       <p className={`text-xs truncate ${isCurrentlyPlaying ? 'text-accent-500' : 'text-gray-500'}`}>{song.artistName}</p>
                                     </div>
                                   </button>
-                                  <button
-                                    onClick={() => confirmRemoveSongFromPlaylist(selectedPlaylistView._id, song)}
-                                    className="p-2 hover:bg-red-100 text-gray-400 hover:text-red-600 rounded-lg transition flex-shrink-0"
-                                    title="Remove from playlist"
-                                  >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                  </button>
+                                  {isReorderingPlaylist ? (
+                                    <div className="flex flex-shrink-0">
+                                      <button
+                                        onClick={() => handleMoveSongInPlaylist(index, -1)}
+                                        disabled={index === 0}
+                                        className="p-2 hover:bg-accent-50 text-gray-500 hover:text-accent-600 rounded-lg transition disabled:opacity-30 disabled:hover:bg-transparent"
+                                        title="Move up"
+                                        aria-label={`Move ${song.songName} up`}
+                                      >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                        </svg>
+                                      </button>
+                                      <button
+                                        onClick={() => handleMoveSongInPlaylist(index, 1)}
+                                        disabled={index === selectedPlaylistView.songs.length - 1}
+                                        className="p-2 hover:bg-accent-50 text-gray-500 hover:text-accent-600 rounded-lg transition disabled:opacity-30 disabled:hover:bg-transparent"
+                                        title="Move down"
+                                        aria-label={`Move ${song.songName} down`}
+                                      >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => confirmRemoveSongFromPlaylist(selectedPlaylistView._id, song)}
+                                      className="p-2 hover:bg-red-100 text-gray-400 hover:text-red-600 rounded-lg transition flex-shrink-0"
+                                      title="Remove from playlist"
+                                    >
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </button>
+                                  )}
                                 </div>
                               );
                             })}

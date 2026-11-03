@@ -175,6 +175,26 @@ function ActionSheet({ isOpen, onClose, item, onAdd, onAddToDiscover, onAIReview
                     </p>
                   </div>
                 </button>
+                <button
+                  onClick={() => {
+                    onAddToDiscover?.(item);
+                    onClose();
+                  }}
+                  disabled={kidProfiles.length === 0}
+                  className="mt-2 w-full flex items-center gap-3 p-3 bg-white hover:bg-gray-50 rounded-xl transition text-left border border-gray-200 disabled:opacity-50"
+                >
+                  <div className="w-9 h-9 rounded-full bg-accent-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900 text-sm">Add to Discover</p>
+                    <p className="text-xs text-gray-500">
+                      {kidProfiles.length === 0 ? 'Add kids first' : 'Kids can browse it and add it themselves'}
+                    </p>
+                  </div>
+                </button>
               </div>
             </>
           ) : (
@@ -775,6 +795,7 @@ export default function AddMusic({ user }) {
   // Album Inspector state (new redesigned flow)
   const [showAlbumInspector, setShowAlbumInspector] = useState(false);
   const [inspectorAlbum, setInspectorAlbum] = useState(null);
+  const [inspectorStartDestination, setInspectorStartDestination] = useState(null);
 
   // Song preview player state
   const [playingTrackId, setPlayingTrackId] = useState(null);
@@ -1132,12 +1153,13 @@ export default function AddMusic({ user }) {
 
   const handleAddAlbum = async (album) => {
     // Use new AlbumInspector for albums
+    setInspectorStartDestination(null);
     await handleOpenInspector(album);
   };
 
-  // Handler to open modal with Discover pre-selected
+  // Opens the inspector straight to its destination step with Discover chosen
   const handleAddToDiscover = async (album) => {
-    // Use new AlbumInspector for albums
+    setInspectorStartDestination('discover');
     await handleOpenInspector(album);
   };
 
@@ -2221,8 +2243,10 @@ export default function AddMusic({ user }) {
         onClose={() => {
           setShowAlbumInspector(false);
           setInspectorAlbum(null);
+          setInspectorStartDestination(null);
         }}
         album={inspectorAlbum}
+        startDestination={inspectorStartDestination}
         kidProfiles={kidProfiles}
         onAddSongs={handleInspectorAddSongs}
       />

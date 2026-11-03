@@ -714,8 +714,12 @@ function AlbumSafetyReport({ isOpen, onClose, album, overview, loading, error, o
 }
 
 // Assignment Bottom Sheet Component
-function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfirm }) {
-  const [destination, setDestination] = useState('library'); // 'library' or 'discover'
+function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfirm, initialDestination = 'library' }) {
+  const [destination, setDestination] = useState(initialDestination); // 'library' or 'discover'
+
+  useEffect(() => {
+    if (isOpen) setDestination(initialDestination);
+  }, [isOpen, initialDestination]);
   const [selectedKids, setSelectedKids] = useState([]);
   const [hideArtwork, setHideArtwork] = useState(false);
 
@@ -909,7 +913,7 @@ function AssignmentSheet({ isOpen, onClose, selectedCount, kidProfiles, onConfir
 }
 
 // Main Album Inspector Component
-function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMockData = false }) {
+function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMockData = false, startDestination = null }) {
   const [selectedTracks, setSelectedTracks] = useState(new Set());
   const [playingTrack, setPlayingTrack] = useState(null);
   const [playingTrackMeta, setPlayingTrackMeta] = useState(null);
@@ -924,6 +928,11 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
   // New state for inspectors
   const [lyricsInspectorTrack, setLyricsInspectorTrack] = useState(null);
   const [showAlbumReport, setShowAlbumReport] = useState(false);
+
+  // "Add to Discover" from the album menu skips straight to the destination step.
+  useEffect(() => {
+    if (isOpen && album && startDestination) setShowAssignment(true);
+  }, [isOpen, album, startDestination]);
 
   // Album Overview AI Action (same as AlbumOverviewModal)
   const reviewAlbumOverviewAction = useAction(api.ai.contentReview.reviewAlbumOverview);
@@ -1427,6 +1436,7 @@ function AlbumInspector({ isOpen, onClose, album, kidProfiles, onAddSongs, useMo
         selectedCount={selectedTracks.size}
         kidProfiles={kidProfiles}
         onConfirm={handleAssignmentConfirm}
+        initialDestination={startDestination || 'library'}
       />
 
       {/* Lyrics & Safety Inspector */}

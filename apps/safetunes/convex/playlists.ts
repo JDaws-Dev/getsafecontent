@@ -227,23 +227,34 @@ export const removeSongFromPlaylist = mutation({
   },
 });
 
-// Reorder songs in a playlist
+// Reorder songs in a playlist. Takes only the new order of song ids and
+// rearranges the songs already there, so it can't add, drop or alter a song
+// (the old version replaced the whole list, which could slip in unapproved
+// music). Ids it doesn't mention keep their place at the end.
 export const reorderPlaylistSongs = mutation({
   args: {
     playlistId: v.id("playlists"),
-    songs: v.array(v.object({
-      appleSongId: v.string(),
-      songName: v.string(),
-      artistName: v.string(),
-      albumName: v.optional(v.string()),
-      artworkUrl: v.optional(v.string()),
-      durationInMillis: v.optional(v.number()),
-    })),
+    kidProfileId: v.id("kidProfiles"),
+    order: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.playlistId, {
-      songs: args.songs,
-      updatedAt: Date.now(),
-    });
+    const playlist = await ctx.db.get(args.playlistId);
+    if (!playlist || playlist.kidProfileId !== args.kidProfileId) {
+      throw new Error("Playlist not found");
+    }
+    const byId = new Map(playlist.songs.map((s) => [s.appleSongId, s]));
+    const seen = new Set<string>();
+    const reordered = [];
+    for (const id of args.order) {
+      const song = byId.get(id);
+      if (song && !seen.has(id)) {
+        reordered.push(song);
+        seen.add(id);
+      }
+    }
+    for (const song of playlist.songs) {
+      if (!seen.has(song.appleSongId)) reordered.push(song);
+    }
+    await ctx.db.patch(args.playlistId, { songs: reordered, updatedAt: Date.now() });
   },
 });
