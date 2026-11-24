@@ -58,6 +58,10 @@ export default function PlayPage() {
   const router = useRouter();
   const slug = params?.app?.[0] ?? null;
   const active = useMemo(() => APPS.find((a) => a.slug === slug) ?? null, [slug]);
+  // Solo: one app on its own, no tab bar and a slim header. Home-screen icons
+  // added from /play/<app> open this way (see kid-app-manifest).
+  const solo = search.get("solo") === "1" && !!active && !active.comingSoon;
+  const soloHref = active ? `/play/${active.slug}?solo=1` : "/play";
 
   const [code, setCode] = useState<string | null>(null);
   const [input, setInput] = useState("");
@@ -91,13 +95,14 @@ export default function PlayPage() {
     setCode(c);
     let last: string | null = null;
     try { last = localStorage.getItem(LAST_APP_KEY); } catch { /* ignore */ }
+    if (solo) { router.replace(soloHref); return; }
     router.replace(`/play/${last && APPS.some((a) => a.slug === last) ? last : "tube"}`);
   };
 
   const forget = () => {
     try { localStorage.removeItem(CODE_KEY); } catch { /* ignore */ }
     setCode(null); setInput("");
-    router.replace("/play");
+    router.replace(solo ? soloHref : "/play");
   };
 
   if (!ready) return <div className="min-h-screen bg-cream" />;
@@ -132,9 +137,9 @@ export default function PlayPage() {
 
   // Code known: tabs + the chosen app inside.
   return (
-    <div className="h-screen bg-cream flex flex-col">
-      <Header code={code} onForget={forget} />
-      <nav className="bg-white border-b border-navy/10 px-3 sm:px-6 flex items-center gap-1 overflow-x-auto" aria-label="Apps">
+    <div className="h-[100dvh] bg-cream flex flex-col">
+      <Header code={code} onForget={forget} slim={solo} />
+      {!solo && <nav className="bg-white border-b border-navy/10 px-3 sm:px-6 flex items-center gap-1 overflow-x-auto" aria-label="Apps">
         {APPS.map((a) => {
           const on = active?.slug === a.slug;
           return (
@@ -154,7 +159,7 @@ export default function PlayPage() {
             </Link>
           );
         })}
-      </nav>
+      </nav>}
       {active?.comingSoon ? (
         <main className="flex-1 overflow-y-auto px-6 py-10">
           <div className="max-w-xl mx-auto text-center flex flex-col items-center gap-5">
@@ -196,7 +201,17 @@ export default function PlayPage() {
   );
 }
 
-function Header({ code, onForget }: { code?: string; onForget?: () => void }) {
+function Header({ code, onForget, slim }: { code?: string; onForget?: () => void; slim?: boolean }) {
+  if (slim) {
+    return (
+      <header className="h-9 shrink-0 bg-white border-b border-navy/10 px-3 flex items-center justify-end gap-3 text-xs pt-[env(safe-area-inset-top)] box-content">
+        {code ? (
+          <button onClick={onForget} className="text-navy/45 hover:text-navy font-semibold">Not you?</button>
+        ) : null}
+        <Link href="/login" className="text-navy/45 hover:text-navy font-semibold">Parents</Link>
+      </header>
+    );
+  }
   return (
     <header className="h-16 shrink-0 bg-white border-b border-navy/10 px-4 sm:px-6 flex items-center justify-between">
       <Link href="/play" className="inline-flex items-center gap-2">
