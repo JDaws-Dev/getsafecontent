@@ -111,7 +111,7 @@ export default function PlayPage() {
   if (!code) {
     return (
       <div className="min-h-screen bg-cream flex flex-col">
-        <Header />
+        <Header slim={solo} />
         <main className="flex-1 flex items-center justify-center px-6 pb-16">
           <form onSubmit={submit} className="w-full max-w-sm bg-white rounded-3xl shadow-[0_8px_30px_rgba(34,29,46,0.10)] p-8 flex flex-col gap-5 text-center">
             <h1 className="text-3xl font-bold text-navy">Enter your family code</h1>
@@ -205,11 +205,10 @@ function Header({ code, onForget, slim }: { code?: string; onForget?: () => void
   // No "Parents" link here: a home-screen app has no back button, so a kid who
   // tapped it would be stranded on the parent sign-in page.
   if (slim) {
+    if (!code) return null;
     return (
-      <header className="h-9 shrink-0 bg-white border-b border-navy/10 px-3 flex items-center justify-end gap-3 text-xs pt-[env(safe-area-inset-top)] box-content">
-        {code ? (
-          <button onClick={onForget} className="text-navy/45 hover:text-navy font-semibold">Not you?</button>
-        ) : null}
+      <header className="h-9 shrink-0 bg-white border-b border-navy/10 px-3 flex items-center justify-end gap-3 text-xs">
+        <button onClick={onForget} className="text-navy/45 hover:text-navy font-semibold">Not you?</button>
       </header>
     );
   }

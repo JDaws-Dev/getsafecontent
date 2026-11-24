@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { KID_APPS, kidAppSlug } from "@/lib/kidApps";
 
 /**
  * Home-screen support for the kid door.
@@ -10,26 +11,20 @@ import type { Metadata } from "next";
  * start_url is that page (in solo mode: just that app, no tab bar).
  */
 
-const NAMES: Record<string, string> = {
-  tunes: "SafeTunes",
-  tube: "SafeTube",
-  reads: "SafeReads",
-  study: "SafeStudy",
-  spark: "SafeSpark",
-};
-
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ app?: string[] }>;
 }): Promise<Metadata> {
   const { app } = await params;
-  const slug = app?.[0] && NAMES[app[0]] ? app[0] : null;
-  const name = slug ? NAMES[slug] : "Safe Family";
+  const slug = kidAppSlug(app);
+  const entry = slug ? KID_APPS[slug] : null;
+  const name = entry ? entry.name : "Safe Family";
   return {
     title: slug ? `${name} for kids` : "Safe Family for kids",
     manifest: slug ? `/kid-app-manifest/${slug}` : "/kid-app-manifest",
     appleWebApp: { capable: true, title: name, statusBarStyle: "default" },
+    ...(entry?.apple ? { icons: { apple: [{ url: entry.apple, sizes: "180x180" }] } } : {}),
   };
 }
 
