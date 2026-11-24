@@ -1498,12 +1498,18 @@ function SubscriptionCard({ userData }) {
 
     setCancelLoading(true);
     try {
-      // Send cancellation reason email to admin
-      await sendCancellationReason({
-        userToken: token ?? undefined,
-        reason: cancelReason,
-        otherReason: cancelReason === 'Other' ? cancelOtherReason : undefined,
-      });
+      // The reason email is nice-to-have; never let it block the parent from
+      // reaching the Stripe cancel page (expired sign-in, or an older server
+      // during a deploy).
+      try {
+        await sendCancellationReason({
+          userToken: token ?? undefined,
+          reason: cancelReason,
+          otherReason: cancelReason === 'Other' ? cancelOtherReason : undefined,
+        });
+      } catch (reasonError) {
+        console.error('Failed to send cancellation reason:', reasonError);
+      }
 
       // Close modal and reset state
       setShowCancelModal(false);

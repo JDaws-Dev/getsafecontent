@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SafeTube for Parents",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Instantly add YouTube videos to your kids' SafeTube library while you browse.",
   "permissions": [
     "storage",
@@ -11,7 +11,9 @@
     "https://www.youtube.com/*",
     "https://youtube.com/*",
     "https://getsafetube.com/*",
-    "https://www.getsafetube.com/*"
+    "https://www.getsafetube.com/*",
+    "https://getsafefamily.com/*",
+    "https://www.getsafefamily.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -23,13 +25,27 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/*", "https://youtube.com/*"],
-      "js": ["content.js"],
-      "css": ["content.css"]
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ]
     },
     {
-      "matches": ["https://getsafetube.com/*", "https://www.getsafetube.com/*"],
-      "js": ["connect.js"]
+      "matches": [
+        "https://getsafetube.com/*",
+        "https://www.getsafetube.com/*",
+        "https://getsafefamily.com/*",
+        "https://www.getsafefamily.com/*"
+      ],
+      "js": [
+        "connect.js"
+      ]
     }
   ],
   "icons": {

@@ -1,21 +1,23 @@
 // SafeTube Chrome Extension - Connect Script
-// Runs on getsafetube.com. Mirrors the parent's sign-in token from the web app
+// Runs on getsafefamily.com (SafeTube lives at /tube; the old getsafetube.com
+// address forwards there). Mirrors the parent's sign-in token from the web app
 // into extension storage, so the extension acts as the signed-in parent
 // without ever asking for a password (and so Google sign-in just works).
 //
-// The web app keeps its login in localStorage under `safetube_jwt`. Logging in
+// The web app keeps its login in localStorage under `safefamily_jwt` (the one
+// shared Safe Family sign-in); `safetube_jwt` is the pre-one-site key. Logging in
 // happens in-page (no reload), so we poll briefly rather than rely on events.
 
 (function () {
   'use strict';
 
-  const JWT_KEY = 'safetube_jwt';
+  const JWT_KEYS = ['safefamily_jwt', 'safetube_jwt'];
   let lastSeen = undefined;
 
   async function sync() {
     let token = null;
     try {
-      token = localStorage.getItem(JWT_KEY);
+      token = JWT_KEYS.map((k) => localStorage.getItem(k)).find(Boolean) || null;
     } catch {
       return;
     }

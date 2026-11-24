@@ -276,7 +276,7 @@ export const sendAdminNotification = internalAction({
  * Send admin notification when someone cancels their subscription
  * Includes their reason for cancelling
  */
-export const sendCancellationReasonEmail = internalAction({
+export const sendCancellationReasonEmailInternal = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.string(),
@@ -349,7 +349,7 @@ export const submitCancellationReason = action({
     });
     if (!user) throw new Error("Please sign in again.");
 
-    return await ctx.runAction(internal.emails.sendCancellationReasonEmail, {
+    return await ctx.runAction(internal.emails.sendCancellationReasonEmailInternal, {
       userEmail: verified.email,
       userName: (user.name ?? "").slice(0, 200),
       reason: args.reason.slice(0, 200),
@@ -946,4 +946,21 @@ export const sendAdminTrialExpirationSummary = internalAction({
       return { success: false, error: String(error) };
     }
   },
+});
+
+/**
+ * Compatibility shim for one release: browsers still running the previous
+ * frontend call this public name before opening the Stripe cancel page. It
+ * used to send the email with client-supplied details; now it does nothing
+ * and reports success, so those parents still reach Stripe. Remove once every
+ * cached frontend has rolled over.
+ */
+export const sendCancellationReasonEmail = action({
+  args: {
+    userEmail: v.optional(v.string()),
+    userName: v.optional(v.string()),
+    reason: v.optional(v.string()),
+    otherReason: v.optional(v.string()),
+  },
+  handler: async () => ({ success: true }),
 });

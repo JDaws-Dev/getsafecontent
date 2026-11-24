@@ -47,9 +47,11 @@ const nextConfig: NextConfig = {
         permanent: false,
       },
       {
+        // Keep the path so old links (e.g. share pages /s/<id>) land on the
+        // same page under the hub.
         source: '/:path((?!spark(?:/|$)).+)',
         has: [{ type: 'host' as const, value: host }],
-        destination: 'https://getsafefamily.com/spark',
+        destination: 'https://getsafefamily.com/spark/:path',
         basePath: false as const,
         permanent: false,
       },

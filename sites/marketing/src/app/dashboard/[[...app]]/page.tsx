@@ -23,8 +23,8 @@ import { FamilyTab } from "@/components/dashboard/FamilyTab";
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 
 // SafeSpark is presented as COMING SOON for now: parents see what it is and that
-// it's on the way, but it does not open. Existing SafeSpark accounts can still
-// reach it directly at getsafespark.com — this only changes the hub.
+// it's on the way, but it does not open, unless the family already has
+// SafeSpark, in which case its tab opens the real parent screens.
 const APPS: { id: AppId; slug: string; name: string; tagline: string; color: string; adminPath: string; comingSoon?: boolean; blurb?: string }[] = [
   { id: "safetunes", slug: "tunes", name: "SafeTunes", tagline: "Music", color: "#7C4DE0", adminPath: "/tunes/admin" },
   { id: "safetube", slug: "tube", name: "SafeTube", tagline: "Video", color: "#F0603A", adminPath: "/tube/admin" },
@@ -53,14 +53,15 @@ export default function DashboardPage() {
   const slug = params?.app?.[0] ?? null;
   const showFamily = slug === "family";
   // Apps the family actually has, plus any coming-soon app (shown to everyone so
-  // parents know what's on the way).
-  const entitled = useMemo(
-    () =>
-      APPS.filter(
-        (a) => a.comingSoon || (currentUser?.entitledApps ?? []).includes(a.id)
-      ),
-    [currentUser?.entitledApps]
-  );
+  // parents know what's on the way). A family that already has a coming-soon
+  // app (e.g. SafeSpark comps) gets the real app, not the teaser; its safety
+  // alert emails link here.
+  const entitled = useMemo(() => {
+    const has = currentUser?.entitledApps ?? [];
+    return APPS.filter((a) => a.comingSoon || has.includes(a.id)).map((a) =>
+      a.comingSoon && has.includes(a.id) ? { ...a, comingSoon: false } : a
+    );
+  }, [currentUser?.entitledApps]);
   const active = slug ? entitled.find((a) => a.slug === slug) ?? null : null;
 
   useEffect(() => {

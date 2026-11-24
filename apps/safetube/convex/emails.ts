@@ -1,6 +1,6 @@
 "use node";
 
-import { internalAction } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import { v } from "convex/values";
 import { Resend } from "resend";
 
@@ -8,6 +8,15 @@ import { Resend } from "resend";
  * Send notification emails when a new trial user signs up
  * This sends both admin notification and user welcome email
  */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export const sendTrialSignupEmails = internalAction({
   args: {
     userEmail: v.string(),
@@ -346,7 +355,7 @@ export const sendPaymentFailedEmail = internalAction({
  * Send admin notification when someone cancels their subscription
  * Includes their reason for cancelling
  */
-export const sendCancellationReasonEmail = internalAction({
+export const sendCancellationReasonEmailInternal = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.string(),
@@ -363,15 +372,15 @@ export const sendCancellationReasonEmail = internalAction({
 
       <h2>Customer Details:</h2>
       <ul>
-        <li><strong>Name:</strong> ${args.userName}</li>
-        <li><strong>Email:</strong> ${args.userEmail}</li>
+        <li><strong>Name:</strong> ${escapeHtml(args.userName)}</li>
+        <li><strong>Email:</strong> ${escapeHtml(args.userEmail)}</li>
         <li><strong>Date:</strong> ${new Date().toLocaleString()}</li>
       </ul>
 
       <h2>Reason for Cancelling:</h2>
       <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px; margin: 16px 0;">
-        <p style="margin: 0; font-weight: bold;">${args.reason}</p>
-        ${args.otherReason ? `<p style="margin: 8px 0 0 0; color: #92400E;">${args.otherReason}</p>` : ''}
+        <p style="margin: 0; font-weight: bold;">${escapeHtml(args.reason)}</p>
+        ${args.otherReason ? `<p style="margin: 8px 0 0 0; color: #92400E;">${escapeHtml(args.otherReason)}</p>` : ''}
       </div>
 
       <p>Consider reaching out to understand their experience better.</p>
@@ -385,11 +394,11 @@ export const sendCancellationReasonEmail = internalAction({
       const result = await resend.emails.send({
         from: "SafeTube Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
-        subject: `Cancellation: ${args.userName} - ${args.reason}`,
+        subject: `Cancellation: ${escapeHtml(args.userName)} - ${escapeHtml(args.reason)}`,
         html: emailContent,
       });
 
-      console.log(`Cancellation reason email sent for ${args.userEmail}:`, result);
+      console.log(`Cancellation reason email sent for ${escapeHtml(args.userEmail)}:`, result);
       return { success: true, id: result.data?.id };
     } catch (error) {
       console.error("Failed to send cancellation reason email:", error);
@@ -756,4 +765,21 @@ export const sendAdminTrialExpirationSummary = internalAction({
       return { success: false, error: String(error) };
     }
   },
+});
+
+/**
+ * Compatibility shim for one release: browsers still running the previous
+ * frontend call this public name before opening the Stripe cancel page. It
+ * used to send the email with client-supplied details; now it does nothing
+ * and reports success, so those parents still reach Stripe. Remove once every
+ * cached frontend has rolled over.
+ */
+export const sendCancellationReasonEmail = action({
+  args: {
+    userEmail: v.optional(v.string()),
+    userName: v.optional(v.string()),
+    reason: v.optional(v.string()),
+    otherReason: v.optional(v.string()),
+  },
+  handler: async () => ({ success: true }),
 });

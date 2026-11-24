@@ -560,7 +560,7 @@ export const reportCancellationReason = mutation({
   handler: async (ctx, args) => {
     const me = await resolveTubeIdentity(ctx, args.userToken);
     if (!me || !me.email) throw new Error("Please sign in again.");
-    await ctx.scheduler.runAfter(0, internal.emails.sendCancellationReasonEmail, {
+    await ctx.scheduler.runAfter(0, internal.emails.sendCancellationReasonEmailInternal, {
       userEmail: me.email,
       userName: me.name || me.email,
       reason: args.reason.slice(0, 200),

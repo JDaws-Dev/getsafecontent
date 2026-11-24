@@ -1,7 +1,7 @@
 // SafeTube Chrome Extension - Popup Script
 
 const API_BASE = 'https://rightful-rabbit-333.convex.site'; // SafeTubes production
-const SAFETUBE_URL = 'https://getsafetube.com/admin';
+const SAFETUBE_URL = 'https://getsafefamily.com/dashboard/tube';
 
 // State management
 let kids = [];
@@ -134,7 +134,7 @@ async function init() {
   }
 }
 
-// "Open SafeTube to connect" — the connect script on getsafetube.com copies the
+// "Open SafeTube to connect" — the connect script on getsafefamily.com copies the
 // sign-in over once the parent is logged in there.
 loginBtn.addEventListener('click', () => {
   chrome.tabs.create({ url: SAFETUBE_URL });
