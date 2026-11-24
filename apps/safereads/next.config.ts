@@ -46,6 +46,12 @@ const nextConfig: NextConfig = {
       ],
     },
   ],
+  // Old domain: getsafereads.com (bare) now lives at getsafefamily.com/reads.
+  // basePath:false so this matches the real root, not /reads.
+  redirects: async () => [
+    { source: "/", has: [{ type: "host", value: "getsafereads.com" }], destination: "https://getsafefamily.com/reads", permanent: false, basePath: false },
+    { source: "/", has: [{ type: "host", value: "www.getsafereads.com" }], destination: "https://getsafefamily.com/reads", permanent: false, basePath: false },
+  ],
 };
 
 export default nextConfig;
