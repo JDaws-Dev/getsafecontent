@@ -394,7 +394,7 @@ export const sendCancellationReasonEmailInternal = internalAction({
       const result = await resend.emails.send({
         from: "SafeTube Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
-        subject: `Cancellation: ${escapeHtml(args.userName)} - ${escapeHtml(args.reason)}`,
+        subject: `Cancellation: ${args.userName.slice(0, 80)} - ${args.reason.slice(0, 80)}`,
         html: emailContent,
       });
 
