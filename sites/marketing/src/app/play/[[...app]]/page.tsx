@@ -202,13 +202,14 @@ export default function PlayPage() {
 }
 
 function Header({ code, onForget, slim }: { code?: string; onForget?: () => void; slim?: boolean }) {
+  // No "Parents" link here: a home-screen app has no back button, so a kid who
+  // tapped it would be stranded on the parent sign-in page.
   if (slim) {
     return (
       <header className="h-9 shrink-0 bg-white border-b border-navy/10 px-3 flex items-center justify-end gap-3 text-xs pt-[env(safe-area-inset-top)] box-content">
         {code ? (
           <button onClick={onForget} className="text-navy/45 hover:text-navy font-semibold">Not you?</button>
         ) : null}
-        <Link href="/login" className="text-navy/45 hover:text-navy font-semibold">Parents</Link>
       </header>
     );
   }
