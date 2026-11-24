@@ -49,7 +49,6 @@ function NeverApproveYouTube() {
 function AllowedSites() {
   const sites = [
     ['getsafefamily.com', 'Safe Family and SafeTube'],
-    ['getsafetube.com', 'SafeTube'],
     ['youtube-nocookie.com', 'Video player only (no search, no browsing)'],
   ];
   return (

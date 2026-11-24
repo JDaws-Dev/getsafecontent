@@ -4,6 +4,14 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import Stripe from "stripe";
 
+// Where Stripe sends parents back to. getsafetunes.com is gone for good, so a
+// SITE_URL still pointing there (or unset) falls back to the hub mount.
+function siteUrl(): string {
+  const raw = (process.env.SITE_URL || "").trim().replace(/\/+$/, "");
+  if (!raw || /getsafetunes\.com/i.test(raw)) return "https://getsafefamily.com/tunes";
+  return raw;
+}
+
 // Create Stripe Checkout Session - MONTHLY ONLY
 export const createCheckoutSession = action({
   args: {
@@ -74,8 +82,8 @@ export const createCheckoutSession = action({
             quantity: 1,
           },
         ],
-        success_url: `${process.env.SITE_URL || 'https://getsafetunes.com'}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.SITE_URL || 'https://getsafetunes.com'}/signup?canceled=true`,
+        success_url: `${siteUrl()}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${siteUrl()}/signup?canceled=true`,
         // `apps` lets every shared-account webhook tell which app a purchase is
         // for, so only SafeTunes acts on a SafeTunes checkout (no cross-wired
         // confirmation emails). Keep in sync with subscription_data.metadata below.
@@ -138,7 +146,7 @@ export const createPortalSession = action({
     try{
       const session = await stripe.billingPortal.sessions.create({
         customer: args.stripeCustomerId,
-        return_url: `${process.env.SITE_URL || 'https://getsafetunes.com'}/admin`,
+        return_url: 'https://getsafefamily.com/dashboard/tunes',
       });
 
       return { url: session.url };

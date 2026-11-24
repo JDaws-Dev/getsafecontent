@@ -1,20 +1,5 @@
-import { query, action } from "./_generated/server";
+import { internalQuery } from "./_generated/server";
 import { v } from "convex/values";
-
-/**
- * Check environment variables - action to verify env var access
- */
-export const checkEnv = action({
-  args: {},
-  handler: async () => {
-    const adminKey = process.env.ADMIN_KEY;
-    const resendKey = process.env.RESEND_API_KEY;
-    return {
-      ADMIN_KEY: { exists: !!adminKey, length: adminKey?.length || 0 },
-      RESEND_API_KEY: { exists: !!resendKey, length: resendKey?.length || 0 },
-    };
-  },
-});
 
 /**
  * Debug Auth Query
@@ -22,7 +7,7 @@ export const checkEnv = action({
  * Returns comprehensive auth status for a user across all apps.
  * Used for admin troubleshooting of auth issues.
  */
-export const getAuthStatus = query({
+export const getAuthStatus = internalQuery({
   args: {
     email: v.string(),
   },

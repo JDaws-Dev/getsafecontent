@@ -1424,6 +1424,7 @@ function AddKidModal({ userId, onClose }) {
 
 // Subscription Card Component with Stripe integration
 function SubscriptionCard({ userData }) {
+  const { token } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -1435,7 +1436,7 @@ function SubscriptionCard({ userData }) {
 
   const createCheckoutSession = useAction(api.stripeActions.createCheckoutSession);
   const createPortalSession = useAction(api.stripeActions.createPortalSession);
-  const sendCancellationReason = useAction(api.emails.sendCancellationReasonEmail);
+  const sendCancellationReason = useMutation(api.users.reportCancellationReason);
 
   const status = userData?.subscriptionStatus || 'trial';
   const isTrialExpired = status === 'trial' && userData?.trialEndsAt && Date.now() > userData.trialEndsAt;
@@ -1499,8 +1500,7 @@ function SubscriptionCard({ userData }) {
     try {
       // Send cancellation reason email to admin
       await sendCancellationReason({
-        userEmail: userData?.email || '',
-        userName: userData?.name || '',
+        userToken: token ?? undefined,
         reason: cancelReason,
         otherReason: cancelReason === 'Other' ? cancelOtherReason : undefined,
       });

@@ -57,8 +57,8 @@ const ORGANIZATION_JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'SafeSpark',
-  url: 'https://getsafespark.com',
-  logo: 'https://getsafespark.com/opengraph-image',
+  url: 'https://getsafefamily.com/spark',
+  logo: 'https://getsafefamily.com/spark/opengraph-image',
   description:
     'A safe AI maker for kids ages 10-13. Build games, flashcards, posters, and tools by talking to Spark.',
   sameAs: ['https://getsafefamily.com'],
@@ -68,10 +68,10 @@ const WEBSITE_JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'SafeSpark',
-  url: 'https://getsafespark.com',
+  url: 'https://getsafefamily.com/spark',
   potentialAction: {
     '@type': 'SearchAction',
-    target: 'https://getsafespark.com/blog?q={search_term_string}',
+    target: 'https://getsafefamily.com/spark/blog?q={search_term_string}',
     'query-input': 'required name=search_term_string',
   },
 };
@@ -90,10 +90,10 @@ const NAV_LINKS = [
 // of distinct products, not a rainbow.
 const SIBLING_APPS: Array<{ name: string; href: string; dot: string }> = [
   { name: 'SafeFamily', href: 'https://getsafefamily.com', dot: '#F5A962' },
-  { name: 'SafeTunes', href: 'https://getsafetunes.com', dot: '#7C4DE0' },
-  { name: 'SafeTube', href: 'https://getsafetube.com', dot: '#F0603A' },
-  { name: 'SafeReads', href: 'https://getsafereads.com', dot: '#3AA06B' },
-  { name: 'SafeStudy', href: 'https://getsafestudy.com', dot: '#2F6BF0' },
+  { name: 'SafeTunes', href: 'https://getsafefamily.com/tunes', dot: '#7C4DE0' },
+  { name: 'SafeTube', href: 'https://getsafefamily.com/tube', dot: '#F0603A' },
+  { name: 'SafeReads', href: 'https://getsafefamily.com/reads', dot: '#3AA06B' },
+  { name: 'SafeStudy', href: 'https://getsafefamily.com/study', dot: '#2F6BF0' },
 ];
 
 // Comparison table. `tone` drives the SEMANTIC status icon (green = yes,
@@ -496,7 +496,7 @@ export default function HomePage() {
                 <span className="h-3 w-3 rounded-full bg-emerald-300" />
               </div>
               <span className="ml-2 text-[10px] font-bold text-brand-ink-soft font-mono truncate">
-                getsafespark.com/s/...
+                getsafefamily.com/spark/s/...
               </span>
             </div>
             <Image
@@ -1029,7 +1029,7 @@ export default function HomePage() {
           </div>
           <div className="flex flex-wrap items-center justify-between gap-4 text-xs text-brand-ink-soft pt-2 border-t border-brand-cream-2">
             <div>
-              SafeSpark · A safe way for kids to build with AI · getsafespark.com
+              SafeSpark · A safe way for kids to build with AI · getsafefamily.com/spark
             </div>
             <nav className="flex flex-wrap items-center gap-5 font-bold">
               <Link href="/privacy" className="hover:text-accent-700">Privacy</Link>

@@ -6,11 +6,11 @@ import { Shield, Music, PlaySquare, Book, Search, Sparkles, Menu, X } from "luci
 import { ThemeToggle } from "../ThemeToggle";
 
 const apps = [
-  { name: "SafeTunes", href: "https://getsafetunes.com", icon: Music, color: "text-purple-600", isNew: false },
-  { name: "SafeTube", href: "https://getsafetube.com", icon: PlaySquare, color: "text-red-500", isNew: false },
-  { name: "SafeReads", href: "https://getsafereads.com", icon: Book, color: "text-amber-600", isNew: false },
-  { name: "SafeStudy", href: "https://getsafestudy.com", icon: Search, color: "text-blue-600", isNew: false },
-  { name: "SafeSpark", href: "https://getsafespark.com", icon: Sparkles, color: "text-violet-600", isNew: true },
+  { name: "SafeTunes", href: "/tunes", icon: Music, color: "text-purple-600", comingSoon: false },
+  { name: "SafeTube", href: "/tube", icon: PlaySquare, color: "text-red-500", comingSoon: false },
+  { name: "SafeReads", href: "/reads", icon: Book, color: "text-amber-600", comingSoon: false },
+  { name: "SafeStudy", href: "/study", icon: Search, color: "text-blue-600", comingSoon: false },
+  { name: "SafeSpark", href: "/spark", icon: Sparkles, color: "text-violet-600", comingSoon: true },
 ];
 
 export default function Header() {
@@ -63,9 +63,9 @@ export default function Header() {
                   >
                     <app.icon className="h-4 w-4" />
                     <span>{app.name}</span>
-                    {app.isNew && (
+                    {app.comingSoon && (
                       <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                        NEW
+                        SOON
                       </span>
                     )}
                   </a>
@@ -124,9 +124,9 @@ export default function Header() {
                 >
                   <app.icon className="h-5 w-5" />
                   <span>{app.name}</span>
-                  {app.isNew && (
+                  {app.comingSoon && (
                     <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                      NEW
+                      SOON
                     </span>
                   )}
                 </a>

@@ -33,7 +33,7 @@ const fredoka = Fredoka({
   subsets: ['latin'],
 });
 
-const SITE_URL = 'https://getsafespark.com';
+const SITE_URL = 'https://getsafefamily.com/spark';
 const SITE_NAME = 'SafeSpark';
 const SITE_DESCRIPTION =
   'Kids ages 10-13 build games, flashcards, quizzes, posters, and tools with AI. Safe by default. Talk to Spark, watch the code, share what you made.';

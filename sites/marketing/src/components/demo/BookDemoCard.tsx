@@ -563,9 +563,7 @@ export default function BookDemoCard() {
       {/* CTA - More prominent after result */}
       <div className="mt-4 pt-4 border-t border-cream-dark">
         <a
-          href="https://getsafereads.com"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/reads"
           className={`w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full font-medium transition-all shadow-sm hover:shadow-md hover:scale-[1.02] ${
             selectedBook ? "text-sm" : "text-sm"
           }`}

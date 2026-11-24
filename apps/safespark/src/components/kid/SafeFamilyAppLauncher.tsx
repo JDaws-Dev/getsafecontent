@@ -54,8 +54,8 @@ export const SAFE_FAMILY_APPS: SafeFamilyApp[] = [
     id: 'safetunes',
     label: 'SafeTunes',
     tagline: 'Music',
-    host: 'https://getsafetunes.com',
-    url: '/play',
+    host: 'https://getsafefamily.com',
+    url: '/play/tunes',
     Icon: Music,
     accentText: 'text-pink-700',
     accentBg: 'bg-pink-50 text-pink-700',
@@ -64,8 +64,8 @@ export const SAFE_FAMILY_APPS: SafeFamilyApp[] = [
     id: 'safetube',
     label: 'SafeTube',
     tagline: 'Video',
-    host: 'https://getsafetube.com',
-    url: '/play',
+    host: 'https://getsafefamily.com',
+    url: '/play/tube',
     Icon: PlayCircle,
     accentText: 'text-red-700',
     accentBg: 'bg-red-50 text-red-700',
@@ -74,8 +74,8 @@ export const SAFE_FAMILY_APPS: SafeFamilyApp[] = [
     id: 'safereads',
     label: 'SafeReads',
     tagline: 'Books',
-    host: 'https://getsafereads.com',
-    url: '/read',
+    host: 'https://getsafefamily.com',
+    url: '/play/reads',
     Icon: BookOpen,
     accentText: 'text-orange-700',
     accentBg: 'bg-orange-50 text-orange-700',
@@ -84,8 +84,8 @@ export const SAFE_FAMILY_APPS: SafeFamilyApp[] = [
     id: 'safestudy',
     label: 'SafeStudy',
     tagline: 'Search',
-    host: 'https://getsafestudy.com',
-    url: '/play',
+    host: 'https://getsafefamily.com',
+    url: '/play/study',
     Icon: Search,
     accentText: 'text-sky-700',
     accentBg: 'bg-sky-50 text-sky-700',
@@ -94,8 +94,8 @@ export const SAFE_FAMILY_APPS: SafeFamilyApp[] = [
     id: 'safespark',
     label: 'SafeSpark',
     tagline: 'Build',
-    host: 'https://getsafespark.com',
-    url: '/make',
+    host: 'https://getsafefamily.com',
+    url: '/play/spark',
     Icon: Sparkles,
     accentText: 'text-accent-700',
     accentBg: 'bg-accent-50 text-accent-700',
@@ -177,6 +177,7 @@ export function AppLauncherSheet({
               <a
                 key={app.id}
                 href={appHrefWithCode(app, familyCode)}
+                target="_top"
                 className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-accent-300 hover:shadow-sm"
               >
                 <span className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${app.accentBg}`}>
@@ -492,6 +493,7 @@ export function OtherAppsStrip({
             <a
               key={app.id}
               href={appHrefWithCode(app, familyCode)}
+              target="_top"
               className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 transition hover:border-accent-300 hover:shadow-sm"
             >
               <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${app.accentBg}`}>

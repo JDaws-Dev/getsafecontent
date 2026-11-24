@@ -25,7 +25,7 @@ const apps = [
   { name: "SafeTube", icon: PlaySquare, blurb: "YouTube without the algorithm" },
   { name: "SafeReads", icon: Book, blurb: "Know what's in the book before they read it" },
   { name: "SafeStudy", icon: Search, blurb: "Search + AI tutor built for kids" },
-  { name: "SafeSpark", icon: Sparkles, blurb: "Teach kids to use AI well", isNew: true },
+  { name: "SafeSpark", icon: Sparkles, blurb: "Teach kids to use AI well", comingSoon: true },
 ];
 
 const includedFeatures = [
@@ -58,8 +58,8 @@ export default function UnifiedPricingSection() {
               One subscription. Everything your family needs.
             </h2>
             <p className="mt-4 text-lg text-navy/60 max-w-2xl mx-auto">
-              All five Safe Family apps — music, video, books, search, and AI
-              training — for less than Apple One Family.
+              Music, video, books, and search in one plan, for less than Apple One Family.
+              SafeSpark, our AI training app, joins the plan when it launches.
             </p>
           </div>
 
@@ -130,7 +130,7 @@ export default function UnifiedPricingSection() {
               {/* Apps grid */}
               <div className="px-6 sm:px-10 py-8 border-b border-navy/10">
                 <p className="text-xs font-semibold uppercase tracking-wider text-navy/40 mb-4">
-                  All five apps included
+                  Included in your plan
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3">
                   {apps.map((app) => (
@@ -146,9 +146,9 @@ export default function UnifiedPricingSection() {
                           <p className="text-sm font-semibold text-navy">
                             {app.name}
                           </p>
-                          {app.isNew && (
+                          {app.comingSoon && (
                             <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
-                              New
+                              Coming soon
                             </span>
                           )}
                         </div>

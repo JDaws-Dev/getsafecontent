@@ -49,9 +49,9 @@ export default async function BlogPostPage({ params }: Props) {
     publisher: {
       '@type': 'Organization',
       name: 'SafeSpark',
-      url: 'https://getsafespark.com',
+      url: 'https://getsafefamily.com/spark',
     },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://getsafespark.com/blog/${post.slug}` },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': `https://getsafefamily.com/spark/blog/${post.slug}` },
   };
 
   return (

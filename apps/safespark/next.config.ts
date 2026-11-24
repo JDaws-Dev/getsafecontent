@@ -32,6 +32,28 @@ const nextConfig: NextConfig = {
     { source: '/apis', destination: '/', permanent: false },
     { source: '/build', destination: '/', permanent: false },
     { source: '/claim', destination: '/', permanent: false },
+    // Old domain: getsafespark.com is retired in favour of
+    // getsafefamily.com/spark. basePath:false so these match the raw request
+    // path, and the host condition scopes them to the OLD domain only. The hub
+    // proxies getsafefamily.com/spark/* here, possibly via this host, so
+    // anything under /spark must NEVER redirect (it would loop through the hub)
+    // — the negative lookahead below leaves /spark and /spark/* alone.
+    ...['getsafespark.com', 'www.getsafespark.com'].flatMap((host) => [
+      {
+        source: '/',
+        has: [{ type: 'host' as const, value: host }],
+        destination: 'https://getsafefamily.com/spark',
+        basePath: false as const,
+        permanent: false,
+      },
+      {
+        source: '/:path((?!spark(?:/|$)).+)',
+        has: [{ type: 'host' as const, value: host }],
+        destination: 'https://getsafefamily.com/spark',
+        basePath: false as const,
+        permanent: false,
+      },
+    ]),
   ],
 };
 

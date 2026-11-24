@@ -177,7 +177,7 @@ function SuccessContent() {
             {isPromoSignup
               ? "Your lifetime access is now active! Let's set up your apps so your kids can start using them safely."
               : isTrialSignup
-                ? "Your 7-day free trial is now active — all 5 apps, no credit card needed! Explore everything and see which apps your family loves."
+                ? "Your 7-day free trial is now active — all four apps, no credit card needed! Explore everything and see which apps your family loves."
                 : "Your subscription is now active. Let's set up your apps so your kids can start using them safely."}
           </p>
 
@@ -235,14 +235,12 @@ function SuccessContent() {
             <div className="flex flex-wrap justify-center gap-3">
               {selectedApps.map((appId) => {
                 const config = APP_ICONS[appId];
-                const domains: Record<string, string> = { safetunes: "getsafetunes.com", safetube: "getsafetube.com", safereads: "getsafereads.com", safestudy: "getsafestudy.com" };
-                const domain = domains[appId] || "getsafefamily.com";
+                const paths: Record<string, string> = { safetunes: "/dashboard/tunes", safetube: "/dashboard/tube", safereads: "/dashboard/reads", safestudy: "/dashboard/study", safespark: "/dashboard/spark" };
+                const path = paths[appId] || "/dashboard";
                 return (
                   <a
                     key={appId}
-                    href={`https://${domain}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={path}
                     className="text-sm text-navy/60 hover:text-navy underline"
                   >
                     Go to {config.name}

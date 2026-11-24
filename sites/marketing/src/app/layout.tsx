@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: "%s | Safe Family",
   },
   description:
-    "Four apps that let you approve every song, video, book, and search before your kids see it. Get all 4 for $9.99/month.",
+    "Four apps that let you approve every song, video, book, and search before your kids see it. All four for $14.99/month, with SafeSpark coming soon.",
   keywords: [
     "parental controls",
     "safe content",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Safe Family — Music, Video, Books, Search. All Parent-Approved.",
     description:
-      "Four apps that let you approve every song, video, book, and search before your kids see it. Get all 4 for $9.99/month.",
+      "Four apps that let you approve every song, video, book, and search before your kids see it. All four for $14.99/month, with SafeSpark coming soon.",
     url: siteUrl,
     siteName: "Safe Family",
     images: [
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Safe Family — Music, Video, Books, Search. All Parent-Approved.",
     description:
-      "Four apps that let you approve every song, video, book, and search before your kids see it. Get all 4 for $9.99/month.",
+      "Four apps that let you approve every song, video, book, and search before your kids see it. All four for $14.99/month, with SafeSpark coming soon.",
     images: ["/og-image.png"],
   },
   icons: {

@@ -48,7 +48,7 @@ const appValidator = v.union(
  * Called during signup when a user creates their Safe Family account.
  * Initializes trial period and sets entitled apps based on selection.
  */
-export const createAccount = mutation({
+export const createAccount = internalMutation({
   args: {
     email: v.string(),
     name: v.optional(v.string()),
@@ -171,7 +171,7 @@ export const createAccount = mutation({
  * Returns the account details for a given email.
  * Used by individual apps to fetch user data after auth.
  */
-export const getAccountByEmail = query({
+export const getAccountByEmail = internalQuery({
   args: {
     email: v.string(),
   },
@@ -530,7 +530,7 @@ export const deleteAccountInternal = internalMutation({
  *
  * This endpoint is designed to be called via HTTP from individual apps.
  */
-export const verifyAppAccess = query({
+export const verifyAppAccess = internalQuery({
   args: {
     email: v.string(),
     app: appValidator,

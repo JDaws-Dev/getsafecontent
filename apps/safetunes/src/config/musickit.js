@@ -18,7 +18,7 @@ function createPopupBlockedError() {
   const error = new Error('Apple Music sign-in window was blocked');
   error.code = 'POPUP_BLOCKED';
   error.userMessage = isHomeScreenWebApp()
-    ? "Apple's sign-in window couldn't open from the home-screen icon. Open getsafetunes.com in Safari, connect Apple Music there, and keep using SafeTunes in Safari."
+    ? "Apple's sign-in window couldn't open from the home-screen icon. Open getsafefamily.com/tunes in Safari, connect Apple Music there, and keep using SafeTunes in Safari."
     : "This device blocked Apple's sign-in window. Turn off Block Pop-ups (on iPhone: Settings > Apps > Safari), reload the page, and tap Connect again.";
   return error;
 }

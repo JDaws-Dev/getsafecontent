@@ -4,6 +4,12 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import Stripe from "stripe";
 
+// Where parents land after Stripe checkout / the billing portal. SafeTube's
+// parent pages now live in the one Safe Family dashboard; the old
+// getsafetube.com/admin is retired. Deliberately NOT built from SITE_URL, which
+// may still name the old domain on the deployment.
+const PARENT_DASHBOARD_URL = "https://getsafefamily.com/dashboard/tube";
+
 // Create Stripe Checkout Session - MONTHLY ONLY
 export const createCheckoutSession = action({
   args: {
@@ -72,8 +78,8 @@ export const createCheckoutSession = action({
             quantity: 1,
           },
         ],
-        success_url: `${process.env.SITE_URL || 'https://getsafetube.com'}/admin?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.SITE_URL || 'https://getsafetube.com'}/admin?canceled=true`,
+        success_url: `${PARENT_DASHBOARD_URL}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${PARENT_DASHBOARD_URL}?canceled=true`,
         metadata: {
           email: args.email,
         },
@@ -119,7 +125,7 @@ export const createPortalSession = action({
     try {
       const session = await stripe.billingPortal.sessions.create({
         customer: args.stripeCustomerId,
-        return_url: `${process.env.SITE_URL || 'https://getsafetube.com'}/admin`,
+        return_url: PARENT_DASHBOARD_URL,
       });
 
       return { url: session.url };

@@ -152,7 +152,18 @@ export async function searchVideos(query, maxResults = 20) {
  * Get channel details by ID(s)
  */
 export async function getChannelDetails(channelIds) {
-  if (!YOUTUBE_API_KEY || !channelIds) return [];
+  const { items } = await getChannelDetailsResult(channelIds);
+  return items;
+}
+
+/**
+ * Same as getChannelDetails, but also says whether YouTube answered with an
+ * API error (bad/restricted key, used-up daily quota). That is OUR problem,
+ * not the family's device blocking YouTube, so the kid screen words it
+ * differently. A device that blocks YouTube never gets an answer at all.
+ */
+async function getChannelDetailsResult(channelIds) {
+  if (!YOUTUBE_API_KEY || !channelIds) return { items: [], apiError: false };
 
   const params = new URLSearchParams({
     key: YOUTUBE_API_KEY,
@@ -163,10 +174,14 @@ export async function getChannelDetails(channelIds) {
   try {
     const response = await fetchWithTimeout(`${YOUTUBE_API_BASE_URL}/channels?${params}`);
     const data = await response.json();
-    return data.items || [];
+    if (data.error) {
+      console.error('YouTube API error:', data.error);
+      return { items: [], apiError: true };
+    }
+    return { items: data.items || [], apiError: false };
   } catch (err) {
     console.error('Failed to get channel details:', err);
-    return [];
+    return { items: [], apiError: false };
   }
 }
 
@@ -228,8 +243,11 @@ export async function getChannelVideos(channelId, maxVideos = 500) {
 
   try {
     // First get the channel's uploads playlist ID
-    const channelDetails = await getChannelDetails(channelId);
+    const { items: channelDetails, apiError } = await getChannelDetailsResult(channelId);
     const uploadsPlaylistId = channelDetails[0]?.contentDetails?.relatedPlaylists?.uploads;
+
+    // YouTube answered, but refused us (key or daily-quota problem on our side).
+    if (apiError) return { videos: [], totalResults: 0, unreachable: true, apiError: true };
 
     // Channel ids here come from approvals, so an empty lookup means YouTube
     // couldn't be reached (blocked or timed out), not that the channel is
@@ -257,6 +275,10 @@ export async function getChannelVideos(channelId, maxVideos = 500) {
 
       if (data.error) {
         console.error('YouTube API error:', data.error);
+        // Refused on the very first page: nothing to show, and it's our side.
+        if (allPlaylistItems.length === 0) {
+          return { videos: [], totalResults: 0, unreachable: true, apiError: true };
+        }
         break;
       }
 

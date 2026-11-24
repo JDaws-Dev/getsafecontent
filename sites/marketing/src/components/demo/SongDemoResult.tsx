@@ -254,9 +254,7 @@ export default function SongDemoResult({ song, compact = false }: SongDemoResult
             SafeTunes lets you approve songs from Apple Music — only what you choose
           </p>
           <a
-            href="https://getsafetunes.com"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/tunes"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-purple-200"
           >
             Start Free Trial

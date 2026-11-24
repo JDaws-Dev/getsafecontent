@@ -232,7 +232,7 @@ function getWelcomeEmailHtml(name: string): string {
               <table role="presentation" style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td align="center">
-                    <a href="https://getsafereads.com/dashboard" style="display: inline-block; padding: 14px 32px; background-color: #8b7355; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 8px;">
+                    <a href="https://getsafefamily.com/dashboard/reads" style="display: inline-block; padding: 14px 32px; background-color: #8b7355; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 8px;">
                       Start Reviewing Books
                     </a>
                   </td>
@@ -245,7 +245,7 @@ function getWelcomeEmailHtml(name: string): string {
           <tr>
             <td align="center" style="padding-top: 32px;">
               <p style="margin: 0; font-size: 12px; color: #8a8a8a;">
-                Questions? Reply to this email or visit our <a href="https://getsafereads.com/contact" style="color: #8b7355;">help center</a>.
+                Questions? Reply to this email or visit our <a href="https://getsafefamily.com/reads/contact" style="color: #8b7355;">help center</a>.
               </p>
               <p style="margin: 8px 0 0 0; font-size: 12px; color: #8a8a8a;">
                 SafeReads · Making family reading safer

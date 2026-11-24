@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin/', '/parent/', '/start', '/api/', '/make', '/spark', '/lumi', '/demo'],
       },
     ],
-    sitemap: 'https://getsafespark.com/sitemap.xml',
-    host: 'https://getsafespark.com',
+    sitemap: 'https://getsafefamily.com/spark/sitemap.xml',
+    host: 'https://getsafefamily.com',
   };
 }

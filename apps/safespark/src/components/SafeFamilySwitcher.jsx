@@ -16,6 +16,11 @@
 //   • carries the family code via ?fc=XXXXXX so the destination app
 //     skips the code screen — one-tap switching, no re-typing
 //
+// Every app now lives under getsafefamily.com (kid pages at /play/<app>,
+// parent pages at /dashboard/<app>); the old per-app domains are retired.
+// Links use target="_top" because the hub's /play page shows each app inside
+// an iframe — without it, switching apps would nest the hub inside itself.
+//
 // Portability: plain React, inline styles (hex, not Tailwind classes, so
 // it renders identically under Tailwind v3 AND v4), and plain cross-domain
 // <a> tags (no next/link or react-router dependency). Drop the SAME file
@@ -32,8 +37,8 @@ const APPS = [
     id: 'safetunes',
     name: 'SafeTunes',
     tagline: 'Music',
-    host: 'https://getsafetunes.com',
-    path: '/play',
+    host: 'https://getsafefamily.com',
+    path: '/play/tunes',
     from: '#9333ea', // purple
     to: '#ec4899', // pink
     accent: '#7C4DE0', // glow-up: grape
@@ -43,8 +48,8 @@ const APPS = [
     id: 'safetube',
     name: 'SafeTube',
     tagline: 'Video',
-    host: 'https://getsafetube.com',
-    path: '/play',
+    host: 'https://getsafefamily.com',
+    path: '/play/tube',
     from: '#ef4444', // red
     to: '#f97316', // orange
     accent: '#F0603A', // glow-up: coral
@@ -54,8 +59,8 @@ const APPS = [
     id: 'safereads',
     name: 'SafeReads',
     tagline: 'Books',
-    host: 'https://getsafereads.com',
-    path: '/read',
+    host: 'https://getsafefamily.com',
+    path: '/play/reads',
     from: '#f59e0b', // amber
     to: '#b45309', // sepia
     accent: '#3AA06B', // glow-up: leaf green
@@ -65,8 +70,8 @@ const APPS = [
     id: 'safestudy',
     name: 'SafeStudy',
     tagline: 'Search',
-    host: 'https://getsafestudy.com',
-    path: '/play',
+    host: 'https://getsafefamily.com',
+    path: '/play/study',
     from: '#3b82f6', // blue
     to: '#06b6d4', // cyan
     accent: '#2F6BF0', // glow-up: cobalt
@@ -76,8 +81,8 @@ const APPS = [
     id: 'safespark',
     name: 'SafeSpark',
     tagline: 'Build',
-    host: 'https://getsafespark.com',
-    path: '/make',
+    host: 'https://getsafefamily.com',
+    path: '/play/spark',
     from: '#7c3aed', // violet
     to: '#d946ef', // fuchsia
     accent: '#F2A413', // glow-up: amber
@@ -173,6 +178,7 @@ export default function SafeFamilySwitcher({ current, familyCode }) {
           <a
             key={a.id}
             href={appHref(a, familyCode)}
+            target="_top"
             style={{
               display: 'flex',
               flexDirection: 'column',
@@ -255,6 +261,7 @@ export function SafeFamilyHeaderSwitcher({ current, familyCode, kidToken, showLa
           <a
             key={a.id}
             href={appHref(a, familyCode, kidToken)}
+            target="_top"
             title={`Go to ${a.name}`}
             aria-label={`Go to ${a.name}`}
             style={{
@@ -291,19 +298,22 @@ export function SafeFamilyHeaderSwitcher({ current, familyCode, kidToken, showLa
 // short-lived auto-login token rides as ?pt= once supplied (parentToken prop) —
 // the destination stores it as its <app>_jwt so the parent lands signed in.
 const PARENT_PATHS = {
-  safetunes: '/admin',
-  safetube: '/admin',
-  safereads: '/admin',
-  safestudy: '/admin',
-  safespark: '/parent',
+  safetunes: '/dashboard/tunes',
+  safetube: '/dashboard/tube',
+  safereads: '/dashboard/reads',
+  safestudy: '/dashboard/study',
+  safespark: '/dashboard/spark',
 };
 
 export function appHrefParent(app, familyCode, parentToken) {
   const fc = normalizeFamilyCode(familyCode);
   const params = [];
   if (fc.length === 6) params.push(`fc=${fc}`);
-  if (parentToken) params.push(`pt=${encodeURIComponent(parentToken)}`);
-  const path = PARENT_PATHS[app.id] || '/admin';
+  // parentToken is no longer put in the URL: every parent dashboard is now on
+  // getsafefamily.com (same sign-in), and nothing reads ?pt=, so it would only
+  // leak a live login token into browser history.
+  void parentToken;
+  const path = PARENT_PATHS[app.id] || '/dashboard';
   return `${app.host}${path}${params.length ? `?${params.join('&')}` : ''}`;
 }
 
@@ -342,6 +352,7 @@ export function SafeFamilyParentSwitcher({ current, familyCode, parentToken, sho
           <a
             key={a.id}
             href={appHrefParent(a, familyCode, parentToken)}
+            target="_top"
             title={`Go to ${a.name}`}
             aria-label={`Go to ${a.name}`}
             style={{

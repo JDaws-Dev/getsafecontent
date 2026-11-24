@@ -207,7 +207,7 @@ function renderDigest(parentName: string, s: DigestSummary): string {
                ${k.concerningCount} ${
                  k.concerningCount === 1 ? "question" : "questions"
                } worth a conversation ${k.concerningCount === 1 ? "was" : "were"} flagged this week.
-               <a href="https://getsafestudy.com/admin" style="color:#b91c1c">See the alerts on your dashboard</a>.
+               <a href="https://getsafefamily.com/dashboard/study" style="color:#b91c1c">See the alerts on your dashboard</a>.
              </p>`
           : "";
 
@@ -259,9 +259,9 @@ function renderDigest(parentName: string, s: DigestSummary): string {
     ${s.totalConcerning > 0 ? `<br><span style="color:#b91c1c">${s.totalConcerning} ${s.totalConcerning === 1 ? "question" : "questions"} flagged for a conversation.</span>` : ""}
   </p>
   ${kidBlocks}
-  <p style="margin-top:24px"><a href="https://getsafestudy.com/admin" style="color:#3b82f6">Open the parent dashboard</a></p>
+  <p style="margin-top:24px"><a href="https://getsafefamily.com/dashboard/study" style="color:#3b82f6">Open the parent dashboard</a></p>
   <p style="color:#888;font-size:12px;margin-top:32px;border-top:1px solid #e5e7eb;padding-top:16px">
-    Don't want these? <a href="https://getsafestudy.com/admin/settings" style="color:#888">Turn off weekly digests</a>.
+    Don't want these? <a href="https://getsafefamily.com/dashboard/study" style="color:#888">Turn off weekly digests</a>.
   </p>
 </body></html>`;
 }

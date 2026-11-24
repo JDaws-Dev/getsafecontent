@@ -81,7 +81,7 @@ export const sendParentEmail = internalAction({
   <p style="background:#fffbeb;padding:12px 16px;border-radius:6px;border:1px solid #fcd34d">
     <strong>Resources:</strong> ${resourceLine}
   </p>
-  <p>Review your child's search history at <a href="https://getsafestudy.com/admin">getsafestudy.com/admin</a>.</p>
+  <p>Review your child's search history at <a href="https://getsafefamily.com/dashboard/study">getsafefamily.com/dashboard/study</a>.</p>
   <p style="color:#888;font-size:12px;margin-top:32px">
     You're receiving this because SafeStudy detected a query category we always escalate to parents (eating-disorder-adjacent or self-harm-adjacent). These alerts can't be turned off.
   </p>

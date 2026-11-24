@@ -47,7 +47,7 @@ function Settings({ user, onLogout, initialSection }) {
   const permanentlyDeleteArchiveMutation = useMutation(api.kidProfiles.permanentlyDeleteArchive);
   const archivedProfiles = useQuery(api.kidProfiles.getArchivedProfiles, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
   const createPortalSession = useAction(api.stripeActions.createPortalSession);
-  const sendCancellationReason = useAction(api.emails.sendCancellationReasonEmail);
+  const sendCancellationReason = useAction(api.emails.submitCancellationReason);
   const updateUserMutation = useMutation(api.users.updateUser);
   const deleteOwnAccount = useMutation(api.admin.deleteOwnAccount);
   const setGlobalHideArtwork = useMutation(api.users.setGlobalHideArtwork);
@@ -204,12 +204,17 @@ function Settings({ user, onLogout, initialSection }) {
 
     setCancelLoading(true);
     try {
-      await sendCancellationReason({
-        userEmail: fullUser?.email || user?.email || '',
-        userName: fullUser?.name || user?.name || '',
-        reason: cancelReason,
-        otherReason: cancelReason === 'Other' ? cancelOtherReason : undefined,
-      });
+      // The reason email is nice-to-have; never let it block the parent from
+      // reaching the Stripe cancel page.
+      try {
+        await sendCancellationReason({
+          userToken: token ?? '',
+          reason: cancelReason,
+          otherReason: cancelReason === 'Other' ? cancelOtherReason : undefined,
+        });
+      } catch (reasonError) {
+        console.error('Failed to send cancellation reason:', reasonError);
+      }
 
       setShowCancelModal(false);
       setCancelReason('');

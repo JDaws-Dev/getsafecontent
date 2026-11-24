@@ -1064,7 +1064,7 @@ export default function LandingPage() {
             {/* SafeSpark NEW callout — separate from bundle */}
             <div className="mt-6 pt-6 border-t border-white/20">
               <a
-                href="https://getsafespark.com"
+                href="https://getsafefamily.com/spark"
                 className="inline-flex items-center gap-2 text-sm text-white/90 hover:text-white transition-colors"
               >
                 <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a2e]">
@@ -1087,19 +1087,19 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 max-w-5xl">
           {/* App Links */}
           <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
-            <a href="https://getsafetunes.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <a href="https://getsafefamily.com/tunes" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeTunes
             </a>
-            <a href="https://getsafetube.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <a href="https://getsafefamily.com/tube" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeTube
             </a>
-            <a href="https://getsafereads.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <a href="https://getsafefamily.com/reads" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeReads
             </a>
-            <a href="https://getsafestudy.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <a href="https://getsafefamily.com/study" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeStudy
             </a>
-            <a href="https://getsafespark.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <a href="https://getsafefamily.com/spark" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeSpark
               <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a2e]">New</span>
             </a>

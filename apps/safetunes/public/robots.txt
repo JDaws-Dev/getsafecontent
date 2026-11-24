@@ -8,4 +8,4 @@ Disallow: /player
 Disallow: /onboarding
 
 # Sitemap
-Sitemap: https://getsafetunes.com/sitemap.xml
+Sitemap: https://getsafefamily.com/tunes/sitemap.xml

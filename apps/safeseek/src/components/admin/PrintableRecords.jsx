@@ -192,7 +192,7 @@ function KidPage({ kid, days, onLoaded }) {
         </div>
       </div>
 
-      <p className="sf-print-foot">Printed {printedOn} from SafeStudy (getsafestudy.com). Days follow the family&rsquo;s time zone.</p>
+      <p className="sf-print-foot">Printed {printedOn} from SafeStudy (getsafefamily.com). Days follow the family&rsquo;s time zone.</p>
     </section>
   );
 }

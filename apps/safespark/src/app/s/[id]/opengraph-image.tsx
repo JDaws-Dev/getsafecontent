@@ -67,7 +67,7 @@ export default async function Image({ params }: Props) {
       process.env.NEXT_PUBLIC_BASE_URL ||
       process.env.VERCEL_URL ?
         `https://${process.env.VERCEL_URL}` :
-        'https://getsafespark.com';
+        'https://getsafefamily.com';
     const screenshotUrl = `${origin}${withBase(featuredScreenshot)}`;
     return new ImageResponse(
       (
@@ -259,7 +259,7 @@ export default async function Image({ params }: Props) {
               letterSpacing: '-0.01em',
             }}
           >
-            getsafespark.com →
+            getsafefamily.com/spark →
           </div>
         </div>
       </div>

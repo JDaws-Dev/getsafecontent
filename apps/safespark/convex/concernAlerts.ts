@@ -217,7 +217,7 @@ export const sendParentEmail = internalAction({
   <p style="background:#fffbeb;padding:12px 16px;border-radius:6px;border:1px solid #fcd34d">
     <strong>Resources:</strong> ${resourceLine}
   </p>
-  <p>Review your child's activity at <a href="https://getsafespark.com/parent">getsafespark.com/parent</a>.</p>
+  <p>Review your child's activity at <a href="https://getsafefamily.com/dashboard/spark">getsafefamily.com/dashboard/spark</a>.</p>
   <p style="color:#888;font-size:12px;margin-top:32px">
     You're receiving this because SafeSpark detected a prompt category we always escalate to parents (eating-disorder-adjacent or self-harm-adjacent). These alerts cannot be turned off.
   </p>

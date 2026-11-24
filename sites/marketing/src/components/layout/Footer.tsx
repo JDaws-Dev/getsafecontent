@@ -2,11 +2,11 @@ import Link from "next/link";
 import { Shield, Music, PlaySquare, Book, Search, Sparkles } from "lucide-react";
 
 const apps = [
-  { name: "SafeTunes", href: "https://getsafetunes.com", icon: Music, isNew: false },
-  { name: "SafeTube", href: "https://getsafetube.com", icon: PlaySquare, isNew: false },
-  { name: "SafeReads", href: "https://getsafereads.com", icon: Book, isNew: false },
-  { name: "SafeStudy", href: "https://getsafestudy.com", icon: Search, isNew: false },
-  { name: "SafeSpark", href: "https://getsafespark.com", icon: Sparkles, isNew: true },
+  { name: "SafeTunes", href: "/tunes", icon: Music, comingSoon: false },
+  { name: "SafeTube", href: "/tube", icon: PlaySquare, comingSoon: false },
+  { name: "SafeReads", href: "/reads", icon: Book, comingSoon: false },
+  { name: "SafeStudy", href: "/study", icon: Search, comingSoon: false },
+  { name: "SafeSpark", href: "/spark", icon: Sparkles, comingSoon: true },
 ];
 
 const companyLinks = [
@@ -40,7 +40,7 @@ export default function Footer() {
                 <span className="text-lg font-semibold">Safe Family</span>
               </Link>
               <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">
-                Five apps that let kids use real music, video, books, search, and AI &mdash; with only
+                Apps that let kids use real music, video, books, and search (and soon AI building, with SafeSpark) &mdash; with only
                 the content you&rsquo;ve approved. Built by a homeschool parent, for parents who
                 want a real answer, not another blocklist.
               </p>
@@ -67,15 +67,13 @@ export default function Footer() {
                   <li key={app.name}>
                     <a
                       href={app.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors"
                     >
                       <app.icon className="h-4 w-4" />
                       {app.name}
-                      {app.isNew && (
+                      {app.comingSoon && (
                         <span className="rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
-                          NEW
+                          SOON
                         </span>
                       )}
                     </a>

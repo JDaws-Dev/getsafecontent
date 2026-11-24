@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { BLOG_POSTS } from '@/lib/blog-posts';
 
-const SITE = 'https://getsafespark.com';
+const SITE = 'https://getsafefamily.com/spark';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

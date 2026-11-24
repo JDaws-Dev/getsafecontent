@@ -1,5 +1,14 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation, action } from "./_generated/server";
+import {
+  mutation,
+  query,
+  internalMutation,
+  internalQuery,
+  action,
+  internalAction,
+  type ActionCtx,
+} from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { requireOwner } from "./identity";
 import { internal } from "./_generated/api";
 
@@ -102,56 +111,116 @@ export const create = mutation({
       analysisBookId: analysisBookId || undefined,
     });
 
+    // Start the AI review now, on the server, so it is ready (or under way)
+    // by the time the parent looks. It used to wait until a parent opened the
+    // Requests page.
+    if (analysisStatus === "analyzing") {
+      await ctx.scheduler.runAfter(0, internal.bookRequests.runRequestAnalysis, {
+        requestId,
+      });
+    }
+
     return requestId;
   },
 });
 
 /**
- * Trigger AI analysis for a book request.
- * Called as an action after the request mutation creates the record.
- * Handles creating/finding the book entry and scheduling the analysis.
+ * Upsert the book entry for a request, link it, and schedule the AI review
+ * (or mark it complete if a review is already cached). Reads the request's own
+ * stored fields; never trusts client-supplied book details.
+ */
+async function prepareRequestAnalysis(ctx: ActionCtx, requestId: Id<"bookRequests">) {
+  const request = await ctx.runQuery(internal.bookRequests.getForAnalysis, { requestId });
+  if (!request || request.analysisStatus !== "analyzing") return;
+
+  // Upsert the book into the books table so analysis has something to work with
+  const bookId = await ctx.runMutation(internal.books.upsert, {
+    googleBooksId: request.googleBookId,
+    title: request.title,
+    authors: [request.author],
+    coverUrl: request.coverUrl,
+  });
+
+  // Update request with the book reference
+  await ctx.runMutation(internal.bookRequests.setAnalysisBookId, {
+    requestId,
+    bookId,
+  });
+
+  // Check if analysis already exists
+  const cached = await ctx.runQuery(internal.analyses.getCachedAnalysis, {
+    bookId,
+  });
+
+  if (cached) {
+    await ctx.runMutation(internal.bookRequests.updateAnalysisStatus, {
+      requestId,
+      status: "complete",
+    });
+    return;
+  }
+
+  // Schedule the analysis
+  await ctx.scheduler.runAfter(0, internal.analyses.autoAnalyzeForRequest, {
+    bookId,
+    requestId,
+  });
+}
+
+/**
+ * Scheduled by `create`: kicks off the AI review as soon as a kid asks.
+ */
+export const runRequestAnalysis = internalAction({
+  args: { requestId: v.id("bookRequests") },
+  handler: async (ctx, args) => {
+    await prepareRequestAnalysis(ctx, args.requestId);
+  },
+});
+
+/**
+ * Minimal read of a request for the analysis pipeline.
+ */
+export const getForAnalysis = internalQuery({
+  args: { requestId: v.id("bookRequests") },
+  handler: async (ctx, args) => {
+    const request = await ctx.db.get(args.requestId);
+    if (!request) return null;
+    return {
+      googleBookId: request.googleBookId,
+      title: request.title,
+      author: request.author,
+      coverUrl: request.coverUrl,
+      analysisStatus: request.analysisStatus,
+      requestedAt: request.requestedAt,
+    };
+  },
+});
+
+// Requests younger than this are owned by the server-scheduled review above.
+const PAGE_FALLBACK_MIN_AGE_MS = 10 * 60 * 1000;
+
+/**
+ * Fallback only: the parent Requests page calls this for requests that are
+ * still "analyzing". New requests are reviewed automatically on creation, so
+ * this ignores anything younger than 10 minutes (avoids a duplicate AI run)
+ * and only rescues older stuck requests, e.g. ones made before this change.
+ * The book-detail args are kept for old cached pages but ignored.
  */
 export const triggerAnalysis = action({
   args: {
     requestId: v.id("bookRequests"),
-    googleBookId: v.string(),
-    title: v.string(),
-    author: v.string(),
+    googleBookId: v.optional(v.string()),
+    title: v.optional(v.string()),
+    author: v.optional(v.string()),
     coverUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Upsert the book into the books table so analysis has something to work with
-    const bookId = await ctx.runMutation(internal.books.upsert, {
-      googleBooksId: args.googleBookId,
-      title: args.title,
-      authors: [args.author],
-      coverUrl: args.coverUrl,
-    });
-
-    // Update request with the book reference
-    await ctx.runMutation(internal.bookRequests.setAnalysisBookId, {
-      requestId: args.requestId,
-      bookId,
-    });
-
-    // Check if analysis already exists
-    const cached = await ctx.runQuery(internal.analyses.getCachedAnalysis, {
-      bookId,
-    });
-
-    if (cached) {
-      await ctx.runMutation(internal.bookRequests.updateAnalysisStatus, {
-        requestId: args.requestId,
-        status: "complete",
-      });
-      return;
-    }
-
-    // Schedule the analysis
-    await ctx.scheduler.runAfter(0, internal.analyses.autoAnalyzeForRequest, {
-      bookId,
+    const request = await ctx.runQuery(internal.bookRequests.getForAnalysis, {
       requestId: args.requestId,
     });
+    if (!request || request.analysisStatus !== "analyzing") return;
+    if (Date.now() - request.requestedAt < PAGE_FALLBACK_MIN_AGE_MS) return;
+    await prepareRequestAnalysis(ctx, args.requestId);
   },
 });
 

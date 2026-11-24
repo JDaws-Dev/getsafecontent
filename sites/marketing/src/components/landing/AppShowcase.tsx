@@ -258,10 +258,10 @@ const appSections = [
       "Kids request, you approve with one tap",
       "Works with your existing Apple Music subscription",
     ],
-    href: "https://getsafetunes.com",
+    href: "/tunes",
     gradient: "from-purple-600 to-pink-500",
-    price: "$4.99",
-    pricePeriod: "/month",
+    price: "Included in Safe Family",
+    pricePeriod: "",
   },
   {
     id: "safetube",
@@ -275,10 +275,10 @@ const appSections = [
       "Built-in time limits per child",
       "Separate safe player for kids",
     ],
-    href: "https://getsafetube.com",
+    href: "/tube",
     gradient: "from-red-500 to-orange-500",
-    price: "$4.99",
-    pricePeriod: "/month",
+    price: "Included in Safe Family",
+    pricePeriod: "",
   },
   {
     id: "safereads",
@@ -292,10 +292,10 @@ const appSections = [
       "Violence, language, sexual content & more",
       "Works at the bookstore or library",
     ],
-    href: "https://getsafereads.com",
+    href: "/reads",
     gradient: "from-amber-500 to-amber-700",
-    price: "$4.99",
-    pricePeriod: "/month",
+    price: "Included in Safe Family",
+    pricePeriod: "",
   },
   {
     id: "safestudy",
@@ -309,10 +309,10 @@ const appSections = [
       "Blocks aesthetic-browsing, self-image, and unsafe topics",
       "Daily query limits per kid",
     ],
-    href: "https://getsafestudy.com",
+    href: "/study",
     gradient: "from-blue-500 to-cyan-500",
-    price: "$4.99",
-    pricePeriod: "/month",
+    price: "Included in Safe Family",
+    pricePeriod: "",
   },
   {
     id: "safespark",
@@ -326,11 +326,11 @@ const appSections = [
       "Parent visibility into every prompt and project",
       "Built for kids 9-15 who'll grow up with AI everywhere",
     ],
-    href: "https://getsafespark.com",
+    href: "/spark",
     gradient: "from-violet-600 to-fuchsia-500",
     price: "Coming soon",
     pricePeriod: "",
-    isNew: true,
+    comingSoon: true,
   },
 ];
 
@@ -381,8 +381,6 @@ export default function AppShowcase() {
                 </span>
                 <a
                   href={appSections[0].href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 font-semibold text-purple-600 hover:text-purple-700 transition-colors"
                 >
                   Learn more
@@ -460,8 +458,6 @@ export default function AppShowcase() {
                 </span>
                 <a
                   href={appSections[1].href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 font-semibold text-red-500 hover:text-red-600 transition-colors"
                 >
                   Learn more
@@ -538,8 +534,6 @@ export default function AppShowcase() {
                 </span>
                 <a
                   href={appSections[2].href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 font-semibold text-amber-700 hover:text-amber-800 transition-colors"
                 >
                   Learn more
@@ -591,13 +585,11 @@ export default function AppShowcase() {
                 key={app.id}
                 id={app.id}
                 href={app.href}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="group relative rounded-3xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all scroll-mt-20"
               >
-                {app.isNew && (
+                {app.comingSoon && (
                   <span className="absolute top-4 right-4 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-700">
-                    New
+                    Coming soon
                   </span>
                 )}
                 <div className="flex items-center gap-3 mb-4">

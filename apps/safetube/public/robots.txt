@@ -11,4 +11,4 @@ User-agent: Facebot
 Allow: /
 
 # Sitemap
-Sitemap: https://getsafetube.com/sitemap.xml
+Sitemap: https://getsafefamily.com/sitemap.xml

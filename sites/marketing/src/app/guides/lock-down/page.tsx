@@ -34,8 +34,7 @@ export const metadata: Metadata = {
 // NOT needed — Family Link filters page and frame loads only, not the video
 // stream or thumbnails.
 const ALLOW_SITES = [
-  { site: "getsafefamily.com", why: "Safe Family (all five apps)" },
-  { site: "getsafetube.com", why: "SafeTube" },
+  { site: "getsafefamily.com", why: "Safe Family (every app)" },
   { site: "youtube-nocookie.com", why: "SafeTube's video player only (no search, no browsing)" },
 ];
 

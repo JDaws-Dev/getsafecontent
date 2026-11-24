@@ -37,7 +37,7 @@ export default function StickyMobileCTA() {
               Safe Family — $14.99/mo
             </p>
             <p className="text-xs text-navy/60">
-              All 5 apps • 7-day free trial
+              4 apps • 7-day free trial
             </p>
           </div>
           <a

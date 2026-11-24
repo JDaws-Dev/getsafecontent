@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
-import { api } from "./_generated/api";
-import { requireOwner } from "./identity";
+import { internal } from "./_generated/api";
+import { requireOwner, resolveTubeIdentity } from "./identity";
 
 // Generate a random 6-character family code
 function generateFamilyCode(): string {
@@ -95,7 +95,7 @@ export const syncUser = mutation({
     });
 
     // Schedule welcome emails from backend (guarantees correct name from DB)
-    await ctx.scheduler.runAfter(0, api.emails.sendTrialSignupEmails, {
+    await ctx.scheduler.runAfter(0, internal.emails.sendTrialSignupEmails, {
       userEmail: args.email,
       userName: args.name || "there",
     });
@@ -544,3 +544,28 @@ export const syncFamilyCodeByEmailInternal = internalMutation({
   },
 });
 
+
+/**
+ * Parent tells us why they're cancelling (Settings -> Cancel Subscription).
+ * The email itself is an internal action; this is the only public door to it,
+ * and it sends the SIGNED-IN parent's own name/email — never a client-supplied
+ * address — so it can't be used to spam the admin inbox as someone else.
+ */
+export const reportCancellationReason = mutation({
+  args: {
+    userToken: v.optional(v.string()),
+    reason: v.string(),
+    otherReason: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const me = await resolveTubeIdentity(ctx, args.userToken);
+    if (!me || !me.email) throw new Error("Please sign in again.");
+    await ctx.scheduler.runAfter(0, internal.emails.sendCancellationReasonEmail, {
+      userEmail: me.email,
+      userName: me.name || me.email,
+      reason: args.reason.slice(0, 200),
+      otherReason: args.otherReason ? args.otherReason.slice(0, 2000) : undefined,
+    });
+    return { success: true };
+  },
+});

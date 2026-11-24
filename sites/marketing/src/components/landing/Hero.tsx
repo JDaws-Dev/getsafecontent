@@ -70,15 +70,15 @@ export default function Hero() {
                 <Sparkles className="w-5 h-5 text-amber-600" />
                 AI for Kids
                 <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-                  New
+                  Coming soon
                 </span>
               </span>
             </div>
 
             {/* Subheadline */}
             <p className="text-xl text-navy/70 mb-8 max-w-lg mx-auto lg:mx-0">
-              Your kids use real YouTube, real Apple Music, real books, real search,
-              and real AI&mdash;but only the content you&apos;ve approved. Nothing slips through.
+              Your kids use real YouTube, real Apple Music, real books, and real
+              search&mdash;but only the content you&apos;ve approved. Nothing slips through.
             </p>
 
             {/* Price + CTA */}
@@ -87,7 +87,7 @@ export default function Hero() {
                 href="#pricing"
                 className="btn-peach inline-flex items-center justify-center text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all"
               >
-                Get All 5 Apps — $14.99/mo
+                Get Safe Family — $14.99/mo
               </a>
               <div className="text-sm text-navy/60">
                 <span className="line-through text-navy/40">$19.99</span>

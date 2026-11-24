@@ -47,6 +47,8 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
   const [isLoadingChannelVideos, setIsLoadingChannelVideos] = useState(false);
   // True when the last channel fetch never reached YouTube (blocked device/network).
   const [channelUnreachable, setChannelUnreachable] = useState(false);
+  // true when YouTube answered but refused (our key/quota), not a blocked device
+  const [channelApiError, setChannelApiError] = useState(false);
   const [channelVideoCache, setChannelVideoCache] = useState({}); // Cache videos by channel ID
   const [hasMoreVideos, setHasMoreVideos] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -151,6 +153,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
     setSelectedChannel(channel);
     setLiveChannelVideos([]);
     setChannelUnreachable(false);
+    setChannelApiError(false);
     setIsLoadingChannelVideos(true);
   };
 
@@ -189,10 +192,11 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
     const fetchVideos = async () => {
       try {
         // Only fetch 50 videos initially (1 API batch = fast)
-        const { videos: fetchedVideos, totalResults, unreachable } = await getChannelVideos(channelId, 50);
+        const { videos: fetchedVideos, totalResults, unreachable, apiError } = await getChannelVideos(channelId, 50);
         if (!cancelled) {
           setLiveChannelVideos(fetchedVideos);
           setChannelUnreachable(!!unreachable);
+          setChannelApiError(!!apiError);
           const hasMore = totalResults > fetchedVideos.length;
           setHasMoreVideos(hasMore);
           // Cache the results — but never cache a failed fetch, so tapping the
@@ -206,7 +210,10 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
         }
       } catch (err) {
         console.error('Failed to fetch channel videos:', err);
-        if (!cancelled) setChannelUnreachable(true);
+        if (!cancelled) {
+          setChannelUnreachable(true);
+          setChannelApiError(false);
+        }
       } finally {
         if (!cancelled) {
           setIsLoadingChannelVideos(false);
@@ -375,7 +382,12 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </div>
-              {channelUnreachable ? (
+              {channelUnreachable && channelApiError ? (
+                <>
+                  <p className="text-gray-700 font-medium mb-1">Channel videos aren't loading right now.</p>
+                  <p className="text-gray-500 text-sm">This is on our end, not your device. Please try again a little later.</p>
+                </>
+              ) : channelUnreachable ? (
                 <>
                   <p className="text-gray-700 font-medium mb-1">We couldn't load this channel's videos.</p>
                   <p className="text-gray-500 text-sm">YouTube might be blocked on this device. Ask a grown-up to check.</p>
@@ -1076,6 +1088,8 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
   // Every approved channel failed to reach YouTube — the device or network is
   // blocking it. Distinct from loadError so the kid gets a real explanation.
   const [feedUnreachable, setFeedUnreachable] = useState(false);
+  // true when YouTube answered but refused (our key/quota), not a blocked device
+  const [feedApiError, setFeedApiError] = useState(false);
   const [feedAttempt, setFeedAttempt] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState('all'); // 'all' or topic id
   const [showAddToPlaylist, setShowAddToPlaylist] = useState(null); // Video to add to playlist
@@ -1123,6 +1137,7 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
         setIsLoadingFeed(true);
         setLoadError(null);
         setFeedUnreachable(false);
+        setFeedApiError(false);
 
         // Separate full vs partial channels
         const fullChannels = channels.filter(c => !c.isPartial);
@@ -1132,9 +1147,10 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
         const fullChannelResults = await Promise.all(
           fullChannels.map(async (channel) => {
             try {
-              const { videos: channelVids, unreachable } = await getChannelVideos(channel.channelId, 15);
+              const { videos: channelVids, unreachable, apiError } = await getChannelVideos(channel.channelId, 15);
               return {
                 unreachable: !!unreachable,
+                apiError: !!apiError,
                 videos: channelVids.map(v => ({
                   ...v,
                   channelThumbnailUrl: channel.thumbnailUrl,
@@ -1152,7 +1168,10 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
         const fullChannelVideos = fullChannelResults.map(r => r.videos);
         // One channel failing is YouTube being flaky; ALL of them failing is
         // this device not being allowed to talk to YouTube at all.
-        setFeedUnreachable(fullChannels.length > 0 && fullChannelResults.every(r => r.unreachable));
+        const allFailed = fullChannels.length > 0 && fullChannelResults.every(r => r.unreachable);
+        setFeedUnreachable(allFailed);
+        // If YouTube itself answered with an error, the device isn't blocking it.
+        setFeedApiError(allFailed && fullChannelResults.some(r => r.apiError));
 
         // For partial channels, ONLY use the pre-approved videos (from `videos` prop)
         // These are the specifically approved individual videos
@@ -1692,8 +1711,17 @@ function HomeTab({ channels, videos, onPlayVideo, onChannelClick, profileId, pla
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" />
             </svg>
           </div>
-          <p className="text-gray-900 font-semibold text-lg mb-1">We couldn't load your videos.</p>
-          <p className="text-gray-500 mb-5">YouTube might be blocked on this device, so SafeTube can't play videos here. Ask a grown-up to check.</p>
+          {feedApiError ? (
+            <>
+              <p className="text-gray-900 font-semibold text-lg mb-1">Channel videos aren't loading right now.</p>
+              <p className="text-gray-500 mb-5">This is on our end, not your device. Please try again a little later.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-900 font-semibold text-lg mb-1">We couldn't load your videos.</p>
+              <p className="text-gray-500 mb-5">YouTube might be blocked on this device, so SafeTube can't play videos here. Ask a grown-up to check.</p>
+            </>
+          )}
           <button
             onClick={() => setFeedAttempt(n => n + 1)}
             className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-2.5 rounded-full font-semibold transition shadow-sm"

@@ -1,6 +1,6 @@
 "use node";
 
-import { action, internalAction } from "./_generated/server";
+import { internalAction } from "./_generated/server";
 import { v } from "convex/values";
 import { Resend } from "resend";
 
@@ -8,7 +8,7 @@ import { Resend } from "resend";
  * Send notification emails when a new trial user signs up
  * This sends both admin notification and user welcome email
  */
-export const sendTrialSignupEmails = action({
+export const sendTrialSignupEmails = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.string(),
@@ -32,7 +32,7 @@ export const sendTrialSignupEmails = action({
         <li><strong>Date:</strong> ${new Date().toLocaleString()}</li>
       </ul>
 
-      <p><a href="https://rightful-rabbit-333.convex.site/adminDashboard?key=${encodeURIComponent(process.env.ADMIN_KEY || '')}" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin: 16px 0;">View Admin Dashboard →</a></p>
+      <p><a href="https://getsafefamily.com/admin/users" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin: 16px 0;">View Admin Dashboard →</a></p>
 
       <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
 
@@ -80,7 +80,7 @@ export const sendTrialSignupEmails = action({
 
           <!-- CTA Button -->
           <div style="text-align: center; margin-bottom: 24px;">
-            <a href="https://getsafetube.com/onboarding"
+            <a href="https://getsafefamily.com/dashboard/tube"
                style="display: inline-block; background: #dc2626; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
               Complete Setup →
             </a>
@@ -186,7 +186,7 @@ export const sendSubscriptionConfirmation = internalAction({
         <li>Share your Family Code with kids</li>
       </ol>
 
-      <p><a href="https://getsafetube.com/onboarding" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Complete Onboarding →</a></p>
+      <p><a href="https://getsafefamily.com/dashboard/tube" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Complete Onboarding →</a></p>
 
       <p>Questions? Reply to this email or contact us at jeremiah@getsafefamily.com</p>
 
@@ -210,7 +210,7 @@ export const sendSubscriptionConfirmation = internalAction({
       <p><strong>Price:</strong> $4.99/month</p>
       <p><strong>Next billing date:</strong> ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>
 
-      <p><a href="https://getsafetube.com/admin" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Go to Dashboard →</a></p>
+      <p><a href="https://getsafefamily.com/dashboard/tube" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Go to Dashboard →</a></p>
 
       <p>You can manage your subscription anytime from your account settings.</p>
 
@@ -265,7 +265,7 @@ export const sendCancellationConfirmation = internalAction({
 
       <p>We're sorry to see you go! If there's anything we could improve, we'd love to hear from you.</p>
 
-      <p><a href="https://getsafetube.com/admin" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Reactivate Subscription →</a></p>
+      <p><a href="https://getsafefamily.com/dashboard/tube" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Reactivate Subscription →</a></p>
 
       <p>Thanks for trying SafeTube!<br>The SafeTube Team</p>
     `;
@@ -317,7 +317,7 @@ export const sendPaymentFailedEmail = internalAction({
 
       <p><strong>To avoid losing access,</strong> please update your payment method as soon as possible.</p>
 
-      <p><a href="https://getsafetube.com/admin" style="background: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Update Payment Method →</a></p>
+      <p><a href="https://getsafefamily.com/dashboard/tube" style="background: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Update Payment Method →</a></p>
 
       <p>Questions? Reply to this email or contact us at jeremiah@getsafefamily.com</p>
 
@@ -346,7 +346,7 @@ export const sendPaymentFailedEmail = internalAction({
  * Send admin notification when someone cancels their subscription
  * Includes their reason for cancelling
  */
-export const sendCancellationReasonEmail = action({
+export const sendCancellationReasonEmail = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.string(),
@@ -490,7 +490,7 @@ export const sendBatchedRequestNotification = internalAction({
 
               <!-- CTA Button -->
               <div style="text-align: center; margin-bottom: 24px;">
-                <a href="https://getsafetube.com/admin"
+                <a href="https://getsafefamily.com/dashboard/tube"
                    style="display: inline-block; background: #dc2626; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                   Review Request${isMultiple ? "s" : ""}
                 </a>
@@ -509,7 +509,7 @@ export const sendBatchedRequestNotification = internalAction({
                   You're receiving this because you have request notifications enabled.
                 </p>
                 <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                  <a href="https://getsafetube.com/admin/settings" style="color: #dc2626; text-decoration: none;">Manage notification preferences</a>
+                  <a href="https://getsafefamily.com/dashboard/tube" style="color: #dc2626; text-decoration: none;">Manage notification preferences</a>
                 </p>
               </div>
 

@@ -6,7 +6,7 @@ import { Music, PlaySquare, BookOpen, Search, Sparkles, ArrowRight } from "lucid
  * Each app gets one line about the BIG thing it does + a deep-link to
  * its own landing page. Detailed selling, screenshots, demos, and
  * objection-handling all live on the per-app landing pages
- * (getsafetunes.com / etc.). Keeps getsafefamily.com scannable and
+ * (getsafefamily.com/tunes / etc.). Keeps getsafefamily.com scannable and
  * focuses the bundle pitch on the unified subscription.
  */
 const apps = [
@@ -16,8 +16,8 @@ const apps = [
     big: "Apple Music your kids can actually use.",
     icon: Music,
     gradient: "from-purple-600 to-pink-500",
-    href: "https://getsafetunes.com",
-    isNew: false,
+    href: "/tunes",
+    comingSoon: false,
   },
   {
     id: "safetube",
@@ -25,8 +25,8 @@ const apps = [
     big: "YouTube without the algorithm.",
     icon: PlaySquare,
     gradient: "from-red-500 to-orange-500",
-    href: "https://getsafetube.com",
-    isNew: false,
+    href: "/tube",
+    comingSoon: false,
   },
   {
     id: "safereads",
@@ -34,8 +34,8 @@ const apps = [
     big: "Know what's in any book before they read it.",
     icon: BookOpen,
     gradient: "from-amber-500 to-amber-700",
-    href: "https://getsafereads.com",
-    isNew: false,
+    href: "/reads",
+    comingSoon: false,
   },
   {
     id: "safestudy",
@@ -43,8 +43,8 @@ const apps = [
     big: "Safe search + an AI tutor built for kids.",
     icon: Search,
     gradient: "from-blue-500 to-cyan-500",
-    href: "https://getsafestudy.com",
-    isNew: false,
+    href: "/study",
+    comingSoon: false,
   },
   {
     id: "safespark",
@@ -52,8 +52,8 @@ const apps = [
     big: "Teach kids to use AI well — not just use it.",
     icon: Sparkles,
     gradient: "from-violet-600 to-fuchsia-500",
-    href: "https://getsafespark.com",
-    isNew: true,
+    href: "/spark",
+    comingSoon: true,
   },
 ];
 
@@ -63,7 +63,7 @@ export default function AppCards() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 sm:mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-navy dark:text-white mb-3">
-            Five apps. One subscription.
+            Four apps today. One more on the way.
           </h2>
           <p className="text-lg text-navy/60 dark:text-slate-300 max-w-2xl mx-auto">
             One trusted set of tools for the parts of childhood that happen on a screen.
@@ -75,13 +75,11 @@ export default function AppCards() {
             <a
               key={app.id}
               href={app.href}
-              target="_blank"
-              rel="noopener noreferrer"
               className="group relative rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 sm:p-6 hover:border-navy/30 dark:hover:border-white/30 hover:shadow-lg transition-all"
             >
-              {app.isNew && (
+              {app.comingSoon && (
                 <span className="absolute top-4 right-4 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-                  New
+                  Coming soon
                 </span>
               )}
               <div className="flex items-center gap-3 mb-3">
@@ -104,7 +102,7 @@ export default function AppCards() {
         </div>
 
         <p className="text-center mt-10 text-sm text-navy/50 dark:text-slate-400">
-          All five included in Safe Family — $14.99/month.
+          SafeTunes, SafeTube, SafeReads and SafeStudy are included in Safe Family — $14.99/month. SafeSpark joins the plan when it launches.
         </p>
       </div>
     </section>

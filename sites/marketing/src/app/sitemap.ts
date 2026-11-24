@@ -50,6 +50,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
+  // The four live apps are served under the hub (getsafefamily.com/<app>),
+  // plus the parent setup guide and device lock-down guide. SafeSpark is left
+  // out while it is still coming soon.
+  const hubPages: MetadataRoute.Sitemap = [
+    ...["tunes", "tube", "reads", "study"].map((app) => ({
+      url: `${siteUrl}/${app}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    })),
+    ...["setup", "guides/lock-down"].map((path) => ({
+      url: `${siteUrl}/${path}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+  ];
+
   // Blog posts
   const blogPosts: MetadataRoute.Sitemap = posts
     .filter((post) => post.published)
@@ -60,5 +78,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     }));
 
-  return [...staticPages, ...blogPosts];
+  return [...staticPages, ...hubPages, ...blogPosts];
 }

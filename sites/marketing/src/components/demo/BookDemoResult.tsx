@@ -230,9 +230,7 @@ export default function BookDemoResult({ book, compact = false }: BookDemoResult
             SafeReads analyzes 10+ content categories with detailed explanations
           </p>
           <a
-            href="https://getsafereads.com"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/reads"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-emerald-200"
           >
             Start Free Trial

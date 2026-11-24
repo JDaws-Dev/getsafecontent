@@ -49,7 +49,7 @@ const steps = [
     icon: KeyRound,
     title: "Share your family code with your kids",
     minutes: "~1 min",
-    body: "Your family code is the 6-character code kids type in on their device to access their profile. One code works for all 5 apps. You'll find it in your parent dashboard at getsafefamily.com — the same code opens every app.",
+    body: "Your family code is the 6-character code kids type in on their device to access their profile. One code works for every app. You'll find it in your parent dashboard at getsafefamily.com — the same code opens every app.",
     tip: "Tip: write it on a sticky note on the fridge. Our most-successful families literally do this.",
   },
   {
@@ -65,39 +65,39 @@ const steps = [
 const apps = [
   {
     name: "SafeTunes",
-    href: "https://getsafetunes.com",
+    href: "/dashboard/tunes",
     icon: Music,
     color: "from-purple-500 to-pink-500",
     description: "Connect to Apple Music",
   },
   {
     name: "SafeTube",
-    href: "https://getsafetube.com",
+    href: "/dashboard/tube",
     icon: PlaySquare,
     color: "from-red-500 to-orange-500",
     description: "Approve YouTube channels",
   },
   {
     name: "SafeReads",
-    href: "https://getsafereads.com",
+    href: "/dashboard/reads",
     icon: Book,
     color: "from-emerald-500 to-teal-500",
     description: "Analyze books for content",
   },
   {
     name: "SafeStudy",
-    href: "https://getsafestudy.com",
+    href: "/dashboard/study",
     icon: Search,
     color: "from-blue-500 to-cyan-500",
     description: "Safe search + AI tutor",
   },
   {
     name: "SafeSpark",
-    href: "https://getsafespark.com",
+    href: "/dashboard/spark",
     icon: Sparkles,
     color: "from-amber-500 to-orange-500",
     description: "AI training lab for kids",
-    isNew: true,
+    comingSoon: true,
   },
 ];
 
@@ -171,8 +171,7 @@ export default function SetupPage() {
                 </h2>
                 <p className="text-red-900/90 leading-relaxed">
                   Use Family Link or Screen Time to allow only{" "}
-                  <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">getsafefamily.com</code>,{" "}
-                  <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">getsafetube.com</code> and{" "}
+                  <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">getsafefamily.com</code> and{" "}
                   <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">youtube-nocookie.com</code>{" "}
                   (SafeTube&rsquo;s video player only, no search or browsing).
                 </p>
@@ -217,8 +216,6 @@ export default function SetupPage() {
                   <a
                     key={app.name}
                     href={app.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="group card-soft p-5 flex items-center gap-4 hover:-translate-y-0.5 transition-transform"
                   >
                     <div
@@ -229,9 +226,9 @@ export default function SetupPage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-navy group-hover:text-indigo-600 transition-colors flex items-center gap-2">
                         Open {app.name} &rarr;
-                        {app.isNew && (
+                        {app.comingSoon && (
                           <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                            NEW
+                            COMING SOON
                           </span>
                         )}
                       </h3>
@@ -252,10 +249,10 @@ export default function SetupPage() {
               <div>
                 <dt className="font-semibold text-navy flex items-center gap-2">
                   <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                  Do I need to set up all five apps?
+                  Do I need to set up every app?
                 </dt>
                 <dd className="mt-1 ml-7 text-navy/70 text-sm">
-                  No &mdash; your Safe Family bundle gives you access to all five, but you can
+                  No &mdash; your Safe Family bundle gives you access to all of them, but you can
                   start with one (whichever matches your biggest worry today) and add the rest
                   whenever you&rsquo;re ready.
                 </dd>

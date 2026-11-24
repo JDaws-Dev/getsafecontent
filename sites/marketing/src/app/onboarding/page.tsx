@@ -63,7 +63,7 @@ const APP_CONFIGS: Record<AppId, AppConfig> = {
     icon: Music,
     gradient: "from-indigo-500 to-purple-600",
     description: "Approve songs before they play",
-    domain: "getsafetunes.com",
+    domain: "getsafefamily.com/dashboard/tunes",
   },
   safetube: {
     id: "safetube",
@@ -71,7 +71,7 @@ const APP_CONFIGS: Record<AppId, AppConfig> = {
     icon: Play,
     gradient: "from-red-500 to-orange-500",
     description: "Approve channels before viewing",
-    domain: "getsafetube.com",
+    domain: "getsafefamily.com/dashboard/tube",
   },
   safereads: {
     id: "safereads",
@@ -79,7 +79,7 @@ const APP_CONFIGS: Record<AppId, AppConfig> = {
     icon: BookOpen,
     gradient: "from-emerald-500 to-teal-500",
     description: "Get content analysis for books",
-    domain: "getsafereads.com",
+    domain: "getsafefamily.com/dashboard/reads",
   },
   safestudy: {
     id: "safestudy",
@@ -87,7 +87,7 @@ const APP_CONFIGS: Record<AppId, AppConfig> = {
     icon: Search,
     gradient: "from-blue-500 to-cyan-500",
     description: "Safe search + built-in tutor",
-    domain: "getsafestudy.com",
+    domain: "getsafefamily.com/dashboard/study",
   },
 };
 

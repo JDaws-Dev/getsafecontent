@@ -269,16 +269,15 @@ function GettingStarted({ user, onNavigateToTab }) {
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">7.</span>
-                <span>Tap <strong>"Add Website"</strong> and add BOTH of these (tap "Add Website" again for the second):</span>
+                <span>Tap <strong>"Add Website"</strong> and add this one site:</span>
               </li>
             </ol>
             <div className="mt-3 ml-8 bg-white border-2 border-accent-300 rounded-lg p-4 space-y-2">
-              <p className="text-sm"><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafefamily.com</code></p>
-              <p className="text-sm"><strong>Site 2:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafetunes.com</code></p>
+              <p className="text-sm"><strong>Site:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafefamily.com</code></p>
             </div>
             <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
               <p className="text-xs text-red-900">
-                <strong>Important:</strong> Do NOT include "https://", "www.", or "/play" - just type the domains: <code className="bg-white px-1 py-0.5 rounded">getsafefamily.com</code> and <code className="bg-white px-1 py-0.5 rounded">getsafetunes.com</code>
+                <strong>Important:</strong> Do NOT include "https://", "www.", or "/play" - just type the domain: <code className="bg-white px-1 py-0.5 rounded">getsafefamily.com</code>
               </p>
             </div>
           </div>
@@ -325,7 +324,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">6.</span>
-                <span>Add BOTH sites: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code> (tap Add after each)</span>
+                <span>Add this site: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code></span>
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">7.</span>
@@ -366,7 +365,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">6.</span>
-                <span>Add BOTH sites: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code></span>
+                <span>Add this site: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code></span>
               </li>
             </ol>
           </div>
@@ -399,7 +398,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">5.</span>
-                <span>Click <strong>Add a website</strong> and add BOTH: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code></span>
+                <span>Click <strong>Add a website</strong> and add: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code></span>
               </li>
             </ol>
           </div>
@@ -437,7 +436,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               </li>
               <li className="flex gap-3">
                 <span className="font-bold text-accent-600 flex-shrink-0">7.</span>
-                <span>In "Always Allow", add BOTH: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-white px-2 py-1 rounded font-mono">getsafetunes.com</code></span>
+                <span>In "Always Allow", add: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code></span>
               </li>
             </ol>
           </div>
@@ -519,25 +518,10 @@ function GettingStarted({ user, onNavigateToTab }) {
         </div>
 
         <div className="mt-4 space-y-3">
-          {/* iPhone App Option */}
-          <div className="bg-accent-50 border border-accent-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700">
-              <strong>iPhone Users:</strong> Download the <strong>SafeTunes app</strong> from the App Store for the best experience!{' '}
-              <a
-                href="https://apps.apple.com/app/safetunes-kids-music-player/id6744387963"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent-600 underline hover:text-accent-700 inline-flex items-center gap-1"
-              >
-                Get it here <ExternalLink className="w-3 h-3" />
-              </a>
-            </p>
-          </div>
-
           {/* Home Screen Tip */}
           <div className="bg-accent-50 border border-accent-200 rounded-lg p-4">
             <p className="text-sm text-gray-700">
-              <strong>No App Store?</strong> On any device, they can add SafeTunes to their home screen for easy access (Share → Add to Home Screen)
+              <strong>Make it feel like an app:</strong> On your kid's device, open <strong>getsafefamily.com/play</strong> and add it to the home screen (on iPhone: Share, then Add to Home Screen; on Android: the browser menu, then Add to Home screen). There is no separate app to download.
             </p>
           </div>
         </div>
@@ -599,7 +583,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               <div className="bg-gray-50 rounded-lg p-4">
                 <h5 className="font-display font-semibold text-brand-navy mb-1 flex items-center gap-2"><XCircleIcon className="w-4 h-4 text-red-500 flex-shrink-0" />Kid can't access SafeTunes</h5>
                 <p className="text-sm text-gray-600">
-                  • Make sure you whitelisted both <code className="bg-white px-1 rounded">getsafefamily.com</code> and <code className="bg-white px-1 rounded">getsafetunes.com</code> (not safetunesapp.com)<br/>
+                  • Make sure you allowed <code className="bg-white px-1 rounded">getsafefamily.com</code><br/>
                   • Verify all other websites are blocked/removed<br/>
                   • Try visiting in an incognito/private window to test
                 </p>
@@ -654,8 +638,7 @@ function GettingStarted({ user, onNavigateToTab }) {
                 <h5 className="font-display font-semibold text-brand-navy mb-1 flex items-center gap-2"><RefreshIcon className="w-4 h-4 text-accent-600 flex-shrink-0" />Kid keeps getting logged out</h5>
                 <p className="text-sm text-gray-600">
                   • Make sure they're using Safari or Chrome (not private/incognito mode)<br/>
-                  • Add SafeTunes to the home screen for best results<br/>
-                  • On iPhone, download the native app from the App Store
+                  • Open getsafefamily.com/play and add it to the home screen (Share, then Add to Home Screen)
                 </p>
               </div>
             </div>

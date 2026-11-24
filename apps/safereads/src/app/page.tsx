@@ -763,7 +763,7 @@ export default function Home() {
           {/* SafeSpark NEW callout — separate from bundle, different economics */}
           <div className="mt-6 pt-6 border-t border-white/20">
             <a
-              href="https://getsafespark.com"
+              href="https://getsafefamily.com/spark"
               className="inline-flex items-center gap-2 text-sm text-white/90 hover:text-white transition-colors"
             >
               <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-navy">

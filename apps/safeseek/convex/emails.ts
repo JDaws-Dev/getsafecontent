@@ -79,7 +79,7 @@ export const sendTrialSignupEmails = internalAction({
 
           <!-- CTA Button -->
           <div style="text-align: center; margin-bottom: 24px;">
-            <a href="https://getsafestudy.com"
+            <a href="https://getsafefamily.com/dashboard/study"
                style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
               Get Started
             </a>
@@ -182,7 +182,7 @@ export const sendTrialExpiringWarning = internalAction({
             </p>
 
             <div style="text-align: center; margin: 24px 0;">
-              <a href="https://getsafestudy.com/login"
+              <a href="https://getsafefamily.com/dashboard/study"
                  style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                 Upgrade Now
               </a>
@@ -260,7 +260,7 @@ export const sendTrialExpiredEmail = internalAction({
             </p>
 
             <div style="text-align: center; margin: 24px 0;">
-              <a href="https://getsafestudy.com/login"
+              <a href="https://getsafefamily.com/dashboard/study"
                  style="display: inline-block; background: #7c3aed; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                 Reactivate SafeStudy
               </a>

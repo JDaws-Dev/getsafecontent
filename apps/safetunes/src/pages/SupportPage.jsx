@@ -57,7 +57,7 @@ function SupportPage() {
     {
       id: 'logged-out',
       question: "Why does my kid keep getting logged out?",
-      answer: "Make sure they're using Safari or Chrome (not private/incognito mode). For the best experience, add SafeTunes to the home screen from getsafetunes.com."
+      answer: "Make sure they're using Safari or Chrome (not private/incognito mode). For the best experience, open getsafefamily.com/play and add it to the home screen."
     },
     {
       id: 'resent',
@@ -189,12 +189,12 @@ function SupportPage() {
             <p className="text-center text-gray-600 mb-6">Select their device type to see setup instructions:</p>
             <div className="flex flex-wrap justify-center gap-3 mb-8">
               {[
-                { id: 'ios', icon: '📱', name: 'iPhone/iPad', difficulty: 'Easy' },
-                { id: 'android', icon: '📱', name: 'Android', difficulty: 'Easy' },
-                { id: 'chromebook', icon: '💻', name: 'Chromebook', difficulty: 'Easy' },
-                { id: 'windows', icon: '🖥️', name: 'Windows', difficulty: 'Medium' },
-                { id: 'mac', icon: '🍎', name: 'Mac', difficulty: 'Medium' },
-                { id: 'kindle', icon: '📚', name: 'Kindle Fire', difficulty: 'Easy' },
+                { id: 'ios', name: 'iPhone/iPad', difficulty: 'Easy' },
+                { id: 'android', name: 'Android', difficulty: 'Easy' },
+                { id: 'chromebook', name: 'Chromebook', difficulty: 'Easy' },
+                { id: 'windows', name: 'Windows', difficulty: 'Medium' },
+                { id: 'mac', name: 'Mac', difficulty: 'Medium' },
+                { id: 'kindle', name: 'Kindle Fire', difficulty: 'Easy' },
               ].map((device) => (
                 <button
                   key={device.id}
@@ -205,7 +205,6 @@ function SupportPage() {
                       : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-accent-400'
                   }`}
                 >
-                  <span className="text-2xl mb-1">{device.icon}</span>
                   <span className="text-sm">{device.name}</span>
                 </button>
               ))}
@@ -216,7 +215,7 @@ function SupportPage() {
           {activeGuide === 'ios' && (
             <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                <span className="text-3xl">📱</span> iPhone / iPad Setup
+                iPhone / iPad Setup
               </h2>
 
               <div className="space-y-6">
@@ -274,17 +273,16 @@ function SupportPage() {
                   <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">7</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
-                    <p className="text-gray-600 mb-2">Tap <strong>"Add Website"</strong> and add BOTH of these (tap "Add Website" again for the second):</p>
+                    <p className="text-gray-600 mb-2">Tap <strong>"Add Website"</strong> and add this one site:</p>
                     <div className="bg-accent-50 border-2 border-accent-300 rounded-lg p-4 space-y-2">
-                      <p><strong>Site 1:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafefamily.com</code></p>
-                      <p><strong>Site 2:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafetunes.com</code></p>
+                      <p><strong>Site:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafefamily.com</code></p>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <p className="text-sm text-red-900">
-                    <strong>⚠️ Important:</strong> Do NOT include "https://", "www.", or "/play" - just type the domains: <code className="bg-white px-1 py-0.5 rounded">getsafefamily.com</code> and <code className="bg-white px-1 py-0.5 rounded">getsafetunes.com</code>
+                    <strong>Important:</strong> Do NOT include "https://", "www.", or "/play" - just type the domain: <code className="bg-white px-1 py-0.5 rounded">getsafefamily.com</code>
                   </p>
                 </div>
 
@@ -307,13 +305,13 @@ function SupportPage() {
           {activeGuide === 'android' && (
             <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                <span className="text-3xl">📱</span> Android Setup (Family Link)
+                Android Setup (Family Link)
               </h2>
 
               {/* Prerequisite Callout */}
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
                 <p className="text-amber-900">
-                  <strong>📋 Prerequisite:</strong> Your child needs a supervised Google Family Link account.{' '}
+                  <strong>Prerequisite:</strong> Your child needs a supervised Google Family Link account.{' '}
                   <a
                     href="https://families.google.com/familylink/"
                     target="_blank"
@@ -363,7 +361,7 @@ function SupportPage() {
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
                     <p className="text-gray-600">Tap <strong>Manage sites</strong> → <strong>Add a website</strong></p>
-                    <p className="text-gray-600 mt-1">Add BOTH: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code> (tap Add after each)</p>
+                    <p className="text-gray-600 mt-1">Add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code></p>
                   </div>
                 </div>
 
@@ -394,12 +392,12 @@ function SupportPage() {
           {activeGuide === 'chromebook' && (
             <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                <span className="text-3xl">💻</span> Chromebook Setup
+                Chromebook Setup
               </h2>
 
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
                 <p className="text-amber-900">
-                  <strong>📋 Prerequisite:</strong> Your child must be signed in with a supervised Google Account (Family Link).
+                  <strong>Prerequisite:</strong> Your child must be signed in with a supervised Google Account (Family Link).
                 </p>
               </div>
 
@@ -441,13 +439,13 @@ function SupportPage() {
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
                     <p className="text-gray-600">Under "Approved sites," tap <strong>Add a website</strong></p>
-                    <p className="text-gray-600 mt-1">Add BOTH: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
+                    <p className="text-gray-600 mt-1">Add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code></p>
                   </div>
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
-                    💡 <strong>Tip:</strong> You can also set the kids' player as the Chromebook homepage. On the Chromebook, go to Chrome Settings → On startup → Open a specific page → Add <code className="bg-white px-1 py-0.5 rounded">https://getsafefamily.com/play</code>
+                    <strong>Tip:</strong> You can also set the kids' player as the Chromebook homepage. On the Chromebook, go to Chrome Settings → On startup → Open a specific page → Add <code className="bg-white px-1 py-0.5 rounded">https://getsafefamily.com/play</code>
                   </p>
                 </div>
 
@@ -470,12 +468,12 @@ function SupportPage() {
           {activeGuide === 'windows' && (
             <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                <span className="text-3xl">🖥️</span> Windows Setup (Family Safety)
+                Windows Setup (Family Safety)
               </h2>
 
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
                 <p className="text-amber-900">
-                  <strong>📋 Prerequisite:</strong> Your child must have a Microsoft Family account.{' '}
+                  <strong>Prerequisite:</strong> Your child must have a Microsoft Family account.{' '}
                   <a
                     href="https://family.microsoft.com"
                     target="_blank"
@@ -524,7 +522,7 @@ function SupportPage() {
                   <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
-                    <p className="text-gray-600">Click <strong>Add a website</strong> and add BOTH: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
+                    <p className="text-gray-600">Click <strong>Add a website</strong> and add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code></p>
                   </div>
                 </div>
 
@@ -547,7 +545,7 @@ function SupportPage() {
           {activeGuide === 'mac' && (
             <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                <span className="text-3xl">🍎</span> Mac Setup (Screen Time)
+                Mac Setup (Screen Time)
               </h2>
 
               <div className="space-y-6">
@@ -603,7 +601,7 @@ function SupportPage() {
                   <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">7</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Allow SafeTunes</h3>
-                    <p className="text-gray-600">In "Always Allow", add BOTH: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code></p>
+                    <p className="text-gray-600">In "Always Allow", add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code></p>
                   </div>
                 </div>
 
@@ -626,7 +624,7 @@ function SupportPage() {
           {activeGuide === 'kindle' && (
             <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                <span className="text-3xl">📚</span> Kindle Fire Setup
+                Kindle Fire Setup
               </h2>
 
               <div className="space-y-6">
@@ -658,13 +656,13 @@ function SupportPage() {
                   <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
                   <div>
                     <h3 className="font-bold text-gray-900">Allow SafeTunes</h3>
-                    <p className="text-gray-600">Tap <strong>"Approved websites"</strong> → add BOTH <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> and <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafetunes.com</code> → Tap Add after each</p>
+                    <p className="text-gray-600">Tap <strong>"Approved websites"</strong> → add <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> → Tap Add</p>
                   </div>
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-900">
-                    💡 <strong>Tip:</strong> Open Silk Browser, go to getsafefamily.com/play, tap menu → "Add to Home" to create a shortcut
+                    <strong>Tip:</strong> Open Silk Browser, go to getsafefamily.com/play, tap menu → "Add to Home" to create a shortcut
                   </p>
                 </div>
 
@@ -689,7 +687,7 @@ function SupportPage() {
       <section className="container mx-auto px-4 sm:px-6 pb-12">
         <div className="max-w-4xl mx-auto">
           <div className="bg-accent-500 rounded-2xl p-6 sm:p-8 text-white">
-            <h3 className="text-xl font-bold mb-3">🔒 Bonus: iOS Guided Access (Extra Security)</h3>
+            <h3 className="text-xl font-bold mb-3">Bonus: iOS Guided Access (Extra Security)</h3>
             <p className="text-blue-100 mb-4">
               Lock your child into the SafeTunes app so they can't exit to other apps.
             </p>

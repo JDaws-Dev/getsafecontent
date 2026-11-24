@@ -988,7 +988,7 @@ export default function LandingPage() {
               {/* SafeSpark NEW callout — separate from bundle */}
               <div className="mt-5 pt-5 border-t border-gray-200 text-center">
                 <a
-                  href="https://getsafespark.com"
+                  href="https://getsafefamily.com/spark"
                   className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-brand-navy transition-colors"
                 >
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
@@ -1078,8 +1078,6 @@ export default function LandingPage() {
               <Shield className="w-4 h-4 text-white" />
               COPPA Compliant
             </span>
-            <span className="text-white/40">|</span>
-            <span>End-to-End Encrypted</span>
             <span className="text-white/40">|</span>
             <span>No Ads Ever</span>
             <span className="text-white/40">|</span>

@@ -934,13 +934,13 @@ function LandingPage() {
         <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           {/* App Links */}
           <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
-            <a href="https://getsafetunes.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <a href="https://getsafefamily.com/tunes" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeTunes
             </a>
-            <a href="https://getsafetube.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <a href="https://getsafefamily.com/tube" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeTube
             </a>
-            <a href="https://getsafereads.com" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <a href="https://getsafefamily.com/reads" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeReads
             </a>
           </div>

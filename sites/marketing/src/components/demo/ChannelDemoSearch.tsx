@@ -161,9 +161,7 @@ export default function ChannelDemoSearch() {
                 Sign up for SafeTube to review any YouTube channel!
               </p>
               <a
-                href="https://getsafetube.com"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/tube"
                 className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 Try SafeTube Free

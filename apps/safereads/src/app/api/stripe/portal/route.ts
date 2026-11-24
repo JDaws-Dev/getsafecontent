@@ -1,4 +1,4 @@
-import { APP_BASE } from "@/lib/appBase";
+import { APP_BASE, publicOrigin } from "@/lib/appBase";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "../../../../../convex/_generated/api";
 import Stripe from "stripe";
@@ -8,9 +8,9 @@ export async function POST(request: NextRequest) {
   try {
     // Validate environment variables early
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const appUrl = publicOrigin();
 
-    if (!stripeSecretKey || !appUrl) {
+    if (!stripeSecretKey) {
       console.error("Portal error: Missing environment variables");
       return NextResponse.json(
         { error: "Payment service not configured" },

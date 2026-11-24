@@ -166,7 +166,7 @@ function getWelcomeEmailHtml(firstName: string | null): string {
       <li><strong>SafeTunes</strong> - Only approved music on Apple Music</li>
       <li><strong>SafeTube</strong> - Only approved YouTube channels</li>
       <li><strong>SafeReads</strong> - AI book reviews before they read</li>
-      <li>&#128269; <strong>SafeStudy</strong> &mdash; <a href="https://getsafestudy.com" style="color: #6366f1; text-decoration: none;">getsafestudy.com</a> &mdash; A kid-safe search engine with a built-in tutor</li>
+      <li><strong>SafeStudy</strong> - A kid-safe search engine with a built-in tutor</li>
     </ul>
 
     <div style="margin: 24px 0; text-align: center;">

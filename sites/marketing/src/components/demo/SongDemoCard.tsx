@@ -490,9 +490,7 @@ export default function SongDemoCard() {
       {/* CTA - More prominent after result */}
       <div className="mt-4 pt-4 border-t border-cream-dark">
         <a
-          href="https://getsafetunes.com"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/tunes"
           className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-medium transition-all shadow-sm hover:shadow-md hover:scale-[1.02] text-sm"
         >
           {selectedSong ? (

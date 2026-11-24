@@ -52,7 +52,7 @@ One parent, one email, one **6-character family code**. Kids type the code on th
 
 ## Free to try
 
-We're not charging yet. Sign up at [getsafespark.com](https://getsafespark.com) and start making.`,
+We're not charging yet. Sign up at [getsafefamily.com/spark](https://getsafefamily.com/spark) and start making.`,
   },
   {
     slug: 'how-to-teach-kids-to-use-ai',
@@ -92,7 +92,7 @@ Kids who grow up with this framing don't develop the *"AI did it for me"* helple
 
 ## Try it
 
-Sign up at [getsafespark.com](https://getsafespark.com). The first time your kid says *"make me a game"*, watch what Spark does. That moment alone is the lesson.`,
+Sign up at [getsafefamily.com/spark](https://getsafefamily.com/spark). The first time your kid says *"make me a game"*, watch what Spark does. That moment alone is the lesson.`,
   },
   {
     slug: 'safe-ai-for-kids-checklist',
@@ -155,7 +155,7 @@ Watch out for "free for 7 days, then $40/month auto-renews." Look for transparen
 
 ---
 
-Try SafeSpark at [getsafespark.com](https://getsafespark.com).`,
+Try SafeSpark at [getsafefamily.com/spark](https://getsafefamily.com/spark).`,
   },
 ];
 

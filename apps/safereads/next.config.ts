@@ -46,12 +46,43 @@ const nextConfig: NextConfig = {
       ],
     },
   ],
-  // Old domain: getsafereads.com (bare) now lives at getsafefamily.com/reads.
-  // basePath:false so this matches the real root, not /reads.
-  redirects: async () => [
-    { source: "/", has: [{ type: "host", value: "getsafereads.com" }], destination: "https://getsafefamily.com/reads", permanent: false, basePath: false },
-    { source: "/", has: [{ type: "host", value: "www.getsafereads.com" }], destination: "https://getsafefamily.com/reads", permanent: false, basePath: false },
-  ],
+  // Old domain: getsafereads.com now lives at getsafefamily.com. Every path on
+  // that host EXCEPT the app's own /reads/* goes to the right hub page.
+  // - Host-only: these rules never fire for getsafefamily.com traffic.
+  // - Never /reads/*: the hub proxies getsafefamily.com/reads/* here (possibly
+  //   via this host), so matching it would loop.
+  // - basePath:false so sources match the real root, not /reads/...
+  // Order matters: the first match wins.
+  redirects: async () => {
+    const hosts = ["getsafereads.com", "www.getsafereads.com"];
+    const rules: { source: string; destination: string }[] = [
+      // Kid reading pages -> the kid door.
+      { source: "/read/:path*", destination: "https://getsafefamily.com/play/reads" },
+      { source: "/play/:path*", destination: "https://getsafefamily.com/play/reads" },
+      // Parent pages -> the parent dashboard's SafeReads tab.
+      { source: "/dashboard/:path*", destination: "https://getsafefamily.com/dashboard/reads" },
+      { source: "/parent/:path*", destination: "https://getsafefamily.com/dashboard/reads" },
+      { source: "/admin/:path*", destination: "https://getsafefamily.com/dashboard/reads" },
+      { source: "/settings/:path*", destination: "https://getsafefamily.com/dashboard/reads" },
+      { source: "/onboarding/:path*", destination: "https://getsafefamily.com/dashboard/reads" },
+      { source: "/login/:path*", destination: "https://getsafefamily.com/dashboard/reads" },
+      { source: "/signup/:path*", destination: "https://getsafefamily.com/dashboard/reads" },
+      { source: "/forgot-password/:path*", destination: "https://getsafefamily.com/dashboard/reads" },
+      { source: "/reset-password/:path*", destination: "https://getsafefamily.com/dashboard/reads" },
+      // Bare / and anything else that is not /reads/* (or /api, which should
+      // 404 honestly rather than bounce a webhook to a web page) -> landing.
+      { source: "/", destination: "https://getsafefamily.com/reads" },
+      { source: "/:path((?!reads(?:/|$)|api(?:/|$)).*)", destination: "https://getsafefamily.com/reads" },
+    ];
+    return hosts.flatMap((host) =>
+      rules.map((r) => ({
+        ...r,
+        has: [{ type: "host" as const, value: host }],
+        permanent: false,
+        basePath: false as const,
+      }))
+    );
+  },
 };
 
 export default nextConfig;

@@ -21,6 +21,10 @@ function getPostBySlug(slug: string) {
   );
 }
 
+// Only slugs that exist in content/blog are valid. Anything else is a real
+// 404 (not a 200 page that happens to say "not found").
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return posts
     .filter((post) => post.published)

@@ -4,6 +4,13 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import Stripe from "stripe";
 
+// Where Stripe sends the parent back to. SafeStudy's parent pages live in the
+// one Safe Family dashboard now; SITE_URL (if set) still wins for dev/preview.
+function parentDashboardUrl(): string {
+  const site = (process.env.SITE_URL || "").trim().replace(/\/$/, "");
+  return site ? `${site}/admin` : "https://getsafefamily.com/dashboard/study";
+}
+
 // Create Stripe Checkout Session
 export const createCheckoutSession = action({
   args: {
@@ -59,8 +66,8 @@ export const createCheckoutSession = action({
             quantity: 1,
           },
         ],
-        success_url: `${process.env.SITE_URL || "https://getsafestudy.com"}/admin?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.SITE_URL || "https://getsafestudy.com"}/admin?canceled=true`,
+        success_url: `${parentDashboardUrl()}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${parentDashboardUrl()}?canceled=true`,
         metadata: {
           email: args.email,
           apps: "safestudy",
@@ -106,7 +113,7 @@ export const createPortalSession = action({
     try {
       const session = await stripe.billingPortal.sessions.create({
         customer: args.stripeCustomerId,
-        return_url: `${process.env.SITE_URL || "https://getsafestudy.com"}/admin`,
+        return_url: parentDashboardUrl(),
       });
 
       return { url: session.url };

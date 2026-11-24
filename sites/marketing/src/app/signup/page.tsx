@@ -511,7 +511,7 @@ function SignupContent() {
             </h1>
             <p className="text-lg text-navy/60 max-w-xl mx-auto">
               {isUnifiedPlan
-                ? `All 5 Safe Family apps for $${isYearly ? "149/year" : "14.99/month"}. 7-day free trial — no credit card to start.`
+                ? `SafeTunes, SafeTube, SafeReads and SafeStudy for $${isYearly ? "149/year" : "14.99/month"}, with SafeSpark coming soon. 7-day free trial — no credit card to start.`
                 : "Choose the apps you need and create your account. Your 7-day free trial starts immediately."}
             </p>
           </div>
@@ -689,13 +689,13 @@ function UnifiedPlanSummary({
     "SafeTube — YouTube without the algorithm",
     "SafeReads — every book analyzed before they read it",
     "SafeStudy — safe search + AI tutor",
-    "SafeSpark — AI training lab for kids (NEW)",
+    "SafeSpark — AI training lab for kids (coming soon)",
   ];
   return (
     <div>
       <h2 className="text-xl font-bold text-navy mb-2">Safe Family</h2>
       <p className="text-sm text-navy/60 mb-5">
-        One subscription. All five apps. Built for homeschool families.
+        One subscription. Four apps today, SafeSpark coming soon. Built for homeschool families.
       </p>
 
       {/* Interval toggle */}

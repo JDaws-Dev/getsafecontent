@@ -1769,7 +1769,11 @@ async function generateSpriteSafely(
         if (cacheClient) {
           // Populate the cache so the next identical prompt is free.
           void cacheClient
-            .mutation(api.safespark.writeSpriteCache, { hash: cacheHash, url })
+            .mutation(api.safespark.writeSpriteCache, {
+              hash: cacheHash,
+              url,
+              sessionToken: sessionToken ?? undefined,
+            })
             .catch((err) => console.warn('[safespark] sprite cache write failed:', err));
           // Record the paid generation so image spend is finally visible in
           // safesparkUsage (cache hits returned earlier and cost nothing).

@@ -29,7 +29,9 @@ const libreBaskerville = Libre_Baskerville({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://getsafereads.com"),
+  // Origin only: Next already adds the /reads basePath to generated asset URLs
+  // (og/twitter images), so a /reads here would double it.
+  metadataBase: new URL("https://getsafefamily.com"),
   title: {
     default: "SafeReads",
     template: "%s — SafeReads",
@@ -41,13 +43,13 @@ export const metadata: Metadata = {
     apple: withBase("/favicon.svg"),
   },
   alternates: {
-    canonical: "/",
+    canonical: "https://getsafefamily.com/reads",
   },
   openGraph: {
     title: "SafeReads",
     description:
       "Know what's in the book before your kid reads it. AI-powered content reviews for parents.",
-    url: "https://getsafereads.com",
+    url: "https://getsafefamily.com/reads",
     siteName: "SafeReads",
     type: "website",
   },

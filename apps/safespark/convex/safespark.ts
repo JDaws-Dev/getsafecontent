@@ -479,9 +479,21 @@ export const getSpriteCache = query({
 // reuse it (across turns and across kids). Idempotent on hash. Hardened: only
 // this deployment's Convex storage URLs are cacheable, which blocks
 // data:/javascript:/external-URL poisoning of the shared cache.
+//
+// Stays a public mutation because its only caller is the /api/demo Next route
+// (ConvexHttpClient, no deploy key), but it now requires a live kid session or
+// a signed-in identity — the same proof the sprite upload itself needs — so an
+// anonymous caller can't seed the cache every kid reads from. Missing/invalid
+// auth returns ok:false instead of throwing (the route treats writes as
+// best-effort).
 export const writeSpriteCache = mutation({
-  args: { hash: v.string(), url: v.string() },
+  args: { hash: v.string(), url: v.string(), sessionToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    try {
+      await resolveSafeSparkIdentity(ctx as SafeSparkCtx, args.sessionToken);
+    } catch {
+      return { ok: false, reason: 'unauthenticated' };
+    }
     if (!/^https:\/\/[a-z0-9-]+\.convex\.cloud\/api\/storage\//i.test(args.url)) {
       return { ok: false, reason: 'not a storage url' };
     }
@@ -1672,7 +1684,7 @@ export const adminShareProject = internalMutation({
       views: 0,
       createdAt: Date.now(),
     });
-    return { shortId, url: `https://getsafespark.com/s/${shortId}` };
+    return { shortId, url: `https://getsafefamily.com/spark/s/${shortId}` };
   },
 });
 

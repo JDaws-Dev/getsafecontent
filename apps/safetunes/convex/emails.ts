@@ -1,8 +1,20 @@
 "use node";
 
 import { action, internalAction } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { Resend } from "resend";
+import { verifyMarketingToken } from "./safeAuth";
+
+// Escape user-supplied text before it goes into an email's HTML.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 // Send subscription confirmation email
 export const sendSubscriptionConfirmation = internalAction({
@@ -16,8 +28,8 @@ export const sendSubscriptionConfirmation = internalAction({
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const subject = args.subscriptionType === "trial"
-      ? "Welcome to SafeTunes! Your 7-Day Trial Has Started 🎵"
-      : "Welcome to SafeTunes! Your Subscription is Active 🎵";
+      ? "Welcome to SafeTunes! Your 7-Day Trial Has Started"
+      : "Welcome to SafeTunes! Your Subscription is Active";
 
     const emailContent = args.subscriptionType === "trial" ? `
       <h1>Welcome to SafeTunes, ${args.name}!</h1>
@@ -25,10 +37,10 @@ export const sendSubscriptionConfirmation = internalAction({
       <p>Your 7-day free trial has started! You now have full access to:</p>
 
       <ul>
-        <li>✅ Curated music library for kids</li>
-        <li>✅ Parental controls and content filtering</li>
-        <li>✅ Custom playlists for each child</li>
-        <li>✅ Request & approval system</li>
+        <li>Curated music library for kids</li>
+        <li>Parental controls and content filtering</li>
+        <li>Custom playlists for each child</li>
+        <li>Request & approval system</li>
       </ul>
 
       <h2>What happens next?</h2>
@@ -42,7 +54,7 @@ export const sendSubscriptionConfirmation = internalAction({
         <li>Start approving music they'll love!</li>
       </ol>
 
-      <p><a href="https://getsafetunes.com/onboarding" style="background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Complete Onboarding →</a></p>
+      <p><a href="https://getsafefamily.com/dashboard/tunes" style="background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Complete Onboarding →</a></p>
 
       <p>Questions? Reply to this email or contact us at ${process.env.SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}</p>
 
@@ -55,10 +67,10 @@ export const sendSubscriptionConfirmation = internalAction({
       <p>You now have full access to SafeTunes:</p>
 
       <ul>
-        <li>✅ Unlimited curated music for your kids</li>
-        <li>✅ Complete parental controls</li>
-        <li>✅ Custom playlists and profiles</li>
-        <li>✅ Request & approval system</li>
+        <li>Unlimited curated music for your kids</li>
+        <li>Complete parental controls</li>
+        <li>Custom playlists and profiles</li>
+        <li>Request & approval system</li>
       </ul>
 
       <h2>Subscription Details:</h2>
@@ -73,7 +85,7 @@ export const sendSubscriptionConfirmation = internalAction({
         <li>Start approving music they'll love!</li>
       </ol>
 
-      <p><a href="https://getsafetunes.com/admin" style="background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Go to Dashboard →</a></p>
+      <p><a href="https://getsafefamily.com/dashboard/tunes" style="background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Go to Dashboard →</a></p>
 
       <p>You can manage your subscription anytime from your account settings.</p>
 
@@ -119,14 +131,14 @@ export const sendCancellationConfirmation = internalAction({
 
       <h2>What this means:</h2>
       <ul>
-        <li>✅ You'll keep full access until <strong>${new Date(args.endsAt).toLocaleDateString()}</strong></li>
-        <li>✅ No further charges will be made</li>
-        <li>✅ You can reactivate anytime before this date</li>
+        <li>You'll keep full access until <strong>${new Date(args.endsAt).toLocaleDateString()}</strong></li>
+        <li>No further charges will be made</li>
+        <li>You can reactivate anytime before this date</li>
       </ul>
 
       <p>We're sorry to see you go! If there's anything we could improve, we'd love to hear from you.</p>
 
-      <p><a href="https://getsafetunes.com/admin" style="background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Reactivate Subscription →</a></p>
+      <p><a href="https://getsafefamily.com/dashboard/tunes" style="background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Reactivate Subscription →</a></p>
 
       <p>Thanks for trying SafeTunes!<br>The SafeTunes Team</p>
     `;
@@ -176,7 +188,7 @@ export const sendPaymentFailedEmail = internalAction({
 
       <p><strong>To avoid losing access,</strong> please update your payment method as soon as possible.</p>
 
-      <p><a href="https://getsafetunes.com/admin" style="background: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Update Payment Method →</a></p>
+      <p><a href="https://getsafefamily.com/dashboard/tunes" style="background: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Update Payment Method →</a></p>
 
       <p>Questions? Reply to this email or contact us at ${process.env.SUPPORT_EMAIL || 'jeremiah@getsafefamily.com'}</p>
 
@@ -188,7 +200,7 @@ export const sendPaymentFailedEmail = internalAction({
         from: "SafeTunes <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.email,
-        subject: "⚠️ Payment Failed - Action Required",
+        subject: "Payment Failed - Action Required",
         html: emailContent,
       });
 
@@ -215,7 +227,7 @@ export const sendAdminNotification = internalAction({
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const emailContent = `
-      <h1>🎉 New SafeTunes Signup!</h1>
+      <h1>New SafeTunes Signup!</h1>
 
       <p>Someone just signed up for SafeTunes.</p>
 
@@ -247,7 +259,7 @@ export const sendAdminNotification = internalAction({
       const result = await resend.emails.send({
         from: "SafeTunes Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
-        subject: `🎉 New Signup: ${args.userName} (${args.subscriptionType})`,
+        subject: `New Signup: ${args.userName} (${args.subscriptionType})`,
         html: emailContent,
       });
 
@@ -264,7 +276,7 @@ export const sendAdminNotification = internalAction({
  * Send admin notification when someone cancels their subscription
  * Includes their reason for cancelling
  */
-export const sendCancellationReasonEmail = action({
+export const sendCancellationReasonEmail = internalAction({
   args: {
     userEmail: v.string(),
     userName: v.string(),
@@ -281,15 +293,15 @@ export const sendCancellationReasonEmail = action({
 
       <h2>Customer Details:</h2>
       <ul>
-        <li><strong>Name:</strong> ${args.userName}</li>
-        <li><strong>Email:</strong> ${args.userEmail}</li>
+        <li><strong>Name:</strong> ${escapeHtml(args.userName)}</li>
+        <li><strong>Email:</strong> ${escapeHtml(args.userEmail)}</li>
         <li><strong>Date:</strong> ${new Date().toLocaleString()}</li>
       </ul>
 
       <h2>Reason for Cancelling:</h2>
       <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px; margin: 16px 0;">
-        <p style="margin: 0; font-weight: bold;">${args.reason}</p>
-        ${args.otherReason ? `<p style="margin: 8px 0 0 0; color: #92400E;">${args.otherReason}</p>` : ''}
+        <p style="margin: 0; font-weight: bold;">${escapeHtml(args.reason)}</p>
+        ${args.otherReason ? `<p style="margin: 8px 0 0 0; color: #92400E;">${escapeHtml(args.otherReason)}</p>` : ''}
       </div>
 
       <p>Consider reaching out to understand their experience better.</p>
@@ -303,7 +315,7 @@ export const sendCancellationReasonEmail = action({
       const result = await resend.emails.send({
         from: "SafeTunes Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
-        subject: `Cancellation: ${args.userName} - ${args.reason}`,
+        subject: `Cancellation: ${args.userName.slice(0, 80)} - ${args.reason.slice(0, 80)}`,
         html: emailContent,
       });
 
@@ -313,6 +325,36 @@ export const sendCancellationReasonEmail = action({
       console.error("Failed to send cancellation reason email:", error);
       return { success: false, error: String(error) };
     }
+  },
+});
+
+/**
+ * Parent-facing entry point for the cancel-reason email. The caller must be a
+ * signed-in parent: the email address comes from their verified login token,
+ * never from the client, so this can't be used to spam the admin inbox with
+ * made-up names/addresses.
+ */
+export const submitCancellationReason = action({
+  args: {
+    userToken: v.string(),
+    reason: v.string(),
+    otherReason: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<{ success: boolean; id?: string; error?: string }> => {
+    const verified = await verifyMarketingToken(args.userToken, process.env.MARKETING_JWT_SECRET);
+    if (!verified) throw new Error("Please sign in again.");
+
+    const user = await ctx.runQuery(internal.users.getUserByEmailInternal, {
+      email: verified.email,
+    });
+    if (!user) throw new Error("Please sign in again.");
+
+    return await ctx.runAction(internal.emails.sendCancellationReasonEmail, {
+      userEmail: verified.email,
+      userName: (user.name ?? "").slice(0, 200),
+      reason: args.reason.slice(0, 200),
+      otherReason: args.otherReason ? args.otherReason.slice(0, 2000) : undefined,
+    });
   },
 });
 
@@ -407,7 +449,7 @@ export const sendBatchedRequestNotification = internalAction({
 
               <!-- CTA Button -->
               <div style="text-align: center; margin-bottom: 24px;">
-                <a href="https://getsafetunes.com/admin"
+                <a href="https://getsafefamily.com/dashboard/tunes"
                    style="display: inline-block; background: #7C3AED; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                   Review Request${isMultiple ? "s" : ""}
                 </a>
@@ -426,7 +468,7 @@ export const sendBatchedRequestNotification = internalAction({
                   You're receiving this because you have "New Music Requests" notifications enabled.
                 </p>
                 <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                  <a href="https://getsafetunes.com/admin/settings" style="color: #7C3AED; text-decoration: none;">Manage notification preferences</a>
+                  <a href="https://getsafefamily.com/dashboard/tunes" style="color: #7C3AED; text-decoration: none;">Manage notification preferences</a>
                 </p>
               </div>
 
@@ -459,7 +501,7 @@ export const sendTrialSignupEmails = internalAction({
 
     // Send admin notification
     const adminEmailContent = `
-      <h1>🎉 New SafeTunes Trial Signup!</h1>
+      <h1>New SafeTunes Trial Signup!</h1>
 
       <p>Someone just started a free trial for SafeTunes.</p>
 
@@ -504,10 +546,10 @@ export const sendTrialSignupEmails = internalAction({
             <p style="margin: 0 0 16px 0; font-size: 16px;">Here's what you can do:</p>
 
             <ul style="margin: 0 0 16px 0; padding-left: 20px;">
-              <li style="margin-bottom: 8px;">✅ Approve albums for your kids to listen to</li>
-              <li style="margin-bottom: 8px;">✅ Hide inappropriate album artwork</li>
-              <li style="margin-bottom: 8px;">✅ Get notified when kids search for unapproved content</li>
-              <li style="margin-bottom: 8px;">✅ Create separate profiles for each child</li>
+              <li style="margin-bottom: 8px;">Approve albums for your kids to listen to</li>
+              <li style="margin-bottom: 8px;">Hide inappropriate album artwork</li>
+              <li style="margin-bottom: 8px;">Get notified when kids search for unapproved content</li>
+              <li style="margin-bottom: 8px;">Create separate profiles for each child</li>
             </ul>
 
             <p style="margin: 0; font-size: 14px; color: #6b7280;">
@@ -518,7 +560,7 @@ export const sendTrialSignupEmails = internalAction({
 
           <!-- CTA Button -->
           <div style="text-align: center; margin-bottom: 24px;">
-            <a href="https://getsafetunes.com/onboarding"
+            <a href="https://getsafefamily.com/dashboard/tunes"
                style="display: inline-block; background: #7C3AED; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
               Complete Setup →
             </a>
@@ -546,7 +588,7 @@ export const sendTrialSignupEmails = internalAction({
     //   const adminResult = await resend.emails.send({
     //     from: "SafeTunes Admin <notifications@getsafefamily.com>",
     //     to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
-    //     subject: `🎉 New Trial: ${args.userName}`,
+    //     subject: `New Trial: ${args.userName}`,
     //     html: adminEmailContent,
     //   });
     //   console.log(`Admin notification sent for ${args.userEmail}:`, adminResult);
@@ -562,7 +604,7 @@ export const sendTrialSignupEmails = internalAction({
         from: "SafeTunes <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.userEmail,
-        subject: "Welcome to SafeTunes! Your 7-Day Trial Has Started 🎵",
+        subject: "Welcome to SafeTunes! Your 7-Day Trial Has Started",
         html: userEmailContent,
       });
       console.log(`Welcome email sent to ${args.userEmail}:`, userResult);
@@ -579,7 +621,7 @@ export const sendTrialSignupEmails = internalAction({
  * Send orphan alert email to admin when orphaned records are detected
  * Called by the daily orphan detection cron job
  */
-export const sendOrphanAlertEmail = action({
+export const sendOrphanAlertEmail = internalAction({
   args: {
     totalOrphans: v.number(),
     summary: v.record(v.string(), v.number()),
@@ -687,7 +729,7 @@ export const sendOrphanAlertEmail = action({
 
           <!-- Action Buttons -->
           <div style="text-align: center; margin-bottom: 24px;">
-            <a href="https://formal-chihuahua-623.convex.site/adminOrphans?key=${encodeURIComponent(process.env.ADMIN_KEY || "")}"
+            <a href="https://formal-chihuahua-623.convex.site/adminOrphans"
                style="display: inline-block; background: #7C3AED; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; margin-right: 8px;">
               View All Orphans
             </a>
@@ -697,7 +739,7 @@ export const sendOrphanAlertEmail = action({
           <div style="background: #F3F4F6; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
             <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #374151;">Cleanup Options:</h3>
             <ol style="margin: 0; padding-left: 20px; font-size: 14px; color: #4b5563;">
-              <li>Review orphans via the admin endpoint above</li>
+              <li>Review orphans via the admin endpoint above (add <code>?key=</code> with the admin key from your password manager; it is deliberately not included in this email)</li>
               <li>Run <code>npx convex run orphanDetection:deleteOrphanedRecords</code> to clean up</li>
               <li>Or manually delete specific records from the Convex dashboard</li>
             </ol>

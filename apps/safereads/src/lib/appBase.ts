@@ -12,3 +12,14 @@ export function withBase(path: string): string {
   if (!path.startsWith("/")) return `${APP_BASE}/${path}`;
   return `${APP_BASE}${path}`;
 }
+
+/**
+ * Public origin for links that leave the app (Stripe return URLs, emails).
+ * Everything now lives under getsafefamily.com; an old getsafereads.com value
+ * left in NEXT_PUBLIC_APP_URL is swapped for the hub so customers land there.
+ */
+export function publicOrigin(): string {
+  const raw = (process.env.NEXT_PUBLIC_APP_URL || "").trim().replace(/\/+$/, "");
+  if (!raw || /getsafereads\.com/i.test(raw)) return "https://getsafefamily.com";
+  return raw;
+}

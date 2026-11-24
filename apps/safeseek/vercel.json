@@ -1,4 +1,182 @@
 {
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/study",
+      "permanent": false
+    },
+    {
+      "source": "/admin",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/admin/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/signup",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/signup?app=safestudy",
+      "permanent": false
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/play/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/((?!study/|study$).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/study",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/study",
+      "permanent": false
+    },
+    {
+      "source": "/admin",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/admin/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/signup",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/signup?app=safestudy",
+      "permanent": false
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/play/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/((?!study/|study$).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/study",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/study/assets/:path*",

@@ -58,7 +58,7 @@ export default function SafeSparkSpotlight() {
           <div className="flex-1 max-w-xl">
             <span className="inline-flex items-center gap-2 rounded-full bg-violet-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-violet-800 mb-5">
               <Sparkles className="h-3.5 w-3.5" />
-              New · SafeSpark
+              Coming soon · SafeSpark
             </span>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-navy mb-5 leading-tight">
@@ -80,9 +80,7 @@ export default function SafeSparkSpotlight() {
 
             <div className="flex flex-wrap items-center gap-3">
               <a
-                href="https://getsafespark.com"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/spark"
                 className="btn-peach inline-flex items-center justify-center text-base px-6 py-3 shadow-lg hover:shadow-xl transition-all"
               >
                 See SafeSpark
@@ -91,7 +89,7 @@ export default function SafeSparkSpotlight() {
                 href="#pricing"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-navy hover:text-navy/70 transition-colors"
               >
-                Included in Safe Family &mdash; $14.99/mo &rarr;
+                Joins Safe Family when it launches &rarr;
               </a>
             </div>
 

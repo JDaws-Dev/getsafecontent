@@ -1,4 +1,4 @@
-import { APP_BASE } from "@/lib/appBase";
+import { APP_BASE, publicOrigin } from "@/lib/appBase";
 import { fetchQuery, fetchMutation } from "convex/nextjs";
 import { api } from "../../../../../convex/_generated/api";
 import Stripe from "stripe";
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     // Validate environment variables early
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     const stripePriceId = process.env.STRIPE_PRICE_ID;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const appUrl = publicOrigin();
 
     if (!stripeSecretKey) {
       console.error("Checkout error: STRIPE_SECRET_KEY not set");
@@ -21,14 +21,6 @@ export async function POST(request: NextRequest) {
 
     if (!stripePriceId) {
       console.error("Checkout error: STRIPE_PRICE_ID not set");
-      return NextResponse.json(
-        { error: "Payment service not configured" },
-        { status: 500 }
-      );
-    }
-
-    if (!appUrl) {
-      console.error("Checkout error: NEXT_PUBLIC_APP_URL not set");
       return NextResponse.json(
         { error: "Payment service not configured" },
         { status: 500 }

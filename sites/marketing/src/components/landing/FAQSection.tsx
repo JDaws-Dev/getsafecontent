@@ -42,7 +42,7 @@ const faqs: FAQItem[] = [
   {
     question: "Do you have iOS or Android apps?",
     answer:
-      "SafeTunes has a native iOS app in the App Store and an Android app on Google Play. SafeTube, SafeReads, and SafeStudy run in any mobile browser today — native iOS/Android apps for those three are on the roadmap. Add them to the home screen for an app-like experience in the meantime.",
+      "There's nothing to download. On your child's phone, tablet or Chromebook, open getsafefamily.com/play in the browser, then use Add to Home Screen (in the Share menu on iPhone and iPad, or the browser menu on Android; on a Chromebook, use Chrome's Install or Create shortcut option). It gets its own icon and opens like an app.",
   },
   {
     question: "Do I need a separate login for each app?",

@@ -275,7 +275,7 @@ http.route({
     }
 
     try {
-      const result = await ctx.runQuery(api.accounts.verifyAppAccess, { email, app });
+      const result = await ctx.runQuery(internal.accounts.verifyAppAccess, { email, app });
       return new Response(JSON.stringify(result), { status: 200, headers });
     } catch (error) {
       console.error("[verifyAppAccess] Error:", error);
@@ -488,7 +488,7 @@ http.route({
     }
 
     try {
-      const result = await ctx.runQuery(api.accounts.getAccountByEmail, { email });
+      const result = await ctx.runQuery(internal.accounts.getAccountByEmail, { email });
 
       if (!result) {
         return new Response(
@@ -676,7 +676,7 @@ http.route({
 
     try {
       // First get the user to find their ID
-      const user = await ctx.runQuery(api.accounts.getAccountByEmail, { email });
+      const user = await ctx.runQuery(internal.accounts.getAccountByEmail, { email });
 
       if (!user) {
         return new Response(
@@ -1510,7 +1510,7 @@ http.route({
     }
 
     try {
-      const result = await ctx.runQuery(api.debugAuth.getAuthStatus, { email });
+      const result = await ctx.runQuery(internal.debugAuth.getAuthStatus, { email });
       return new Response(JSON.stringify(result), { status: 200, headers });
     } catch (error) {
       console.error("[debugAuth] Error:", error);

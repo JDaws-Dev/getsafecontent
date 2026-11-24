@@ -2,7 +2,7 @@
 
 import { action } from "./_generated/server";
 import { v } from "convex/values";
-import { internal, api } from "./_generated/api";
+import { internal } from "./_generated/api";
 
 // App endpoints for provisioning
 const APP_ENDPOINTS = {
@@ -193,7 +193,7 @@ export const forceProvisionAll = action({
     }
 
     // Get entitled apps
-    const account = await ctx.runQuery(api.accounts.getAccountByEmail, { email: normalizedEmail });
+    const account = await ctx.runQuery(internal.accounts.getAccountByEmail, { email: normalizedEmail });
     const entitledApps: AppName[] = (account?.entitledApps as AppName[]) || ["safetunes", "safetube", "safereads", "safestudy"];
 
     const results: { app: string; success: boolean; error?: string }[] = [];

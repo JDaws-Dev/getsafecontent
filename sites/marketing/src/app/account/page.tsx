@@ -39,31 +39,31 @@ type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 const APP_INFO: Record<AppId, { name: string; domain: string; icon: React.ReactNode; gradient: string }> = {
   safetunes: {
     name: "SafeTunes",
-    domain: "getsafetunes.com",
+    domain: "getsafefamily.com/dashboard/tunes",
     icon: <Music className="w-5 h-5 text-white" />,
     gradient: "from-indigo-500 to-purple-500",
   },
   safetube: {
     name: "SafeTube",
-    domain: "getsafetube.com",
+    domain: "getsafefamily.com/dashboard/tube",
     icon: <Play className="w-5 h-5 text-white" />,
     gradient: "from-red-500 to-orange-500",
   },
   safereads: {
     name: "SafeReads",
-    domain: "getsafereads.com",
+    domain: "getsafefamily.com/dashboard/reads",
     icon: <BookOpen className="w-5 h-5 text-white" />,
     gradient: "from-emerald-500 to-teal-500",
   },
   safestudy: {
     name: "SafeStudy",
-    domain: "getsafestudy.com",
+    domain: "getsafefamily.com/dashboard/study",
     icon: <Search className="w-5 h-5 text-white" />,
     gradient: "from-blue-500 to-cyan-500",
   },
   safespark: {
     name: "SafeSpark",
-    domain: "getsafespark.com",
+    domain: "getsafefamily.com/dashboard/spark",
     icon: <Sparkles className="w-5 h-5 text-white" />,
     gradient: "from-amber-500 to-violet-500",
   },
@@ -317,7 +317,7 @@ function AccountPageContent() {
                     {(currentUser as { familyCode?: string | null }).familyCode ?? "\u2014"}
                   </p>
                   <p className="mt-2 text-sm text-white/85 leading-relaxed">
-                    Same code works on all five apps. Share it with your kids so they can pick
+                    Same code works on every app. Share it with your kids so they can pick
                     their profile.
                   </p>
                 </div>

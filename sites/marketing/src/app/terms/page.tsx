@@ -64,7 +64,7 @@ export default function TermsPage() {
 
               <h3 className="text-xl font-medium text-navy mb-3">Pricing</h3>
               <ul className="list-disc pl-6 text-navy/80 mb-4 space-y-2">
-                <li>Safe Family Bundle: $14.99/month or $149/year (includes all five apps — SafeTunes, SafeTube, SafeReads, SafeStudy, SafeSpark)</li>
+                <li>Safe Family Bundle: $14.99/month or $149/year (includes SafeTunes, SafeTube, SafeReads and SafeStudy, plus SafeSpark when it launches)</li>
                 <li>Legacy single-app subscriptions ($4.99/month) are grandfathered for existing subscribers and not available to new customers.</li>
               </ul>
 

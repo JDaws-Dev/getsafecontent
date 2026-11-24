@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://getsafereads.com/sitemap.xml",
+    sitemap: "https://getsafefamily.com/reads/sitemap.xml",
   };
 }

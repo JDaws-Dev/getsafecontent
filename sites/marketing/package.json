@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "velite build && next dev",
+    "build": "velite build && next build",
     "start": "next start",
     "lint": "eslint",
     "test:api": "tsx src/__tests__/unified-auth.integration.ts",

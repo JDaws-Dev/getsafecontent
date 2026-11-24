@@ -34,7 +34,7 @@ function InstallationGuide() {
                   Open in Safari
                 </h4>
                 <p className="text-gray-600">
-                  Visit getsafetunes.com in Safari (not Chrome or other browsers)
+                  Visit getsafefamily.com/play in Safari (not Chrome or other browsers)
                 </p>
               </div>
 
@@ -84,7 +84,7 @@ function InstallationGuide() {
               </div>
               <div className="flex-1">
                 <h3 className="text-2xl font-bold mb-3">
-                  🔒 Pro Tip: Lock Them In (Optional)
+                  Pro Tip: Lock Them In (Optional)
                 </h3>
                 <p className="text-blue-100 mb-4 text-lg">
                   Want to make absolutely sure they can't exit the app? Use iOS <strong>Guided Access</strong> mode.
@@ -108,7 +108,6 @@ function InstallationGuide() {
           {/* Why Web App Section */}
           <div className="mt-8 bg-white rounded-xl p-6 shadow-lg border-2 border-accent-200">
             <h4 className="font-bold text-lg text-gray-900 mb-3 flex items-center gap-2">
-              <span className="text-2xl">💡</span>
               Why start with a web app?
             </h4>
             <div className="grid md:grid-cols-2 gap-4 text-gray-600">
