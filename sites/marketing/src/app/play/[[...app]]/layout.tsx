@@ -24,7 +24,15 @@ export async function generateMetadata({
     title: slug ? `${name} for kids` : "Safe Family for kids",
     manifest: slug ? `/kid-app-manifest/${slug}` : "/kid-app-manifest",
     appleWebApp: { capable: true, title: name, statusBarStyle: "default" },
-    ...(entry?.apple ? { icons: { apple: [{ url: entry.apple, sizes: "180x180" }] } } : {}),
+    ...(entry?.apple ? {
+          icons: {
+            icon: [
+              { url: "/favicon.ico" },
+              { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+            ],
+            apple: [{ url: entry.apple, sizes: "180x180" }],
+          },
+        } : {}),
   };
 }
 
