@@ -1,3 +1,4 @@
+import { PLAN_APPS_TEXT, PLAN_NAME, PRICE_PER_MONTH } from "@/lib/pricing";
 import { Metadata } from "next";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -64,8 +65,8 @@ export default function TermsPage() {
 
               <h3 className="text-xl font-medium text-navy mb-3">Pricing</h3>
               <ul className="list-disc pl-6 text-navy/80 mb-4 space-y-2">
-                <li>Safe Family Bundle: $14.99/month or $149/year (includes SafeTunes, SafeTube and SafeStudy)</li>
-                <li>Legacy single-app subscriptions ($4.99/month) are grandfathered for existing subscribers and not available to new customers.</li>
+                <li>{PLAN_NAME}: {PRICE_PER_MONTH}, billed monthly (includes {PLAN_APPS_TEXT})</li>
+                <li>Existing subscribers keep the price and plan they signed up with for as long as their subscription stays active.</li>
               </ul>
 
               <h3 className="text-xl font-medium text-navy mb-3">Free Trial</h3>
@@ -76,8 +77,9 @@ export default function TermsPage() {
 
               <h3 className="text-xl font-medium text-navy mb-3">Billing</h3>
               <p className="text-navy/80 mb-4">
-                Subscriptions are billed in advance on a recurring basis (monthly or yearly, depending on
-                your plan). Your subscription will automatically renew unless cancelled before the renewal date.
+                Subscriptions are billed monthly, in advance. (Existing subscribers on an older plan are
+                billed on that plan&apos;s schedule.) Your subscription will automatically renew unless
+                cancelled before the renewal date.
               </p>
 
               <h3 className="text-xl font-medium text-navy mb-3">Cancellation</h3>

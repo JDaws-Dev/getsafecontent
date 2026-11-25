@@ -40,7 +40,6 @@ export default function RefundPage() {
               <ul className="list-disc pl-6 text-navy/80 mb-4 space-y-2">
                 <li>The 30-day period starts from your first paid charge</li>
                 <li>Free trial periods are separate from the 30-day guarantee</li>
-                <li>This applies to both monthly and yearly subscriptions</li>
                 <li>No questions asked—we respect your decision</li>
               </ul>
             </section>
@@ -56,7 +55,7 @@ export default function RefundPage() {
                   When you cancel, you retain access until the end of your paid period.
                 </li>
                 <li>
-                  <strong>Yearly subscriptions:</strong> If you cancel within 6 months, we&apos;ll provide a
+                  <strong>Older yearly plans (existing subscribers only):</strong> If you cancel within 6 months, we&apos;ll provide a
                   prorated refund for unused months. After 6 months, no refunds are provided but you
                   retain access for the remainder of your subscription.
                 </li>

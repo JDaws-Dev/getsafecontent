@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, Shield } from "lucide-react";
+import { PLAN_NAME, PRICE_PER_MO } from "@/lib/pricing";
 
 const rotatingWords = ["watching", "listening to", "searching", "learning"];
 
@@ -79,11 +80,10 @@ export default function Hero() {
                 href="#pricing"
                 className="btn-peach inline-flex items-center justify-center text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all"
               >
-                Get Safe Family — $14.99/mo
+                Get {PLAN_NAME} — {PRICE_PER_MO}
               </a>
               <div className="text-sm text-navy/60">
-                <span className="line-through text-navy/40">$19.99</span>
-                <span className="ml-2 text-emerald-600 font-medium">Less than Apple One Family</span>
+                All three apps for the whole family
               </div>
             </div>
 

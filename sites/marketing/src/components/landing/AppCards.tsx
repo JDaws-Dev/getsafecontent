@@ -1,4 +1,5 @@
 import { Music, PlaySquare, Search, ArrowRight } from "lucide-react";
+import { PLAN_NAME, PRICE_PER_MONTH } from "@/lib/pricing";
 
 /**
  * Compact 3-app grid — broad strokes only.
@@ -84,7 +85,7 @@ export default function AppCards() {
         </div>
 
         <p className="text-center mt-10 text-sm text-navy/50 dark:text-slate-400">
-          SafeTunes, SafeTube and SafeStudy are all included in Safe Family — $14.99/month.
+          SafeTunes, SafeTube and SafeStudy are all included in {PLAN_NAME} — {PRICE_PER_MONTH}.
         </p>
       </div>
     </section>

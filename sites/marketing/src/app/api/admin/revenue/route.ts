@@ -14,7 +14,9 @@ const PRICE_NAMES: Record<string, string> = {
   "price_1SzHuYKgkIT46sg7hUR4Uwn5": "SafeReads",
   "price_1SuTVpKgkIT46sg7oQewxC58": "SafeReads (Legacy)",
   "price_1Spp7oKgkIT46sg7oJIKGfMG": "SafeTube",
-  "price_1SUXOjKgkIT46sg7RKwIgAVv": "SafeTunes",
+  // Also the Safe Family $4.99/mo fallback price since 2026-11-25.
+  "price_1SUXOjKgkIT46sg7RKwIgAVv": "SafeTunes / Safe Family ($4.99/mo)",
+  "price_1Tbm6RKgkIT46sg75fZzF2gj": "Safe Family ($14.99/mo, old)",
 };
 
 function isTestEmail(email: string): boolean {
@@ -23,7 +25,7 @@ function isTestEmail(email: string): boolean {
 
 // Safe Family charge amounts in cents - used to filter out non-SF charges
 // (e.g. 3D Jumpstart $40, Level 1 Course $360/$670)
-const SAFE_FAMILY_AMOUNTS_CENTS = new Set([299, 499, 799, 999, 9900]);
+const SAFE_FAMILY_AMOUNTS_CENTS = new Set([299, 499, 799, 999, 1499, 9900, 14900]);
 
 export async function GET() {
   const session = await auth();

@@ -5,6 +5,7 @@ import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppSessionBridge } from "@/components/AppSessionBridge";
 import "./globals.css";
+import { PRICE_PER_MONTH } from "@/lib/pricing";
 
 // Initialize Sentry on the client side
 import "../../sentry.client.config";
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     template: "%s | Safe Family",
   },
   description:
-    "Three apps that let you approve every song, video, and search before your kids see it. All three for $14.99/month.",
+    `Three apps that let you approve every song, video, and search before your kids see it. All three for ${PRICE_PER_MONTH}.`,
   keywords: [
     "parental controls",
     "safe content",
@@ -55,7 +56,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Safe Family — Music, Video, Search. All Parent-Approved.",
     description:
-      "Three apps that let you approve every song, video, and search before your kids see it. All three for $14.99/month.",
+      `Three apps that let you approve every song, video, and search before your kids see it. All three for ${PRICE_PER_MONTH}.`,
     url: siteUrl,
     siteName: "Safe Family",
     images: [
@@ -73,7 +74,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Safe Family — Music, Video, Search. All Parent-Approved.",
     description:
-      "Three apps that let you approve every song, video, and search before your kids see it. All three for $14.99/month.",
+      `Three apps that let you approve every song, video, and search before your kids see it. All three for ${PRICE_PER_MONTH}.`,
     images: ["/og-image.png"],
   },
   icons: {

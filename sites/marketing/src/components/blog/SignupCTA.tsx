@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Music, PlaySquare, Search, Shield } from "lucide-react";
+import { PRICE_PER_MONTH } from "@/lib/pricing";
 
 interface SignupCTAProps {
   // SafeReads/SafeSpark are accepted (older posts use them) but show the
@@ -37,7 +38,7 @@ const productConfig = {
     color: "from-peach-start to-peach-end",
     defaultHeadline: "Get all three apps for one low price",
     defaultDescription:
-      "SafeTunes + SafeTube + SafeStudy. Just $14.99/month. Try free for 7 days.",
+      `SafeTunes + SafeTube + SafeStudy. Just ${PRICE_PER_MONTH} for all three. Try free for 7 days.`,
   },
 };
 

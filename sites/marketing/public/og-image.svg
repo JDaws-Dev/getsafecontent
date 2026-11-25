@@ -1,52 +1,51 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Source for og-image.png (Safe Family plan, 2026-11-25: $4.99/month for
+       SafeTunes, SafeTube and SafeStudy). Re-render the PNG after editing. -->
   <defs>
-    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#6366f1"/>
-      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="30%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="45%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
     </linearGradient>
-    <linearGradient id="peach-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#ff9e7a"/>
-      <stop offset="100%" style="stop-color:#ffc4a3"/>
+    <linearGradient id="pill-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#ec4899"/>
     </linearGradient>
   </defs>
 
   <!-- Background -->
   <rect width="1200" height="630" fill="#FAF8F5"/>
 
-  <!-- Left gradient accent -->
-  <rect x="0" y="0" width="400" height="630" fill="url(#bg-grad)"/>
+  <!-- Left gradient panel -->
+  <rect x="0" y="0" width="380" height="630" fill="url(#bg-grad)"/>
 
-  <!-- Shield icon on the left -->
-  <g transform="translate(120, 180)">
-    <path d="M80 25c-25 10-45 10-45 10v55c0 35 45 55 45 55s45-25 45-55V35s-20 0-45-10z" fill="none" stroke="white" stroke-width="6" opacity="0.9"/>
-    <path d="M60 80l15 15 30-30" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  <!-- Shield -->
+  <g transform="translate(190, 320)" fill="none" stroke="#ffffff" stroke-opacity="0.8" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0 -68 C-22 -58 -44 -54 -52 -54 V2 C-52 36 -20 58 0 68 C20 58 52 36 52 2 V-54 C44 -54 22 -58 0 -68 Z"/>
+    <path d="M-24 0 L-6 18 L26 -16"/>
   </g>
 
-  <!-- Main text area -->
-  <g transform="translate(480, 180)">
-    <text x="0" y="0" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700" fill="#1a1a2e">Safe Family</text>
-    <text x="0" y="90" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#4a4a6a">Music, Video, Books.</text>
-    <text x="0" y="140" font-family="system-ui, -apple-system, sans-serif" font-size="36" fill="#4a4a6a">All Parent-Approved.</text>
+  <!-- Title + subtitle -->
+  <g font-family="Inter, system-ui, -apple-system, 'Segoe UI', sans-serif">
+    <text x="440" y="222" font-size="84" font-weight="800" fill="#1a1a2e" letter-spacing="-1.5">Safe Family</text>
+    <text x="440" y="282" font-size="32" font-weight="400" fill="#4a4a6a">Music. Video. Search.</text>
+    <text x="440" y="324" font-size="32" font-weight="400" fill="#4a4a6a">All Parent-Approved.</text>
+
+    <!-- App chips -->
+    <rect x="440" y="370" width="135" height="40" rx="20" fill="#EFE8FD"/>
+    <text x="507.5" y="397" font-size="18" font-weight="600" fill="#7C4DE0" text-anchor="middle">SafeTunes</text>
+
+    <rect x="587" y="370" width="125" height="40" rx="20" fill="#FDE4DD"/>
+    <text x="649.5" y="397" font-size="18" font-weight="600" fill="#E0482A" text-anchor="middle">SafeTube</text>
+
+    <rect x="724" y="370" width="135" height="40" rx="20" fill="#DFE9FD"/>
+    <text x="791.5" y="397" font-size="18" font-weight="600" fill="#2F6BF0" text-anchor="middle">SafeStudy</text>
+
+    <!-- Price pill -->
+    <rect x="440" y="443" width="332" height="61" rx="30.5" fill="url(#pill-grad)"/>
+    <text x="606" y="482" font-size="24" font-weight="700" fill="#ffffff" text-anchor="middle">All 3 for $4.99/month</text>
+
+    <!-- Domain -->
+    <text x="1152" y="598" font-size="18" font-weight="500" fill="#8a8a9a" text-anchor="end">getsafefamily.com</text>
   </g>
-
-  <!-- App badges -->
-  <g transform="translate(480, 380)">
-    <rect x="0" y="0" width="160" height="50" rx="25" fill="url(#bg-grad)" opacity="0.15"/>
-    <text x="80" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#6366f1" text-anchor="middle">SafeTunes</text>
-
-    <rect x="180" y="0" width="160" height="50" rx="25" fill="url(#bg-grad)" opacity="0.15"/>
-    <text x="260" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#6366f1" text-anchor="middle">SafeTube</text>
-
-    <rect x="360" y="0" width="160" height="50" rx="25" fill="url(#bg-grad)" opacity="0.15"/>
-    <text x="440" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#6366f1" text-anchor="middle">SafeReads</text>
-  </g>
-
-  <!-- Price badge -->
-  <g transform="translate(480, 480)">
-    <rect x="0" y="0" width="280" height="60" rx="30" fill="url(#peach-grad)"/>
-    <text x="140" y="40" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="#1a1a2e" text-anchor="middle">All 3 for $9.99/month</text>
-  </g>
-
-  <!-- Domain -->
-  <text x="1100" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="500" fill="#a0a0a0" text-anchor="end">getsafefamily.com</text>
 </svg>

@@ -70,14 +70,15 @@ type AppName =
   | "safereads"
   | "safestudy"
   | "safespark";
-// Base apps in the $9.99 family bundle. SafeSpark excluded — different
-// economics (variable per-turn OpenAI cost), sold only in the separate
-// "Family + Spark" tier. Used as the legacy-bundle default below.
-const ALL_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
+// The apps in the Safe Family plan ($4.99/month, 2026-11-25): SafeTunes,
+// SafeTube, SafeStudy. Used as the default when a subscription has no
+// metadata.apps. SafeReads and SafeSpark are retired and never granted by
+// default.
+const ALL_APPS: AppName[] = ["safetunes", "safetube", "safestudy"];
 // Full app universe for input validation (parseAppsFromMetadata). A Stripe
-// session that explicitly lists `apps: "safespark"` in metadata IS allowed
-// to provision SafeSpark — but no implicit/default code path provisions it.
-const ALL_APPS_WITH_SPARK: AppName[] = [...ALL_APPS, "safespark"];
+// session that explicitly lists a retired app in metadata (older
+// subscriptions) is still honored — but no implicit/default path grants one.
+const ALL_APPS_WITH_SPARK: AppName[] = [...ALL_APPS, "safereads", "safespark"];
 
 // App admin endpoint URLs
 const APP_ENDPOINTS: Record<AppName, string> = {
@@ -92,8 +93,8 @@ const APP_ENDPOINTS: Record<AppName, string> = {
 const MARKETING_ENDPOINT = "https://adamant-crow-705.convex.site";
 
 // Parse apps from metadata (comma-separated string or undefined for legacy bundles).
-// Validation accepts all 5 apps including safespark; legacy fallback returns the
-// original 4-app bundle only (never silently grants SafeSpark).
+// Validation accepts all 5 apps; the fallback is the 3-app Safe Family plan
+// (never silently grants a retired app).
 function parseAppsFromMetadata(metadata: Stripe.Metadata | null): AppName[] {
   if (!metadata?.apps) {
     return ALL_APPS;
@@ -716,14 +717,14 @@ async function sendBundleSignupNotification(
 
   // Determine plan type from amount
   let planType: string;
-  if (amountPaid >= 9900) {
-    planType = "Yearly ($99/year)";
-  } else if (amountPaid >= 999) {
-    planType = "Monthly ($9.99/mo)";
-  } else if (amountPaid >= 799) {
-    planType = "2-App Monthly ($7.99/mo)";
-  } else if (amountPaid >= 499) {
-    planType = "Single App ($4.99/mo)";
+  // $4.99 is the one current plan (Safe Family, monthly, 2026-11-25). Other
+  // amounts only come from existing subscribers on older prices.
+  if (amountPaid === 499) {
+    planType = "Safe Family ($4.99/mo)";
+  } else if (amountPaid >= 9900) {
+    planType = `Older yearly plan ($${(amountPaid / 100).toFixed(2)})`;
+  } else if (amountPaid > 0) {
+    planType = `Older plan ($${(amountPaid / 100).toFixed(2)})`;
   } else if (amountPaid === 0) {
     planType = "Free Trial";
   } else {

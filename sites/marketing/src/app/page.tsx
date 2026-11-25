@@ -29,7 +29,7 @@ export default function Home() {
         {/* 5. FAQ - Address objections */}
         <FAQSection />
 
-        {/* 6. Pricing - Single $14.99 plan via UnifiedPricingSection (when flag is on) */}
+        {/* 6. Pricing - Single $4.99/month plan (UnifiedPricingSection) */}
         <PricingSection />
       </main>
       <Footer />

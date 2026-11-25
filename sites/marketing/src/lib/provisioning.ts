@@ -28,7 +28,7 @@ export type AppName =
   | "safestudy"
   | "safespark";
 
-// Base apps included in the $9.99 family bundle. SafeSpark intentionally
+// Base apps of the older family bundle. SafeSpark intentionally
 // excluded — different economics (variable per-turn cost) and sold only
 // in the separate "Family + Spark" tier. Spreading this into provisioning
 // defaults won't accidentally grant SafeSpark.

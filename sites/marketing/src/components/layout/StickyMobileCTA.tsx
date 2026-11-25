@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { PLAN_NAME, PRICE_PER_MO, TRIAL_DAYS } from "@/lib/pricing";
 
 export default function StickyMobileCTA() {
   const [isVisible, setIsVisible] = useState(false);
@@ -34,10 +35,10 @@ export default function StickyMobileCTA() {
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-navy truncate">
-              Safe Family — $14.99/mo
+              {PLAN_NAME} — {PRICE_PER_MO}
             </p>
             <p className="text-xs text-navy/60">
-              3 apps • 7-day free trial
+              3 apps • {TRIAL_DAYS}-day free trial
             </p>
           </div>
           <a

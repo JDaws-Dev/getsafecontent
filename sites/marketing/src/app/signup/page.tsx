@@ -1,20 +1,27 @@
 "use client";
 
 import { useState, useCallback, Suspense, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { HubHeader, UmbrellaMark } from "@/components/brand/Brand";
 import { useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import AppSelector, { type AppId, type PricingInfo } from "@/components/signup/AppSelector";
 import AccountForm, { type AccountFormData, type AppSelection } from "@/components/signup/AccountForm";
-import { isUnifiedPricingEnabledClient } from "@/lib/feature-flags";
+import {
+  PLAN_APP_IDS,
+  PLAN_APPS_TEXT,
+  PLAN_NAME,
+  PRICE,
+  PRICE_PER_MONTH,
+  TRIAL_DAYS,
+} from "@/lib/pricing";
 
 /**
- * Unified Signup Page
+ * Signup Page
  *
- * Combines AppSelector and AccountForm into a two-step signup flow.
- * Accepts ?app=safetunes (or safetube, safestudy) query param to pre-select app.
+ * ONE plan (owner decision 2026-11-25): Safe Family, $4.99/month, monthly
+ * only, SafeTunes + SafeTube + SafeStudy. There is no app picker and no
+ * yearly option; any ?app= / ?plan= / ?interval= query params are ignored.
  *
  * FLOW (depends on ENABLE_UNIFIED_AUTH feature flag):
  *
@@ -53,13 +60,9 @@ function SignupLoading() {
 // LocalStorage key for persisting signup state across OAuth redirect
 const SIGNUP_STATE_KEY = "safefamily_signup_state";
 
-// Save signup state to localStorage before OAuth redirect
-function saveSignupState(state: {
-  selectedApps: AppId[];
-  isYearly: boolean;
-  couponCode?: string;
-  isUnifiedPlan?: boolean;
-}) {
+// Save signup state to localStorage before OAuth redirect. Its presence is
+// what tells the page "this is an OAuth return, continue to checkout".
+function saveSignupState(state: { couponCode?: string }) {
   try {
     localStorage.setItem(SIGNUP_STATE_KEY, JSON.stringify({
       ...state,
@@ -71,12 +74,7 @@ function saveSignupState(state: {
 }
 
 // Load signup state from localStorage after OAuth redirect
-function loadSignupState(): {
-  selectedApps: AppId[];
-  isYearly: boolean;
-  couponCode?: string;
-  isUnifiedPlan?: boolean;
-} | null {
+function loadSignupState(): { couponCode?: string } | null {
   try {
     const stored = localStorage.getItem(SIGNUP_STATE_KEY);
     if (!stored) return null;
@@ -88,12 +86,7 @@ function loadSignupState(): {
       return null;
     }
 
-    return {
-      selectedApps: state.selectedApps,
-      isYearly: state.isYearly,
-      couponCode: state.couponCode,
-      isUnifiedPlan: state.isUnifiedPlan,
-    };
+    return { couponCode: state.couponCode };
   } catch (e) {
     console.warn("[SignupPage] Failed to load signup state:", e);
     return null;
@@ -109,55 +102,17 @@ function clearSignupState() {
   }
 }
 
-// Inner component that uses useSearchParams
+// Inner component (kept inside Suspense)
 function SignupContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
 
   // Convex Auth hooks for Google OAuth
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const { signIn } = useAuthActions();
 
-  // Get initial app selection from query params
-  const initialApp = searchParams.get("app") as AppId | null;
-  // SafeReads and SafeSpark are no longer offered to new families, so
-  // ?app=safereads simply lands on the standard plan.
-  const validApps: AppId[] = ["safetunes", "safetube", "safestudy"];
-  const preSelectedApp = initialApp && validApps.includes(initialApp) ? initialApp : null;
-
-  // Unified-pricing flow: ?plan=unified&interval=monthly|yearly
-  // When set, the AppSelector is skipped and checkout uses the unified
-  // Price IDs (one plan for SafeTunes, SafeTube and SafeStudy).
-  //
-  // ALSO: when the global ENABLE_UNIFIED_PRICING flag is on, route every
-  // legacy ?app=safetunes-style entry through the unified flow too.
-  // Otherwise new customers from per-app landing pages would still see
-  // the legacy 4-app picker (which can't sell SafeSpark) — the bug
-  // captured as roadmap item `appselector-5app`. Existing $4.99 single-
-  // app subs are grandfathered automatically by Stripe (never auto-
-  // migrated between Price IDs), so flipping new signups to unified
-  // doesn't touch them.
-  const isUnifiedPlanQuery = searchParams.get("plan") === "unified";
-  const isUnifiedPlan =
-    isUnifiedPlanQuery || isUnifiedPricingEnabledClient();
-  const urlIntervalYearly = searchParams.get("interval") === "yearly";
-
-  // State for selected apps - default to pre-selected app or all apps
-  const [selectedApps, setSelectedApps] = useState<AppId[]>(
-    preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safestudy"]
-  );
-
-  // State for pricing info
-  const [pricingInfo, setPricingInfo] = useState<PricingInfo>({
-    monthly: 9.99,
-    yearly: 99,
-    regularPrice: 19.96,
-    savings: 9.97,
-    isBundlePrice: true,
-  });
-
-  // State for billing interval — defaults to yearly when ?interval=yearly
-  const [isYearly, setIsYearly] = useState(urlIntervalYearly);
+  // One plan, always the same three apps. Old ?app= / ?interval= links
+  // simply land on this plan.
+  const selectedApps: readonly string[] = PLAN_APP_IDS;
 
   // Loading and error state
   const [error, setError] = useState("");
@@ -190,27 +145,17 @@ function SignupContent() {
   // just clicked "Subscribe". Centralizes the fetch/redirect/error handling so
   // the OAuth-return effect and the already-authenticated path stay in sync.
   const proceedToCheckout = useCallback(
-    async (opts: {
-      selectedApps: AppId[];
-      isYearly: boolean;
-      unified?: boolean;
-      couponCode?: string;
-    }) => {
+    async (opts: { couponCode?: string } = {}) => {
       setIsLoading(true);
       setError("");
       try {
-        const useUnified = opts.unified ?? isUnifiedPlan;
         const response = await fetch("/api/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            selectedApps: opts.selectedApps,
-            isYearly: opts.isYearly,
             ...(opts.couponCode ? { couponCode: opts.couponCode } : {}),
-            // Pass plan:"unified" so the checkout API picks the unified Price ID
-            // instead of routing by app-count to a bundle price.
-            ...(useUnified ? { plan: "unified" } : {}),
-            // email is retrieved from the authenticated session by the checkout API
+            // The server decides the plan and price; email is retrieved from
+            // the authenticated session by the checkout API.
           }),
         });
         if (!response.ok) {
@@ -240,7 +185,7 @@ function SignupContent() {
         setIsLoading(false);
       }
     },
-    [isUnifiedPlan]
+    []
   );
 
   // Handle OAuth callback - when user returns authenticated after Google OAuth
@@ -253,47 +198,24 @@ function SignupContent() {
       const savedState = loadSignupState();
 
       if (savedState) {
-        console.log("[SignupPage] OAuth return detected, proceeding to checkout with saved state:", savedState);
+        console.log("[SignupPage] OAuth return detected, proceeding to checkout");
         setOauthProcessed(true);
-
-        // Update local state with saved values (in case UI is shown briefly)
-        if (savedState.selectedApps.length > 0) {
-          setSelectedApps(savedState.selectedApps);
-        }
-        if (savedState.isYearly !== undefined) {
-          setIsYearly(savedState.isYearly);
-        }
 
         // Clear the saved state
         clearSignupState();
 
         // For OAuth users, we skip the central user creation (Convex Auth already
         // created it) and go directly to Stripe checkout.
-        void proceedToCheckout({
-          selectedApps: savedState.selectedApps,
-          isYearly: savedState.isYearly,
-          unified: savedState.isUnifiedPlan,
-          couponCode: savedState.couponCode,
-        });
+        void proceedToCheckout({ couponCode: savedState.couponCode });
       }
     }
   }, [isAuthenticated, isAuthLoading, oauthProcessed, proceedToCheckout]);
 
-  // Handle app selection changes
-  const handleAppSelectionChange = useCallback(
-    (apps: AppId[], pricing: PricingInfo, yearly: boolean) => {
-      setSelectedApps(apps);
-      setPricingInfo(pricing);
-      setIsYearly(yearly);
-    },
-    []
-  );
-
-  // Convert AppId[] to AppSelection object for AccountForm
+  // The plan's apps, as the AccountForm's chip list.
   const appSelection: AppSelection = {
     safetunes: selectedApps.includes("safetunes"),
     safetube: selectedApps.includes("safetube"),
-    safereads: selectedApps.includes("safereads"),
+    safereads: false,
     safestudy: selectedApps.includes("safestudy"),
   };
 
@@ -338,13 +260,10 @@ function SignupContent() {
           }
         } else {
           console.log("[SignupPage] Central user created successfully:", signupResult.email);
-          // New account on MONTHLY — skip Stripe, start the card-less free
-          // trial. YEARLY falls through to Stripe checkout: the page says
-          // "billed annually" and yearly has no trial, so silently starting a
-          // free trial instead (the old behaviour) meant a parent who chose
-          // yearly was never asked to pay. The account already exists, so
-          // checkout treats them like any returning user.
-          if (!hasLifetimeCode && !isYearly) {
+          // New account — skip Stripe and start the card-less free trial.
+          // (There is no yearly plan any more, so the old "yearly must go
+          // to checkout" exception from 94628501 is gone.)
+          if (!hasLifetimeCode) {
             console.log("[SignupPage] Account created with trial — skipping Stripe checkout");
             window.location.href = `/success?trial=true&email=${encodeURIComponent(data.email)}`;
             return;
@@ -401,19 +320,15 @@ function SignupContent() {
     try {
       console.log("[SignupPage] Proceeding to checkout...");
 
-      // Build the checkout request. When ?plan=unified, signal the
-      // unified-pricing path; the checkout API ignores selectedApps and
-      // routes to STRIPE_UNIFIED_MONTHLY_PRICE_ID / STRIPE_UNIFIED_YEARLY_PRICE_ID.
+      // The checkout API decides the plan and price (Safe Family monthly);
+      // only the email is used from this body.
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: data.email,
-          selectedApps,
           name: data.name,
           couponCode: data.couponCode,
-          isYearly,
-          ...(isUnifiedPlan ? { plan: "unified" } : {}),
         }),
       });
 
@@ -468,20 +383,16 @@ function SignupContent() {
         console.log("[SignupPage] Already authenticated — going straight to checkout");
         setOauthProcessed(true);
         clearSignupState();
-        await proceedToCheckout({ selectedApps, isYearly, unified: isUnifiedPlan });
+        await proceedToCheckout();
         return;
       }
 
       // Save current signup state to localStorage before OAuth redirect
-      // This preserves app selection and billing preference across the redirect
-      saveSignupState({
-        selectedApps,
-        isYearly,
-        isUnifiedPlan,
-        // Note: promo codes not supported with Google OAuth (user must complete email flow)
-      });
+      // so the return trip knows to continue to checkout.
+      // Note: promo codes not supported with Google OAuth (user must complete email flow)
+      saveSignupState({});
 
-      console.log("[SignupPage] Starting Google OAuth, saved state:", { selectedApps, isYearly, isUnifiedPlan });
+      console.log("[SignupPage] Starting Google OAuth");
 
       // Redirect to Google OAuth via Convex Auth
       // After successful auth, user will be redirected back to /signup
@@ -511,38 +422,25 @@ function SignupContent() {
           {/* Page title */}
           <div className="text-center mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-navy mb-3">
-              {isUnifiedPlan ? "Start your Safe Family trial" : "Start protecting your family today"}
+              Start your {PLAN_NAME} trial
             </h1>
             <p className="text-lg text-navy/60 max-w-xl mx-auto">
-              {isUnifiedPlan
-                ? `SafeTunes, SafeTube and SafeStudy for $${isYearly ? "149/year" : "14.99/month"}. ${isYearly ? "Yearly is billed at checkout." : "7-day free trial — no credit card to start."}`
-                : "Choose the apps you need and create your account. Your 7-day free trial starts immediately."}
+              {`${PLAN_APPS_TEXT} for ${PRICE_PER_MONTH}. ${TRIAL_DAYS}-day free trial — no credit card to start.`}
             </p>
           </div>
 
           {/* Two-column layout on desktop */}
           <div className="grid gap-8 lg:grid-cols-2">
-            {/* Left column: App selection (legacy) OR unified summary */}
+            {/* Left column: the one plan */}
             <div className="card-soft p-6 sm:p-8">
-              {isUnifiedPlan ? (
-                <UnifiedPlanSummary isYearly={isYearly} onIntervalChange={setIsYearly} />
-              ) : (
-                <AppSelector
-                  initialApps={preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safestudy"]}
-                  onChange={handleAppSelectionChange}
-                  showYearlyToggle={true}
-                />
-              )}
+              <UnifiedPlanSummary />
             </div>
 
             {/* Right column: Account form */}
             <div>
               <AccountForm
                 selectedApps={appSelection}
-                hidePrice={isUnifiedPlan}
-                monthlyPrice={pricingInfo.monthly}
-                yearlyPrice={pricingInfo.yearly}
-                isYearly={isYearly}
+                hidePrice={true}
                 onSubmit={handleSubmit}
                 onGoogleSignIn={handleGoogleSignIn}
                 error={error}
@@ -583,20 +481,6 @@ function SignupContent() {
                   <div>
                     <p className="font-medium text-navy">SafeTube</p>
                     <p className="text-sm text-navy/60">Approve channels before viewing</p>
-                  </div>
-                </div>
-              )}
-
-              {selectedApps.includes("safereads") && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#3AA06B] flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium text-navy">SafeReads</p>
-                    <p className="text-sm text-navy/60">Get content analysis for books</p>
                   </div>
                 </div>
               )}
@@ -677,18 +561,9 @@ function SignupContent() {
   );
 }
 
-// Unified-plan summary — replaces the AppSelector when ?plan=unified is set.
-// Shows the three apps as a fixed list plus the monthly/yearly toggle, with
-// pricing locked at $14.99/mo or $149/yr.
-function UnifiedPlanSummary({
-  isYearly,
-  onIntervalChange,
-}: {
-  isYearly: boolean;
-  onIntervalChange: (yearly: boolean) => void;
-}) {
-  const MONTHLY = 14.99;
-  const YEARLY = 149;
+// The one plan: Safe Family, $4.99/month, SafeTunes + SafeTube + SafeStudy.
+// Price text comes from lib/pricing.ts. No interval toggle — monthly only.
+function UnifiedPlanSummary() {
   const apps = [
     "SafeTunes — Apple Music, parent-curated",
     "SafeTube — YouTube without the algorithm",
@@ -696,46 +571,18 @@ function UnifiedPlanSummary({
   ];
   return (
     <div>
-      <h2 className="text-xl font-bold text-navy mb-2">Safe Family</h2>
+      <h2 className="text-xl font-bold text-navy mb-2">{PLAN_NAME}</h2>
       <p className="text-sm text-navy/60 mb-5">
         One subscription, three apps. Built for homeschool families.
       </p>
 
-      {/* Interval toggle */}
-      <div className="inline-flex items-center gap-1 rounded-full bg-cream p-1 border border-navy/10 mb-5">
-        <button
-          type="button"
-          onClick={() => onIntervalChange(false)}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
-            !isYearly ? "bg-navy text-cream" : "text-navy/70"
-          }`}
-        >
-          Monthly
-        </button>
-        <button
-          type="button"
-          onClick={() => onIntervalChange(true)}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
-            isYearly ? "bg-navy text-cream" : "text-navy/70"
-          }`}
-        >
-          Yearly · Save 17%
-        </button>
-      </div>
-
       {/* Price */}
       <div className="mb-5">
         <div className="flex items-baseline gap-1">
-          <span className="text-4xl font-bold text-navy">
-            ${isYearly ? YEARLY : MONTHLY}
-          </span>
-          <span className="text-lg text-navy/60">{isYearly ? "/year" : "/month"}</span>
+          <span className="text-4xl font-bold text-navy">{PRICE}</span>
+          <span className="text-lg text-navy/60">/month</span>
         </div>
-        {isYearly && (
-          <p className="text-xs text-navy/50 mt-1">
-            That&rsquo;s ${(YEARLY / 12).toFixed(2)}/mo billed annually
-          </p>
-        )}
+        <p className="text-xs text-navy/50 mt-1">For all three apps, the whole family</p>
       </div>
 
       {/* Apps included */}

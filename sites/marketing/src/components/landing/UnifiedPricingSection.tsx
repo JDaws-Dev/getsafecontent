@@ -1,24 +1,14 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import { Check, Sparkles, Music, PlaySquare, Search } from "lucide-react";
+import { PLAN_NAME, PRICE, TRIAL_DAYS } from "@/lib/pricing";
 
 /**
- * Unified pricing section — single plan, all 3 apps, $14.99/mo or $149/yr.
+ * Unified pricing section — one plan, Safe Family, $4.99/month for
+ * SafeTunes, SafeTube and SafeStudy. Monthly only (owner decision
+ * 2026-11-25). Price text comes from lib/pricing.ts.
  *
- * Rendered when ENABLE_UNIFIED_PRICING is on. Replaces the 3-card legacy
- * PricingSection (Single / Two-app / Bundle). SafeReads and SafeSpark are
- * no longer sold to new families (2026-11-25), so the list is Tunes/Tube/Study; the per-app marketing story collapses into "one trusted
- * subscription, everything your family needs."
- *
- * Existing $9.99 bundle subscribers don't see this — they're grandfathered
- * server-side, unaffected by the rollout.
+ * Existing subscribers stay on whatever price they already pay.
  */
-
-const MONTHLY_PRICE = 14.99;
-const YEARLY_PRICE = 149;
-const APPLE_ONE_FAMILY = 19.99; // anchor price for comparison
 
 const apps = [
   { name: "SafeTunes", icon: Music, blurb: "Apple Music your kids can actually use" },
@@ -30,22 +20,13 @@ const includedFeatures = [
   "Unlimited kid profiles for the whole family",
   "Parent visibility into every kid request and search",
   "No ads, no data sold, no surprises",
-  "7-day free trial — no credit card required to start",
+  `${TRIAL_DAYS}-day free trial — no credit card required to start`,
   "Cancel anytime in one click",
   "30-day money-back guarantee",
 ];
 
 export default function UnifiedPricingSection() {
-  const [isYearly, setIsYearly] = useState(false);
-
-  const displayPrice = isYearly ? YEARLY_PRICE : MONTHLY_PRICE;
-  const displayInterval = isYearly ? "/year" : "/month";
-  const effectiveMonthly = isYearly ? YEARLY_PRICE / 12 : MONTHLY_PRICE;
-  const yearlySavingsPct = Math.round(
-    ((MONTHLY_PRICE * 12 - YEARLY_PRICE) / (MONTHLY_PRICE * 12)) * 100,
-  );
-
-  const checkoutHref = `/signup?plan=unified&interval=${isYearly ? "yearly" : "monthly"}`;
+  const checkoutHref = "/signup?plan=unified";
 
   return (
     <section id="pricing" className="relative">
@@ -56,45 +37,8 @@ export default function UnifiedPricingSection() {
               One subscription. Everything your family needs.
             </h2>
             <p className="mt-4 text-lg text-navy/60 max-w-2xl mx-auto">
-              Music, video, and search in one plan, for less than Apple One Family.
+              Music, video, and search in one simple plan. One price, every kid in the house.
             </p>
-          </div>
-
-          {/* Monthly/Yearly toggle */}
-          <div className="flex justify-center mb-8">
-            <div
-              role="tablist"
-              aria-label="Billing interval"
-              className="inline-flex items-center gap-1 rounded-full bg-white p-1 shadow-sm border border-navy/10"
-            >
-              <button
-                role="tab"
-                aria-selected={!isYearly}
-                onClick={() => setIsYearly(false)}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
-                  !isYearly
-                    ? "bg-navy text-cream"
-                    : "text-navy/70 hover:text-navy"
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                role="tab"
-                aria-selected={isYearly}
-                onClick={() => setIsYearly(true)}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors flex items-center gap-2 ${
-                  isYearly
-                    ? "bg-navy text-cream"
-                    : "text-navy/70 hover:text-navy"
-                }`}
-              >
-                Yearly
-                <span className="text-[10px] font-bold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-700 px-1.5 py-0.5">
-                  Save {yearlySavingsPct}%
-                </span>
-              </button>
-            </div>
           </div>
 
           {/* Single pricing card */}
@@ -105,22 +49,15 @@ export default function UnifiedPricingSection() {
                 <div className="inline-flex items-center gap-2 mb-2">
                   <Sparkles className="h-5 w-5" />
                   <span className="text-sm font-semibold uppercase tracking-wider">
-                    Safe Family
+                    {PLAN_NAME}
                   </span>
                 </div>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-5xl sm:text-6xl font-bold">
-                    ${displayPrice.toFixed(displayPrice % 1 === 0 ? 0 : 2)}
-                  </span>
-                  <span className="text-xl text-white/80">{displayInterval}</span>
+                  <span className="text-5xl sm:text-6xl font-bold">{PRICE}</span>
+                  <span className="text-xl text-white/80">/month</span>
                 </div>
-                {isYearly && (
-                  <p className="mt-2 text-sm text-white/80">
-                    That&rsquo;s ${effectiveMonthly.toFixed(2)}/mo, billed annually
-                  </p>
-                )}
                 <p className="mt-3 text-sm text-white/70">
-                  Less than Apple One Family (${APPLE_ONE_FAMILY}/mo)
+                  All three apps, the whole family, one monthly price
                 </p>
               </div>
 
@@ -169,7 +106,7 @@ export default function UnifiedPricingSection() {
                   Start Free Trial
                 </Link>
                 <p className="mt-3 text-center text-xs text-navy/50">
-                  7-day free trial · no credit card required · cancel anytime
+                  {TRIAL_DAYS}-day free trial · no credit card required · cancel anytime
                 </p>
               </div>
             </div>

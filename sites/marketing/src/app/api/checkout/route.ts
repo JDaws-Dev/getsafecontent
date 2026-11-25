@@ -7,43 +7,24 @@ import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "../../../../convex/_generated/api";
 
-// Price IDs for different plans
-// LEGACY PRICING: 1 app=$4.99/mo, 2 apps=$7.99/mo, 3-4 apps=$9.99/mo (monthly) or $99/year
-// UNIFIED PRICING (when ENABLE_UNIFIED_PRICING=true): one plan, all 5 apps,
-//   $14.99/mo or $149/yr. Price IDs live in env vars so they can be
-//   created in Stripe without a code change.
-const PRICE_IDS = {
-  // Individual app prices ($4.99/mo each)
-  SAFETUNES: "price_1SUXOjKgkIT46sg7RKwIgAVv",
-  SAFETUBE: "price_1Spp7oKgkIT46sg7oJIKGfMG",
-  SAFEREADS: process.env.SAFEREADS_PRICE_ID || "", // Set via env var
-  // 2-app bundle ($7.99/mo)
-  TWO_APP: "price_1SzNlSKgkIT46sg7T88Bxq6p",
-  // Bundle: 3-4 apps ($9.99/mo or $99/year)
-  BUNDLE_MONTHLY: "price_1SxaerKgkIT46sg7NHNy0wk8",
-  BUNDLE_YEARLY: "price_1SzLJUKgkIT46sg7xsKo2A71",
-  // Unified plan: all 5 apps including SafeSpark ($14.99/mo or $149/yr).
-  // Hardcoded fallbacks point at the live Stripe Prices Jeremiah created
-  // on May 27, 2026 (prod_Uay2qoEvGAOfWL monthly, prod_Uay4yy3aKjbkxi yearly).
-  // Override via env var if the IDs ever need to change without redeploy.
-  UNIFIED_MONTHLY:
-    process.env.STRIPE_UNIFIED_MONTHLY_PRICE_ID ||
-    "price_1Tbm6RKgkIT46sg75fZzF2gj", // $14.99/mo
-  UNIFIED_YEARLY:
-    process.env.STRIPE_UNIFIED_YEARLY_PRICE_ID ||
-    "price_1Tbm8OKgkIT46sg7YgWgQPDC", // $149/yr
-};
+// ONE plan (owner decision 2026-11-25): Safe Family, $4.99/month, monthly
+// only, covering SafeTunes, SafeTube and SafeStudy. The SERVER decides the
+// price — the client never sends a price ID or an app list that we trust.
+//
+// TODO(owner): create a "Safe Family $4.99/mo" recurring price in Stripe and
+// set STRIPE_UNIFIED_MONTHLY_PRICE_ID to it on the Vercel project
+// (production). Until then the fallback below is the existing SafeTunes
+// $4.99/month price (price_1SUXOjKgkIT46sg7RKwIgAVv), so checkout can never
+// silently charge the old $14.99. The env var name is kept from the earlier
+// unified plan; if it is still set to the old $14.99 price on Vercel, it
+// MUST be replaced.
+const SAFE_FAMILY_MONTHLY_PRICE_ID =
+  process.env.STRIPE_UNIFIED_MONTHLY_PRICE_ID?.trim() ||
+  "price_1SUXOjKgkIT46sg7RKwIgAVv"; // $4.99/mo
 
-// Map app names to their individual price IDs
-const APP_TO_PRICE: Record<string, string> = {
-  safetunes: PRICE_IDS.SAFETUNES,
-  safetube: PRICE_IDS.SAFETUBE,
-  safereads: PRICE_IDS.SAFEREADS,
-};
-
-// Valid app names
-type AppName = "safetunes" | "safetube" | "safereads" | "safestudy";
-const VALID_APPS: AppName[] = ["safetunes", "safetube", "safereads", "safestudy"];
+// Apps the plan grants (stamped on the subscription as metadata.apps).
+type AppName = "safetunes" | "safetube" | "safestudy";
+const PLAN_APPS: AppName[] = ["safetunes", "safetube", "safestudy"];
 
 /**
  * Normalize email to lowercase and trim whitespace.
@@ -71,7 +52,9 @@ export async function POST(req: Request) {
       // Log but don't fail the request if rate limiting fails
       console.error("Rate limit check failed:", rateLimitError);
     }
-    const { email: bodyEmail, priceId, apps, selectedApps, isYearly, plan } = await req.json();
+    // Only the email is read from the body. Any priceId / apps / isYearly /
+    // plan fields older clients send are ignored: there is one plan.
+    const { email: bodyEmail } = await req.json();
 
     // Get email from request body OR from authenticated session (for OAuth users)
     // IMPORTANT: Normalize email to lowercase to prevent duplicate Stripe customers
@@ -92,75 +75,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // Unified-pricing path: one plan, all 5 apps including SafeSpark.
-    // Triggered by `plan: "unified"` from the new signup flow.
-    const isUnifiedPlan = plan === "unified";
-
-    // Support both 'apps' and 'selectedApps' field names (legacy path)
-    const appsInput = apps || selectedApps;
-
-    // Validate apps array if provided
-    let finalApps: AppName[] = VALID_APPS; // Default to all apps
-    if (isUnifiedPlan) {
-      // Unified plan grants all 5 apps regardless of any apps array sent
-      finalApps = [...VALID_APPS, "safespark" as AppName];
-    } else if (appsInput && Array.isArray(appsInput)) {
-      finalApps = appsInput.filter((app: string) =>
-        VALID_APPS.includes(app as AppName)
-      ) as AppName[];
-      if (finalApps.length === 0) {
-        return NextResponse.json(
-          { error: "At least 1 app must be selected" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Determine price ID based on selection
-    let finalPriceId = priceId;
-    if (!finalPriceId) {
-      if (isUnifiedPlan) {
-        finalPriceId = isYearly
-          ? PRICE_IDS.UNIFIED_YEARLY
-          : PRICE_IDS.UNIFIED_MONTHLY;
-        if (!finalPriceId) {
-          return NextResponse.json(
-            {
-              error: isYearly
-                ? "Unified yearly price not configured — set STRIPE_UNIFIED_YEARLY_PRICE_ID"
-                : "Unified monthly price not configured — set STRIPE_UNIFIED_MONTHLY_PRICE_ID",
-            },
-            { status: 500 },
-          );
-        }
-      } else if (finalApps.length === 1) {
-        // Single app - use individual app price
-        const appPriceId = APP_TO_PRICE[finalApps[0]];
-        if (!appPriceId) {
-          return NextResponse.json(
-            { error: `Price not configured for ${finalApps[0]}` },
-            { status: 500 }
-          );
-        }
-        finalPriceId = appPriceId;
-      } else if (finalApps.length === 2) {
-        finalPriceId = PRICE_IDS.TWO_APP;
-      } else if (finalApps.length >= 3) {
-        finalPriceId = isYearly
-          ? PRICE_IDS.BUNDLE_YEARLY
-          : PRICE_IDS.BUNDLE_MONTHLY;
-      }
-    }
-
-    // Fall back to environment variable if still not set
-    finalPriceId = finalPriceId || process.env.STRIPE_BUNDLE_PRICE_ID;
-
-    if (!finalPriceId) {
-      return NextResponse.json(
-        { error: "No price ID configured" },
-        { status: 500 }
-      );
-    }
+    // One plan, decided here: Safe Family monthly, SafeTunes + SafeTube +
+    // SafeStudy.
+    const finalApps: AppName[] = [...PLAN_APPS];
+    const finalPriceId = SAFE_FAMILY_MONTHLY_PRICE_ID;
 
     const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
 
@@ -210,9 +128,15 @@ export async function POST(req: Request) {
       }
     }
 
-    // Store apps as comma-separated string in metadata (sorted for consistency)
-    const appsMetadata = finalApps.sort().join(",");
-    const isBundle = finalApps.length > 1;
+    // metadata.apps = "safetunes,safetube,safestudy" (read by the webhook).
+    const appsMetadata = finalApps.join(",");
+    const planMetadata = {
+      bundle: "true",
+      apps: appsMetadata,
+      app_count: finalApps.length.toString(),
+      billing_interval: "monthly",
+      plan: "unified",
+    };
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
@@ -225,25 +149,13 @@ export async function POST(req: Request) {
       ],
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/signup`,
-      metadata: {
-        bundle: isBundle ? "true" : "false",
-        apps: appsMetadata,
-        app_count: finalApps.length.toString(),
-        billing_interval: isYearly ? "yearly" : "monthly",
-        ...(isUnifiedPlan ? { plan: "unified" } : {}),
-      },
+      metadata: planMetadata,
       subscription_data: {
-        // 7-day free trial for NEW monthly customers only. Yearly always charges
-        // immediately, and returning customers (hasHadSubscription) are never
-        // re-trialed — they pay now instead of getting another $0 trial.
-        ...(!isYearly && !hasHadSubscription ? { trial_period_days: 7 } : {}),
-        metadata: {
-          bundle: isBundle ? "true" : "false",
-          apps: appsMetadata,
-          app_count: finalApps.length.toString(),
-          billing_interval: isYearly ? "yearly" : "monthly",
-          ...(isUnifiedPlan ? { plan: "unified" } : {}),
-        },
+        // 7-day free trial for NEW customers only. Returning customers
+        // (hasHadSubscription) are never re-trialed — they pay now instead of
+        // getting another $0 trial.
+        ...(!hasHadSubscription ? { trial_period_days: 7 } : {}),
+        metadata: planMetadata,
       },
     };
 

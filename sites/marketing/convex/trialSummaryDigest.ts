@@ -49,47 +49,15 @@ function buildUserMaps(reports: Report[]) {
   return { warned, expired };
 }
 
-function getUpsellBlock(appCount: number): string {
-  if (appCount === 1) {
-    return `
-      <div style="background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 100%); color: white; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">
-        <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700;">Get all 4 apps for $9.99/mo</p>
-        <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">SafeTunes + SafeTube + SafeStudy — save over $10/mo vs individual</p>
-        <a href="https://getsafefamily.com/signup" style="display: inline-block; background: white; color: #1a1a2e; padding: 12px 32px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 16px;">Subscribe &amp; Save</a>
-        <p style="margin: 12px 0 0 0; font-size: 13px; opacity: 0.7;">Or $99/year — just $2.06/app/month</p>
-      </div>
-    `;
-  }
-
-  if (appCount === 2) {
-    return `
-      <div style="background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 100%); color: white; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">
-        <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700;">Add 2 more apps for just 1 penny more</p>
-        <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">You're using 2 apps ($9.98/mo individually). Get all 4 for $9.99/mo.</p>
-        <a href="https://getsafefamily.com/signup" style="display: inline-block; background: white; color: #1a1a2e; padding: 12px 32px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 16px;">Get the Bundle</a>
-        <p style="margin: 12px 0 0 0; font-size: 13px; opacity: 0.7;">Or $99/year — save even more</p>
-      </div>
-    `;
-  }
-
-  if (appCount === 3) {
-    return `
-      <div style="background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 100%); color: white; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">
-        <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700;">Get the 4th app FREE with the bundle</p>
-        <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">You're using 3 apps ($14.97/mo individually). The bundle is $9.99/mo for all 4 — save $4.98/mo.</p>
-        <a href="https://getsafefamily.com/signup" style="display: inline-block; background: white; color: #1a1a2e; padding: 12px 32px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 16px;">Switch to Bundle</a>
-        <p style="margin: 12px 0 0 0; font-size: 13px; opacity: 0.7;">Or $99/year — that's $2.06/app/month</p>
-      </div>
-    `;
-  }
-
-  // 4 apps
+// One plan (owner decision 2026-11-25): Safe Family, $4.99/month for
+// SafeTunes, SafeTube and SafeStudy together, monthly only. Same block no
+// matter how many apps the family tried.
+function getUpsellBlock(_appCount: number): string {
   return `
     <div style="background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 100%); color: white; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">
-      <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700;">Keep all 4 apps for $9.99/mo</p>
-      <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">That's $19.96/mo individually — the bundle saves you $9.97 every month.</p>
-      <a href="https://getsafefamily.com/signup" style="display: inline-block; background: white; color: #1a1a2e; padding: 12px 32px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 16px;">Subscribe &amp; Save 50%</a>
-      <p style="margin: 12px 0 0 0; font-size: 13px; opacity: 0.7;">Or $99/year — just $8.25/mo for everything</p>
+      <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700;">Keep Safe Family for $4.99/month</p>
+      <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">SafeTunes, SafeTube and SafeStudy together, for the whole family. Cancel anytime.</p>
+      <a href="https://getsafefamily.com/signup" style="display: inline-block; background: white; color: #1a1a2e; padding: 12px 32px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 16px;">Subscribe</a>
     </div>
   `;
 }
@@ -226,7 +194,7 @@ async function sendEmail(
  *
  * Customer emails:
  * - One email per user listing ALL their expiring apps
- * - Bundle upsell based on how many apps they have
+ * - One Safe Family ($4.99/month) subscribe block
  *
  * Admin email:
  * - One digest summarizing all activity across all apps
