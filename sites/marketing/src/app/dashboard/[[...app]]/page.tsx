@@ -10,15 +10,16 @@
  * The apps' own /admin routes redirect here when opened directly.
  */
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useConvexAuth, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Loader2, LogOut, Copy } from "lucide-react";
+import { Loader2, LogOut, Copy, Check, Users } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { clearAppSession } from "@/lib/appSession";
 import { FamilyTab } from "@/components/dashboard/FamilyTab";
+import { AppTile, UmbrellaMark } from "@/components/brand/Brand";
 
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 
@@ -64,6 +65,24 @@ export default function DashboardPage() {
   }, [currentUser?.entitledApps]);
   const active = slug ? entitled.find((a) => a.slug === slug) ?? null : null;
 
+  // Phone: the tab bar scrolls sideways, so bring the selected tab into view
+  // (SafeStudy/SafeSpark sit off-screen at 390px). Scroll only the tab strip,
+  // never the page.
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
+  const activeKey = showFamily ? "family" : active?.slug ?? "";
+  const ready = !!currentUser;
+  useEffect(() => {
+    const strip = tabsRef.current;
+    if (!strip || !activeKey) return;
+    const tab = strip.querySelector<HTMLElement>(`[data-tab="${activeKey}"]`);
+    if (!tab) return;
+    const s = strip.getBoundingClientRect();
+    const t = tab.getBoundingClientRect();
+    const left = strip.scrollLeft + (t.left - s.left) - (s.width - t.width) / 2;
+    strip.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+  }, [activeKey, ready]);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       const here = typeof window !== "undefined" ? window.location.pathname : "/dashboard";
@@ -90,33 +109,39 @@ export default function DashboardPage() {
     <div className="h-screen bg-cream flex flex-col">
       {/* Shell header — the only header a parent sees */}
       <header className="bg-white border-b border-navy/10 px-4 sm:px-6">
-        <div className="h-16 flex items-center justify-between gap-4">
+        <div className="h-16 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-6 min-w-0">
-            <Link href="/dashboard" className="inline-flex items-center gap-2 shrink-0">
-              <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#F5A962] to-[#E88B6A] flex items-center justify-center">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3C7 3 3 7 3 12h18c0-5-4-9-9-9Z" /><path d="M12 12v7a2 2 0 0 0 4 0" /></svg>
-              </span>
-              <span className="text-lg font-bold text-navy">Safe Family</span>
+            <Link href="/dashboard" className="inline-flex items-center gap-2 shrink-0 whitespace-nowrap">
+              <UmbrellaMark />
+              <span className="text-base sm:text-lg font-bold text-navy">Safe Family</span>
             </Link>
             <nav className="hidden sm:flex items-center gap-1 text-sm font-semibold">
               <Link href="/dashboard" className={`px-3 py-1.5 rounded-full ${!active ? "bg-cream-dark text-navy" : "text-navy/60 hover:text-navy"}`}>Dashboard</Link>
               <Link href="/account" className="px-3 py-1.5 rounded-full text-navy/60 hover:text-navy">Account</Link>
             </nav>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {familyCode && (
+              // Always visible: on a phone it is just the code + copy icon, so
+              // it fits on one line beside the logo and Sign out at 390px.
               <button
-                onClick={() => navigator.clipboard?.writeText(familyCode)}
-                className="hidden md:inline-flex items-center gap-2 rounded-full border border-navy/10 bg-white px-3 py-1.5 text-xs font-semibold text-navy/70 hover:text-navy"
+                onClick={() => {
+                  navigator.clipboard?.writeText(familyCode);
+                  setCopied(true);
+                  window.setTimeout(() => setCopied(false), 1500);
+                }}
+                className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-navy/10 bg-white px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-navy/70 hover:text-navy whitespace-nowrap"
                 title="Copy family code"
+                aria-label={`Family code ${familyCode}. Copy`}
               >
-                Family code <span className="font-mono tracking-widest text-navy">{familyCode}</span>
-                <Copy className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Family code</span>
+                <span className="font-mono tracking-wider sm:tracking-widest text-navy">{familyCode}</span>
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             )}
             <button
               onClick={async () => { clearAppSession(); await signOut(); router.push("/"); }}
-              className="text-sm text-navy/60 hover:text-navy inline-flex items-center gap-1"
+              className="text-sm text-navy/60 hover:text-navy inline-flex items-center gap-1 whitespace-nowrap"
             >
               <LogOut className="w-4 h-4" /> Sign out
             </button>
@@ -124,12 +149,15 @@ export default function DashboardPage() {
         </div>
 
         {/* App tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto -mb-px">
+        <div ref={tabsRef} className="flex items-center gap-1 overflow-x-auto -mb-px">
           <Link
             href="/dashboard/family"
+            data-tab="family"
             className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 whitespace-nowrap ${showFamily ? "text-navy border-[#E88B6A]" : "border-transparent text-navy/60 hover:text-navy"}`}
           >
-            <span className="w-5 h-5 rounded-md bg-gradient-to-br from-[#F5A962] to-[#E88B6A]" />
+            <span className="w-5 h-5 rounded-md shrink-0 bg-gradient-to-br from-[#F5A962] to-[#E88B6A] flex items-center justify-center" aria-hidden="true">
+              <Users className="w-3 h-3 text-white" strokeWidth={2.25} />
+            </span>
             Family
           </Link>
           {entitled.map((a) => {
@@ -138,10 +166,11 @@ export default function DashboardPage() {
               <Link
                 key={a.id}
                 href={`/dashboard/${a.slug}`}
+                data-tab={a.slug}
                 className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 whitespace-nowrap ${on ? "text-navy" : "border-transparent text-navy/60 hover:text-navy"}`}
                 style={on ? { borderColor: a.color } : undefined}
               >
-                <span className="w-5 h-5 rounded-md" style={{ background: a.color, opacity: on ? 1 : 0.55 }} />
+                <AppTile app={a.id} size="xs" muted={!on} />
                 {a.name}
                 {a.comingSoon && (
                   <span className="ml-1 rounded-full bg-navy/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-navy/60">
@@ -161,7 +190,7 @@ export default function DashboardPage() {
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-10">
           <div className="max-w-2xl mx-auto rounded-2xl bg-white border border-navy/10 p-8">
             <div className="flex items-center gap-4 mb-4">
-              <span className="w-12 h-12 rounded-xl shrink-0" style={{ background: active.color }} />
+              <AppTile app={active.id} size="md" />
               <div>
                 <h1 className="text-2xl font-bold text-navy">{active.name}</h1>
                 <p className="text-sm font-semibold uppercase tracking-wider text-navy/50">Coming soon</p>
@@ -195,7 +224,7 @@ export default function DashboardPage() {
                   href={`/dashboard/${a.slug}`}
                   className="rounded-2xl bg-white border border-navy/10 p-5 hover:shadow-md transition flex items-center gap-4"
                 >
-                  <span className="w-12 h-12 rounded-xl shrink-0" style={{ background: a.color }} />
+                  <AppTile app={a.id} size="md" />
                   <span>
                     <span className="block font-bold text-navy">{a.name}</span>
                     <span className="block text-sm text-navy/60">

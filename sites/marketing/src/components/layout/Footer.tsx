@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Shield, Music, PlaySquare, Book, Search, Sparkles } from "lucide-react";
+import { UmbrellaMark } from "../brand/Brand";
+import { Music, PlaySquare, Book, Search, Sparkles } from "lucide-react";
 
 const apps = [
   { name: "SafeTunes", href: "/tunes", icon: Music, comingSoon: false },
@@ -34,9 +35,7 @@ export default function Footer() {
                 href="/"
                 className="inline-flex items-center gap-2 group"
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">
-                  <Shield className="w-5 h-5 text-white" />
-                </div>
+                <UmbrellaMark size="sm" />
                 <span className="text-lg font-semibold">Safe Family</span>
               </Link>
               <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">

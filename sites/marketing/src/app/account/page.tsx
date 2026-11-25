@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../../convex/_generated/api";
+import { UmbrellaMark } from "@/components/brand/Brand";
 import {
   Shield,
   User,
@@ -36,36 +37,36 @@ import {
 
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 
-const APP_INFO: Record<AppId, { name: string; domain: string; icon: React.ReactNode; gradient: string }> = {
+const APP_INFO: Record<AppId, { name: string; domain: string; icon: React.ReactNode; color: string }> = {
   safetunes: {
     name: "SafeTunes",
     domain: "getsafefamily.com/dashboard/tunes",
     icon: <Music className="w-5 h-5 text-white" />,
-    gradient: "from-indigo-500 to-purple-500",
+    color: "#7C4DE0",
   },
   safetube: {
     name: "SafeTube",
     domain: "getsafefamily.com/dashboard/tube",
     icon: <Play className="w-5 h-5 text-white" />,
-    gradient: "from-red-500 to-orange-500",
+    color: "#F0603A",
   },
   safereads: {
     name: "SafeReads",
     domain: "getsafefamily.com/dashboard/reads",
     icon: <BookOpen className="w-5 h-5 text-white" />,
-    gradient: "from-emerald-500 to-teal-500",
+    color: "#3AA06B",
   },
   safestudy: {
     name: "SafeStudy",
     domain: "getsafefamily.com/dashboard/study",
     icon: <Search className="w-5 h-5 text-white" />,
-    gradient: "from-blue-500 to-cyan-500",
+    color: "#2F6BF0",
   },
   safespark: {
     name: "SafeSpark",
     domain: "getsafefamily.com/dashboard/spark",
     icon: <Sparkles className="w-5 h-5 text-white" />,
-    gradient: "from-amber-500 to-violet-500",
+    color: "#F2A413",
   },
 };
 
@@ -74,7 +75,7 @@ export default function AccountPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-cream flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-navy/50" />
       </div>
     }>
       <AccountPageContent />
@@ -225,9 +226,7 @@ function AccountPageContent() {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md animate-pulse">
-            <Shield className="w-6 h-6 text-white" />
-          </div>
+          <UmbrellaMark size="lg" className="animate-pulse" />
           <p className="text-navy/60">Loading...</p>
         </div>
       </div>
@@ -238,7 +237,7 @@ function AccountPageContent() {
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-navy/50" />
       </div>
     );
   }
@@ -277,27 +276,31 @@ function AccountPageContent() {
   return (
     <div className="min-h-screen bg-cream">
       {/* Header */}
-      <header className="container mx-auto px-6 py-6 flex items-center justify-between">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
-            <Shield className="w-6 h-6 text-white" />
+      {/* Same bar as /dashboard: umbrella + wordmark, Dashboard / Account, Sign out */}
+      <header className="bg-white border-b border-navy/10 px-4 sm:px-6">
+        <div className="h-16 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <Link href="/dashboard" className="inline-flex items-center gap-2 shrink-0 whitespace-nowrap">
+              <UmbrellaMark />
+              <span className="text-base sm:text-lg font-bold text-navy">Safe Family</span>
+            </Link>
+            <nav className="flex items-center gap-1 text-sm font-semibold">
+              <Link href="/dashboard" className="px-2.5 sm:px-3 py-1.5 rounded-full text-navy/60 hover:text-navy">Dashboard</Link>
+              <Link href="/account" className="hidden sm:inline-flex px-3 py-1.5 rounded-full bg-cream-dark text-navy">Account</Link>
+            </nav>
           </div>
-          <span className="text-xl font-bold text-navy">Safe Family</span>
-        </Link>
-
-        <Link href="/dashboard" className="text-sm font-semibold text-navy/70 hover:text-navy">Dashboard</Link>
-
-        <button
-          onClick={async () => {
-            clearAppSession();
-      await signOut();
-            router.push("/");
-          }}
-          className="text-sm text-navy/60 hover:text-navy flex items-center gap-1"
-        >
-          <LogOut className="w-4 h-4" />
-          Sign Out
-        </button>
+          <button
+            onClick={async () => {
+              clearAppSession();
+              await signOut();
+              router.push("/");
+            }}
+            className="text-sm text-navy/60 hover:text-navy inline-flex items-center gap-1 whitespace-nowrap shrink-0"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </button>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -307,16 +310,16 @@ function AccountPageContent() {
 
           {/* Family code + Setup guide — post-purchase "what now?" card */}
           {entitledApps.length > 0 && (
-            <section className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white shadow-md">
+            <section className="bg-white rounded-2xl border border-navy/10 p-6">
               <div className="flex flex-col sm:flex-row gap-5 items-start">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                  <p className="text-xs font-bold uppercase tracking-wider text-navy/50">
                     Your family code
                   </p>
-                  <p className="mt-2 font-mono font-bold text-3xl sm:text-4xl tracking-widest">
+                  <p className="mt-2 font-mono font-bold text-3xl sm:text-4xl tracking-widest text-navy">
                     {(currentUser as { familyCode?: string | null }).familyCode ?? "\u2014"}
                   </p>
-                  <p className="mt-2 text-sm text-white/85 leading-relaxed">
+                  <p className="mt-2 text-sm text-navy/60 leading-relaxed">
                     Same code works on every app. Share it with your kids so they can pick
                     their profile.
                   </p>
@@ -324,7 +327,7 @@ function AccountPageContent() {
                 <div className="flex flex-col gap-2 w-full sm:w-auto">
                   <Link
                     href="/setup"
-                    className="inline-flex items-center justify-center gap-1.5 bg-white text-indigo-700 hover:bg-white/90 font-semibold text-sm px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+                    className="inline-flex items-center justify-center gap-1.5 bg-navy text-white dark:text-cream hover:bg-navy-light font-semibold text-sm px-4 py-2 rounded-full transition-colors whitespace-nowrap"
                   >
                     First time? Setup guide
                     <ChevronRight className="w-4 h-4" />
@@ -337,7 +340,7 @@ function AccountPageContent() {
                         void navigator.clipboard?.writeText(code);
                       }
                     }}
-                    className="inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium text-sm px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+                    className="inline-flex items-center justify-center gap-1.5 bg-cream-dark hover:bg-cream text-navy font-semibold text-sm px-4 py-2 rounded-full transition-colors whitespace-nowrap"
                   >
                     Copy code
                   </button>
@@ -348,9 +351,9 @@ function AccountPageContent() {
 
           {/* Upgrade Banner - shown when user comes from an app they don't have access to */}
           {isValidUpgradeApp && upgradeApp && !entitledApps.includes(upgradeApp) && (
-            <section className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-6 shadow-sm">
+            <section className="bg-white rounded-2xl border border-navy/10 p-6">
               <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${APP_INFO[upgradeApp].gradient} flex items-center justify-center flex-shrink-0`}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: APP_INFO[upgradeApp].color }}>
                   {APP_INFO[upgradeApp].icon}
                 </div>
                 <div className="flex-1">
@@ -364,7 +367,7 @@ function AccountPageContent() {
                   <div className="flex flex-wrap gap-3">
                     <Link
                       href="/signup"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700 transition"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-navy text-white dark:text-cream rounded-full font-semibold hover:bg-navy-light transition"
                     >
                       <Plus className="w-4 h-4" />
                       Upgrade Plan
@@ -382,7 +385,7 @@ function AccountPageContent() {
           )}
 
           {/* Account Information */}
-          <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <section className="bg-white rounded-2xl border border-navy/10 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-navy">Account Information</h2>
               {!editingName && (
@@ -391,7 +394,7 @@ function AccountPageContent() {
                     setEditingName(true);
                     setNameValue(currentUser.name || "");
                   }}
-                  className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                  className="text-sm text-navy/70 hover:text-navy font-semibold flex items-center gap-1"
                 >
                   <Edit2 className="w-3 h-3" />
                   Edit
@@ -409,8 +412,8 @@ function AccountPageContent() {
             <div className="space-y-4">
               {/* Email */}
               <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
-                  <Mail className="h-4 w-4 text-gray-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cream-dark">
+                  <Mail className="h-4 w-4 text-navy/60" />
                 </div>
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -424,8 +427,8 @@ function AccountPageContent() {
 
               {/* Name */}
               <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
-                  <User className="h-4 w-4 text-gray-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cream-dark">
+                  <User className="h-4 w-4 text-navy/60" />
                 </div>
                 <div className="flex-1">
                   <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -437,7 +440,7 @@ function AccountPageContent() {
                         type="text"
                         value={nameValue}
                         onChange={(e) => setNameValue(e.target.value)}
-                        className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-navy/10 focus:border-navy/40 focus:outline-none"
                         placeholder="Enter your name"
                         autoFocus
                       />
@@ -472,8 +475,8 @@ function AccountPageContent() {
 
               {/* Member Since */}
               <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
-                  <Calendar className="h-4 w-4 text-gray-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cream-dark">
+                  <Calendar className="h-4 w-4 text-navy/60" />
                 </div>
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -488,7 +491,7 @@ function AccountPageContent() {
           </section>
 
           {/* Connected Apps */}
-          <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <section className="bg-white rounded-2xl border border-navy/10 p-6">
             <h2 className="font-semibold text-navy mb-4">Your Apps</h2>
 
             {entitledApps.length === 0 ? (
@@ -496,7 +499,7 @@ function AccountPageContent() {
                 <p className="text-gray-500 mb-4">No apps connected yet</p>
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-600 hover:to-purple-700"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-navy text-white dark:text-cream rounded-full font-semibold hover:bg-navy-light"
                 >
                   <Plus className="w-4 h-4" />
                   Add Apps
@@ -514,11 +517,12 @@ function AccountPageContent() {
                   return (
                     <div
                       key={app}
-                      className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition"
+                      className="flex items-center justify-between p-4 rounded-xl border border-navy/10 hover:border-navy/20 transition"
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-10 h-10 rounded-lg bg-gradient-to-br ${info.gradient} flex items-center justify-center`}
+                          className="w-10 h-10 rounded-lg flex items-center justify-center"
+                          style={{ background: info.color }}
                         >
                           {info.icon}
                         </div>
@@ -532,7 +536,7 @@ function AccountPageContent() {
                           href={`https://${info.domain}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition flex items-center gap-1"
+                          className="px-3 py-1.5 text-sm font-medium text-navy/70 hover:text-navy hover:bg-cream rounded-lg transition flex items-center gap-1"
                         >
                           Open
                           <ExternalLink className="w-3 h-3" />
@@ -558,7 +562,7 @@ function AccountPageContent() {
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <Link
                   href="/signup"
-                  className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                  className="text-sm text-navy/70 hover:text-navy font-semibold flex items-center gap-1"
                 >
                   <Plus className="w-4 h-4" />
                   Add more apps to your subscription
@@ -568,16 +572,16 @@ function AccountPageContent() {
           </section>
 
           {/* Subscription */}
-          <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <section className="bg-white rounded-2xl border border-navy/10 p-6">
             <h2 className="font-semibold text-navy mb-4">Subscription</h2>
 
             {/* Status Badge */}
             <div className="flex items-center gap-2 mb-4">
               {isLifetime ? (
                 <>
-                  <Crown className="h-5 w-5 text-purple-500" />
+                  <Crown className="h-5 w-5 text-[#E88B6A]" />
                   <span className="font-semibold text-navy">Lifetime Access</span>
-                  <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                  <span className="rounded-full bg-[#FCE8DC] px-2 py-0.5 text-xs font-medium text-[#A8512F]">
                     Lifetime
                   </span>
                 </>
@@ -591,7 +595,7 @@ function AccountPageContent() {
                 </>
               ) : isTrial ? (
                 <>
-                  <Crown className="h-5 w-5 text-indigo-500" />
+                  <Crown className="h-5 w-5 text-navy/60" />
                   <span className="font-semibold text-navy">Free Trial</span>
                   <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
                     Trial
@@ -660,7 +664,7 @@ function AccountPageContent() {
             {(isTrial || isExpired) && (
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 text-sm font-medium text-white hover:from-indigo-600 hover:to-purple-700"
+                className="inline-flex items-center gap-2 rounded-full bg-navy px-4 py-2 text-sm font-semibold text-white dark:text-cream hover:bg-navy-light"
               >
                 Upgrade Now
               </Link>
@@ -668,14 +672,14 @@ function AccountPageContent() {
           </section>
 
           {/* Help & Support */}
-          <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <section className="bg-white rounded-2xl border border-navy/10 p-6">
             <h2 className="font-semibold text-navy mb-4">Help & Support</h2>
             <a
               href="mailto:jeremiah@getsafefamily.com"
               className="flex items-center gap-3 rounded-lg p-3 -mx-3 transition-colors hover:bg-gray-50"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
-                <MessageCircle className="h-4 w-4 text-gray-600" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cream-dark">
+                <MessageCircle className="h-4 w-4 text-navy/60" />
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-navy">Contact Support</p>
@@ -686,15 +690,15 @@ function AccountPageContent() {
           </section>
 
           {/* Legal */}
-          <section className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <section className="bg-white rounded-2xl border border-navy/10 p-6">
             <h2 className="font-semibold text-navy mb-4">Legal</h2>
             <div className="space-y-1">
               <a
                 href="/privacy"
                 className="flex items-center gap-3 rounded-lg p-3 -mx-3 transition-colors hover:bg-gray-50"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
-                  <Shield className="h-4 w-4 text-gray-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cream-dark">
+                  <Shield className="h-4 w-4 text-navy/60" />
                 </div>
                 <span className="flex-1 text-sm font-medium text-navy">
                   Privacy Policy
@@ -705,8 +709,8 @@ function AccountPageContent() {
                 href="/terms"
                 className="flex items-center gap-3 rounded-lg p-3 -mx-3 transition-colors hover:bg-gray-50"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100">
-                  <FileText className="h-4 w-4 text-gray-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cream-dark">
+                  <FileText className="h-4 w-4 text-navy/60" />
                 </div>
                 <span className="flex-1 text-sm font-medium text-navy">
                   Terms of Service
@@ -717,7 +721,7 @@ function AccountPageContent() {
           </section>
 
           {/* Danger Zone */}
-          <section className="bg-white rounded-xl border border-red-200 p-6 shadow-sm">
+          <section className="bg-white rounded-2xl border border-red-200 p-6">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle className="h-5 w-5 text-red-600" />
               <h2 className="font-semibold text-red-900">Danger Zone</h2>

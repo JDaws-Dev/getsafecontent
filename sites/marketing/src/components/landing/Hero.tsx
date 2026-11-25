@@ -33,9 +33,12 @@ export default function Hero() {
                 {/* Invisible text to reserve space for longest word */}
                 <span className="invisible" aria-hidden="true">listening to.</span>
                 {/* asking AI is shorter than listening to. — listening to reserves width */}
-                {/* Visible rotating text positioned on top */}
+                {/* Visible rotating text positioned on top. Solid warm peach, not
+                    gradient-clipped transparent text: background-clip:text on a
+                    transformed/transitioning element can paint blank in Chrome,
+                    which left an empty gap in the headline on desktop. */}
                 <span
-                  className={`absolute left-0 top-0 text-transparent bg-clip-text bg-gradient-to-r from-peach-start to-peach-end transition-all duration-200 ${
+                  className={`absolute left-0 top-0 whitespace-nowrap text-[#D9714A] transition-[opacity,transform] duration-200 ${
                     isAnimating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
                   }`}
                 >

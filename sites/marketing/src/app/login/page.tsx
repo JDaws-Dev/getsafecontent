@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Shield } from "lucide-react";
+import { HubHeader, UmbrellaMark } from "@/components/brand/Brand";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -112,9 +112,7 @@ export default function LoginPage() {
   if (isPending) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md animate-pulse">
-          <Shield className="w-6 h-6 text-white" />
-        </div>
+        <UmbrellaMark size="lg" className="animate-pulse" />
       </div>
     );
   }
@@ -125,18 +123,15 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      <div className="mx-auto max-w-md px-4 py-12 sm:py-20">
-        {/* Logo */}
-        <div className="mb-8 text-center">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold text-navy">Safe Family</span>
+      <HubHeader
+        right={
+          <Link href="/play" className="font-semibold text-navy/60 hover:text-navy whitespace-nowrap">
+            For kids
           </Link>
-        </div>
-
-        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+        }
+      />
+      <div className="mx-auto max-w-md px-4 py-10 sm:py-16">
+        <div className="rounded-2xl border border-navy/10 bg-white p-6 sm:p-8">
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-bold text-navy">Welcome back</h1>
             <p className="mt-1 text-sm text-navy/60">
@@ -161,10 +156,10 @@ export default function LoginPage() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={googleLoading || loading}
-            className="mb-4 flex w-full min-h-[48px] items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-3 font-medium text-navy transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mb-4 flex w-full min-h-[48px] items-center justify-center gap-3 rounded-full border border-navy/15 bg-white px-4 py-3 font-semibold text-navy transition hover:bg-cream disabled:cursor-not-allowed disabled:opacity-50"
           >
             {googleLoading ? (
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600" />
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-navy/15 border-t-navy" />
             ) : (
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -190,10 +185,10 @@ export default function LoginPage() {
 
           <div className="relative mb-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
+              <div className="w-full border-t border-navy/10" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-400">or</span>
+              <span className="bg-white px-2 text-navy/40">or</span>
             </div>
           </div>
 
@@ -217,7 +212,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? "form-error" : undefined}
-                className="w-full min-h-[44px] rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-600"
+                className="w-full min-h-[44px] rounded-lg border border-navy/15 px-4 py-3 focus:border-navy/40 focus:outline-none focus:ring-2 focus:ring-navy/10"
                 placeholder="you@example.com"
               />
             </div>
@@ -232,7 +227,7 @@ export default function LoginPage() {
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-sm text-indigo-600 hover:text-indigo-700"
+                  className="text-sm font-medium text-navy/60 underline underline-offset-2 hover:text-navy"
                 >
                   Forgot password?
                 </Link>
@@ -247,7 +242,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? "form-error" : undefined}
-                className="w-full min-h-[44px] rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-indigo-600"
+                className="w-full min-h-[44px] rounded-lg border border-navy/15 px-4 py-3 focus:border-navy/40 focus:outline-none focus:ring-2 focus:ring-navy/10"
                 placeholder="Enter your password"
               />
             </div>
@@ -255,7 +250,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || googleLoading}
-              className="w-full min-h-[48px] rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-3 font-semibold text-white transition hover:from-indigo-600 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full min-h-[48px] rounded-full bg-navy px-4 py-3 font-semibold text-white dark:text-cream transition hover:bg-navy-light disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
@@ -266,7 +261,7 @@ export default function LoginPage() {
               Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
-                className="font-medium text-indigo-600 hover:text-indigo-700"
+                className="font-semibold text-navy underline underline-offset-2 hover:text-navy-light"
               >
                 Start free trial
               </Link>

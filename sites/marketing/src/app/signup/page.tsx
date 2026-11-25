@@ -3,7 +3,7 @@
 import { useState, useCallback, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Shield } from "lucide-react";
+import { HubHeader, UmbrellaMark } from "@/components/brand/Brand";
 import { useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import AppSelector, { type AppId, type PricingInfo } from "@/components/signup/AppSelector";
@@ -43,9 +43,7 @@ function SignupLoading() {
   return (
     <div className="min-h-screen bg-cream flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md animate-pulse">
-          <Shield className="w-6 h-6 text-white" />
-        </div>
+        <UmbrellaMark size="lg" className="animate-pulse" />
         <p className="text-navy/60">Loading...</p>
       </div>
     </div>
@@ -492,14 +490,13 @@ function SignupContent() {
   return (
     <div className="min-h-screen bg-cream">
       {/* Header */}
-      <header className="container mx-auto px-6 py-6">
-        <Link href="/" className="inline-flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
-            <Shield className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-xl font-bold text-navy">Safe Family</span>
-        </Link>
-      </header>
+      <HubHeader
+        right={
+          <Link href="/login" className="font-semibold text-navy/60 hover:text-navy whitespace-nowrap">
+            Sign in
+          </Link>
+        }
+      />
 
       {/* Main content */}
       <main className="container mx-auto px-4 sm:px-6 py-8 pb-16">
@@ -556,7 +553,7 @@ function SignupContent() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {selectedApps.includes("safetunes") && (
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#7C4DE0] flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
                     </svg>
@@ -570,7 +567,7 @@ function SignupContent() {
 
               {selectedApps.includes("safetube") && (
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#F0603A] flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                     </svg>
@@ -584,7 +581,7 @@ function SignupContent() {
 
               {selectedApps.includes("safereads") && (
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#3AA06B] flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
                     </svg>
@@ -598,7 +595,7 @@ function SignupContent() {
 
               {selectedApps.includes("safestudy") && (
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#2F6BF0] flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                     </svg>
@@ -661,9 +658,9 @@ function SignupContent() {
       </main>
 
       {/* Minimal footer */}
-      <footer className="border-t border-gray-200 py-6 bg-white">
+      <footer className="border-t border-navy/10 py-6 bg-white">
         <div className="container mx-auto px-6">
-          <p className="text-center text-sm text-gray-500">
+          <p className="text-center text-sm text-navy/50">
             &copy; {new Date().getFullYear()} Safe Family. All rights reserved.
           </p>
         </div>

@@ -102,8 +102,8 @@ export function FamilyTab() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {kids.map((k) => (
-            <div key={k._id} className="rounded-2xl bg-white border border-navy/10 p-5 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
+            <div key={k._id} className="rounded-2xl bg-white border border-navy/10 p-5 flex flex-col gap-4 min-w-0">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <span className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-lg" style={{ background: k.color || "#7C4DE0" }}>{k.name.charAt(0).toUpperCase()}</span>
                   <div>
@@ -117,16 +117,21 @@ export function FamilyTab() {
                 </label>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="flex flex-col gap-3 text-sm">
                 <label className="inline-flex items-center gap-2 text-navy/80">
                   <input type="checkbox" checked={k.requestsEnabled !== false} onChange={(e) => run(() => updateKid({ kidId: k._id, requestsEnabled: e.target.checked }))} className="w-4 h-4" />
                   Can send requests
                 </label>
-                <div className="flex items-center gap-2 text-navy/80">
-                  <span className="whitespace-nowrap">Hours</span>
-                  <input type="time" value={k.allowedStartTime ?? ""} onChange={(e) => run(() => updateKid({ kidId: k._id, allowedStartTime: e.target.value || null }))} className="h-9 rounded-lg border border-navy/15 px-2" />
-                  <span>–</span>
-                  <input type="time" value={k.allowedEndTime ?? ""} onChange={(e) => run(() => updateKid({ kidId: k._id, allowedEndTime: e.target.value || null }))} className="h-9 rounded-lg border border-navy/15 px-2" />
+                {/* Hours: label on its own, then the two times side by side. Each
+                    input may shrink (min-w-0) so the row always stays inside the
+                    card, from a 390px phone to two cards side by side. */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-navy/80">
+                  <span className="whitespace-nowrap">Allowed hours</span>
+                  <div className="flex items-center gap-2 min-w-0 flex-1 basis-56">
+                    <input type="time" aria-label="Allowed from" value={k.allowedStartTime ?? ""} onChange={(e) => run(() => updateKid({ kidId: k._id, allowedStartTime: e.target.value || null }))} className="h-9 min-w-0 flex-1 rounded-lg border border-navy/15 px-2" />
+                    <span className="shrink-0 text-navy/50">to</span>
+                    <input type="time" aria-label="Allowed until" value={k.allowedEndTime ?? ""} onChange={(e) => run(() => updateKid({ kidId: k._id, allowedEndTime: e.target.value || null }))} className="h-9 min-w-0 flex-1 rounded-lg border border-navy/15 px-2" />
+                  </div>
                 </div>
               </div>
 
