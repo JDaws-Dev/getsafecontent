@@ -9,7 +9,6 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import AccountForm, { type AccountFormData, type AppSelection } from "@/components/signup/AccountForm";
 import {
   PLAN_APP_IDS,
-  PLAN_APPS_TEXT,
   PLAN_NAME,
   PRICE,
   PRICE_PER_MONTH,
@@ -416,136 +415,24 @@ function SignupContent() {
         }
       />
 
-      {/* Main content */}
-      <main className="container mx-auto px-4 sm:px-6 py-8 pb-16">
-        <div className="max-w-4xl mx-auto">
-          {/* Page title */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-navy mb-3">
-              Start your {PLAN_NAME} trial
-            </h1>
-            <p className="text-lg text-navy/60 max-w-xl mx-auto">
-              {`${PLAN_APPS_TEXT} for ${PRICE_PER_MONTH}. ${TRIAL_DAYS}-day free trial — no credit card to start.`}
-            </p>
+      {/* Main content. One presentation of the plan (the card) beside the
+          form; on a phone the short card sits above the form. */}
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 pb-16">
+        <div className="max-w-md lg:max-w-4xl mx-auto grid gap-6 lg:gap-8 lg:grid-cols-2 lg:items-start">
+          <div className="card-soft p-6 sm:p-8">
+            <UnifiedPlanSummary />
           </div>
-
-          {/* Two-column layout on desktop */}
-          <div className="grid gap-8 lg:grid-cols-2">
-            {/* Left column: the one plan */}
-            <div className="card-soft p-6 sm:p-8">
-              <UnifiedPlanSummary />
-            </div>
-
-            {/* Right column: Account form */}
-            <div>
-              <AccountForm
-                selectedApps={appSelection}
-                hidePrice={true}
-                onSubmit={handleSubmit}
-                onGoogleSignIn={handleGoogleSignIn}
-                error={error}
-                isLoading={isLoading}
-                showPromoCode={true}
-                lifetimeCodes={LIFETIME_CODES}
-              />
-            </div>
-          </div>
-
-          {/* What you get section */}
-          <div className="mt-12 card-soft p-6 sm:p-8">
-            <h3 className="font-semibold text-navy text-center mb-6">
-              What&apos;s included in your trial:
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {selectedApps.includes("safetunes") && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#7C4DE0] flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium text-navy">SafeTunes</p>
-                    <p className="text-sm text-navy/60">Approve songs before they play</p>
-                  </div>
-                </div>
-              )}
-
-              {selectedApps.includes("safetube") && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#F0603A] flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium text-navy">SafeTube</p>
-                    <p className="text-sm text-navy/60">Approve channels before viewing</p>
-                  </div>
-                </div>
-              )}
-
-              {selectedApps.includes("safestudy") && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#2F6BF0] flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium text-navy">SafeStudy</p>
-                    <p className="text-sm text-navy/60">Safe search + built-in tutor</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-navy">Unlimited profiles</p>
-                  <p className="text-sm text-navy/60">Add all your kids</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-navy">Works on all devices</p>
-                  <p className="text-sm text-navy/60">iOS, Android, and web</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-navy">Cancel anytime</p>
-                  <p className="text-sm text-navy/60">No long-term commitment</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Money-back guarantee */}
-          <div className="mt-8 flex items-center justify-center gap-3 text-center">
-            <svg className="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-            </svg>
-            <span className="text-sm text-navy/70">
-              30-day money-back guarantee — no questions asked
-            </span>
-          </div>
+          <AccountForm
+            selectedApps={appSelection}
+            hidePrice={true}
+            hideAppSummary={true}
+            onSubmit={handleSubmit}
+            onGoogleSignIn={handleGoogleSignIn}
+            error={error}
+            isLoading={isLoading}
+            showPromoCode={true}
+            lifetimeCodes={LIFETIME_CODES}
+          />
         </div>
       </main>
 
@@ -563,48 +450,37 @@ function SignupContent() {
 
 // The one plan: Safe Family, $4.99/month, SafeTunes + SafeTube + SafeStudy.
 // Price text comes from lib/pricing.ts. No interval toggle — monthly only.
+// This card is the only place the signup page lists the apps.
 function UnifiedPlanSummary() {
   const apps = [
-    "SafeTunes — Apple Music, parent-curated",
-    "SafeTube — YouTube without the algorithm",
-    "SafeStudy — safe search + AI tutor",
+    { name: "SafeTunes", what: "Music you approve, on Apple Music", color: "#7C4DE0" },
+    { name: "SafeTube", what: "YouTube channels you pick, no feed", color: "#F0603A" },
+    { name: "SafeStudy", what: "Safe search and a homework helper", color: "#2F6BF0" },
   ];
   return (
     <div>
-      <h2 className="text-xl font-bold text-navy mb-2">{PLAN_NAME}</h2>
-      <p className="text-sm text-navy/60 mb-5">
-        One subscription, three apps. Built for homeschool families.
-      </p>
-
-      {/* Price */}
-      <div className="mb-5">
-        <div className="flex items-baseline gap-1">
-          <span className="text-4xl font-bold text-navy">{PRICE}</span>
-          <span className="text-lg text-navy/60">/month</span>
-        </div>
-        <p className="text-xs text-navy/50 mt-1">For all three apps, the whole family</p>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-xl font-bold text-navy">{PLAN_NAME}</h2>
+        <p className="whitespace-nowrap">
+          <span className="text-2xl font-bold text-navy">{PRICE}</span>
+          <span className="text-navy/60">/month</span>
+        </p>
       </div>
+      <p className="text-sm text-navy/60 mt-1 mb-4">Three apps for the whole family, one plan.</p>
 
-      {/* Apps included */}
-      <ul className="space-y-2 mb-3">
+      <ul className="space-y-3 mb-4">
         {apps.map((app) => (
-          <li key={app} className="flex items-start gap-2 text-sm text-navy/80">
-            <svg
-              className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-            </svg>
-            <span>{app}</span>
+          <li key={app.name} className="flex items-center gap-3">
+            <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ background: app.color }} aria-hidden="true" />
+            <span className="text-sm text-navy/80">
+              <span className="font-semibold text-navy">{app.name}</span> &middot; {app.what}
+            </span>
           </li>
         ))}
       </ul>
 
-      <p className="text-xs text-navy/50">
-        7-day free trial. No credit card to start. Cancel anytime.
+      <p className="text-xs text-navy/55 border-t border-navy/10 pt-3">
+        {TRIAL_DAYS} days free, then {PRICE_PER_MONTH}. Cancel anytime. 30-day money-back guarantee.
       </p>
     </div>
   );

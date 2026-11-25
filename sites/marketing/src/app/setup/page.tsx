@@ -33,8 +33,8 @@ const steps = [
     icon: UserPlus,
     title: "Add your kids once",
     minutes: "~3 min",
-    body: "Open your dashboard and go to Family (getsafefamily.com/dashboard/family). Add each child with a name, a color and, if you like, a 4-digit PIN. Every app uses these same profiles, so you never add a kid twice. There's no per-kid charge.",
-    tip: "Tip: Family is also where you set allowed hours, pause everything, and choose whether kids can send requests.",
+    body: "Open your dashboard and go to Family (getsafefamily.com/dashboard/family). Add each child with a name, their age and, if you like, a 4-digit PIN. Every app uses these same profiles, so you never add a kid twice. There's no per-kid charge.",
+    tip: "Tip: Family is also where you set daily screen time and allowed hours, pause everything, and choose whether kids can send requests.",
   },
   {
     n: 2,

@@ -35,6 +35,8 @@ interface AccountFormProps {
   lifetimeCodes?: string[];
   /** Hide the price in the app summary (the unified plan shows it beside the form) */
   hidePrice?: boolean;
+  /** Hide the app chips (the signup page shows the plan's apps in its own card) */
+  hideAppSummary?: boolean;
 }
 
 const APP_LABELS: Record<keyof AppSelection, string> = {
@@ -53,6 +55,7 @@ export default function AccountForm({
   showPromoCode = true,
   lifetimeCodes = ["DAWSFRIEND", "DEWITT"],
   hidePrice = false,
+  hideAppSummary = false,
 }: AccountFormProps) {
   const [formData, setFormData] = useState({
     name: "",
@@ -171,10 +174,10 @@ export default function AccountForm({
   };
 
   return (
-    <div className="card-soft p-8">
+    <div className="card-soft p-6 sm:p-8">
       {/* Header */}
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-navy mb-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-navy mb-2">
           {isLifetimeCode ? "Get Lifetime Access" : "Start Your Free Trial"}
         </h1>
         <p className="text-navy/60">
@@ -185,7 +188,7 @@ export default function AccountForm({
       </div>
 
       {/* Selected apps summary */}
-      {selectedAppNames.length > 0 && (
+      {!hideAppSummary && selectedAppNames.length > 0 && (
         <div className="bg-cream rounded-xl p-4 mb-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-2">
