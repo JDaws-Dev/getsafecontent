@@ -35,11 +35,10 @@ export default function BlogPage() {
   // Sort posts by date (newest first) and filter published only
   // Also filter out future-dated posts (scheduled publishing)
   const now = new Date();
-  // SafeReads is no longer offered to new families, so its posts stay live at
-  // their URLs (and in the sitemap) but are left out of the index and chips.
+  // Posts about retired apps (SafeReads, SafeSpark) are unpublished in their
+  // frontmatter and their URLs redirect here; see src/lib/retiredApps.ts.
   const publishedPosts = posts
     .filter((post) => post.published && new Date(post.date) <= now)
-    .filter((post) => post.category !== "SafeReads")
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const featuredPost = publishedPosts.find((post) => post.featured) ?? null;
