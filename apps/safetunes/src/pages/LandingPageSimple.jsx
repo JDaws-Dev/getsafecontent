@@ -877,6 +877,7 @@ function LandingPageSimple() {
                 <div className="text-center mb-6">
                   <div className="text-5xl font-bold mb-1">$4.99</div>
                   <div className="text-accent-200">/month after trial</div>
+                  <div className="text-accent-200 text-sm mt-1">SafeTunes, SafeTube and SafeStudy together</div>
                 </div>
 
                 <ul className="space-y-3 mb-8">

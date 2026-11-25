@@ -154,7 +154,7 @@ export default function ComparePage() {
     },
     {
       feature: 'Cost',
-      safetube: '$4.99/month',
+      safetube: '$4.99/month (with SafeTunes + SafeStudy)',
       youtubeKids: 'Free',
       winner: 'youtubekids',
       note: 'SafeTube offers 7-day free trial'

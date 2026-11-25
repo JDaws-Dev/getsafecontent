@@ -80,7 +80,7 @@ function TermsPage() {
 
               <h3 className="text-xl font-semibold text-gray-900 mb-3">6.1 Pricing</h3>
               <p className="text-gray-700 mb-4">
-                SafeTunes costs $4.99 per month. New users receive a 7-day free trial. Pricing is subject to change with 30 days notice.
+                SafeTunes is part of Safe Family, which costs $4.99 per month and includes SafeTunes, SafeTube and SafeStudy. Billing is monthly. New users receive a 7-day free trial. Existing subscribers keep the price they signed up with. Pricing is subject to change with 30 days notice.
               </p>
 
               <h3 className="text-xl font-semibold text-gray-900 mb-3">6.2 Billing</h3>

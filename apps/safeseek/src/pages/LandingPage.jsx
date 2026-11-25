@@ -894,20 +894,15 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10 sm:mb-12">
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-navy mb-4">Less than a coffee per month</h2>
-            <p className="text-gray-600 text-lg">$4.99 for a search engine, built-in tutor, and research tool. Cancel in 2 clicks, anytime.</p>
+            <p className="text-gray-600 text-lg">$4.99/month for SafeStudy, SafeTunes and SafeTube together. Cancel in 2 clicks, anytime.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* Individual Plan */}
+          <div className="max-w-md mx-auto">
+            {/* The one plan: Safe Family */}
             <div className="bg-brand-cream rounded-3xl p-6 sm:p-8 border-2 border-accent-200 shadow-lg relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-accent-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow">
-                  MOST POPULAR
-                </span>
-              </div>
               <div className="text-center mb-6 pt-2">
-                <h3 className="font-display text-lg font-bold text-brand-navy mb-1">SafeStudy</h3>
-                <p className="text-gray-500 text-sm mb-4">Search + Tutor + Research — all in one</p>
+                <h3 className="font-display text-lg font-bold text-brand-navy mb-1">Safe Family</h3>
+                <p className="text-gray-500 text-sm mb-4">SafeStudy, SafeTunes and SafeTube together</p>
                 <div>
                   <span className="text-5xl font-extrabold text-brand-navy">$4.99</span>
                   <span className="text-gray-500 text-lg">/month</span>
@@ -921,6 +916,7 @@ export default function LandingPage() {
 
               <ul className="space-y-3 mb-6">
                 {[
+                  'SafeTunes and SafeTube included',
                   'Unlimited kid profiles',
                   'Unlimited searches',
                   'Built-in Tutor (Socratic method)',
@@ -950,41 +946,6 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Bundle Plan */}
-            <div className="bg-brand-cream rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
-              <div className="text-center mb-6">
-                <h3 className="font-display text-lg font-bold text-brand-navy mb-1">Safe Family Bundle</h3>
-                <p className="text-gray-500 text-sm mb-4">All 4 apps, one price</p>
-                <div>
-                  <span className="text-5xl font-extrabold text-brand-navy">$9.99</span>
-                  <span className="text-gray-500 text-lg">/month</span>
-                </div>
-                <p className="text-green-600 text-xs font-semibold mt-1">Save 50% vs. buying separately</p>
-              </div>
-
-              <ul className="space-y-3 mb-6">
-                {[
-                  'SafeStudy \u2014 Safe search + built-in tutor + research from trusted sources',
-                  'SafeTunes \u2014 They hear only music you\'ve approved',
-                  'SafeTube \u2014 They watch only channels you\'ve approved',
-                  'All features included',
-                  'One family account',
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span className="text-sm">{item}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <a
-                href="https://getsafefamily.com/#pricing"
-                className="block w-full bg-brand-navy hover:bg-[#2a2a3e] text-white font-bold py-3.5 rounded-xl text-center shadow-md hover:shadow-lg transition-all"
-              >
-                View Bundle
-              </a>
-
-            </div>
           </div>
         </div>
       </section>
@@ -1055,7 +1016,7 @@ export default function LandingPage() {
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
-          <p className="text-accent-200 text-sm mt-4">$4.99/mo after trial. No credit card to start. Cancel in 2 clicks.</p>
+          <p className="text-accent-200 text-sm mt-4">$4.99/mo after trial for SafeStudy, SafeTunes and SafeTube. No credit card to start. Cancel in 2 clicks.</p>
 
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-white/80 mt-6">
             <span className="flex items-center gap-1.5">

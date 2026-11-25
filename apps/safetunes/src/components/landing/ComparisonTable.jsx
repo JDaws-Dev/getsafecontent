@@ -106,7 +106,7 @@ function ComparisonTable() {
                 </th>
                 <th className="py-6 px-6 text-center bg-accent-500">
                   <div className="text-white font-bold text-lg">SafeTunes</div>
-                  <div className="text-accent-100 text-sm font-normal mt-1">$4.99/mo</div>
+                  <div className="text-accent-100 text-sm font-normal mt-1">$4.99/mo with SafeTube + SafeStudy</div>
                 </th>
                 <th className="py-6 px-6 text-center text-gray-600 font-semibold">
                   <div>Spotify Kids</div>

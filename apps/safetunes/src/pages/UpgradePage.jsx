@@ -2,7 +2,7 @@ import { topNavigate } from '../lib/embed';
 import { withBase } from '../lib/appBase';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useAction, useQuery } from 'convex/react';
+import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -15,7 +15,6 @@ const isNativeApp = typeof window !== 'undefined' && (
 function UpgradePage() {
   const [searchParams] = useSearchParams();
   const { user: centralUser, isAuthenticated } = useAuth();
-  const createCheckoutSession = useAction(api.stripeActions.createCheckoutSession);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,29 +35,13 @@ function UpgradePage() {
       return;
     }
 
+    // One plan (2026-11-25): Safe Family, $4.99/month for SafeTunes, SafeTube
+    // and SafeStudy, sold only through the hub signup (the old SafeTunes-only
+    // checkout here granted SafeTunes alone). The hub recognises an existing
+    // account and goes straight to checkout.
     setLoading(true);
     setError('');
-
-    try {
-      const priceId = import.meta.env.VITE_STRIPE_PRICE_ID;
-
-      if (!priceId) {
-        setError('Payment configuration error. Please contact support.');
-        setLoading(false);
-        return;
-      }
-
-      const { url } = await createCheckoutSession({
-        email: currentUser.email,
-        priceId: priceId,
-      });
-
-      topNavigate(url);
-    } catch (err) {
-      setError('Failed to start checkout. Please try again.');
-      console.error(err);
-      setLoading(false);
-    }
+    topNavigate('https://getsafefamily.com/signup');
   };
 
   // Native app version - direct to website for subscription
@@ -121,7 +104,7 @@ function UpgradePage() {
                   <span className="text-3xl font-bold text-gray-900">$4.99</span>
                   <span className="text-gray-500">/month</span>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">Cancel anytime</p>
+                <p className="text-sm text-gray-500 mt-1">SafeTunes, SafeTube and SafeStudy together · Cancel anytime</p>
               </div>
 
               {/* Features */}
@@ -214,7 +197,7 @@ function UpgradePage() {
             <div className="bg-accent-500 rounded-xl p-6 text-white mb-6">
               <div className="text-center mb-4">
                 <div className="text-4xl font-bold">$4.99</div>
-                <div className="text-accent-200">/month</div>
+                <div className="text-accent-200">/month for SafeTunes, SafeTube and SafeStudy</div>
               </div>
 
               <ul className="space-y-2 mb-6">

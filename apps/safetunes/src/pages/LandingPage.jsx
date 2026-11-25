@@ -563,7 +563,7 @@ function LandingPage() {
                 Start 7-Day Free Trial
               </Link>
               <p className="text-gray-700 mt-6 text-base sm:text-lg">
-                <strong>Only $4.99/month</strong> after trial • Less than a coffee • Cancel anytime
+                <strong>$4.99/month</strong> after trial for SafeTunes, SafeTube and SafeStudy together • Cancel anytime
               </p>
               <p className="text-sm text-gray-500 mt-3">Set up in 5 minutes • Works on any device</p>
 
@@ -662,6 +662,7 @@ function LandingPage() {
                     <span className="text-4xl sm:text-5xl font-bold text-gray-900">$4.99</span>
                     <span className="text-gray-600 ml-2 text-lg sm:text-xl">/month</span>
                   </div>
+                  <p className="text-sm text-gray-600">SafeTunes, SafeTube and SafeStudy together</p>
                 </div>
 
                 <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
@@ -853,7 +854,7 @@ function LandingPage() {
               Start 7-Day Free Trial
             </Link>
             <p className="text-xs sm:text-sm text-gray-500 mt-4 px-2">
-              Only $4.99/month after trial • Works with your existing Apple Music subscription
+              $4.99/month after trial for all three Safe Family apps • Works with your existing Apple Music subscription
             </p>
           </div>
         </div>
@@ -863,12 +864,12 @@ function LandingPage() {
       <section className="py-10 bg-gradient-to-r from-brand-peach-start via-[#F5A962] to-brand-peach-end">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <p className="text-sm font-medium text-white/90 mb-2">Save with the Safe Family Bundle</p>
+            <p className="text-sm font-medium text-white/90 mb-2">Included in Safe Family</p>
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">
-              Get all 3 apps for $9.99/month
+              SafeTube and SafeStudy come with it
             </h3>
             <p className="text-white/80 text-sm mb-6 max-w-xl mx-auto">
-              Protect your family across music, videos, and search — all in one subscription.
+              Protect your family across music, videos, and search — one $4.99/month subscription.
             </p>
 
             {/* Other apps */}
@@ -904,13 +905,13 @@ function LandingPage() {
               href="https://getsafefamily.com/signup"
               className="inline-flex items-center gap-2 bg-white text-brand-navy hover:bg-gray-100 px-6 py-3 rounded-xl font-bold text-sm transition shadow-lg"
             >
-              <span>Get the Bundle</span>
+              <span>Start Free Trial</span>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
             </a>
             <p className="text-xs text-white/70 mt-3">
-              <span className="line-through">$19.96/mo</span> → $9.99/mo · Save 50%
+              $4.99/month for all three apps · 7-day free trial
             </p>
           </div>
         </div>

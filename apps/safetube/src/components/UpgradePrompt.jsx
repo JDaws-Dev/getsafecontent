@@ -90,7 +90,7 @@ export default function UpgradePrompt({ user, onLogout }) {
               <span className="text-gray-500">/month</span>
             </div>
             <p className="text-sm text-accent-600 font-medium mt-1">
-              Or save with the Safe Family bundle!
+              SafeTunes, SafeTube and SafeStudy together
             </p>
           </div>
 

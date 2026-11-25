@@ -45,7 +45,7 @@ export const sendSubscriptionConfirmation = internalAction({
 
       <h2>What happens next?</h2>
       <p>Your trial ends on <strong>${new Date(args.trialEndsAt || Date.now()).toLocaleDateString()}</strong>.</p>
-      <p>After that, you'll be charged $4.99/month. You can cancel anytime before then.</p>
+      <p>After that, you'll be charged $4.99/month for Safe Family (SafeTunes, SafeTube and SafeStudy together). You can cancel anytime before then.</p>
 
       <h2>Get Started:</h2>
       <ol>
@@ -558,7 +558,7 @@ export const sendTrialSignupEmails = internalAction({
 
             <p style="margin: 0; font-size: 14px; color: #6b7280;">
               Your trial ends on <strong>${new Date(trialEndsAt).toLocaleDateString()}</strong>.
-              After that, it's just $4.99/month to keep your family protected.
+              After that, it's just $4.99/month for Safe Family (SafeTunes, SafeTube and SafeStudy together) to keep your family protected.
             </p>
           </div>
 
@@ -815,7 +815,7 @@ export const sendTrialExpiringWarning = internalAction({
               Your SafeTunes free trial expires in <strong>2 days</strong>.
             </p>
             <p style="margin: 0 0 16px 0; font-size: 16px;">
-              To keep your kids' music library, playlists, and parental controls active, subscribe for just <strong>$4.99/month</strong>.
+              To keep your kids' music library, playlists, and parental controls active, subscribe to Safe Family for just <strong>$4.99/month</strong> (SafeTunes, SafeTube and SafeStudy together).
             </p>
             <p style="margin: 0 0 16px 0; font-size: 14px; color: #6b7280;">
               All your approved music, kid profiles, and settings will be preserved when you subscribe.
@@ -878,7 +878,7 @@ export const sendTrialExpiredEmail = internalAction({
               Don't worry — <strong>all your data is preserved</strong>. Your approved music, kid profiles, and playlists are waiting for you.
             </p>
             <p style="margin: 0 0 16px 0; font-size: 16px;">
-              Subscribe for just <strong>$4.99/month</strong> to restore full access instantly.
+              Subscribe to Safe Family for just <strong>$4.99/month</strong> (SafeTunes, SafeTube and SafeStudy together) to restore full access instantly.
             </p>
           </div>
           <div style="text-align: center; margin-bottom: 24px;">

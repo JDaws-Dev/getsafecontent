@@ -73,7 +73,7 @@ export const sendTrialSignupEmails = internalAction({
 
             <p style="margin: 0; font-size: 14px; color: #6b7280;">
               Your trial ends on <strong>${new Date(trialEndsAt).toLocaleDateString()}</strong>.
-              After that, it's just $4.99/month to keep your family protected.
+              After that, it's just $4.99/month for Safe Family (SafeTunes, SafeTube and SafeStudy together) to keep your family protected.
             </p>
           </div>
 
@@ -178,7 +178,7 @@ export const sendTrialExpiringWarning = internalAction({
             </p>
 
             <p style="margin: 0 0 16px 0; font-size: 16px;">
-              To keep your kids searching safely, upgrade to a paid plan for just <strong>$4.99/month</strong>.
+              To keep your kids searching safely, subscribe to Safe Family for just <strong>$4.99/month</strong> (SafeTunes, SafeTube and SafeStudy together).
             </p>
 
             <div style="text-align: center; margin: 24px 0;">
@@ -256,7 +256,7 @@ export const sendTrialExpiredEmail = internalAction({
             </p>
 
             <p style="margin: 0 0 16px 0; font-size: 16px;">
-              You can reactivate anytime for just <strong>$4.99/month</strong> and pick up right where you left off - all your kid profiles and settings are saved.
+              You can reactivate anytime with Safe Family for just <strong>$4.99/month</strong> (SafeTunes, SafeTube and SafeStudy together) and pick up right where you left off - all your kid profiles and settings are saved.
             </p>
 
             <div style="text-align: center; margin: 24px 0;">

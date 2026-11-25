@@ -22,7 +22,7 @@ export default function SignupPage() {
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
           <h1 className="font-display text-3xl font-bold text-brand-navy text-center mb-2">Start your free trial</h1>
           <p className="text-gray-500 text-center mb-8">
-            7 days free, then $4.99/month. Cancel anytime.
+            7 days free, then $4.99/month for SafeStudy, SafeTunes and SafeTube together. Cancel anytime.
           </p>
 
           <div className="space-y-4 mb-6">

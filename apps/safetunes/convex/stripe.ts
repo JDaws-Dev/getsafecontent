@@ -13,7 +13,11 @@ const SAFETUNES_PRICE_IDS = new Set(
   [
     process.env.STRIPE_PRICE_ID,
     process.env.SAFETUNES_PRICE_ID,
-    "price_1SUXOjKgkIT46sg7RKwIgAVv", // live SafeTunes monthly ($4.99)
+    // live SafeTunes monthly ($4.99). Since 2026-11-25 the hub checkout also
+    // uses it as the Safe Family $4.99/mo fallback price; those sessions carry
+    // hub metadata (apps/app_count/plan), so isHubCheckout below suppresses
+    // this handler's single-app emails for them.
+    "price_1SUXOjKgkIT46sg7RKwIgAVv",
   ].filter(Boolean) as string[]
 );
 
