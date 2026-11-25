@@ -979,7 +979,7 @@ export default function LandingPage() {
               </ul>
 
               <a
-                href="https://getsafefamily.com/pricing"
+                href="https://getsafefamily.com/#pricing"
                 className="block w-full bg-brand-navy hover:bg-[#2a2a3e] text-white font-bold py-3.5 rounded-xl text-center shadow-md hover:shadow-lg transition-all"
               >
                 View Bundle

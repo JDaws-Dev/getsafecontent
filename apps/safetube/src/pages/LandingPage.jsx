@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FlaskConical, Trophy, Bug, TestTube, Globe, Hash, Ban, ShieldAlert, Gamepad2, Microscope, Palette } from 'lucide-react';
 
 export default function LandingPage() {
   // FAQ accordion state
@@ -347,15 +348,15 @@ export default function LandingPage() {
                     <p className="text-gray-500 text-xs uppercase font-semibold mb-3">Your Channels</p>
                     <div className="grid grid-cols-3 gap-3">
                       {[
-                        { name: 'Mark Rober', emoji: '🔬', color: 'bg-blue-100' },
-                        { name: 'Dude Perfect', emoji: '🏀', color: 'bg-green-100' },
-                        { name: 'Brave Wilderness', emoji: '🦎', color: 'bg-yellow-100' },
-                        { name: 'SciShow Kids', emoji: '🧪', color: 'bg-purple-100' },
-                        { name: 'Nat Geo Kids', emoji: '🌍', color: 'bg-orange-100' },
-                        { name: 'Numberblocks', emoji: '🔢', color: 'bg-pink-100' },
+                        { name: 'Mark Rober', Icon: FlaskConical, color: 'bg-blue-100' },
+                        { name: 'Dude Perfect', Icon: Trophy, color: 'bg-green-100' },
+                        { name: 'Brave Wilderness', Icon: Bug, color: 'bg-yellow-100' },
+                        { name: 'SciShow Kids', Icon: TestTube, color: 'bg-purple-100' },
+                        { name: 'Nat Geo Kids', Icon: Globe, color: 'bg-orange-100' },
+                        { name: 'Numberblocks', Icon: Hash, color: 'bg-pink-100' },
                       ].map((ch, i) => (
                         <div key={i} className={`${ch.color} rounded-lg p-2 text-center`}>
-                          <div className="text-2xl mb-1">{ch.emoji}</div>
+                          <ch.Icon className="w-6 h-6 mx-auto mb-1 text-gray-700" aria-hidden="true" />
                           <p className="text-gray-700 text-xs font-medium truncate">{ch.name}</p>
                         </div>
                       ))}
@@ -474,7 +475,7 @@ export default function LandingPage() {
                   {/* Analysis result */}
                   <div className="space-y-3">
                     <div className="bg-red-500/30 rounded-lg p-3 border border-red-400/50">
-                      <p className="text-red-300 text-xs uppercase font-semibold mb-1">🚫 NOT RECOMMENDED</p>
+                      <p className="text-red-300 text-xs uppercase font-semibold mb-1 flex items-center gap-1"><Ban className="w-3.5 h-3.5" aria-hidden="true" /> NOT RECOMMENDED</p>
                       <p className="text-white text-sm">"Despite kid-friendly branding, recent videos contain bullying behavior, crude humor, and dangerous stunts. Several videos feature pranks that could encourage harmful imitation."</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -486,7 +487,7 @@ export default function LandingPage() {
                     <div className="pt-3 border-t border-white/20">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-red-400 text-lg">🛡️</span>
+                          <ShieldAlert className="w-5 h-5 text-red-400" aria-hidden="true" />
                           <span className="text-red-300 font-semibold text-sm">Minimum Age: 16+ (Not for children)</span>
                         </div>
                       </div>
@@ -573,7 +574,7 @@ export default function LandingPage() {
                   <div className="space-y-3">
                     <div className="bg-white rounded-lg p-3 flex items-center gap-3">
                       <div className="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center">
-                        <span className="text-2xl">🎮</span>
+                        <Gamepad2 className="w-6 h-6 text-accent-600" aria-hidden="true" />
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900 text-sm">Gaming Channel</p>
@@ -582,7 +583,7 @@ export default function LandingPage() {
                     </div>
                     <div className="bg-white rounded-lg p-3 flex items-center gap-3">
                       <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <span className="text-2xl">🔬</span>
+                        <Microscope className="w-6 h-6 text-blue-600" aria-hidden="true" />
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900 text-sm">Science Channel</p>
@@ -591,7 +592,7 @@ export default function LandingPage() {
                     </div>
                     <div className="bg-white rounded-lg p-3 flex items-center gap-3">
                       <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <span className="text-2xl">🎨</span>
+                        <Palette className="w-6 h-6 text-purple-600" aria-hidden="true" />
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900 text-sm">Art Tutorials</p>

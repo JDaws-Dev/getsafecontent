@@ -343,7 +343,7 @@ function LandingPage() {
                     />
                     {/* Device Frame Indicator */}
                     <div className="absolute -top-2 -left-2 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                      📱 LIVE APP
+                      LIVE APP
                     </div>
                   </div>
                 </div>
@@ -431,7 +431,7 @@ function LandingPage() {
                     />
                     {/* Device Frame Indicator */}
                     <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                      📱 LIVE APP
+                      LIVE APP
                     </div>
                   </div>
                 </div>
@@ -453,7 +453,7 @@ function LandingPage() {
                     />
                     {/* Device Frame Indicator */}
                     <div className="absolute -top-2 -left-2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                      🔔 PARENT ALERT
+                      PARENT ALERT
                     </div>
                   </div>
                 </div>
@@ -541,7 +541,7 @@ function LandingPage() {
                     />
                     {/* Device Frame Indicator */}
                     <div className="absolute -top-2 -right-2 bg-accent-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                      📖 KID VIEW
+                      KID VIEW
                     </div>
                   </div>
                 </div>
@@ -727,7 +727,7 @@ function LandingPage() {
 
               <div className="bg-red-50 rounded-lg p-4 border-2 border-red-300">
                 <h3 className="font-semibold text-red-900 mb-1">
-                  🔔 What if my child tries to search for inappropriate content?
+                  What if my child tries to search for inappropriate content?
                 </h3>
                 <p className="text-red-800 text-sm">
                   You get an instant notification showing exactly what they searched for. The search is blocked automatically, and your child sees positive encouragement with timeless wisdom instead of shame. It creates the perfect opportunity for a loving conversation about guarding their heart and mind.

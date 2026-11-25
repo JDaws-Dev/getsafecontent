@@ -139,7 +139,7 @@ export function CookieConsent() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  🍪 We value your privacy
+                  We value your privacy
                 </h3>
                 <p className="text-sm text-gray-600">
                   We use cookies to improve your experience, analyze site traffic, and for marketing purposes.

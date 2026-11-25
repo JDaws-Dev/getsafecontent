@@ -12,61 +12,6 @@
       "permanent": false
     },
     {
-      "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.getsafetube.com"
-        }
-      ],
-      "destination": "https://getsafefamily.com/tube",
-      "permanent": false
-    },
-    {
-      "source": "/admin",
-      "has": [
-        {
-          "type": "host",
-          "value": "getsafetube.com"
-        }
-      ],
-      "destination": "https://getsafefamily.com/dashboard/tube",
-      "permanent": false
-    },
-    {
-      "source": "/admin",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.getsafetube.com"
-        }
-      ],
-      "destination": "https://getsafefamily.com/dashboard/tube",
-      "permanent": false
-    },
-    {
-      "source": "/admin/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "getsafetube.com"
-        }
-      ],
-      "destination": "https://getsafefamily.com/dashboard/tube",
-      "permanent": false
-    },
-    {
-      "source": "/admin/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.getsafetube.com"
-        }
-      ],
-      "destination": "https://getsafefamily.com/dashboard/tube",
-      "permanent": false
-    },
-    {
       "source": "/play",
       "has": [
         {
@@ -78,11 +23,44 @@
       "permanent": false
     },
     {
-      "source": "/play",
+      "source": "/kids",
       "has": [
         {
           "type": "host",
-          "value": "www.getsafetube.com"
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/tube",
+      "permanent": false
+    },
+    {
+      "source": "/kid",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/tube",
+      "permanent": false
+    },
+    {
+      "source": "/child-login",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/tube",
+      "permanent": false
+    },
+    {
+      "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
         }
       ],
       "destination": "https://getsafefamily.com/play/tube",
@@ -100,14 +78,113 @@
       "permanent": false
     },
     {
-      "source": "/play/:path*",
+      "source": "/login",
       "has": [
         {
           "type": "host",
-          "value": "www.getsafetube.com"
+          "value": "getsafetube.com"
         }
       ],
-      "destination": "https://getsafefamily.com/play/tube",
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/admin",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/admin/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/settings",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/settings/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/parent",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/parent/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/signup",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/signup",
       "permanent": false
     },
     {
@@ -119,6 +196,193 @@
         }
       ],
       "destination": "https://getsafefamily.com/tube",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/tube",
+      "permanent": false
+    },
+    {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/tube",
+      "permanent": false
+    },
+    {
+      "source": "/kids",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/tube",
+      "permanent": false
+    },
+    {
+      "source": "/kid",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/tube",
+      "permanent": false
+    },
+    {
+      "source": "/child-login",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/tube",
+      "permanent": false
+    },
+    {
+      "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/tube",
+      "permanent": false
+    },
+    {
+      "source": "/play/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/tube",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/admin",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/admin/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/settings",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/settings/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/parent",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/parent/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/tube",
+      "permanent": false
+    },
+    {
+      "source": "/signup",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafetube.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/signup",
       "permanent": false
     },
     {

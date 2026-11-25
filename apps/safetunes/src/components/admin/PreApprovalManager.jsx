@@ -888,7 +888,7 @@ function PreApprovalManager({ user }) {
                     </h3>
                     {genreResults.fromCache && (
                       <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                        ⚡ From cache (saved ${genreResults.cacheHitCount > 0 ? '$0.002' : ''})
+                        From cache (saved ${genreResults.cacheHitCount > 0 ? '$0.002' : ''})
                       </span>
                     )}
                   </div>
@@ -1031,7 +1031,7 @@ function PreApprovalManager({ user }) {
                     </h3>
                     {aiResults.fromCache && (
                       <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                        ⚡ From cache (saved ${aiResults.cacheHitCount > 0 ? '$0.002' : ''})
+                        From cache (saved ${aiResults.cacheHitCount > 0 ? '$0.002' : ''})
                       </span>
                     )}
                   </div>

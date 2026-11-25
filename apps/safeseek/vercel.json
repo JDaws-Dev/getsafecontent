@@ -12,6 +12,83 @@
       "permanent": false
     },
     {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/kids",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/kid",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/child-login",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/search",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/play/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
       "source": "/admin",
       "has": [
         {
@@ -34,7 +111,62 @@
       "permanent": false
     },
     {
-      "source": "/login",
+      "source": "/dashboard",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/settings",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/settings/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/parent",
+      "has": [
+        {
+          "type": "host",
+          "value": "getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/parent/:path*",
       "has": [
         {
           "type": "host",
@@ -52,29 +184,7 @@
           "value": "getsafestudy.com"
         }
       ],
-      "destination": "https://getsafefamily.com/signup?app=safestudy",
-      "permanent": false
-    },
-    {
-      "source": "/play",
-      "has": [
-        {
-          "type": "host",
-          "value": "getsafestudy.com"
-        }
-      ],
-      "destination": "https://getsafefamily.com/play/study",
-      "permanent": false
-    },
-    {
-      "source": "/play/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "getsafestudy.com"
-        }
-      ],
-      "destination": "https://getsafefamily.com/play/study",
+      "destination": "https://getsafefamily.com/signup",
       "permanent": false
     },
     {
@@ -100,6 +210,83 @@
       "permanent": false
     },
     {
+      "source": "/play",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/kids",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/kid",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/child-login",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/search",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/play/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/play/study",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
       "source": "/admin",
       "has": [
         {
@@ -122,7 +309,62 @@
       "permanent": false
     },
     {
-      "source": "/login",
+      "source": "/dashboard",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/settings",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/settings/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/parent",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getsafestudy.com"
+        }
+      ],
+      "destination": "https://getsafefamily.com/dashboard/study",
+      "permanent": false
+    },
+    {
+      "source": "/parent/:path*",
       "has": [
         {
           "type": "host",
@@ -140,29 +382,7 @@
           "value": "www.getsafestudy.com"
         }
       ],
-      "destination": "https://getsafefamily.com/signup?app=safestudy",
-      "permanent": false
-    },
-    {
-      "source": "/play",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.getsafestudy.com"
-        }
-      ],
-      "destination": "https://getsafefamily.com/play/study",
-      "permanent": false
-    },
-    {
-      "source": "/play/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.getsafestudy.com"
-        }
-      ],
-      "destination": "https://getsafefamily.com/play/study",
+      "destination": "https://getsafefamily.com/signup",
       "permanent": false
     },
     {

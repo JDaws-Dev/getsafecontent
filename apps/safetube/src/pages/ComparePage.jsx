@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { GraduationCap, AlertTriangle } from 'lucide-react';
 
 export default function ComparePage() {
   const [openFaq, setOpenFaq] = useState(null);
@@ -204,7 +205,7 @@ export default function ComparePage() {
           <div className="max-w-4xl mx-auto text-center">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full text-sm font-semibold mb-6 border border-white/30">
-              <span className="text-xl">🎓</span>
+              <GraduationCap className="w-5 h-5" aria-hidden="true" />
               YouTube Kids Alternative
             </div>
 
@@ -465,15 +466,15 @@ export default function ComparePage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-red-300 flex items-start gap-2 text-sm">
-                      <span className="text-lg">⚠️</span>
+                      <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" aria-hidden="true" />
                       <span>Disturbing "Elsagate" videos slipped through</span>
                     </p>
                     <p className="text-red-300 flex items-start gap-2 text-sm">
-                      <span className="text-lg">⚠️</span>
+                      <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" aria-hidden="true" />
                       <span>Algorithm recommends more of what kids click</span>
                     </p>
                     <p className="text-red-300 flex items-start gap-2 text-sm">
-                      <span className="text-lg">⚠️</span>
+                      <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" aria-hidden="true" />
                       <span>You don't know what they'll see next</span>
                     </p>
                   </div>

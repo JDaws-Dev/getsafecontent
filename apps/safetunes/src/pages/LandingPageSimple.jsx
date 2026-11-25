@@ -591,7 +591,7 @@ function LandingPageSimple() {
                   {/* Analysis result */}
                   <div className="space-y-3">
                     <div className="bg-red-500/20 rounded-lg p-3 border border-red-400/30">
-                      <p className="text-red-300 text-xs uppercase font-semibold mb-1">⚠️ Content Warning</p>
+                      <p className="text-red-300 text-xs uppercase font-semibold mb-1">Content Warning</p>
                       <p className="text-white text-sm">"Contains explicit drug references, glorifies substance abuse, and includes violent imagery."</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
