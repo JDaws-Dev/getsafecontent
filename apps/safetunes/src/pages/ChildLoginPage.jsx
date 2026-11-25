@@ -10,6 +10,7 @@ import ChildDashboard from '../components/child/ChildDashboard';
 import { useIsNativeApp } from '../hooks/useIsNativeApp';
 import SafeFamilySwitcher from '../components/SafeFamilySwitcher';
 import { isEmbedded, redirectKidToHubPlay } from '../lib/embed';
+import { tellKidDoorBadCode } from '../lib/kidDoor';
 import { stashPendingMusicToken } from '../hooks/useKidAppleMusicConnect';
 
 function ChildLoginPage() {
@@ -270,6 +271,20 @@ function ChildLoginPage() {
     return <ChildDashboard onLogout={handleLogout} />;
   }
 
+  // Inside the kid door the door owns the family code: no code box of our
+  // own (it would flash before ?fc= is read), a quiet spinner while the
+  // family loads, and a code that matches no family goes back to the door.
+  if (embedded && (step === 'family-code' || (step === 'select-profile' && familyData === undefined))) {
+    return (
+      <div className="min-h-screen bg-brand-cream flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full border-4 border-accent-200 border-t-accent-500 animate-spin" aria-label="Loading" />
+      </div>
+    );
+  }
+  if (embedded && savedFamilyCode && familyData === null && step === 'select-profile') {
+    return <EmbeddedBadCode />;
+  }
+
   // Show error if family code is invalid
   if (savedFamilyCode && familyData === null && step === 'select-profile') {
     return (
@@ -297,9 +312,9 @@ function ChildLoginPage() {
 
   return (
     <div className="min-h-screen bg-brand-cream">
-      <div className={`min-h-screen flex flex-col items-center p-4 ${embedded && step === 'select-profile' ? 'justify-start px-6 pt-12 sm:pt-20 pb-12' : 'justify-center'}`}>
+      <div className={`min-h-screen flex flex-col items-center p-4 ${embedded && step === 'select-profile' ? 'justify-start px-6 pt-12 sm:pt-20 pb-12' : 'justify-center'} ${embedded && step === 'enter-pin' ? 'py-6' : ''}`}>
         {/* Logo — inside the hub's kid tabs the shell already says where you are */}
-        {!(embedded && step === 'select-profile') && (
+        {!embedded && (
         <div className="mb-8 text-center">
           <div className="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
@@ -403,10 +418,10 @@ function ChildLoginPage() {
 
         {/* Step 3: Enter PIN */}
         {step === 'enter-pin' && selectedProfile && (
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full">
             <button
               onClick={() => setStep('select-profile')}
-              className="mb-4 text-accent-600 hover:text-accent-700 flex items-center"
+              className="mb-2 -ml-2 min-h-[44px] px-2 text-accent-600 hover:text-accent-700 flex items-center"
             >
               <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -414,7 +429,7 @@ function ChildLoginPage() {
               Back
             </button>
 
-            <div className="text-center mb-8">
+            <div className="text-center mb-6 sm:mb-8">
               <div className={`w-20 h-20 ${getColorClass(selectedProfile.color)} rounded-full flex items-center justify-center mx-auto mb-4 shadow-md`}>
                 <KidAvatarIcon color={selectedProfile.color} className="w-9 h-9 text-white" />
               </div>
@@ -472,6 +487,17 @@ function ChildLoginPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// Inside the kid door: the code matched no family. Tell the door, which shows
+// its own code screen; this message only shows if that hand-off fails.
+function EmbeddedBadCode() {
+  useEffect(() => { tellKidDoorBadCode(); }, []);
+  return (
+    <div className="min-h-screen bg-brand-cream flex items-center justify-center p-6 text-center">
+      <p className="text-gray-600 max-w-xs">We couldn&apos;t find that family code. Check it with a parent.</p>
     </div>
   );
 }

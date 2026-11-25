@@ -4,6 +4,7 @@ import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { AVATAR_ICONS, COLORS } from '../../constants/avatars';
 import SafeFamilySwitcher, { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
+import { tellKidDoorPass } from '../../lib/kidDoor';
 import { isEmbedded } from '../../lib/embed';
 import musicKitService from '../../config/musickit';
 import { useKidAppleMusicConnect, KidPinPrompt, applyPendingMusicToken } from '../../hooks/useKidAppleMusicConnect';
@@ -85,7 +86,11 @@ function ChildDashboard({ onLogout }) {
           avatar: kidProfile.avatar,
           color: kidProfile.color,
         });
-        if (active && res?.token) setKidToken(res.token);
+        if (active && res?.token) {
+          setKidToken(res.token);
+          // The kid door carries it to the next app tab (no second PIN).
+          tellKidDoorPass(res.token);
+        }
       } catch {
         // non-fatal — the switcher still works; the destination just asks for the PIN
       }
@@ -95,6 +100,7 @@ function ChildDashboard({ onLogout }) {
     return () => {
       active = false;
       clearInterval(id);
+      tellKidDoorPass(null);
     };
   }, [familyCode, kidProfile?.name, kidProfile?.avatar, kidProfile?.color, mintKidPass]);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
@@ -4883,7 +4889,7 @@ function ChildDashboard({ onLogout }) {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                <span>Logout</span>
+                <span>{embedded ? 'Switch profile' : 'Logout'}</span>
               </button>
             </div>
           </div>

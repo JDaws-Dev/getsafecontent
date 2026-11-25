@@ -512,8 +512,9 @@ export function FullScreenPlayer({
           ? 'translate-y-full opacity-0'
           : 'translate-y-0 opacity-100 animate-player-slide-up'
       }`}>
-        {/* Background - blurred artwork or gradient */}
-        <div className="absolute inset-0">
+        {/* Background - blurred artwork or gradient. Solid navy underneath so
+            artwork that fails to load never leaves the player see-through. */}
+        <div className="absolute inset-0 bg-brand-navy">
           {artworkUrl && !hideArtwork ? (
             <>
               <img
@@ -550,7 +551,8 @@ export function FullScreenPlayer({
             </div>
             <button
               onClick={onMoreOptions}
-              className="p-2 -mr-2 hover:bg-white/10 rounded-full transition"
+              aria-label="More"
+              className="p-2.5 -mr-2.5 hover:bg-white/10 rounded-full transition"
             >
               <MoreHorizontal className="w-6 h-6" />
             </button>
@@ -560,7 +562,9 @@ export function FullScreenPlayer({
           <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col">
             <div className="flex flex-col items-center px-6 flex-1 justify-center pb-4">
               {/* Large Album Artwork - Apple Music style (bigger) */}
-              <div className="w-full aspect-square transition-all duration-300 max-w-[85vw] lg:max-w-[320px] mb-6">
+              {/* Capped by height too, so on a short phone (or inside the kid
+                  door under its header and tabs) the controls stay on screen. */}
+              <div className="w-full aspect-square transition-all duration-300 max-w-[min(85vw,40dvh)] lg:max-w-[320px] mb-6">
                 {hideArtwork || !artworkUrl ? (
                   <div className="w-full h-full rounded-xl bg-brand-cream-2 backdrop-blur-sm flex items-center justify-center shadow-2xl">
                     <SafeTunesLogo className="w-28 h-28 text-accent-400" />

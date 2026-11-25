@@ -177,6 +177,22 @@ function AppleMusicAuth({ user, showOnlyWhenDisconnected = false, audience = 'pa
     );
   }
 
+  if (!isMusicKitReady && audience === 'kid') {
+    // Kids never see setup steps (Apple tokens, .env files). This shows when
+    // Apple Music failed to load: an expired token, or a blocked network.
+    return (
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 flex items-start gap-3">
+        <svg className="w-7 h-7 text-accent-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+        </svg>
+        <div>
+          <h3 className="font-semibold text-gray-900">Music can&apos;t play right now</h3>
+          <p className="text-sm text-gray-600 mt-1">Try again in a little while. If it keeps happening, tell a parent.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isMusicKitReady) {
     return (
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
