@@ -85,10 +85,11 @@ export default function LandingPage() {
                 Safe Family
               </a>
               <span className="hidden sm:block text-gray-300">|</span>
-              <Link to="/login" className="text-gray-600 hover:text-gray-900 font-medium text-xs sm:text-sm">
+              <Link to="/login" className="text-gray-600 hover:text-gray-900 font-medium text-xs sm:text-sm whitespace-nowrap">
                 Parent Login
               </Link>
-              <Link to="/play" className="text-gray-600 hover:text-gray-900 font-medium text-xs sm:text-sm">
+              {/* Phones: "Kids access at getsafefamily.com/play" sits in the hero, so the header keeps one login link. */}
+              <Link to="/play" className="hidden sm:inline text-gray-600 hover:text-gray-900 font-medium text-xs sm:text-sm whitespace-nowrap">
                 Kid Login
               </Link>
               <Link
