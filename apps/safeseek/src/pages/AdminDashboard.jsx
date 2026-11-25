@@ -703,7 +703,7 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, embedde
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-accent-600 hover:text-accent-700 font-medium"
             >
-              Upgrade to Premium
+              Subscribe to Safe Family ($4.99/month)
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>

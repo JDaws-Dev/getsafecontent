@@ -13,6 +13,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ThemeSelector } from '../common/ThemeToggle';
 import { isEmbedded, topNavigate } from '../../lib/embed';
 
+const HUB_SIGNUP_URL = 'https://getsafefamily.com/signup';
+const HUB_ACCOUNT_URL = 'https://getsafefamily.com/account';
+
 // Inside the hub dashboard, a child's name, PIN, colour, pause and allowed
 // hours belong to the Family tab: the hub overwrites them here on every sync,
 // so editing them in SafeTunes would silently undo itself.
@@ -64,7 +67,6 @@ function Settings({ user, onLogout, initialSection }) {
   const restoreKidProfileMutation = useMutation(api.kidProfiles.restoreKidProfile);
   const permanentlyDeleteArchiveMutation = useMutation(api.kidProfiles.permanentlyDeleteArchive);
   const archivedProfiles = useQuery(api.kidProfiles.getArchivedProfiles, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
-  const createPortalSession = useAction(api.stripeActions.createPortalSession);
   const sendCancellationReason = useAction(api.emails.submitCancellationReason);
   const updateUserMutation = useMutation(api.users.updateUser);
   const deleteOwnAccount = useMutation(api.admin.deleteOwnAccount);
@@ -238,10 +240,8 @@ function Settings({ user, onLogout, initialSection }) {
       setCancelReason('');
       setCancelOtherReason('');
 
-      const { url } = await createPortalSession({
-        stripeCustomerId: fullUser.stripeCustomerId,
-      });
-      topNavigate(url);
+      // Cancelling happens under Manage billing on the hub account page.
+      topNavigate(HUB_ACCOUNT_URL);
     } catch (error) {
       console.error('Failed to process cancellation:', error);
       showToast('Failed to process. Please try again.', 'error');
@@ -931,7 +931,7 @@ function Settings({ user, onLogout, initialSection }) {
             </a>
 
             <p className="text-xs text-gray-500 mt-3 text-center">
-              Add SafeTube, SafeStudy, or manage billing at getsafefamily.com
+              Manage billing for SafeTunes, SafeTube and SafeStudy at getsafefamily.com
             </p>
           </div>
 
@@ -1675,32 +1675,20 @@ function Settings({ user, onLogout, initialSection }) {
               )}
             </div>
 
-            {/* Manage Subscription Button */}
+            {/* Billing lives on the hub (one plan, Safe Family). Managing,
+                cancelling and subscribing all open getsafefamily.com. */}
             {fullUser?.subscriptionStatus !== 'lifetime' && (
               <div className="mt-6 pt-6 border-t border-gray-200">
-                {fullUser?.stripeCustomerId ? (
+                {(fullUser?.subscriptionStatus === 'active' || fullUser?.subscriptionStatus === 'past_due') ? (
                   <>
                     <button
-                      onClick={async () => {
-                        setPortalLoading(true);
-                        try {
-                          const { url } = await createPortalSession({
-                            stripeCustomerId: fullUser.stripeCustomerId,
-                          });
-                          topNavigate(url);
-                        } catch (error) {
-                          console.error('Failed to create portal session:', error);
-                          showToast('Failed to open subscription management. Please try again.', 'error');
-                          setPortalLoading(false);
-                        }
-                      }}
-                      disabled={portalLoading}
-                      className="w-full bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50"
+                      onClick={() => topNavigate(HUB_ACCOUNT_URL)}
+                      className="w-full bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-semibold transition"
                     >
-                      {portalLoading ? 'Loading...' : 'Manage Subscription'}
+                      Manage billing
                     </button>
                     <p className="text-xs text-gray-500 text-center mt-2">
-                      Update payment method or view invoices
+                      Update your card, see invoices or cancel on your Safe Family account
                     </p>
 
                     {/* Cancel Subscription Link */}
@@ -1716,14 +1704,17 @@ function Settings({ user, onLogout, initialSection }) {
                     )}
                   </>
                 ) : (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                    <p className="text-sm text-blue-800">
-                      Processing your subscription... This usually takes a few seconds.
+                  <>
+                    <button
+                      onClick={() => topNavigate(HUB_SIGNUP_URL)}
+                      className="w-full bg-accent-600 hover:bg-accent-700 text-white py-3 rounded-lg font-semibold transition"
+                    >
+                      Subscribe to Safe Family
+                    </button>
+                    <p className="text-xs text-gray-500 text-center mt-2">
+                      $4.99/month for SafeTunes, SafeTube and SafeStudy. Cancel anytime.
                     </p>
-                    <p className="text-xs text-blue-600 mt-2">
-                      Refresh this page in a moment to manage your subscription.
-                    </p>
-                  </div>
+                  </>
                 )}
               </div>
             )}

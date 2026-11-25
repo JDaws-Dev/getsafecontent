@@ -9,8 +9,9 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { ThemeSelector } from '../common/ThemeToggle';
 
-// Stripe Price ID - SafeTube Premium $4.99/month
-const STRIPE_PRICE_ID = import.meta.env.VITE_STRIPE_PRICE_ID || 'price_1Spp7oKgkIT46sg7oJIKGfMG';
+// Billing is on the hub: one plan, Safe Family ($4.99/month).
+const HUB_SIGNUP_URL = 'https://getsafefamily.com/signup';
+const HUB_ACCOUNT_URL = 'https://getsafefamily.com/account';
 
 // Color constants
 const COLORS = [
@@ -1457,8 +1458,6 @@ function SubscriptionCard({ userData }) {
   const [cancelOtherReason, setCancelOtherReason] = useState('');
   const [cancelLoading, setCancelLoading] = useState(false);
 
-  const createCheckoutSession = useAction(api.stripeActions.createCheckoutSession);
-  const createPortalSession = useAction(api.stripeActions.createPortalSession);
   const sendCancellationReason = useMutation(api.users.reportCancellationReason);
 
   const status = userData?.subscriptionStatus || 'trial';
@@ -1472,47 +1471,15 @@ function SubscriptionCard({ userData }) {
     ? Math.max(0, Math.ceil((userData.trialEndsAt - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
 
-  const handleSubscribe = async () => {
-    if (!userData?.email) return;
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await createCheckoutSession({
-        email: userData.email,
-        priceId: STRIPE_PRICE_ID,
-      });
-
-      if (result.url) {
-        topNavigate(result.url);
-      }
-    } catch (err) {
-      console.error('Failed to create checkout session:', err);
-      setError('Failed to start checkout. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+  // Billing lives on the hub (one plan, Safe Family): subscribing goes to
+  // getsafefamily.com/signup and managing or cancelling goes to /account,
+  // in the top window when this screen is inside the hub dashboard.
+  const handleSubscribe = () => {
+    topNavigate(HUB_SIGNUP_URL);
   };
 
-  const handleManageSubscription = async () => {
-    if (!userData?.stripeCustomerId) return;
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await createPortalSession({
-        stripeCustomerId: userData.stripeCustomerId,
-      });
-
-      if (result.url) {
-        topNavigate(result.url);
-      }
-    } catch (err) {
-      console.error('Failed to create portal session:', err);
-      setError('Failed to open billing portal. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleManageSubscription = () => {
+    topNavigate(HUB_ACCOUNT_URL);
   };
 
   // Handle cancellation with reason collection
@@ -1539,13 +1506,8 @@ function SubscriptionCard({ userData }) {
       setCancelReason('');
       setCancelOtherReason('');
 
-      // Redirect to Stripe portal for actual cancellation
-      const result = await createPortalSession({
-        stripeCustomerId: userData.stripeCustomerId,
-      });
-      if (result.url) {
-        topNavigate(result.url);
-      }
+      // Cancelling happens under Manage billing on the hub account page.
+      topNavigate(HUB_ACCOUNT_URL);
     } catch (err) {
       console.error('Failed to process cancellation:', err);
       setError('Failed to process. Please try again.');
@@ -1555,7 +1517,7 @@ function SubscriptionCard({ userData }) {
 
   const getStatusDisplay = () => {
     if (hasLifetime) return { label: 'Lifetime Access', color: 'purple', description: 'You have lifetime access to SafeTube!' };
-    if (hasActiveSubscription) return { label: 'Premium', color: 'green', description: 'Your subscription is active' };
+    if (hasActiveSubscription) return { label: 'Subscribed', color: 'green', description: 'Your subscription is active' };
     if (isTrialExpired) return { label: 'Trial Expired', color: 'red', description: 'Your free trial has ended. Subscribe to continue.' };
     if (status === 'cancelled') return { label: 'Cancelled', color: 'orange', description: 'Your subscription has been cancelled' };
     if (status === 'past_due') return { label: 'Past Due', color: 'red', description: 'Payment failed. Please update your payment method.' };
@@ -1623,11 +1585,11 @@ function SubscriptionCard({ userData }) {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  {isTrialExpired ? 'Subscribe Now' : 'Upgrade to Premium'}
+                  {isTrialExpired ? 'Subscribe now' : 'Subscribe to Safe Family'}
                 </>
               )}
             </button>
-            <p className="text-center text-xs text-gray-500">$4.99/month • Cancel anytime</p>
+            <p className="text-center text-xs text-gray-500">Safe Family: $4.99/month for SafeTunes, SafeTube and SafeStudy. Cancel anytime.</p>
           </div>
         )}
 

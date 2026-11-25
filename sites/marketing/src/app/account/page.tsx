@@ -567,6 +567,15 @@ function AccountPageContent() {
                 {portalLoading ? "Opening..." : "Manage Billing"}
               </button>
             )}
+            {/* Older app-only subscriptions may not have a hub billing record;
+                the apps' billing buttons now all land here, so give them a way out. */}
+            {(isActive || isCanceled) && !currentUser.stripeCustomerId && (
+              <p className="text-sm text-navy/60">
+                To update your card or cancel, email{" "}
+                <a href="mailto:jeremiah@getsafefamily.com?subject=Billing" className="font-semibold text-navy underline">jeremiah@getsafefamily.com</a>{" "}
+                and we&rsquo;ll take care of it.
+              </p>
+            )}
 
             {(isTrial || isExpired) && (
               <Link
