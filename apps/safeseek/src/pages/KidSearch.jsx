@@ -4,6 +4,7 @@ import { useQuery, useAction, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useTheme } from '../contexts/ThemeContext';
 import { isEmbedded, redirectKidToHubPlay } from '../lib/embed';
+import { tellKidDoorBadCode, tellKidDoorPass } from '../lib/kidDoor';
 
 // Extracted components
 import FamilyCodeEntry from '../components/kid/FamilyCodeEntry';
@@ -224,7 +225,11 @@ export default function KidSearch() {
           avatar: selectedProfile.icon,
           color: selectedProfile.color,
         });
-        if (active && res?.token) setKidToken(res.token);
+        if (active && res?.token) {
+          setKidToken(res.token);
+          // The kid door carries it to the next app tab (no second PIN).
+          tellKidDoorPass(res.token);
+        }
       } catch {
         // non-fatal — the switcher still works; the destination just asks for the PIN
       }
@@ -234,6 +239,7 @@ export default function KidSearch() {
     return () => {
       active = false;
       clearInterval(id);
+      tellKidDoorPass(null);
     };
   }, [familyCode, selectedProfile?.name, selectedProfile?.icon, selectedProfile?.color, mintKidPass]);
 
@@ -409,6 +415,13 @@ export default function KidSearch() {
   // at pick time, and a parent can pause a kid from the hub mid-session.
   const liveProfile = kidProfiles?.find((p) => p._id === selectedProfile?._id);
   const isPaused = (liveProfile ?? selectedProfile)?.accessPaused === true;
+
+  // Inside the kid door the door owns the family code: a code that matches no
+  // family sends the kid back to the door's code screen.
+  const badCode = embedded && !!familyCode && user === null;
+  useEffect(() => {
+    if (badCode) tellKidDoorBadCode();
+  }, [badCode]);
 
   // Validate family code
   useEffect(() => {
@@ -1108,6 +1121,20 @@ export default function KidSearch() {
       setKeepState('idle');
     }
   };
+
+  // ========== FAMILY CODE (inside the kid door) ==========
+  // No code box of our own in there: wait quietly for ?fc= and the family.
+  if (embedded && (!familyCode || !user)) {
+    return (
+      <div className="min-h-screen bg-brand-cream dark:bg-gray-900 flex items-center justify-center p-6 text-center">
+        {badCode ? (
+          <p className="text-gray-600 dark:text-gray-300 max-w-xs">We couldn&apos;t find that family code. Check it with a parent.</p>
+        ) : (
+          <div className="w-10 h-10 rounded-full border-4 border-accent-200 border-t-accent-500 animate-spin" aria-label="Loading" />
+        )}
+      </div>
+    );
+  }
 
   // ========== FAMILY CODE ENTRY ==========
   if (!familyCode || !user) {
