@@ -83,6 +83,17 @@ function freshPass(): string | null {
   } catch { return null; }
 }
 
+// A "bad code" from one app does not always mean a wrong code: a family can be
+// set up in some apps and not (yet) in another. Remember which code an app
+// rejected so the second rejection of the same code (the kid typed it again,
+// or another app already signed a kid in with it) shows "not set up here"
+// for that one tab instead of looping back to the code screen.
+const BAD_KEY = "safefamily_bad_code";
+const OK_KEY = "safefamily_code_ok";
+function readBad(): { code?: string } | null {
+  try { return JSON.parse(sessionStorage.getItem(BAD_KEY) || "null"); } catch { return null; }
+}
+
 export default function PlayPage() {
   const params = useParams<{ app?: string[] }>();
   const search = useSearchParams();
@@ -103,6 +114,8 @@ export default function PlayPage() {
   const [input, setInput] = useState("");
   const [ready, setReady] = useState(false);
   const [codeError, setCodeError] = useState("");
+  // Tabs whose app has no family for this code (see BAD_KEY).
+  const [notSetUp, setNotSetUp] = useState<string[]>([]);
   useEffect(() => {
     if (search.get("bad") === "1") setCodeError("We couldn't find that family code. Check it with a parent and try again.");
   }, [search]);
@@ -149,6 +162,8 @@ export default function PlayPage() {
     try { localStorage.setItem(CODE_KEY, c); } catch { /* ignore */ }
     setCodeError("");
     setCode(c);
+    // Same code an app just rejected: the chooser, not straight back into it.
+    if (readBad()?.code === c) { router.replace("/play"); return; }
     let last: string | null = null;
     try { last = localStorage.getItem(LAST_APP_KEY); } catch { /* ignore */ }
     if (solo) { router.replace(soloHref); return; }
@@ -172,15 +187,28 @@ export default function PlayPage() {
       if (!d || d.source !== "safefamily-kid") return;
       if (d.type === "kid-pass") {
         savePass(d.token || null);
+        // A kid signed in somewhere with this code, so the code itself is good.
+        if (d.token && code) { try { sessionStorage.setItem(OK_KEY, code); } catch { /* ignore */ } }
       } else if (d.type === "bad-code") {
+        let confirmed = false;
+        try { confirmed = !!code && sessionStorage.getItem(OK_KEY) === code; } catch { /* ignore */ }
+        if (code && (confirmed || readBad()?.code === code)) {
+          // The code works elsewhere: only this tab isn't set up.
+          if (active) setNotSetUp((prev) => (prev.includes(active.slug) ? prev : [...prev, active.slug]));
+          return;
+        }
         // The app could not find this family: back to the one code screen
         // here rather than the app's own code box inside the frame.
+        try {
+          if (code) sessionStorage.setItem(BAD_KEY, JSON.stringify({ code }));
+          localStorage.removeItem(LAST_APP_KEY);
+        } catch { /* ignore */ }
         forget("bad-code");
       }
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [forget]);
+  }, [forget, code, active]);
 
   // The frame's address is fixed when the tab (or code) changes, picking up
   // the kid pass from the tab the kid just left.
@@ -263,6 +291,18 @@ export default function PlayPage() {
             <p className="text-lg text-navy/70 leading-relaxed">{active.blurb}</p>
             <p className="text-base text-navy/55">
               It&rsquo;s not open yet. Check back soon!
+            </p>
+          </div>
+        </main>
+      ) : active && notSetUp.includes(active.slug) ? (
+        <main className="flex-1 overflow-y-auto px-6 py-10">
+          <div className="max-w-xl mx-auto text-center flex flex-col items-center gap-5">
+            <span className="w-20 h-20 rounded-3xl flex items-center justify-center" style={{ background: active.color }}>
+              <Glyph slug={active.slug} size={40} />
+            </span>
+            <h1 className="text-3xl font-bold text-navy">{active.name} isn&rsquo;t ready yet</h1>
+            <p className="text-lg text-navy/70 leading-relaxed">
+              It isn&rsquo;t set up for your family yet. Ask a parent to help.
             </p>
           </div>
         </main>
