@@ -4,6 +4,7 @@ import { api } from '../../../convex/_generated/api';
 import { COLORS } from '../../constants/avatars';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { isEmbedded } from '../../lib/embed';
 import {
   Music,
   ChevronRight,
@@ -78,35 +79,42 @@ const isLateNightTime = (timestamp) => {
 // SUB-COMPONENTS
 // ============================================================================
 
-// Alert Banner for pending requests
+// Pending-requests card: calm, not an alarm — white card, a thin accent edge,
+// a normal-weight count. Tapping it opens the Requests tab.
 function AlertBanner({ count, onDismiss, onNavigate }) {
   if (count === 0) return null;
 
   return (
-    <div className="relative bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl overflow-hidden shadow-lg">
+    <div className="relative bg-white rounded-xl border border-gray-200 border-l-4 border-l-accent-500 shadow-sm">
       <button
+        type="button"
         onClick={onNavigate}
-        className="w-full p-4 flex items-center justify-between hover:from-orange-600 hover:to-amber-600 transition group"
+        className="w-full p-4 pr-12 flex items-center justify-between gap-3 text-left hover:bg-accent-50/50 rounded-xl transition group"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <AlertCircle className="w-5 h-5" />
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 bg-accent-50 rounded-full flex items-center justify-center flex-shrink-0">
+            <Mail className="w-4 h-4 text-accent-600" aria-hidden="true" />
           </div>
-          <div className="text-left">
-            <p className="font-semibold">{count} Request{count !== 1 ? 's' : ''} waiting for review</p>
-            <p className="text-sm text-white/80">Tap to review and respond</p>
+          <div className="min-w-0">
+            <p className="text-brand-navy">
+              <span className="font-normal">{count}</span>{' '}
+              <span>request{count !== 1 ? 's' : ''} waiting for review</span>
+            </p>
+            <p className="text-sm text-gray-500">Tap to review and respond</p>
           </div>
         </div>
-        <ChevronRight className="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" />
+        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-accent-600 group-hover:translate-x-0.5 transition-all flex-shrink-0" aria-hidden="true" />
       </button>
       {/* Dismiss button */}
       <button
+        type="button"
         onClick={(e) => {
           e.stopPropagation();
           onDismiss();
         }}
-        className="absolute top-2 right-2 p-1.5 hover:bg-white/20 rounded-full transition"
+        className="absolute top-1/2 -translate-y-1/2 right-2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition"
         title="Dismiss"
+        aria-label="Dismiss"
       >
         <X className="w-4 h-4" />
       </button>
@@ -480,10 +488,11 @@ function ActivityItem({ activity }) {
   );
 }
 
-// Floating Action Bar
+// Floating Action Bar — desktop only: on a phone the bottom tab bar already
+// has "Add", and a floating button here sat on top of the kid cards.
 function FloatingActionBar({ onAddMusic }) {
   return (
-    <div className="fixed bottom-20 md:bottom-6 left-0 right-0 px-4 z-40 pointer-events-none">
+    <div className="hidden md:block fixed bottom-6 left-0 right-0 px-4 z-40 pointer-events-none">
       <div className="max-w-md mx-auto">
         <button
           onClick={onAddMusic}
@@ -505,6 +514,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
   const { showToast } = useToast();
   const { token } = useAuth();
   const [dismissedAlert, setDismissedAlert] = useState(false);
+  const embedded = isEmbedded();
 
   // Mutation to pause/unpause music for a kid
   const setMusicPaused = useMutation(api.kidProfiles.setMusicPaused);
@@ -655,7 +665,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
   }
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-6 pb-8 md:pb-32">
       {/* ================================================================== */}
       {/* SECTION 1: Header */}
       {/* ================================================================== */}
@@ -667,8 +677,9 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
           <p className="text-gray-500 mt-1">Here's what's happening with your family's music</p>
         </div>
 
-        {/* Family Code - Top Right Corner with Helper */}
-        {familyCode && (
+        {/* Family Code - Top Right Corner with Helper. Not repeated inside the
+            hub dashboard, whose header already shows the code. */}
+        {familyCode && !embedded && (
           <div className="flex flex-col items-end gap-1 flex-shrink-0">
             <button
               onClick={handleCopyFamilyCode}

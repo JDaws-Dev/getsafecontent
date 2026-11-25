@@ -19,8 +19,8 @@ export function EmbeddedNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="border-b border-brand-cream-2 bg-brand-cream/95 backdrop-blur-md">
-      <div className="mx-auto flex max-w-5xl items-center gap-1 overflow-x-auto px-2 sm:px-4">
+    <nav className="border-b border-gray-200 bg-white shadow-sm" aria-label="SafeReads sections">
+      <div className="mx-auto flex max-w-5xl items-center overflow-x-auto px-2 [scrollbar-width:none] sm:px-4">
         {navItems.map(({ href, label, icon: Icon }) => {
           const isActive =
             href === "/dashboard" ? pathname === href : pathname?.startsWith(href);
@@ -28,13 +28,14 @@ export function EmbeddedNav() {
             <Link
               key={href}
               href={href}
-              className={`inline-flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium transition-colors ${
+              aria-current={isActive ? "page" : undefined}
+              className={`inline-flex h-11 items-center gap-2 whitespace-nowrap border-b-2 px-4 text-sm font-semibold transition-colors ${
                 isActive
-                  ? "border-accent-600 text-brand-navy"
-                  : "border-transparent text-ink-600 hover:text-brand-navy"
+                  ? "border-accent-600 text-accent-600"
+                  : "border-transparent text-brand-navy/60 hover:text-brand-navy"
               }`}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4" aria-hidden="true" />
               {label}
             </Link>
           );

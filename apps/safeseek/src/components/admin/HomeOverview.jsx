@@ -10,6 +10,7 @@ import {
   Layers, MessageSquare, Search, Flame, CalendarDays, Bell,
 } from 'lucide-react';
 import { KidAvatar, plural, Card, primaryButton } from './shared';
+import { isEmbedded } from '../../lib/embed';
 
 function StatTile({ icon, label, value, sub, tone = 'accent', onClick }) {
   const Icon = icon;
@@ -240,8 +241,9 @@ export default function HomeOverview({
         </div>
       )}
 
-      {/* Family Code Card */}
-      {userData?.familyCode && (
+      {/* Family Code Card — not repeated inside the hub dashboard, whose
+          header already shows the code. */}
+      {userData?.familyCode && !isEmbedded() && (
         <div className="bg-accent-500 rounded-2xl p-5 text-white shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">

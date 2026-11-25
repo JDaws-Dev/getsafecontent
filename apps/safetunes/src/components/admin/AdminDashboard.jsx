@@ -479,6 +479,14 @@ function KidActivityCard({ kid, kidAlbums, kidTracks, getAvatarIcon, getColorCla
   );
 }
 
+// The in-app section tabs share one look across all five Safe Family apps:
+// 44px tall, 14px semibold, icon + label, accent text + 2px accent underline
+// when active, navy at 60% when not.
+const subNavTab = (active) =>
+  `inline-flex h-11 items-center gap-2 whitespace-nowrap border-b-2 px-4 text-sm font-semibold transition-colors ${
+    active ? 'border-accent-600 text-accent-600' : 'border-transparent text-brand-navy/60 hover:text-brand-navy'
+  }`;
+
 function AdminDashboard({ user, onLogout }) {
   const { showToast } = useToast();
   const { token } = useAuth();
@@ -663,103 +671,87 @@ function AdminDashboard({ user, onLogout }) {
             <SafeFamilyParentSwitcher current="safetunes" familyCode={fullUser?.familyCode} tile={40} />
           </div>)}
 
-          {/* Desktop Tabs */}
+          {/* Desktop Tabs — the shared Safe Family sub-nav pattern (same in every app) */}
           <div className="hidden md:block">
-            <nav className="flex gap-1 -mb-px">
+            <nav className="flex -mb-px overflow-x-auto [scrollbar-width:none]" aria-label="SafeTunes sections">
               <button
+                type="button"
                 onClick={() => setActiveTab('home')}
-                className={`${
-                  activeTab === 'home'
-                    ? 'border-b-2 border-accent-600 text-accent-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
-                } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2`}
+                aria-current={activeTab === 'home' ? 'page' : undefined}
+                className={subNavTab(activeTab === 'home')}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
                 <span>Home</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('requests')}
-                className={`${
-                  activeTab === 'requests'
-                    ? 'border-b-2 border-accent-600 text-accent-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
-                } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2 relative`}
+                aria-current={activeTab === 'requests' ? 'page' : undefined}
+                className={subNavTab(activeTab === 'requests')}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 <span>Requests</span>
                 {pendingCount > 0 && (
-                  <span className={`bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center ${
-                    pendingCount > 99 ? 'px-1.5 h-5 min-w-[1.25rem]' : 'w-5 h-5'
-                  }`}>
+                  <span className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-semibold leading-none text-white">
                     {pendingCount > 99 ? '99+' : pendingCount}
                   </span>
                 )}
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('add')}
-                className={`${
-                  activeTab === 'add'
-                    ? 'border-b-2 border-accent-600 text-accent-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
-                } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2`}
+                aria-current={activeTab === 'add' ? 'page' : undefined}
+                className={subNavTab(activeTab === 'add')}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 <span>Add</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('music')}
-                className={`${
-                  activeTab === 'music'
-                    ? 'border-b-2 border-accent-600 text-accent-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
-                } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2`}
+                aria-current={activeTab === 'music' ? 'page' : undefined}
+                className={subNavTab(activeTab === 'music')}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                 </svg>
                 <span>Music</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('history')}
-                className={`${
-                  activeTab === 'history'
-                    ? 'border-b-2 border-accent-600 text-accent-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
-                } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2`}
+                aria-current={activeTab === 'history' ? 'page' : undefined}
+                className={subNavTab(activeTab === 'history')}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Activity</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('getting-started')}
-                className={`${
-                  activeTab === 'getting-started'
-                    ? 'border-b-2 border-accent-600 text-accent-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
-                } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2`}
+                aria-current={activeTab === 'getting-started' ? 'page' : undefined}
+                className={subNavTab(activeTab === 'getting-started')}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
                 <span>Getting Started</span>
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('settings')}
-                className={`${
-                  activeTab === 'settings'
-                    ? 'border-b-2 border-accent-600 text-accent-600'
-                    : 'text-gray-600 hover:text-gray-900 hover:border-gray-300 border-b-2 border-transparent'
-                } py-3 px-6 font-medium text-sm transition-all duration-200 flex items-center gap-2`}
+                aria-current={activeTab === 'settings' ? 'page' : undefined}
+                className={subNavTab(activeTab === 'settings')}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>

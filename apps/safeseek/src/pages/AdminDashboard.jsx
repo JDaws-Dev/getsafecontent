@@ -1188,28 +1188,33 @@ export default function AdminDashboard() {
             <SafeFamilyParentSwitcher current="safestudy" familyCode={userData?.familyCode} tile={40} />
           </div>)}
 
-          {/* Desktop Tab Navigation */}
-          <nav className="hidden md:flex gap-1 -mb-px overflow-x-auto" aria-label="Dashboard sections">
+          {/* Desktop Tab Navigation — the shared Safe Family sub-nav pattern:
+              44px tall, 14px semibold, icon + label, accent text + 2px accent
+              underline when active, navy at 60% when not. Counts sit inline
+              next to the label (a badge above the bar is clipped by the hub's
+              iframe edge). */}
+          <nav className="hidden md:flex -mb-px overflow-x-auto [scrollbar-width:none]" aria-label="Dashboard sections">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const badge = tabBadge(tab.id);
+              const active = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  aria-current={activeTab === tab.id ? 'page' : undefined}
-                  className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'border-accent-500 text-accent-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  aria-current={active ? 'page' : undefined}
+                  className={`inline-flex h-11 items-center gap-2 whitespace-nowrap border-b-2 px-4 text-sm font-semibold transition-colors ${
+                    active
+                      ? 'border-accent-600 text-accent-600'
+                      : 'border-transparent text-brand-navy/60 hover:text-brand-navy'
                   }`}
                 >
-                  <Icon className="w-4.5 h-4.5" aria-hidden="true" />
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                   {tab.label}
                   {badge > 0 && (
                     <span
-                      className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-semibold"
+                      className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-semibold leading-none text-white"
                       aria-label={`${badge} waiting`}
                     >
                       {badge > 99 ? '99+' : badge}

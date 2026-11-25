@@ -266,6 +266,9 @@ export default function ParentDashboard() {
           </section>
         )}
 
+        {/* Family code card — in the hub the shell already shows the code, so
+            only show it there when there is no code yet (to create one). */}
+        {(!embedded || !code) && (
         <section className="rounded-3xl border border-accent-100 bg-gradient-to-br from-accent-500 via-brand-peach-start to-brand-peach-end p-[1.5px] shadow-lg">
           <div className="rounded-[22px] bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -327,6 +330,7 @@ export default function ParentDashboard() {
             )}
           </div>
         </section>
+        )}
 
         {/* Phase 4 — concerning-prompt alerts. Highest-priority section,
             renders above every other dashboard surface when unack'd.

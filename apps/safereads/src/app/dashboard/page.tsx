@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "../../../convex/_generated/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsEmbedded } from "@/lib/embed";
 import {
   Search,
   ScanBarcode,
@@ -36,6 +37,7 @@ export default function DashboardPage() {
   const searchParams = useSearchParams();
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
+  const embedded = useIsEmbedded();
 
   // Derive subscription banner from URL params (React pattern: derive state during render)
   const subscriptionParam = searchParams.get("subscription");
@@ -105,8 +107,9 @@ export default function DashboardPage() {
         What would you like to do today?
       </p>
 
-      {/* Family Code — prominent, right after greeting */}
-      {familyCode && (
+      {/* Family Code — prominent, right after greeting. Inside the hub the
+          shell already shows the code, so it is not repeated here. */}
+      {familyCode && !embedded && (
         <div className="mt-4 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-accent-50 to-accent-100 p-4 ring-1 ring-accent-200">
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent-600 text-white">
             <Users className="h-5 w-5" />

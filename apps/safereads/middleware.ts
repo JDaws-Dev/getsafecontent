@@ -17,7 +17,9 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // Add security headers
-  response.headers.set("X-Frame-Options", "DENY");
+  // SAMEORIGIN, not DENY: the hub dashboard (same origin) shows these screens
+  // in an iframe at /dashboard/reads. Matches next.config.ts.
+  response.headers.set("X-Frame-Options", "SAMEORIGIN");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
