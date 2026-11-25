@@ -3,9 +3,7 @@ import Link from "next/link";
 const apps = [
   { name: "SafeTunes", href: "https://getsafefamily.com/tunes", isNew: false },
   { name: "SafeTube", href: "https://getsafefamily.com/tube", isNew: false },
-  { name: "SafeReads", href: "https://getsafefamily.com/reads", isNew: false },
   { name: "SafeStudy", href: "https://getsafefamily.com/study", isNew: false },
-  { name: "SafeSpark", href: "https://getsafefamily.com/spark", isNew: true },
 ];
 
 const legalLinks = [

@@ -98,12 +98,11 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
-  // Next does not apply basePath to explicit metadata icon/manifest paths
-  // (verified against the rendered <head>), so prefix them by hand.
-  icons: {
-    icon: withBase('/favicon.ico'),
-    apple: withBase('/apple-touch-icon.png'),
-  },
+  // Icons come from the file-based src/app/icon.tsx and apple-icon.tsx routes
+  // (served at /spark/icon and /spark/apple-icon). The old explicit
+  // /favicon.ico and /apple-touch-icon.png links pointed at files that don't
+  // exist. Next does not apply basePath to an explicit manifest path, so it is
+  // prefixed by hand.
   manifest: withBase('/site.webmanifest'),
 };
 

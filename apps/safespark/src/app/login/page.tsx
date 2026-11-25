@@ -279,12 +279,12 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-5 text-center text-sm text-brand-ink-soft">
-            Don&apos;t have an account?{" "}
+            New to Safe Family?{" "}
             <a
-              href="https://getsafefamily.com/signup?plan=unified"
+              href="https://getsafefamily.com"
               className="text-accent-700 hover:text-accent-800 font-medium"
             >
-              Start free trial
+              See what we offer
             </a>
           </p>
         </div>

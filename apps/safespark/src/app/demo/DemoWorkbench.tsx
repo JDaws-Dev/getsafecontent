@@ -1669,29 +1669,20 @@ export function DemoWorkbench({ initialDemoCode = '' }: { initialDemoCode?: stri
             <Wand2 className="h-7 w-7" />
           </div>
           <p className="mt-5 text-xs font-semibold uppercase tracking-widest text-accent-700">SafeSpark</p>
-          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-brand-navy">Sign up to start building</h1>
+          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-brand-navy">Sign in to keep building</h1>
           <p className="mt-3 text-sm leading-relaxed text-brand-ink-soft">
-            Your projects save under your account and you can come back any time, on any device.
+            Your projects save under your family&apos;s account. SafeSpark isn&apos;t taking new families right now.
           </p>
           <div className="mt-5 flex flex-col gap-2">
             <Link
-              href="https://getsafefamily.com/signup?plan=unified"
+              href="/login"
               className="inline-flex w-full items-center justify-center rounded-xl bg-accent-600 px-5 py-3 text-sm font-semibold text-brand-navy shadow-sm hover:bg-accent-700"
             >
-              Create an account
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex w-full items-center justify-center rounded-xl border border-brand-cream-2 bg-white px-5 py-3 text-sm font-semibold text-brand-navy hover:bg-brand-cream"
-            >
-              I already have an account
+              Parent sign in
             </Link>
           </div>
-          <p className="mt-4 text-xs font-semibold text-brand-ink-soft">
-            Free during early access · No credit card
-          </p>
           <p className="mt-3 text-xs leading-relaxed text-brand-ink-soft">
-            Kids on a shared device? Have the parent sign up first, then kids go to{' '}
+            Kids: go to{' '}
             <a href="https://getsafefamily.com/play" className="font-semibold text-accent-700 underline">
               getsafefamily.com/play
             </a>

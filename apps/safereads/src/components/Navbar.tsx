@@ -51,12 +51,12 @@ export function Navbar() {
               >
                 Parent Login
               </Link>
-              <Link
-                href="/signup"
+              <a
+                href="https://getsafefamily.com/play/reads"
                 className="btn-brand rounded-lg text-sm"
               >
-                Start Free Trial
-              </Link>
+                Kids
+              </a>
             </div>
           ) : (
             <>

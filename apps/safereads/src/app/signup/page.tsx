@@ -15,7 +15,9 @@ import { useAuth } from "@/contexts/AuthContext";
  * If user is already authenticated, redirects to onboarding instead.
  */
 
-const CENTRAL_SIGNUP_URL = "https://getsafefamily.com/signup?app=safereads";
+// SafeReads no longer takes new families (2026-11-25). A signed-out visitor
+// goes to the Safe Family home page instead of a SafeReads signup.
+const CENTRAL_SIGNUP_URL = "https://getsafefamily.com";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -52,7 +54,7 @@ export default function SignupPage() {
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-cream-2 border-t-accent-600" />
           <p className="text-ink-600">
-            {isLoading ? "Checking account..." : "Redirecting to signup..."}
+            {isLoading ? "Checking account..." : "Redirecting..."}
           </p>
         </div>
 

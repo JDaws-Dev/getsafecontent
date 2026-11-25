@@ -34,9 +34,9 @@ async function fetchShare(shortId: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const share = await fetchShare(id);
-  if (!share) return { title: 'Not found · SafeSpark' };
+  if (!share) return { title: 'Not found' };
   return {
-    title: `${share.title} · SafeSpark`,
+    title: share.title,
     description: `${share.title} — a kid-built project on SafeSpark.`,
   };
 }

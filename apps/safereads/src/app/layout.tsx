@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   // (og/twitter images), so a /reads here would double it.
   metadataBase: new URL("https://getsafefamily.com"),
   title: {
-    default: "SafeReads",
+    default: "SafeReads — book content reviews for Safe Family parents",
     template: "%s — SafeReads",
   },
   description:

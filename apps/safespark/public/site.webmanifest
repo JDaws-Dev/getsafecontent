@@ -9,14 +9,14 @@
   "theme_color": "#a855f7",
   "icons": [
     {
-      "src": "/spark/apple-touch-icon.png",
+      "src": "/spark/apple-icon",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "/spark/favicon.ico",
-      "sizes": "any",
-      "type": "image/x-icon"
+      "src": "/spark/icon",
+      "sizes": "64x64",
+      "type": "image/png"
     }
   ]
 }
