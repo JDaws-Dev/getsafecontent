@@ -55,6 +55,8 @@ export default defineSchema({
     // When this app last handed its local kid profiles up to the hub
     // (POST /family/kids/bootstrap). Unset = never; pull does it once.
     familySyncBootstrappedAt: v.optional(v.number()),
+    // familySync code version that last applied the bundle; a newer version re-applies once.
+    familySyncVersion: v.optional(v.number()),
     // Trial expiration tracking
     trialWarningEmailSent: v.optional(v.boolean()), // Whether trial expiring warning email was sent
   })

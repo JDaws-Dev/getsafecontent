@@ -28,6 +28,9 @@ import { createKidProfileWithDefaults } from "./kidProfiles";
 const CENTRAL_URL =
   process.env.CENTRAL_ACCOUNTS_URL || "https://adamant-crow-705.convex.site";
 const APP = "safetube";
+// Bump when `apply` starts writing something new, so every family re-applies
+// once even though the hub bundle hasn't changed. 2 = kid names follow the hub.
+const FAMILY_SYNC_CODE_VERSION = 2;
 
 // SafeTube's `ageRange` column is a legacy string with no local writer; the
 // only values in the fleet are SafeTunes' buckets, so we use those.
@@ -216,7 +219,10 @@ export const apply = internalMutation({
       .first();
     if (!user) return { applied: false, reason: "no_local_family" as const };
 
-    if (user.familySyncAppliedAt === args.bundle.updatedAt) {
+    if (
+      user.familySyncAppliedAt === args.bundle.updatedAt &&
+      (user.familySyncVersion ?? 1) >= FAMILY_SYNC_CODE_VERSION
+    ) {
       return { applied: false, reason: "up_to_date" as const };
     }
 
@@ -232,6 +238,7 @@ export const apply = internalMutation({
 
     let created = 0;
     let patched = 0;
+    const claimed = new Set<string>();
     for (const kid of args.bundle.kids) {
       const key = normName(kid.name);
       // Exact name first, then any alias the hub says means the same child.
@@ -260,6 +267,21 @@ export const apply = internalMutation({
       }
 
       const patch: Record<string, unknown> = {};
+
+      // Name: the parent sets it on the hub, so the hub's spelling wins (a
+      // profile found by alias, e.g. "Isabella" for hub "Bella", takes the hub
+      // name). Everything else keys on the profile id, not the name. Skip if
+      // another local profile already holds that name, or an earlier hub kid
+      // already matched this profile this pass.
+      const hubName = kid.name.trim();
+      if (hubName && profile.name !== hubName && !claimed.has(profileId)) {
+        const holder = byName.get(normName(hubName));
+        if (!holder || holder._id === profileId) {
+          patch.name = hubName;
+          byName.set(normName(hubName), profile);
+        }
+      }
+      claimed.add(profileId);
 
       if (kid.pinHash !== undefined) {
         const nextPin = kid.pinHash ?? undefined;
@@ -292,7 +314,10 @@ export const apply = internalMutation({
       }
     }
 
-    await ctx.db.patch(user._id, { familySyncAppliedAt: args.bundle.updatedAt });
+    await ctx.db.patch(user._id, {
+      familySyncAppliedAt: args.bundle.updatedAt,
+      familySyncVersion: FAMILY_SYNC_CODE_VERSION,
+    });
     return { applied: true, created, patched, kids: args.bundle.kids.length };
   },
 });

@@ -24,6 +24,9 @@ import { isHashedPin } from "./safeAuth";
 const CENTRAL_URL =
   process.env.CENTRAL_ACCOUNTS_URL || "https://adamant-crow-705.convex.site";
 const APP = "safereads";
+// Bump when `apply` starts writing something new, so every family re-applies
+// once even though the hub bundle hasn't changed. 2 = kid names follow the hub.
+const FAMILY_SYNC_CODE_VERSION = 2;
 
 interface HubKid {
   name: string;
@@ -119,7 +122,10 @@ export const apply = internalMutation({
       .withIndex("by_family_code", (q) => q.eq("familyCode", args.familyCode))
       .first();
     if (!parent) return { applied: false as const, reason: "no_parent" as const };
-    if (parent.familySyncAppliedAt === args.version) {
+    if (
+      parent.familySyncAppliedAt === args.version &&
+      (parent.familySyncVersion ?? 1) >= FAMILY_SYNC_CODE_VERSION
+    ) {
       return { applied: false as const, reason: "unchanged" as const };
     }
 
@@ -131,6 +137,7 @@ export const apply = internalMutation({
 
     let created = 0;
     let patched = 0;
+    const claimed = new Set<string>();
     for (const hubKid of args.kids) {
       const key = normalizeName(hubKid.name);
       if (!key) continue;
@@ -161,6 +168,20 @@ export const apply = internalMutation({
       }
 
       const patch: Record<string, unknown> = {};
+      // Name: the parent sets it on the hub, so the hub's spelling wins (a
+      // profile found by alias, e.g. "Isabella" for hub "Bella", takes the hub
+      // name). Everything else keys on the profile id, not the name. Skip if
+      // another local profile already holds that name, or an earlier hub kid
+      // already matched this profile this pass.
+      const hubName = hubKid.name.trim();
+      if (existing.name !== hubName && !claimed.has(existing._id)) {
+        const holder = byName.get(key);
+        if (!holder || holder._id === existing._id) {
+          patch.name = hubName;
+          byName.set(key, existing);
+        }
+      }
+      claimed.add(existing._id);
       const nextPin = hubKid.pinHash ?? undefined;
       if (existing.pin !== nextPin) patch.pin = nextPin;
       const nextAge = hubKid.age ?? undefined;
@@ -176,7 +197,10 @@ export const apply = internalMutation({
       }
     }
 
-    await ctx.db.patch(parent._id, { familySyncAppliedAt: args.version });
+    await ctx.db.patch(parent._id, {
+      familySyncAppliedAt: args.version,
+      familySyncVersion: FAMILY_SYNC_CODE_VERSION,
+    });
     return { applied: true as const, created, patched };
   },
 });

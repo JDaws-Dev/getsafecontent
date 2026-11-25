@@ -145,7 +145,10 @@ export function FamilyTab() {
                 ) : (
                   <button onClick={() => setPinEditing(k._id)} className="text-sm font-semibold text-navy/70 hover:text-navy">{k.hasPin ? "Change PIN" : "Set a PIN"}</button>
                 )}
-                <button onClick={() => { if (confirm(`Remove ${k.name} from your family? Their history stays, but they'll disappear from every app.`)) run(() => archiveKid({ kidId: k._id })); }} className="text-sm text-red-700/70 hover:text-red-700">Remove</button>
+                <div className="flex items-center gap-4">
+                  <button onClick={() => { const next = prompt(`What should ${k.name} be called in every app?`, k.name)?.trim(); if (next && next !== k.name) run(() => updateKid({ kidId: k._id, name: next })); }} className="text-sm font-semibold text-navy/70 hover:text-navy">Rename</button>
+                  <button onClick={() => { if (confirm(`Remove ${k.name} from your family? Their history stays, but they'll disappear from every app.`)) run(() => archiveKid({ kidId: k._id })); }} className="text-sm text-red-700/70 hover:text-red-700">Remove</button>
+                </div>
               </div>
             </div>
           ))}

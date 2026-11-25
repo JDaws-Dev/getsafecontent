@@ -25,6 +25,9 @@ const CENTRAL_URL =
   process.env.CENTRAL_ACCOUNTS_URL || 'https://adamant-crow-705.convex.site';
 const APP = 'safespark';
 const HUB_TIMEOUT_MS = 6000;
+// Bump when `apply` starts writing something new, so every family re-applies
+// once even though the hub bundle hasn't changed. 2 = kid names follow the hub.
+const FAMILY_SYNC_CODE_VERSION = 2;
 
 /** SafeSpark names its shared key SAFESPARK_ADMIN_KEY; accept either name. */
 function adminKey(): string | undefined {
@@ -204,13 +207,15 @@ export const apply = internalMutation({
     const hubStamp = args.kids.reduce((max, k) => Math.max(max, k.updatedAt), args.updatedAt);
     const everyKidExists = args.kids.every((k) => findLocal(k) !== undefined);
     const appliedAt = parent.familySyncAppliedAt ?? 0;
-    if (appliedAt >= hubStamp && everyKidExists) {
+    const codeCurrent = (parent.familySyncVersion ?? 1) >= FAMILY_SYNC_CODE_VERSION;
+    if (appliedAt >= hubStamp && everyKidExists && codeCurrent) {
       return { applied: false, reason: 'unchanged' as const };
     }
 
     const now = Date.now();
     let created = 0;
     let updated = 0;
+    const claimed = new Set<string>();
 
     for (const kid of args.kids) {
       const name = kid.name.trim();
@@ -244,6 +249,21 @@ export const apply = internalMutation({
       }
 
       const patch: Record<string, unknown> = {};
+      // Name: the parent sets it on the hub, so the hub's spelling wins (a
+      // profile found by alias, e.g. "Isabella" for hub "Bella", takes the hub
+      // name). Everything else keys on the profile id, not the name. Skip if
+      // another local profile already holds that name, or an earlier hub kid
+      // already matched this profile this pass.
+      let renamed = false;
+      if (local.displayName !== name && !claimed.has(local._id)) {
+        const holder = byName.get(nameKey(name));
+        if (!holder || holder._id === local._id) {
+          patch.displayName = name;
+          byName.set(nameKey(name), local);
+          renamed = true;
+        }
+      }
+      claimed.add(local._id);
       if (typeof kid.age === 'number' && local.age !== kid.age) patch.age = kid.age;
       if (color && local.avatarColor !== color) patch.avatarColor = color;
       if ((local.pin ?? null) !== kid.pinHash) patch.pin = kid.pinHash ?? undefined;
@@ -253,13 +273,36 @@ export const apply = internalMutation({
         await ctx.db.patch(local._id, { ...patch, updatedAt: now });
         updated++;
       }
+      if (renamed) {
+        // Alerts, topic requests and share approvals carry a display copy of
+        // the kid's name (all keyed on the profile id); keep them in step.
+        const kidProfileId = local._id;
+        const alerts = await ctx.db
+          .query('safesparkConcernAlerts')
+          .withIndex('by_kid_time', (q) => q.eq('kidProfileId', kidProfileId))
+          .collect();
+        const topics = await ctx.db
+          .query('safesparkTopicRequests')
+          .withIndex('by_kid_time', (q) => q.eq('kidProfileId', kidProfileId))
+          .collect();
+        const shares = await ctx.db
+          .query('safesparkShareApprovals')
+          .withIndex('by_kid_project', (q) => q.eq('kidProfileId', kidProfileId))
+          .collect();
+        for (const row of [...alerts, ...topics, ...shares]) {
+          if (row.kidName !== name) await ctx.db.patch(row._id, { kidName: name });
+        }
+      }
     }
 
     if (isUsableTimezone(args.timezone) && family.timezone !== args.timezone) {
       await ctx.db.patch(family._id, { timezone: args.timezone });
     }
 
-    await ctx.db.patch(parent._id, { familySyncAppliedAt: now });
+    await ctx.db.patch(parent._id, {
+      familySyncAppliedAt: now,
+      familySyncVersion: FAMILY_SYNC_CODE_VERSION,
+    });
     return { applied: true, created, updated };
   },
 });

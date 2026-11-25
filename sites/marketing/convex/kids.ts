@@ -29,6 +29,79 @@ async function requireOwnedKid(ctx: MutationCtx, kidId: Id<"kids">) {
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+/**
+ * A rename on the hub must not lose the child. The apps match their local
+ * profile on the hub name OR any alias (served from kidIdentity.matchKeys), and
+ * shared screen time / quiet-days alerts are keyed on that identity — so the
+ * old name has to stay an alias of the new one.
+ *
+ * - Identity already exists: add the new name as a match key and make it the
+ *   canonical (display) name. The old name stays a key.
+ * - No identity yet (usage was keyed on the bare lowercased name): create one
+ *   holding both names, and move the rows keyed on the old bare name onto the
+ *   new identity key so today's minutes, the daily limit and alert state carry
+ *   over instead of resetting.
+ *
+ * Refuses when the new name already identifies a DIFFERENT child — silently
+ * merging two children's screen time is worse than asking for another name.
+ */
+async function rememberOldName(ctx: MutationCtx, parentUserId: Id<"users">, oldName: string, newName: string) {
+  const parent = await ctx.db.get(parentUserId);
+  const familyCode = parent?.familyCode?.trim().toUpperCase();
+  if (!familyCode) return;
+  const oldKey = oldName.trim().toLowerCase();
+  const newKey = newName.trim().toLowerCase();
+  const identities = await ctx.db.query("kidIdentity").withIndex("by_family", (q) => q.eq("familyCode", familyCode)).collect();
+  const hit = identities.find((r) => r.matchKeys.includes(oldKey) || r.canonicalName.trim().toLowerCase() === oldKey);
+  const clash = identities.find((r) => r._id !== hit?._id && r.matchKeys.includes(newKey));
+  if (clash) throw new Error(`Another child in your family already goes by ${newName.trim()}. Pick a different name.`);
+  const now = Date.now();
+  // Screen time resolves identities by matchKeys only; until the old name is a
+  // key, its rows sit under the bare lowercased name.
+  const bareKeyed = !hit || !hit.matchKeys.includes(oldKey);
+  let identityId: Id<"kidIdentity">;
+  if (hit) {
+    const matchKeys = Array.from(new Set([...hit.matchKeys, oldKey, newKey]));
+    await ctx.db.patch(hit._id, { matchKeys, canonicalName: newName.trim(), updatedAt: now });
+    identityId = hit._id;
+  } else {
+    if (oldKey === newKey) return; // case-only change; the bare-name key is unchanged
+    identityId = await ctx.db.insert("kidIdentity", {
+      familyCode,
+      canonicalName: newName.trim(),
+      matchKeys: [oldKey, newKey],
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+  if (bareKeyed) await rekeyBareName(ctx, familyCode, oldKey, `id:${identityId}`);
+}
+
+/** Move one child's screen-time / quiet-days rows from a bare-name key to an identity key, merging on collision. */
+async function rekeyBareName(ctx: MutationCtx, familyCode: string, fromKey: string, toKey: string) {
+  const limits = await ctx.db.query("kidDailyLimits").withIndex("by_family_kid", (q) => q.eq("familyCode", familyCode).eq("kidName", fromKey)).collect();
+  const targetLimit = await ctx.db.query("kidDailyLimits").withIndex("by_family_kid", (q) => q.eq("familyCode", familyCode).eq("kidName", toKey)).first();
+  for (const row of limits) {
+    if (targetLimit) await ctx.db.delete(row._id); // the identity's own limit wins
+    else await ctx.db.patch(row._id, { kidName: toKey });
+  }
+  const usage = await ctx.db.query("kidUsage").withIndex("by_family_kid_day", (q) => q.eq("familyCode", familyCode).eq("kidName", fromKey)).collect();
+  for (const row of usage) {
+    const target = await ctx.db.query("kidUsage").withIndex("by_family_kid_day", (q) => q.eq("familyCode", familyCode).eq("kidName", toKey).eq("day", row.day)).first();
+    if (!target) { await ctx.db.patch(row._id, { kidName: toKey }); continue; }
+    const byApp: Record<string, number> = { ...(target.byApp ?? {}) };
+    for (const [app, mins] of Object.entries(row.byApp ?? {})) byApp[app] = (byApp[app] ?? 0) + mins;
+    await ctx.db.patch(target._id, { minutes: target.minutes + row.minutes, byApp, updatedAt: Date.now() });
+    await ctx.db.delete(row._id);
+  }
+  const alerts = await ctx.db.query("inactivityAlerts").withIndex("by_family_kid_app", (q) => q.eq("familyCode", familyCode).eq("kidKey", fromKey)).collect();
+  for (const row of alerts) {
+    const target = await ctx.db.query("inactivityAlerts").withIndex("by_family_kid_app", (q) => q.eq("familyCode", familyCode).eq("kidKey", toKey).eq("app", row.app)).first();
+    if (target) await ctx.db.delete(row._id);
+    else await ctx.db.patch(row._id, { kidKey: toKey });
+  }
+}
+
 /** The signed-in parent's active kids, oldest first. */
 export const listMine = query({
   args: {},
@@ -91,11 +164,18 @@ export const update = mutation({
     allowedEndTime: v.optional(v.union(v.string(), v.null())),
   },
   handler: async (ctx, args) => {
-    const { kid } = await requireOwnedKid(ctx, args.kidId);
+    const { parentUserId, kid } = await requireOwnedKid(ctx, args.kidId);
     const patch: Record<string, unknown> = { updatedAt: Date.now() };
     if (args.name !== undefined) {
       const name = args.name.trim();
       if (!name) throw new Error("Give your child a name.");
+      if (name !== kid.name.trim()) {
+        const siblings = await ctx.db.query("kids").withIndex("by_parent", (q) => q.eq("parentUserId", parentUserId)).collect();
+        if (siblings.some((k) => k._id !== kid._id && !k.archived && k.name.trim().toLowerCase() === name.toLowerCase())) {
+          throw new Error(`You already have a child named ${name}.`);
+        }
+        await rememberOldName(ctx, parentUserId, kid.name, name);
+      }
       patch.name = name;
     }
     if (args.age !== undefined) patch.age = args.age;

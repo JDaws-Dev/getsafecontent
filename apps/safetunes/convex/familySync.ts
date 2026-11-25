@@ -27,6 +27,9 @@ const CENTRAL_URL =
   process.env.CENTRAL_ACCOUNTS_URL || "https://adamant-crow-705.convex.site";
 const APP = "safetunes";
 const FETCH_TIMEOUT_MS = 8000;
+// Bump when `apply` starts writing something new, so every family re-applies
+// once even though the hub bundle hasn't changed. 2 = kid names follow the hub.
+const FAMILY_SYNC_CODE_VERSION = 2;
 
 // ───────────────────────── mapping helpers ───────────────────────────────────
 
@@ -219,11 +222,13 @@ export const apply = internalMutation({
       .first();
     if (!parent) return { applied: false, reason: "no_local_parent" as const };
 
-    // Unchanged since last apply → nothing to do.
+    // Unchanged since last apply (by code that already did everything this
+    // code does) → nothing to do.
     if (
       bundle.updatedAt > 0 &&
       parent.familySyncAppliedAt !== undefined &&
-      parent.familySyncAppliedAt === bundle.updatedAt
+      parent.familySyncAppliedAt === bundle.updatedAt &&
+      (parent.familySyncVersion ?? 1) >= FAMILY_SYNC_CODE_VERSION
     ) {
       return { applied: false, reason: "unchanged" as const };
     }
@@ -236,6 +241,7 @@ export const apply = internalMutation({
 
     let created = 0;
     let updated = 0;
+    const claimed = new Set<string>();
 
     for (const kid of bundle.kids) {
       const name = kid.name.trim();
@@ -274,6 +280,20 @@ export const apply = internalMutation({
 
       const patch: Record<string, unknown> = {};
 
+      // Name: the parent sets it on the hub, so the hub's spelling wins (a
+      // profile found by alias, e.g. "Isabella" for hub "Bella", takes the hub
+      // name). Everything else here keys on the profile id, not the name. Skip
+      // if another local profile already holds that name, or an earlier hub kid
+      // already matched this profile this pass.
+      if (existing.name !== name && !claimed.has(existing._id)) {
+        const holder = byName.get(normName(name));
+        if (!holder || holder._id === existing._id) {
+          patch.name = name;
+          byName.set(normName(name), existing);
+        }
+      }
+      claimed.add(existing._id);
+
       // PIN: hub hash wins; null clears. A changed PIN also clears any lockout.
       const nextPin = kid.pinHash ?? undefined;
       if ((existing.pin ?? undefined) !== nextPin) {
@@ -301,6 +321,7 @@ export const apply = internalMutation({
 
     const parentPatch: Record<string, unknown> = {
       familySyncAppliedAt: bundle.updatedAt > 0 ? bundle.updatedAt : Date.now(),
+      familySyncVersion: FAMILY_SYNC_CODE_VERSION,
     };
     if (!parent.timezone && bundle.timezone) parentPatch.timezone = bundle.timezone;
     await ctx.db.patch(parent._id, parentPatch);

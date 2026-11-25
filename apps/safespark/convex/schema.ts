@@ -45,6 +45,8 @@ export default defineSchema({
     // When this app last handed its own kid profiles up to the hub
     // (familySync.pull bootstrap). Once per parent; the hub only fills gaps.
     familySyncBootstrappedAt: v.optional(v.number()),
+    // familySync code version that last applied the bundle; a newer version re-applies once.
+    familySyncVersion: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index('by_clerk_id', ['clerkUserId'])

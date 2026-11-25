@@ -28,6 +28,9 @@ import { isHashedPin } from "./safeAuth";
 const CENTRAL_URL =
   process.env.CENTRAL_ACCOUNTS_URL || "https://adamant-crow-705.convex.site";
 const APP = "safestudy";
+// Bump when `apply` starts writing something new, so every family re-applies
+// once even though the hub bundle hasn't changed. 2 = kid names follow the hub.
+const FAMILY_SYNC_CODE_VERSION = 2;
 
 // ─── Bundle shape (what the hub sends, trimmed to the fields we use) ─────────
 const kidValidator = v.object({
@@ -205,12 +208,19 @@ export const apply = internalMutation({
     // Newest timestamp anywhere in the bundle — the hub's top-level updatedAt
     // may or may not move when a single kid changes, so take the max.
     const latest = Math.max(bundle.updatedAt, ...bundle.kids.map((k) => k.updatedAt));
-    if (user.familySyncAppliedAt !== undefined && latest <= user.familySyncAppliedAt) {
+    if (
+      user.familySyncAppliedAt !== undefined &&
+      latest <= user.familySyncAppliedAt &&
+      (user.familySyncVersion ?? 1) >= FAMILY_SYNC_CODE_VERSION
+    ) {
       return { applied: false, reason: "unchanged" };
     }
 
     // ── Parent-level fields ──
-    const userUpdates: Record<string, any> = { familySyncAppliedAt: latest };
+    const userUpdates: Record<string, any> = {
+      familySyncAppliedAt: latest,
+      familySyncVersion: FAMILY_SYNC_CODE_VERSION,
+    };
     if (bundle.timezone && bundle.timezone !== user.timezone) {
       userUpdates.timezone = bundle.timezone;
     }
@@ -242,6 +252,7 @@ export const apply = internalMutation({
 
     let created = 0;
     let patched = 0;
+    const claimed = new Set<string>();
     for (const kid of bundle.kids) {
       // Match on the hub's name OR any alias — "Bella" here and "Isabella" in
       // another app are one child, and an alias hit must never spawn a second
@@ -276,6 +287,22 @@ export const apply = internalMutation({
       }
 
       const updates: Record<string, any> = {};
+      // Name: the parent sets it on the hub, so the hub's spelling wins (a
+      // profile found by alias, e.g. "Isabella" for hub "Bella", takes the hub
+      // name). Everything else keys on the profile id, not the name. Skip if
+      // another local profile already holds that name, or an earlier hub kid
+      // already matched this profile this pass.
+      const hubName = kid.name.trim();
+      let renamed = false;
+      if (hubName && local.name !== hubName && !claimed.has(local._id)) {
+        const holder = byName.get(nameKey(hubName));
+        if (!holder || holder._id === local._id) {
+          updates.name = hubName;
+          byName.set(nameKey(hubName), local);
+          renamed = true;
+        }
+      }
+      claimed.add(local._id);
       // PIN: the hub's hash replaces whatever we had (plaintext or hash); a
       // null hash means the parent removed the PIN there, so clear it here.
       const nextPin = kid.pinHash ?? undefined;
@@ -302,6 +329,20 @@ export const apply = internalMutation({
       if (Object.keys(updates).length > 0) {
         await ctx.db.patch(local._id, updates);
         patched++;
+      }
+      if (renamed) {
+        // topicRequests carries a display copy of the kid's name (keyed on the
+        // profile id); keep the parent's list in step with the new name.
+        const kidProfileId = local._id;
+        const rows = await ctx.db
+          .query("topicRequests")
+          .withIndex("by_kid", (q) => q.eq("kidProfileId", kidProfileId))
+          .collect();
+        for (const r of rows) {
+          if (r.kidName !== undefined && r.kidName !== hubName) {
+            await ctx.db.patch(r._id, { kidName: hubName });
+          }
+        }
       }
     }
 

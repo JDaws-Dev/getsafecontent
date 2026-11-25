@@ -709,6 +709,17 @@ function ChildDashboard({ onLogout }) {
     kidProfile ? { profileId: kidProfile._id } : 'skip'
   );
 
+  // The session copy of the profile is a snapshot from login. When the parent
+  // renames the child on the Family page (or the hub's name replaces an old
+  // local one), take the live name so the header and the kid pass match.
+  useEffect(() => {
+    const liveName = liveKidProfile?.name;
+    if (!liveName || !kidProfile || liveName === kidProfile.name) return;
+    const next = { ...kidProfile, name: liveName };
+    setKidProfile(next);
+    try { localStorage.setItem('safetunes_kid_profile', JSON.stringify(next)); } catch { /* storage blocked */ }
+  }, [liveKidProfile?.name]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fetch parent user settings (for globalHideArtwork)
   const parentUser = useQuery(
     api.users.getUser,

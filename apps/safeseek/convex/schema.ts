@@ -41,6 +41,8 @@ export default defineSchema({
     // When this app last handed its own kid profiles up to the hub (the hub
     // fills gaps on kids it knows and adopts the rest; it never overwrites).
     familySyncBootstrappedAt: v.optional(v.number()),
+    // familySync code version that last applied the bundle; a newer version re-applies once.
+    familySyncVersion: v.optional(v.number()),
   })
     .index("email", ["email"])
     .index("by_familyCode", ["familyCode"])

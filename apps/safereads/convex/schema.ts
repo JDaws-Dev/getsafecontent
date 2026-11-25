@@ -102,6 +102,8 @@ export default defineSchema({
     familySyncAppliedAt: v.optional(v.number()),
     // When SafeReads last handed its own kids up to the hub (once per app)
     familySyncBootstrappedAt: v.optional(v.number()),
+    // familySync code version that last applied the bundle; a newer version re-applies once.
+    familySyncVersion: v.optional(v.number()),
 
     // Pre-approved books comfort level (controls which classics auto-approve for kids)
     preApprovedLevel: v.optional(v.union(
