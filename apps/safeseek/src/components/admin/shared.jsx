@@ -2,6 +2,9 @@
 // the kid picker, date labels, subject labels. Kept here so the dashboard page
 // and the screens under components/admin agree on what a kid looks like.
 
+import { Users } from 'lucide-react';
+import { isEmbedded, openHubFamily } from '../../lib/embed';
+
 // Color utility - maps profile color names to Tailwind classes
 export const COLOR_MAP = {
   red: { bg: 'bg-red-500', light: 'bg-red-50', text: 'text-red-600' },
@@ -22,7 +25,9 @@ export function getColor(colorName) {
 
 export function KidAvatar({ name, color, size = 'md' }) {
   const initial = (name || '?')[0].toUpperCase();
-  const c = getColor(color);
+  // Colours set on the hub's Family tab arrive as hex ("#F0603A").
+  const hex = typeof color === 'string' && /^#[0-9a-f]{3,8}$/i.test(color) ? color : null;
+  const c = hex ? { bg: '' } : getColor(color);
   const sizeClasses = {
     sm: 'w-8 h-8 text-sm',
     md: 'w-10 h-10 text-base',
@@ -33,6 +38,7 @@ export function KidAvatar({ name, color, size = 'md' }) {
   return (
     <div
       className={`${sizeClasses[size]} ${c.bg} rounded-full flex items-center justify-center text-white font-bold flex-shrink-0`}
+      style={hex ? { backgroundColor: hex } : undefined}
       aria-hidden="true"
     >
       {initial}
@@ -192,8 +198,31 @@ export function Card({ children, className = '' }) {
 }
 
 export const primaryButton =
-  'inline-flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 disabled:bg-accent-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-sm';
+  'inline-flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 disabled:bg-accent-300 disabled:cursor-not-allowed text-white px-4 py-2 min-h-[40px] rounded-xl text-sm font-medium transition shadow-sm';
 export const secondaryButton =
-  'inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition';
+  'inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 px-4 py-2 min-h-[40px] rounded-xl text-sm font-medium transition';
 export const inputClass =
   'w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-500/20 focus:border-accent-400';
+
+/** Label for "go add a kid" buttons: inside the hub, kids are added on its Family tab. */
+export function addKidLabel() {
+  return isEmbedded() ? 'Add kids in Family' : 'Create a kid profile';
+}
+
+/**
+ * One calm line inside the hub dashboard: names, ages, PINs, colours, pause
+ * and requests are set on the hub's Family tab for every app at once.
+ */
+export function OpenFamilyNote({ children, className = '' }) {
+  return (
+    <div className={`flex flex-col sm:flex-row sm:items-center gap-3 justify-between rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm ${className}`}>
+      <p className="text-sm text-gray-600">
+        {children || 'Names, ages, PINs and pausing are set once for every app under Family.'}
+      </p>
+      <button type="button" onClick={openHubFamily} className={`${secondaryButton} flex-shrink-0`}>
+        <Users className="w-4 h-4" aria-hidden="true" />
+        Open Family
+      </button>
+    </div>
+  );
+}

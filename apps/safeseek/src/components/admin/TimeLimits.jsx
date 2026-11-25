@@ -2,28 +2,12 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { KidAvatar } from './shared';
 
 // Check if a value matches a preset (not custom)
 const PRESET_VALUES = new Set([0, 10, 20, 30, 50, 100]);
 function isCustomValue(val) {
   return val !== undefined && val !== null && !PRESET_VALUES.has(val);
-}
-
-// Get Tailwind color class from color name
-function getColorClass(color) {
-  const colors = {
-    red: 'bg-red-500',
-    orange: 'bg-orange-500',
-    yellow: 'bg-yellow-500',
-    green: 'bg-green-500',
-    blue: 'bg-accent-500',
-    purple: 'bg-purple-500',
-    pink: 'bg-pink-500',
-    gray: 'bg-gray-500',
-    cyan: 'bg-cyan-500',
-    teal: 'bg-teal-500',
-  };
-  return colors[color] || 'bg-accent-500';
 }
 
 // Search limit presets (number of searches per day)
@@ -43,7 +27,7 @@ const HOURS = Array.from({ length: 24 }, (_, i) => ({
 }));
 
 // The FAMILY-WIDE limit is measured in minutes (it has to be — it's shared with
-// SafeTunes, SafeTube, SafeReads and SafeSpark, where usage is time, not searches).
+// SafeTunes and SafeTube, where usage is time, not searches).
 const FAMILY_TIME_PRESETS = [
   { value: 30, label: '30 min' },
   { value: 60, label: '1 hour' },
@@ -74,7 +58,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
   const setTimeLimit = useMutation(api.timeLimits.setTimeLimit);
   const deleteTimeLimit = useMutation(api.timeLimits.deleteTimeLimit);
 
-  // FAMILY-WIDE limit (one allowance shared across all five Safe Family apps).
+  // FAMILY-WIDE limit (one allowance shared across SafeTunes, SafeTube and SafeStudy).
   // Parents pick EITHER this OR the per-app search limit below — never both —
   // so turning this on disables the per-app controls rather than stacking.
   const getFamilyLimit = useAction(api.sharedScreenTime.getFamilyLimit);
@@ -236,17 +220,13 @@ export default function TimeLimits({ userId, defaultKidId }) {
           <button
             key={kid.kidProfileId}
             onClick={() => setSelectedKid(kid.kidProfileId)}
-            className={`flex flex-col items-center p-4 rounded-xl border-2 transition ${
+            className={`flex flex-col items-center p-3 sm:p-4 min-w-0 rounded-xl border-2 transition ${
               selectedKid === kid.kidProfileId
                 ? 'border-accent-500 bg-accent-50'
                 : 'border-gray-200 bg-white hover:border-gray-300'
             }`}
           >
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-xl ${getColorClass(kid.kidColor)}`}
-            >
-              {kid.kidIcon}
-            </div>
+            <KidAvatar name={kid.kidName} color={kid.kidColor} size="lg" />
             <span className="mt-2 text-sm font-medium text-gray-900">{kid.kidName}</span>
             <span className="text-xs text-gray-500 mt-1">
               {kid.limit
@@ -267,7 +247,7 @@ export default function TimeLimits({ userId, defaultKidId }) {
 
       {/* Settings panel */}
       {selectedKid && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
           <h3 className="font-semibold text-gray-900 mb-4">
             Settings for {timeLimitsData.find(k => k.kidProfileId === selectedKid)?.kidName}
           </h3>

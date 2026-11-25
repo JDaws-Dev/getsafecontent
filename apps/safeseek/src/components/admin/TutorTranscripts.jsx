@@ -12,7 +12,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import ConfirmModal from '../common/ConfirmModal';
 import { MessageSquare, ChevronDown, ChevronUp, StickyNote, Trash2, Users, Plus, LogIn, RefreshCw } from 'lucide-react';
 import {
-  KidPicker, formatDateTime, formatTimestamp, formatTime, plural, EmptyState, Card, primaryButton, secondaryButton,
+  KidPicker, formatDateTime, formatTimestamp, formatTime, plural, EmptyState, Card, primaryButton, secondaryButton, addKidLabel,
 } from './shared';
 
 // Transcripts and the tutor's note are the most private things SafeStudy
@@ -247,7 +247,7 @@ export default function TutorTranscripts({ kidProfiles, selectedKidId, onSelectK
           action={
             <button type="button" onClick={() => onNavigate?.('profiles')} className={primaryButton}>
               <Plus className="w-4 h-4" aria-hidden="true" />
-              Create a kid profile
+              {addKidLabel()}
             </button>
           }
         >

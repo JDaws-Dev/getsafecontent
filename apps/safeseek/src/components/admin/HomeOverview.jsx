@@ -345,13 +345,13 @@ export default function HomeOverview({
                   <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-xs font-bold text-gray-400">2</span>
                   </div>
-                  <span className="text-sm text-gray-900 font-medium">Create a kid profile</span>
+                  <span className="text-sm text-gray-900 font-medium">{isEmbedded() ? 'Add your kids under Family' : 'Create a kid profile'}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-xs font-bold text-gray-400">3</span>
                   </div>
-                  <span className="text-sm text-gray-600">Give them a subject or two under Family</span>
+                  <span className="text-sm text-gray-600">Give them a subject or two under Lessons</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -362,7 +362,7 @@ export default function HomeOverview({
               </div>
               <button type="button" onClick={() => onNavigate('profiles')} className={`mt-5 ${primaryButton}`}>
                 <Plus className="w-4 h-4" aria-hidden="true" />
-                Create First Profile
+                {isEmbedded() ? 'Add kids in Family' : 'Create First Profile'}
               </button>
             </div>
           </div>

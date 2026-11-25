@@ -10,7 +10,7 @@ import { api } from '../../../convex/_generated/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { Printer, Flame, BookOpen, Layers, MessageSquare, Search, CalendarDays, Users, Plus } from 'lucide-react';
 import {
-  KidPicker, subjectLabel, formatDayKey, formatDayRange, plural, EmptyState, Card, primaryButton,
+  KidPicker, subjectLabel, formatDayKey, formatDayRange, plural, EmptyState, Card, primaryButton, addKidLabel,
 } from './shared';
 import PrintableRecords from './PrintableRecords';
 
@@ -162,7 +162,7 @@ export default function WeekView({ kidProfiles, selectedKidId, onSelectKid, onNa
           action={
             <button type="button" onClick={() => onNavigate?.('profiles')} className={primaryButton}>
               <Plus className="w-4 h-4" aria-hidden="true" />
-              Create a kid profile
+              {addKidLabel()}
             </button>
           }
         >
@@ -237,7 +237,7 @@ export default function WeekView({ kidProfiles, selectedKidId, onSelectKid, onNa
                       onClick={() => onNavigate?.('family')}
                       className="text-accent-600 hover:text-accent-700 font-medium underline-offset-2 hover:underline"
                     >
-                      Set up subjects under Family.
+                      Set up subjects under Lessons.
                     </button>
                   </p>
                 ) : (

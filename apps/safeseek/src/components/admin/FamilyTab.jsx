@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import {
   KidPicker, SUBJECTS, WEEKDAYS, subjectLabel, plural, EmptyState, Card,
-  primaryButton, secondaryButton, inputClass,
+  primaryButton, secondaryButton, inputClass, addKidLabel,
 } from './shared';
 
 const SUBJECT_TONES = {
@@ -469,7 +469,7 @@ export default function FamilyTab({ kidProfiles, selectedKidId, onSelectKid, onN
           action={
             <button type="button" onClick={() => onNavigate?.('profiles')} className={primaryButton}>
               <Plus className="w-4 h-4" />
-              Create a kid profile
+              {addKidLabel()}
             </button>
           }
         >

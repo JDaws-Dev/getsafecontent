@@ -3,6 +3,8 @@ import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { X, Save, ChevronDown, ChevronUp, Shield, BookOpen, MessageSquare, Lock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { isEmbedded } from '../../lib/embed';
+import { OpenFamilyNote } from './shared';
 
 const COLORS = [
   { name: 'red', class: 'bg-red-500' },
@@ -64,6 +66,10 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(!!profile);
+  // Inside the hub dashboard the hub owns name, age, colour, PIN and topic
+  // requests (family sync overwrites them here), so this editor only shows
+  // SafeStudy's own search settings for an existing kid.
+  const hubOwned = isEmbedded() && !!profile;
 
   const { token } = useAuth();
   const createProfile = useMutation(api.kidProfiles.createProfile);
@@ -130,17 +136,19 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!name.trim()) { setError('Please enter a name.'); return; }
-    if (pinEnabled && pin.length !== 4) { setError('PIN must be exactly 4 digits.'); return; }
+    if (!hubOwned) {
+      if (!name.trim()) { setError('Please enter a name.'); return; }
+      // An existing PIN stays as it is unless the parent types a new one.
+      const keepingPin = pinEnabled && profile?.hasPin && pin.length === 0;
+      if (pinEnabled && !keepingPin && pin.length !== 4) { setError('PIN must be exactly 4 digits.'); return; }
+    }
 
     setSaving(true);
     try {
       const allowedArray = allowedTopics.split(',').map((t) => t.trim()).filter(Boolean);
 
-      const data = {
-        name: name.trim(),
-        color,
-        ageRange: { min: age, max: age },
+      // SafeStudy's own settings: always ours to save.
+      const searchSettings = {
         contentStrictness: getStrictnessFromAge(age),
         blockedTopics,
         allowedTopics: allowedArray,
@@ -149,8 +157,20 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
         accessibilityNeeds,
         allowImageSearch,
         allowFollowUp: true,
-        pin: pinEnabled && pin.length === 4 ? pin : '',
       };
+      const data = hubOwned
+        ? searchSettings
+        : {
+            ...searchSettings,
+            name: name.trim(),
+            color,
+            ageRange: { min: age, max: age },
+            allowTopicRequests,
+            // Untouched existing PIN: leave it out so it is kept.
+            ...(pinEnabled && profile?.hasPin && pin.length === 0
+              ? {}
+              : { pin: pinEnabled && pin.length === 4 ? pin : '' }),
+          };
 
       if (profile) {
         await updateProfile({ kidProfileId: profile._id, ...data, userToken: token ?? undefined });
@@ -168,18 +188,18 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 rounded-t-2xl flex items-center justify-between z-10">
           <h2 className="text-lg font-bold text-gray-900">
-            {profile ? `Edit ${profile.name}` : 'Add Kid'}
+            {hubOwned ? `${profile.name}\u2019s search settings` : profile ? `Edit ${profile.name}` : 'Add Kid'}
           </h2>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition">
+          <button type="button" onClick={onClose} aria-label="Close" className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">{error}</div>
           )}
@@ -193,6 +213,13 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
             <p className="text-xs text-gray-500">Age {age} · {getStrictnessFromAge(age)} filtering</p>
           </div>
 
+          {hubOwned && (
+            <OpenFamilyNote>
+              {profile.name}&rsquo;s name, age, PIN and requests are set under Family. These are SafeStudy&rsquo;s search settings.
+            </OpenFamilyNote>
+          )}
+
+          {!hubOwned && (<>
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -231,7 +258,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
           {/* Color */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {COLORS.map((c) => (
                 <button
                   key={c.name}
@@ -242,6 +269,8 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
               ))}
             </div>
           </div>
+
+          </>)}
 
           {/* Advanced toggle */}
           <button
@@ -310,8 +339,8 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                 </div>
               </div>
 
-              {/* Topic Request Toggle */}
-              <div className="flex items-center justify-between px-1">
+              {/* Topic Request Toggle (hub-owned inside the hub dashboard) */}
+              {!hubOwned && (<div className="flex items-center justify-between px-1">
                 <div>
                   <p className="text-sm font-medium text-gray-900">Allow topic requests</p>
                   <p className="text-xs text-gray-500">Kids can ask permission for blocked topics</p>
@@ -323,7 +352,7 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${allowTopicRequests ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
-              </div>
+              </div>)}
 
               {/* Allowed Topics */}
               <div>
@@ -400,8 +429,8 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                 )}
               </div>
 
-              {/* Kid PIN */}
-              <div>
+              {/* Kid PIN (hub-owned inside the hub dashboard) */}
+              {!hubOwned && (<div>
                 <div className="flex items-center gap-2 mb-2">
                   <Lock className="w-4 h-4 text-amber-500" />
                   <label className="text-sm font-medium text-gray-700">Kid PIN</label>
@@ -432,7 +461,10 @@ export default function KidProfileEditor({ profile, userId, onClose, onSave }) {
                 {pinEnabled && pin.length > 0 && pin.length < 4 && (
                   <p className="text-xs text-amber-600 mt-1">PIN must be 4 digits</p>
                 )}
-              </div>
+                {pinEnabled && profile?.hasPin && pin.length === 0 && (
+                  <p className="text-xs text-gray-500 mt-1">Leave blank to keep the current PIN.</p>
+                )}
+              </div>)}
             </div>
           )}
 

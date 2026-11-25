@@ -39,3 +39,11 @@ export function redirectKidToHubPlay(familyCode) {
   window.location.replace(fc ? `${HUB_PLAY}?fc=${encodeURIComponent(fc)}` : '/play');
   return true;
 }
+
+// The hub owns kids (name, age, colour, PIN, pause, requests) and the account
+// (billing, family code, alert emails). Inside the hub's dashboard those are
+// edited there, never here: family sync overwrites any local change.
+export const HUB_FAMILY = '/dashboard/family';
+export const HUB_ACCOUNT_PAGE = '/account';
+export function openHubFamily() { topNavigate(HUB_FAMILY); }
+export function openHubAccount() { topNavigate(HUB_ACCOUNT_PAGE); }

@@ -95,7 +95,7 @@ function AlertCard({ alert, kid, onAcknowledge, busy }) {
                 type="button"
                 onClick={() => onAcknowledge(alert._id)}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-50 transition"
+                className="inline-flex items-center gap-1.5 px-4 min-h-[40px] text-sm font-medium rounded-full bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-50 transition"
               >
                 <Check className="w-3.5 h-3.5" aria-hidden="true" />
                 Mark as seen

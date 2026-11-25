@@ -1,4 +1,4 @@
-import { isEmbedded, shouldRedirectToHubDashboard, topNavigate, HUB_DASHBOARD } from '../lib/embed';
+import { isEmbedded, shouldRedirectToHubDashboard, topNavigate, HUB_DASHBOARD, HUB_FAMILY, HUB_ACCOUNT_PAGE, openHubFamily } from '../lib/embed';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useAction } from 'convex/react';
@@ -13,7 +13,7 @@ import FamilyTab from '../components/admin/FamilyTab';
 import WeekView from '../components/admin/WeekView';
 import TutorTranscripts from '../components/admin/TutorTranscripts';
 import ConcernAlerts from '../components/admin/ConcernAlerts';
-import { KidAvatar, formatTimestamp } from '../components/admin/shared';
+import { KidAvatar, formatTimestamp, OpenFamilyNote } from '../components/admin/shared';
 import { SafeFamilyParentSwitcher } from '../components/SafeFamilySwitcher';
 import Toast from '../components/common/Toast';
 import ConfirmModal from '../components/common/ConfirmModal';
@@ -29,7 +29,7 @@ import {
 // behind "More" on a phone and all show on desktop.
 const TABS = [
   { id: 'home', label: 'Home', icon: Home },
-  { id: 'family', label: 'Family', icon: BookOpen },
+  { id: 'family', label: 'Lessons', icon: BookOpen },
   { id: 'week', label: 'This Week', icon: CalendarDays },
   { id: 'tutor', label: 'Tutor', icon: GraduationCap },
   { id: 'alerts', label: 'Alerts', icon: Bell },
@@ -379,12 +379,12 @@ function ActivityTab({ searchHistory, blockedSearches, kidProfiles, initialShowB
 }
 
 // --- Profiles Tab ---
-function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editingProfile, setEditingProfile, onDeleteProfile, showToast }) {
+function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editingProfile, setEditingProfile, onDeleteProfile, showToast, embedded }) {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">Kid Profiles</h2>
-        <button
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-xl font-bold text-gray-900">{embedded ? 'Search filters' : 'Kid Profiles'}</h2>
+        {!embedded && (<button
           onClick={() => {
             setEditingProfile(null);
             setShowEditor(true);
@@ -393,25 +393,35 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
         >
           <Plus className="w-4 h-4" />
           Add Profile
-        </button>
+        </button>)}
       </div>
+
+      {/* Inside the hub, kids themselves are added, renamed and removed under Family. */}
+      {embedded && kidProfiles && kidProfiles.length > 0 && (
+        <OpenFamilyNote>
+          What each kid can search for is set here. Adding, renaming or removing a kid, and PINs, happen under Family.
+        </OpenFamilyNote>
+      )}
 
       {!kidProfiles || kidProfiles.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm">
           <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No profiles yet</h3>
-          <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-            Create a profile for each of your kids to customize their search experience.
+          <p className="text-gray-500 mb-6 max-w-sm mx-auto px-4">
+            {embedded
+              ? 'Add your kids under Family. They show up here within a minute, ready for their search settings.'
+              : 'Create a profile for each of your kids to customize their search experience.'}
           </p>
           <button
             onClick={() => {
+              if (embedded) { openHubFamily(); return; }
               setEditingProfile(null);
               setShowEditor(true);
             }}
             className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-2.5 rounded-xl font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            Create First Profile
+            {embedded ? 'Add kids in Family' : 'Create First Profile'}
           </button>
         </div>
       ) : (
@@ -447,18 +457,20 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
                         setEditingProfile(profile);
                         setShowEditor(true);
                       }}
-                      className="p-2 text-gray-400 hover:text-accent-600 hover:bg-accent-50 rounded-lg transition"
-                      title="Edit profile"
+                      className="p-2.5 text-gray-400 hover:text-accent-600 hover:bg-accent-50 rounded-lg transition"
+                      title={embedded ? 'Search settings' : 'Edit profile'}
+                      aria-label={embedded ? `${profile.name}'s search settings` : `Edit ${profile.name}`}
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
-                    <button
+                    {!embedded && (<button
                       onClick={() => onDeleteProfile(profile._id)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                      className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                       title="Delete profile"
+                      aria-label={`Delete ${profile.name}`}
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </button>)}
                   </div>
                 </div>
 
@@ -539,7 +551,7 @@ function ProfilesTab({ kidProfiles, userData, showEditor, setShowEditor, editing
           onSave={() => {
             setShowEditor(false);
             setEditingProfile(null);
-            showToast(editingProfile ? 'Profile updated!' : 'Profile created!');
+            showToast(editingProfile ? 'Saved.' : 'Profile created.');
           }}
         />
       )}
@@ -558,8 +570,63 @@ function SettingsTab({ user, userData, onLogout, onCopyCode, codeCopied, embedde
   const openAccountPage = (e) => {
     if (!embedded) return;
     e.preventDefault();
-    topNavigate(HUB_ACCOUNT);
+    topNavigate(HUB_ACCOUNT_PAGE);
   };
+
+  // Inside the hub dashboard: account, billing, family code and deleting the
+  // account all live on the hub (its header and Account page), so this tab is
+  // only SafeStudy's own settings plus one way to the account page.
+  if (embedded) {
+    return (
+      <div className="space-y-6 max-w-2xl">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+          <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-gray-400" aria-hidden="true" />
+            Time limits
+          </h3>
+          <p className="text-sm text-gray-500 mb-3">
+            Daily searches and allowed hours in SafeStudy, or one daily limit shared with SafeTunes and SafeTube.
+          </p>
+          {userData?._id && <TimeLimits userId={userData._id} />}
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+              <UserCog className="w-5 h-5 text-gray-400" aria-hidden="true" />
+              Account and billing
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">Your email, plan and billing are on your Account page.</p>
+          </div>
+          <a
+            href={HUB_ACCOUNT_PAGE}
+            onClick={openAccountPage}
+            className="inline-flex items-center justify-center gap-2 min-h-[40px] px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium transition flex-shrink-0"
+          >
+            Open Account
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
+          </a>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+          <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <Mail className="w-5 h-5 text-gray-400" aria-hidden="true" />
+            Help
+          </h3>
+          <div className="flex flex-col gap-1">
+            <a href="mailto:jeremiah@getsafefamily.com" className="flex items-center gap-2 min-h-[40px] text-sm text-accent-600 hover:text-accent-700 font-medium">
+              <Mail className="w-4 h-4" aria-hidden="true" />
+              Email support
+            </a>
+            <a href="mailto:safety@getsafefamily.com" className="flex items-center gap-2 min-h-[40px] text-sm text-accent-600 hover:text-accent-700 font-medium">
+              <ShieldAlert className="w-4 h-4" aria-hidden="true" />
+              Report a safety issue
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -828,8 +895,8 @@ function RequestsTab({ allRequests, pendingRequests, onApprove, onDeny }) {
                     <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">Wants to search: <strong>"{req.query}"</strong></p>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
-                    <button onClick={() => onApprove(req._id)} className="px-3 py-1.5 bg-green-100 text-green-700 text-xs font-medium rounded-lg hover:bg-green-200 transition">Approve</button>
-                    <button onClick={() => onDeny(req._id)} className="px-3 py-1.5 bg-red-100 text-red-700 text-xs font-medium rounded-lg hover:bg-red-200 transition">Deny</button>
+                    <button onClick={() => onApprove(req._id)} className="px-3 py-1.5 min-h-[40px] bg-green-100 text-green-700 text-xs font-medium rounded-lg hover:bg-green-200 transition">Approve</button>
+                    <button onClick={() => onDeny(req._id)} className="px-3 py-1.5 min-h-[40px] bg-red-100 text-red-700 text-xs font-medium rounded-lg hover:bg-red-200 transition">Deny</button>
                   </div>
                 </div>
               </div>
@@ -1048,6 +1115,20 @@ export default function AdminDashboard() {
     }
   };
 
+  // Inside the hub, "add a kid" buttons go to the hub's Family tab.
+  const navigateTab = (tab) => {
+    if (embedded && tab === 'profiles' && (!kidProfiles || kidProfiles.length === 0)) {
+      topNavigate(HUB_FAMILY);
+      return;
+    }
+    setActiveTab(tab);
+  };
+  // Inside the hub the per-kid search settings tab is just "Filters": the kids
+  // themselves live under the hub's Family tab.
+  const tabs = embedded
+    ? TABS.map((t) => (t.id === 'profiles' ? { ...t, label: 'Filters' } : t))
+    : TABS;
+
   const handleDeleteProfile = (profileId) => {
     setConfirmDelete(profileId);
   };
@@ -1095,8 +1176,10 @@ export default function AdminDashboard() {
     );
   }
 
-  // Show onboarding wizard for first-time users (database-backed, not localStorage)
-  const showOnboarding = userData && kidProfiles && kidProfiles.length === 0
+  // Show onboarding wizard for first-time users (database-backed, not localStorage).
+  // Never inside the hub dashboard: there kids come from the hub's Family tab
+  // (family sync), so the empty states point there instead.
+  const showOnboarding = !embedded && userData && kidProfiles && kidProfiles.length === 0
     && userData.onboardingComplete !== true;
 
   if (showOnboarding) {
@@ -1119,7 +1202,9 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-brand-cream">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
+      {/* Embedded on a phone the header would be empty (no top bar, and the
+          tabs are the bottom bar), so it is not drawn at all. */}
+      <header className={`bg-white border-b border-gray-200 shadow-sm ${embedded ? 'hidden md:block' : ''}`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           {/* Top Bar — hidden when embedded in the hub dashboard (the shell has one) */}
           {!embedded && (<div className="flex items-center justify-between py-3.5">
@@ -1194,7 +1279,7 @@ export default function AdminDashboard() {
               next to the label (a badge above the bar is clipped by the hub's
               iframe edge). */}
           <nav className="hidden md:flex -mb-px overflow-x-auto [scrollbar-width:none]" aria-label="Dashboard sections">
-            {TABS.map((tab) => {
+            {tabs.map((tab) => {
               const Icon = tab.icon;
               const badge = tabBadge(tab.id);
               const active = activeTab === tab.id;
@@ -1294,10 +1379,10 @@ export default function AdminDashboard() {
           <div
             role="menu"
             aria-label="More sections"
-            className="absolute bottom-16 left-4 right-4 bg-white rounded-2xl shadow-xl py-2 border border-gray-100"
+            className="absolute bottom-16 left-4 right-4 max-h-[calc(100dvh-6rem)] overflow-y-auto bg-white rounded-2xl shadow-xl py-2 border border-gray-100"
             onClick={(e) => e.stopPropagation()}
           >
-            {TABS.slice(MOBILE_PRIMARY).map((tab) => {
+            {tabs.slice(MOBILE_PRIMARY).map((tab) => {
               const Icon = tab.icon;
               const badge = tabBadge(tab.id);
               const isActive = activeTab === tab.id;
@@ -1331,7 +1416,7 @@ export default function AdminDashboard() {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50" aria-label="Dashboard sections">
         <div className="grid grid-cols-5 safe-area-inset-bottom">
-          {TABS.slice(0, MOBILE_PRIMARY).map((tab) => {
+          {tabs.slice(0, MOBILE_PRIMARY).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             const badge = tabBadge(tab.id);
@@ -1361,8 +1446,8 @@ export default function AdminDashboard() {
             );
           })}
           {(() => {
-            const moreActive = TABS.slice(MOBILE_PRIMARY).some((t) => t.id === activeTab);
-            const moreBadge = TABS.slice(MOBILE_PRIMARY).reduce((sum, t) => sum + tabBadge(t.id), 0);
+            const moreActive = tabs.slice(MOBILE_PRIMARY).some((t) => t.id === activeTab);
+            const moreBadge = tabs.slice(MOBILE_PRIMARY).reduce((sum, t) => sum + tabBadge(t.id), 0);
             return (
               <button
                 type="button"
@@ -1400,7 +1485,7 @@ export default function AdminDashboard() {
             kidProfiles={kidProfiles}
             overview={familyOverview}
             unacknowledgedAlerts={unacknowledgedAlerts}
-            onNavigate={setActiveTab}
+            onNavigate={navigateTab}
             onSelectKid={setSelectedKidId}
             onCopyCode={copyFamilyCode}
             codeCopied={copiedCode}
@@ -1413,7 +1498,7 @@ export default function AdminDashboard() {
             kidProfiles={kidProfiles}
             selectedKidId={selectedKidId}
             onSelectKid={setSelectedKidId}
-            onNavigate={setActiveTab}
+            onNavigate={navigateTab}
             showToast={showToast}
           />
         )}
@@ -1424,7 +1509,7 @@ export default function AdminDashboard() {
             kidProfiles={kidProfiles}
             selectedKidId={selectedKidId}
             onSelectKid={setSelectedKidId}
-            onNavigate={setActiveTab}
+            onNavigate={navigateTab}
           />
         )}
 
@@ -1434,7 +1519,7 @@ export default function AdminDashboard() {
             kidProfiles={kidProfiles}
             selectedKidId={selectedKidId}
             onSelectKid={setSelectedKidId}
-            onNavigate={setActiveTab}
+            onNavigate={navigateTab}
             showToast={showToast}
           />
         )}
@@ -1494,6 +1579,7 @@ export default function AdminDashboard() {
             setEditingProfile={setEditingProfile}
             onDeleteProfile={handleDeleteProfile}
             showToast={showToast}
+            embedded={embedded}
           />
         )}
 
