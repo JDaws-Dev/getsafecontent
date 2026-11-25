@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { KID_APPS, kidAppSlug } from "@/lib/kidApps";
 
 /**
@@ -38,6 +38,16 @@ export async function generateMetadata({
         } : {}),
   };
 }
+
+// Edge to edge on an iPhone home-screen app so the door can pad its own safe
+// areas (page.tsx); without cover, iOS leaves the app's bottom controls under
+// the home bar. themeColor matches the door's white header.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#FFFFFF",
+};
 
 export default function PlayLayout({ children }: { children: React.ReactNode }) {
   return children;
