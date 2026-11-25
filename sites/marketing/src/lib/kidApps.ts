@@ -1,3 +1,5 @@
+import { isRetiredApp } from "./retiredApps";
+
 /** Kid-door app names and home-screen icons, shared by the /play layout and
  *  the per-app web-app manifest. Apps without their own icon use the Safe
  *  Family umbrella. */
@@ -24,7 +26,9 @@ export const KID_APPS: Record<string, { name: string; icon192?: string; icon512?
   spark: { name: "SafeSpark" },
 };
 
+// Retired apps (src/lib/retiredApps.ts) count as unknown: their kid-door
+// manifest and page titles fall back to plain Safe Family.
 export function kidAppSlug(app?: string[]): string | null {
   const s = app?.[0];
-  return s && Object.prototype.hasOwnProperty.call(KID_APPS, s) ? s : null;
+  return s && Object.prototype.hasOwnProperty.call(KID_APPS, s) && !isRetiredApp(s) ? s : null;
 }

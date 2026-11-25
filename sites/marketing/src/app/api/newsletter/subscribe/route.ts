@@ -165,7 +165,6 @@ function getWelcomeEmailHtml(firstName: string | null): string {
     <ul style="color: #4b5563; font-size: 16px; line-height: 1.8; padding-left: 20px;">
       <li><strong>SafeTunes</strong> - Only approved music on Apple Music</li>
       <li><strong>SafeTube</strong> - Only approved YouTube channels</li>
-      <li><strong>SafeReads</strong> - AI book reviews before they read</li>
       <li><strong>SafeStudy</strong> - A kid-safe search engine with a built-in tutor</li>
     </ul>
 

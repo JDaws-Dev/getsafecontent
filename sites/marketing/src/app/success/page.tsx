@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Shield, ChevronRight, Music, Play, BookOpen, Search, Sparkles, Loader2 } from "lucide-react";
 
+import { isRetiredApp } from "@/lib/retiredApps";
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy";
 
 interface SessionData {
@@ -63,10 +64,10 @@ function SuccessContent() {
         const data = await response.json();
         setSessionData({
           // The unified plan still carries SafeReads/SafeSpark in its metadata
-          // (existing families keep them), but new families are welcomed to the
-          // three apps we offer.
+          // (the entitlement is kept), but retired apps are never shown
+          // (src/lib/retiredApps.ts).
           apps: (data.apps || ["safetunes", "safetube", "safestudy"]).filter(
-            (a: string) => a !== "safereads" && a !== "safespark"
+            (a: string) => !isRetiredApp(a)
           ),
         });
       } catch (err) {

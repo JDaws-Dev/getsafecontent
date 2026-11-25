@@ -154,8 +154,7 @@ export default function KeepingKidsSafeGuide() {
             </h2>
             <p className="text-white/80 mb-6 max-w-xl mx-auto">
               Safe Family gives you app-level control over the music your kids
-              hear, the videos they watch, and helps you vet books before they
-              read them.
+              hear, the videos they watch, and what they search for.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a

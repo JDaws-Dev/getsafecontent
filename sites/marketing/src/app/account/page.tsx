@@ -35,6 +35,8 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { isRetiredApp } from "@/lib/retiredApps";
+
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 
 const APP_INFO: Record<AppId, { name: string; domain: string; icon: React.ReactNode; color: string }> = {
@@ -94,9 +96,9 @@ function AccountPageContent() {
 
   // Check for upgrade request from query params
   const upgradeApp = searchParams.get("upgrade") as AppId | null;
-  // SafeReads and SafeSpark are no longer offered, so ?upgrade= can't sell them.
+  // Retired apps are not offered, so ?upgrade= can't sell them.
   const isValidUpgradeApp =
-    upgradeApp && Object.keys(APP_INFO).includes(upgradeApp) && upgradeApp !== "safereads" && upgradeApp !== "safespark";
+    upgradeApp && Object.keys(APP_INFO).includes(upgradeApp) && !isRetiredApp(upgradeApp);
 
   // Mutations
   const updateAccount = useMutation(api.accounts.updateAccount);
@@ -268,7 +270,9 @@ function AccountPageContent() {
       })
     : null;
 
-  const entitledApps = (currentUser.entitledApps ?? []) as AppId[];
+  // Retired apps (src/lib/retiredApps.ts) are left off this page entirely;
+  // the entitlement itself is untouched.
+  const entitledApps = ((currentUser.entitledApps ?? []) as AppId[]).filter((a) => !isRetiredApp(a));
   const isLifetime = currentUser.subscriptionStatus === "lifetime";
   const isActive = currentUser.subscriptionStatus === "active";
   const isTrial = currentUser.subscriptionStatus === "trial";

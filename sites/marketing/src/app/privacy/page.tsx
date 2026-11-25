@@ -16,13 +16,13 @@ export default function PrivacyPage() {
           <h1 className="text-4xl font-bold text-navy mb-8">Privacy Policy</h1>
           <div className="prose prose-lg prose-navy max-w-none">
             <p className="text-navy/70 mb-6">
-              Last updated: February 10, 2026
+              Last updated: November 25, 2026
             </p>
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-navy mb-4">1. Introduction</h2>
               <p className="text-navy/80 mb-4">
-                Safe Family (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) operates the SafeTunes, SafeTube, and SafeReads
+                Safe Family (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) operates the SafeTunes, SafeTube, and SafeStudy
                 applications (collectively, the &quot;Service&quot;). This Privacy Policy explains how we collect,
                 use, disclose, and safeguard your information when you use our Service.
               </p>
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
               <ul className="list-disc pl-6 text-navy/80 mb-4 space-y-2">
                 <li>Approved songs, albums, and artists (SafeTunes)</li>
                 <li>Approved YouTube channels and videos (SafeTube)</li>
-                <li>Approved books and authors (SafeReads)</li>
+                <li>Approved books and authors</li>
               </ul>
 
               <h3 className="text-xl font-medium text-navy mb-3">Payment Information</h3>

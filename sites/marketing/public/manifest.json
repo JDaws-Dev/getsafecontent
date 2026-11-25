@@ -1,7 +1,7 @@
 {
   "name": "Safe Family",
   "short_name": "Safe Family",
-  "description": "Three apps that let you approve every song, video, and book before your kids see it.",
+  "description": "Three apps that let you approve every song, video, and search before your kids see it.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FAF8F5",

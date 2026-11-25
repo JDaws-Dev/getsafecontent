@@ -223,7 +223,7 @@ export function FamilyTab() {
                 placeholder="you@example.com, partner@example.com"
               />
             </label>
-            <div className="text-navy/60 mt-1">Comma-separated. Used by SafeStudy and SafeSpark when a search or chat raises a concern, and for quiet-days alerts.</div>
+            <div className="text-navy/60 mt-1">Comma-separated. Used by SafeStudy when a search or chat raises a concern, and for quiet-days alerts.</div>
           </div>
         </div>
       </section>

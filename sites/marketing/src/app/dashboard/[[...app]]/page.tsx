@@ -20,17 +20,18 @@ import { api } from "../../../../convex/_generated/api";
 import { clearAppSession } from "@/lib/appSession";
 import { FamilyTab } from "@/components/dashboard/FamilyTab";
 import { AppTile, UmbrellaMark } from "@/components/brand/Brand";
+import { isRetiredApp } from "@/lib/retiredApps";
 
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 
-// SafeReads and SafeSpark are no longer offered to new families (2026-11-25).
-// They are `retired`: a family that already has one still gets its tab and its
-// real parent screens (entitlement decides, as for every app), but nobody is
-// shown a teaser for them or nudged to "add" them.
-const APPS: { id: AppId; slug: string; name: string; tagline: string; color: string; adminPath: string; comingSoon?: boolean; retired?: boolean; blurb?: string }[] = [
+// Every app the dashboard knows. Apps listed in src/lib/retiredApps.ts
+// (SafeReads, SafeSpark since 2026-11-25) are dropped below for everyone,
+// whatever the family is entitled to: no tab, no card, no link. Their entries
+// stay here so taking an app off the retired list brings its tab straight back.
+const ALL_APPS: { id: AppId; slug: string; name: string; tagline: string; color: string; adminPath: string; comingSoon?: boolean; blurb?: string }[] = [
   { id: "safetunes", slug: "tunes", name: "SafeTunes", tagline: "Music", color: "#7C4DE0", adminPath: "/tunes/admin" },
   { id: "safetube", slug: "tube", name: "SafeTube", tagline: "Video", color: "#F0603A", adminPath: "/tube/admin" },
-  { id: "safereads", slug: "reads", name: "SafeReads", tagline: "Books", color: "#3AA06B", adminPath: "/reads/dashboard", retired: true },
+  { id: "safereads", slug: "reads", name: "SafeReads", tagline: "Books", color: "#3AA06B", adminPath: "/reads/dashboard" },
   { id: "safestudy", slug: "study", name: "SafeStudy", tagline: "Search", color: "#2F6BF0", adminPath: "/study/admin" },
   {
     id: "safespark",
@@ -39,11 +40,11 @@ const APPS: { id: AppId; slug: string; name: string; tagline: string; color: str
     tagline: "Build",
     color: "#F2A413",
     adminPath: "/spark/parent",
-    retired: true,
     blurb:
       "A supervised AI lab where kids learn to use AI well, rather than just use it. They practice asking better questions, checking the answers they get, improving the result, and owning the work. Every prompt and every project stays visible to you, with per-kid limits and a parent off-switch. Built for ages 9 to 15.",
   },
 ];
+const APPS = ALL_APPS.filter((a) => !isRetiredApp(a.id));
 
 export default function DashboardPage() {
   const params = useParams<{ app?: string[] }>();
@@ -56,8 +57,8 @@ export default function DashboardPage() {
   const showFamily = slug === "family";
   // Apps the family actually has, plus any coming-soon app (shown to everyone so
   // parents know what's on the way). A family that already has a coming-soon
-  // app gets the real app, not the teaser. Retired apps (SafeReads, SafeSpark)
-  // appear only for families that have them; their safety alert emails link here.
+  // app gets the real app, not the teaser. Retired apps are never listed, so
+  // /dashboard/reads and /dashboard/spark fall back to the overview.
   const entitled = useMemo(() => {
     const has = currentUser?.entitledApps ?? [];
     return APPS.filter((a) => a.comingSoon || has.includes(a.id)).map((a) =>
@@ -67,7 +68,7 @@ export default function DashboardPage() {
   const active = slug ? entitled.find((a) => a.slug === slug) ?? null : null;
 
   // Phone: the tab bar scrolls sideways, so bring the selected tab into view
-  // (SafeStudy/SafeSpark sit off-screen at 390px). Scroll only the tab strip,
+  // (the last tabs sit off-screen at 390px). Scroll only the tab strip,
   // never the page.
   const tabsRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -234,7 +235,7 @@ export default function DashboardPage() {
                   </span>
                 </Link>
               ))}
-              {APPS.some((a) => !a.retired && !entitled.some((e) => e.id === a.id)) && (
+              {APPS.some((a) => !entitled.some((e) => e.id === a.id)) && (
                 <Link href="/account" className="rounded-2xl border border-dashed border-navy/20 p-5 flex items-center justify-center text-sm font-semibold text-navy/60 hover:text-navy">
                   Add more apps to your plan
                 </Link>

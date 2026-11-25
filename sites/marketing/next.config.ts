@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import { RETIRED_APP_SLUGS, RETIRED_BLOG_SLUGS } from "./src/lib/retiredApps";
 
 // One-site: the hub fronts every Safe Family app under a path. Each app is a
 // separate deployment; the hub proxies /tube/*, /tunes/*, … to it, prefix
@@ -23,12 +24,32 @@ const ONE_SITE_APPS: Array<[string, "vite" | "next", string | undefined]> = [
 const nextConfig: NextConfig = {
   // Plans live in the pricing section of the home page; /pricing was linked
   // from app pages and ads but never existed.
+  // Retired apps (src/lib/retiredApps.ts): every /reads/* and /spark/* path,
+  // parent and kid alike, goes to the home page, and their blog posts go to
+  // /blog. Redirects run before the proxy rewrites below, so a retired app is
+  // never reached through the hub. Temporary (307) so they can come back.
   async redirects() {
-    return [{ source: "/pricing", destination: "/#pricing", permanent: false }];
+    return [
+      { source: "/pricing", destination: "/#pricing", permanent: false },
+      ...RETIRED_APP_SLUGS.flatMap((slug) => [
+        { source: `/${slug}`, destination: "/", permanent: false },
+        { source: `/${slug}/:path*`, destination: "/", permanent: false },
+        // The kid door's tab for it, and its home-screen manifest.
+        { source: `/play/${slug}`, destination: "/play", permanent: false },
+        { source: `/play/${slug}/:path*`, destination: "/play", permanent: false },
+        { source: `/dashboard/${slug}`, destination: "/dashboard", permanent: false },
+        { source: `/dashboard/${slug}/:path*`, destination: "/dashboard", permanent: false },
+      ]),
+      ...RETIRED_BLOG_SLUGS.map((slug) => ({
+        source: `/blog/${slug}`,
+        destination: "/blog",
+        permanent: false,
+      })),
+    ];
   },
   async rewrites() {
     const beforeFiles = ONE_SITE_APPS.flatMap(([path, kind, origin]) => {
-      if (!origin) return [];
+      if (!origin || RETIRED_APP_SLUGS.includes(path)) return [];
       const base = origin.replace(/\/$/, "");
       return [
         { source: `/${path}`, destination: `${base}/${path}${kind === "vite" ? "/" : ""}` },

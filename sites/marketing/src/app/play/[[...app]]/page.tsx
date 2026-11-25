@@ -17,11 +17,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { SafeFamilyLogo } from "@/components/brand/Brand";
+import { isRetiredApp } from "@/lib/retiredApps";
 
 const CODE_KEY = "safefamily_family_code";
 const LAST_APP_KEY = "safefamily_last_kid_app";
 
-const APPS = [
+// Every kid app. Retired ones (src/lib/retiredApps.ts: SafeReads "Books" and
+// SafeSpark "Build" since 2026-11-25) are dropped below: no tab, no tile, and
+// /play/reads or /play/spark goes back to /play. Kept here so taking an app off
+// the retired list brings its tab straight back.
+const ALL_APPS = [
   { slug: "tunes", name: "Music", app: "SafeTunes", color: "#7C4DE0", path: "/tunes/play" },
   { slug: "tube", name: "Videos", app: "SafeTube", color: "#F0603A", path: "/tube/play" },
   { slug: "reads", name: "Books", app: "SafeReads", color: "#3AA06B", path: "/reads/read" },
@@ -39,6 +44,7 @@ const APPS = [
       "Build your own games, stories and apps, with AI helping you along the way. You ask for what you want, try it out, then make it better.",
   },
 ];
+const APPS = ALL_APPS.filter((a) => !isRetiredApp(a.slug));
 
 const Glyph = ({ slug, size = 22 }: { slug: string; size?: number }) => {
   const c = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "white", strokeWidth: 2.2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
@@ -59,6 +65,11 @@ export default function PlayPage() {
   const router = useRouter();
   const slug = params?.app?.[0] ?? null;
   const active = useMemo(() => APPS.find((a) => a.slug === slug) ?? null, [slug]);
+  // A retired or unknown app in the URL (old bookmark, home-screen icon) goes
+  // back to the kid door instead of showing an empty frame.
+  useEffect(() => {
+    if (slug && !active) router.replace("/play");
+  }, [slug, active, router]);
   // Solo: one app on its own, no tab bar and a slim header. Home-screen icons
   // added from /play/<app> open this way (see kid-app-manifest).
   const solo = search.get("solo") === "1" && !!active && !active.comingSoon;
@@ -88,7 +99,7 @@ export default function PlayPage() {
     try { if (active) localStorage.setItem(LAST_APP_KEY, active.slug); } catch { /* ignore */ }
   }, [active]);
 
-  // Phone: the tab strip scrolls sideways and Search/Build sit off-screen at
+  // Phone: the tab strip scrolls sideways and the last tabs sit off-screen at
   // 390px, so centre the active tab. Scroll only the strip (scrollIntoView
   // would scroll the page too).
   const tabsRef = useRef<HTMLElement>(null);
@@ -202,7 +213,7 @@ export default function PlayPage() {
         <main className="flex-1 overflow-y-auto px-6 py-10">
           <div className="max-w-3xl mx-auto text-center flex flex-col gap-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-navy">What do you want to do?</h1>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className={`grid grid-cols-2 sm:grid-cols-3 gap-4 ${APPS.length >= 5 ? "lg:grid-cols-5" : APPS.length === 4 ? "lg:grid-cols-4" : ""}`}>
               {APPS.map((a) => (
                 <Link key={a.slug} href={`/play/${a.slug}`} className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(34,29,46,0.10)] p-5 flex flex-col items-center gap-3 hover:-translate-y-0.5 transition">
                   <span className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: a.color }}><Glyph slug={a.slug} size={32} /></span>

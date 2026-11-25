@@ -1,3 +1,4 @@
+import { isRetiredApp } from "../src/lib/retiredApps";
 import { v } from "convex/values";
 import {
   internalAction,
@@ -327,7 +328,8 @@ export const evaluateFamily = internalMutation({
         }
 
         const silenceDays = days.slice(days.length - a.silentDays);
-        const otherApps = ALL_APPS.filter((o) => o !== app)
+        // Retired apps (src/lib/retiredApps.ts) are never named to a parent.
+        const otherApps = ALL_APPS.filter((o) => o !== app && !isRetiredApp(o))
           .map((o) => ({ app: o, activeDays: silenceDays.filter((d) => (perDay.get(d)?.[o] ?? 0) > 0).length }))
           .filter((o) => o.activeDays > 0)
           .sort((x, y) => y.activeDays - x.activeDays);

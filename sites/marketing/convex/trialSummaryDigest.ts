@@ -54,7 +54,7 @@ function getUpsellBlock(appCount: number): string {
     return `
       <div style="background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 100%); color: white; border-radius: 12px; padding: 24px; margin: 24px 0; text-align: center;">
         <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700;">Get all 4 apps for $9.99/mo</p>
-        <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">SafeTunes + SafeTube + SafeReads + SafeStudy — save over $10/mo vs individual</p>
+        <p style="margin: 0 0 16px 0; font-size: 14px; opacity: 0.9;">SafeTunes + SafeTube + SafeStudy — save over $10/mo vs individual</p>
         <a href="https://getsafefamily.com/signup" style="display: inline-block; background: white; color: #1a1a2e; padding: 12px 32px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 16px;">Subscribe &amp; Save</a>
         <p style="margin: 12px 0 0 0; font-size: 13px; opacity: 0.7;">Or $99/year — just $2.06/app/month</p>
       </div>

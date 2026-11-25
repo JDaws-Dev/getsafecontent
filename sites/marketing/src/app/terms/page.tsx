@@ -16,13 +16,13 @@ export default function TermsPage() {
           <h1 className="text-4xl font-bold text-navy mb-8">Terms of Service</h1>
           <div className="prose prose-lg prose-navy max-w-none">
             <p className="text-navy/70 mb-6">
-              Last updated: February 10, 2026
+              Last updated: November 25, 2026
             </p>
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-navy mb-4">1. Agreement to Terms</h2>
               <p className="text-navy/80 mb-4">
-                By accessing or using Safe Family&apos;s services—including SafeTunes, SafeTube, and SafeReads
+                By accessing or using Safe Family&apos;s services—including SafeTunes, SafeTube, and SafeStudy
                 (collectively, the &quot;Service&quot;)—you agree to be bound by these Terms of Service (&quot;Terms&quot;).
                 If you do not agree to these Terms, do not use the Service.
               </p>
@@ -36,7 +36,7 @@ export default function TermsPage() {
               <ul className="list-disc pl-6 text-navy/80 mb-4 space-y-2">
                 <li><strong>SafeTunes:</strong> Control which songs and artists their children can listen to via Apple Music</li>
                 <li><strong>SafeTube:</strong> Control which YouTube channels and videos their children can watch</li>
-                <li><strong>SafeReads:</strong> Control which books their children can read and discover</li>
+                <li><strong>SafeStudy:</strong> Give their children a kid-safe search and homework helper, and see what they search for</li>
               </ul>
               <p className="text-navy/80 mb-4">
                 The Service requires a subscription. Features and availability may change over time.
@@ -64,7 +64,7 @@ export default function TermsPage() {
 
               <h3 className="text-xl font-medium text-navy mb-3">Pricing</h3>
               <ul className="list-disc pl-6 text-navy/80 mb-4 space-y-2">
-                <li>Safe Family Bundle: $14.99/month or $149/year (includes SafeTunes, SafeTube and SafeStudy; families who already use SafeReads or SafeSpark keep them)</li>
+                <li>Safe Family Bundle: $14.99/month or $149/year (includes SafeTunes, SafeTube and SafeStudy)</li>
                 <li>Legacy single-app subscriptions ($4.99/month) are grandfathered for existing subscribers and not available to new customers.</li>
               </ul>
 
