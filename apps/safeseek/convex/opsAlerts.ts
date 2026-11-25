@@ -68,7 +68,7 @@ export const sendClassifierDownAlert = internalAction({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "SafeStudy Alerts <alerts@getsafestudy.com>",
+          from: "SafeStudy Admin <notifications@getsafefamily.com>",
           to: OPS_EMAIL,
           subject: "SafeStudy: intent classifier degraded — safety alerts impaired",
           html,

@@ -28,7 +28,7 @@ export const sendTrialSignupEmails = internalAction({
 
     // Send admin notification
     const adminEmailContent = `
-      <h1>🎉 New SafeTube Trial Signup!</h1>
+      <h1>New SafeTube Trial Signup!</h1>
 
       <p>Someone just started a free trial for SafeTube.</p>
 
@@ -128,7 +128,7 @@ export const sendTrialSignupEmails = internalAction({
       const adminResult = await resend.emails.send({
         from: "SafeTube Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
-        subject: `🎉 SafeTube Trial: ${args.userName}`,
+        subject: `SafeTube Trial: ${args.userName}`,
         html: adminEmailContent,
       });
       console.log(`Admin notification sent for ${args.userEmail}:`, adminResult);
@@ -143,7 +143,7 @@ export const sendTrialSignupEmails = internalAction({
         from: "SafeTube <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.userEmail,
-        subject: "Welcome to SafeTube! Your 7-Day Trial Has Started 🎬",
+        subject: "Welcome to SafeTube! Your 7-Day Trial Has Started",
         html: userEmailContent,
       });
       console.log(`Welcome email sent to ${args.userEmail}:`, userResult);
@@ -170,8 +170,8 @@ export const sendSubscriptionConfirmation = internalAction({
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const subject = args.subscriptionType === "trial"
-      ? "Welcome to SafeTube! Your 7-Day Trial Has Started 🎬"
-      : "Welcome to SafeTube! Your Subscription is Active 🎬";
+      ? "Welcome to SafeTube! Your 7-Day Trial Has Started"
+      : "Welcome to SafeTube! Your Subscription is Active";
 
     const emailContent = args.subscriptionType === "trial" ? `
       <h1>Welcome to SafeTube, ${args.name}!</h1>
@@ -340,7 +340,7 @@ export const sendPaymentFailedEmail = internalAction({
         from: "SafeTube <noreply@getsafefamily.com>",
         replyTo: "jeremiah@getsafefamily.com",
         to: args.email,
-        subject: "⚠️ Payment Failed - Action Required",
+        subject: "Payment Failed - Action Required",
         html: emailContent,
       });
 
@@ -554,7 +554,7 @@ export const sendAdminNotification = internalAction({
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     const emailContent = `
-      <h1>🎉 New SafeTube Signup!</h1>
+      <h1>New SafeTube Signup!</h1>
 
       <p>Someone just signed up for SafeTube.</p>
 
@@ -584,7 +584,7 @@ export const sendAdminNotification = internalAction({
       const result = await resend.emails.send({
         from: "SafeTube Admin <notifications@getsafefamily.com>",
         to: process.env.ADMIN_EMAIL || 'jeremiah@getsafefamily.com',
-        subject: `🎉 New Signup: ${args.userName} (${args.subscriptionType})`,
+        subject: `New Signup: ${args.userName} (${args.subscriptionType})`,
         html: emailContent,
       });
 

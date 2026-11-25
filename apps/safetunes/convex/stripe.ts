@@ -37,6 +37,19 @@ function purchaseIncludesSafeTunes(
   return sub.items.data.some((item) => SAFETUNES_PRICE_IDS.has(item.price.id));
 }
 
+// Checkouts created by the Safe Family hub (getsafefamily.com/signup) carry
+// app_count / billing_interval / plan metadata; app-direct checkouts never do.
+// The hub's own webhook provisions those and owns the customer emails, so this
+// legacy handler must not also send its single-app "$4.99" welcome or
+// payment-failed email for them (a parent would get duplicate, wrong-price mail).
+function isHubCheckout(
+  ...metas: Array<Stripe.Metadata | null | undefined>
+): boolean {
+  return metas.some(
+    (m) => !!m && (!!m.app_count || !!m.billing_interval || m.plan === "unified")
+  );
+}
+
 // Stripe webhook handler
 export default httpAction(async (ctx, request) => {
   // Initialize Stripe inside the handler to access environment variables
@@ -155,8 +168,11 @@ export default httpAction(async (ctx, request) => {
           console.error("[Webhook] Failed to log checkout event:", logErr);
         }
 
-        // Send emails (non-critical, don't fail webhook if emails fail)
-        try {
+        // Send emails (non-critical, don't fail webhook if emails fail).
+        // Hub checkouts: the hub owns the customer emails — skip ours.
+        if (isHubCheckout(session.metadata, sub.metadata)) {
+          console.log(`[Webhook] Hub checkout for ${customerEmail}; skipping legacy confirmation email`);
+        } else try {
           await ctx.runAction(internal.emails.sendSubscriptionConfirmation, {
             email: customerEmail,
             name: session.customer_details?.name || customerEmail.split('@')[0],
@@ -370,8 +386,20 @@ export default httpAction(async (ctx, request) => {
             console.error("[Webhook] Failed to log payment failure:", logErr);
           }
 
-          // Send payment failed email
-          if (invoice.customer_email) {
+          // Send payment failed email — only for this app's own (app-direct)
+          // subscriptions. Hub subscriptions get the hub's payment-failed email,
+          // and other businesses on the shared Stripe account get nothing from us.
+          let sendFailedEmail = false;
+          try {
+            const failedSub = await stripe.subscriptions.retrieve(invoice.subscription as string);
+            sendFailedEmail =
+              !isHubCheckout(failedSub.metadata) &&
+              (failedSub.items.data.some((item) => SAFETUNES_PRICE_IDS.has(item.price.id)) ||
+                (failedSub.metadata?.apps || "").toLowerCase().split(",").map((a) => a.trim()).includes("safetunes"));
+          } catch (subErr) {
+            console.error("[Webhook] Could not load subscription for failed invoice; skipping email:", subErr);
+          }
+          if (sendFailedEmail && invoice.customer_email) {
             try {
               const failedCustomer = await stripe.customers.retrieve(invoice.customer as string);
               await ctx.runAction(internal.emails.sendPaymentFailedEmail, {

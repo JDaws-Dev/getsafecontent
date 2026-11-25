@@ -2,6 +2,36 @@ import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import Stripe from "stripe";
 
+const SAFETUBE_PRICE_IDS = new Set(
+  [
+    process.env.SAFETUBE_PRICE_ID,
+    "price_1Spp7oKgkIT46sg7oJIKGfMG", // live SafeTube monthly ($4.99)
+  ].filter(Boolean) as string[]
+);
+
+// The Stripe account is shared with other apps and another business
+// (AnswerAxis), so only act on purchases that actually include SafeTube.
+function purchaseIncludesSafeTube(sub: Stripe.Subscription, ...metas: Array<Stripe.Metadata | null | undefined>): boolean {
+  const appsMeta = metas.map((m) => m?.apps || "").find(Boolean)?.toLowerCase() || "";
+  if (appsMeta) {
+    return appsMeta.split(",").map((a) => a.trim()).includes("safetube");
+  }
+  return sub.items.data.some((item) => SAFETUBE_PRICE_IDS.has(item.price.id));
+}
+
+// Checkouts created by the Safe Family hub (getsafefamily.com/signup) carry
+// app_count / billing_interval / plan metadata; app-direct checkouts never do.
+// The hub's own webhook provisions those and owns the customer emails, so this
+// legacy handler must not also send its single-app "$4.99" welcome or
+// payment-failed email for them (a parent would get duplicate, wrong-price mail).
+function isHubCheckout(
+  ...metas: Array<Stripe.Metadata | null | undefined>
+): boolean {
+  return metas.some(
+    (m) => !!m && (!!m.app_count || !!m.billing_interval || m.plan === "unified")
+  );
+}
+
 // Stripe webhook handler
 export default httpAction(async (ctx, request) => {
   // Initialize Stripe inside the handler to access environment variables
@@ -62,6 +92,15 @@ export default httpAction(async (ctx, request) => {
         const sub = await stripe.subscriptions.retrieve(session.subscription as string);
         const isTrial = sub.status === "trialing";
 
+        // Ignore checkouts that don't include SafeTube (shared Stripe account).
+        // SafeTube's own checkout (stripeActions.ts) returns to /dashboard/tube;
+        // accept it even if its price ID comes from an env value not listed above.
+        const isSafeTubeDirect = (session.success_url || "").includes("/dashboard/tube");
+        if (!isSafeTubeDirect && !purchaseIncludesSafeTube(sub, session.metadata, sub.metadata)) {
+          console.log(`[Webhook] Skipping checkout.session.completed for ${customerEmail}: purchase does not include SafeTube`);
+          return new Response("Ignored: not a SafeTube purchase", { status: 200 });
+        }
+
         // CRITICAL: Update user subscription status first - this must succeed
         try {
           await ctx.runMutation(internal.users.updateSubscriptionStatus, {
@@ -108,8 +147,11 @@ export default httpAction(async (ctx, request) => {
           console.error("[Webhook] Failed to log checkout event:", logErr);
         }
 
-        // Send emails (non-critical, don't fail webhook if emails fail)
-        try {
+        // Send emails (non-critical, don't fail webhook if emails fail).
+        // Hub checkouts: the hub owns the customer emails — skip ours.
+        if (isHubCheckout(session.metadata, sub.metadata)) {
+          console.log(`[Webhook] Hub checkout for ${customerEmail}; skipping legacy confirmation email`);
+        } else try {
           await ctx.runAction(internal.emails.sendSubscriptionConfirmation, {
             email: customerEmail,
             name: session.customer_details?.name || customerEmail.split('@')[0],
@@ -323,8 +365,17 @@ export default httpAction(async (ctx, request) => {
             console.error("[Webhook] Failed to log payment failure:", logErr);
           }
 
-          // Send payment failed email
-          if (invoice.customer_email) {
+          // Send payment failed email — only for this app's own (app-direct)
+          // subscriptions. Hub subscriptions get the hub's payment-failed email,
+          // and other businesses on the shared Stripe account get nothing from us.
+          let sendFailedEmail = false;
+          try {
+            const failedSub = await stripe.subscriptions.retrieve(invoice.subscription as string);
+            sendFailedEmail = !isHubCheckout(failedSub.metadata) && purchaseIncludesSafeTube(failedSub, failedSub.metadata);
+          } catch (subErr) {
+            console.error("[Webhook] Could not load subscription for failed invoice; skipping email:", subErr);
+          }
+          if (sendFailedEmail && invoice.customer_email) {
             try {
               const failedCustomer = await stripe.customers.retrieve(invoice.customer as string);
               await ctx.runAction(internal.emails.sendPaymentFailedEmail, {
