@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { ALLOW_SITES } from "@/lib/allowedSites";
 import {
   UserPlus,
   KeyRound,
@@ -31,34 +32,34 @@ const steps = [
   {
     n: 1,
     icon: UserPlus,
-    title: "Create kid profiles",
+    title: "Add your kids once",
     minutes: "~3 min",
-    body: "Each kid gets their own profile with a name, color, and (optional) 4-digit PIN. Profiles are what kids pick from when they open the app. You can add as many as you need — there's no per-kid charge.",
-    tip: "Tip: pick distinct colors per kid. The icon on their profile tile comes from the color you choose.",
+    body: "Open your dashboard and go to Family (getsafefamily.com/dashboard/family). Add each child with a name, a color and, if you like, a 4-digit PIN. Every app uses these same profiles, so you never add a kid twice. There's no per-kid charge.",
+    tip: "Tip: Family is also where you set allowed hours, pause everything, and choose whether kids can send requests.",
   },
   {
     n: 2,
     icon: Music,
-    title: "Connect each app to what your kids already use",
+    title: "Set up the apps you'll use",
     minutes: "~4 min",
-    body: "SafeTunes connects to your Apple Music account (family plan works). SafeTube uses your approved YouTube channel list. SafeReads and SafeStudy work out of the box — no external account needed. You only need to set up the apps you're actually going to use today.",
-    tip: "Tip: start with one app. You can add the others later — nothing's gated.",
+    body: "SafeTunes: connect your Apple Music account once (individual or family plan); your kids play through it. SafeTube: approve the channels and videos your kids already watch. SafeReads: approve books for their shelf. SafeStudy works right away. You only need to set up the apps you're using today.",
+    tip: "Tip: start with one app. You can add the others later.",
   },
   {
     n: 3,
     icon: KeyRound,
-    title: "Share your family code with your kids",
-    minutes: "~1 min",
-    body: "Your family code is the 6-character code kids type in on their device to access their profile. One code works for every app. You'll find it in your parent dashboard at getsafefamily.com — the same code opens every app.",
-    tip: "Tip: write it on a sticky note on the fridge. Our most-successful families literally do this.",
+    title: "Show your kids how to get in",
+    minutes: "~2 min",
+    body: "On your child's device, open getsafefamily.com/play. Enter your family code (6 letters and numbers, shown at the top of your dashboard). Then they tap Music, Videos, Books or Search, pick their name, and enter their PIN if you set one. One code opens every app.",
+    tip: "Tip: write the family code on a sticky note on the fridge. Our most-successful families literally do this.",
   },
   {
     n: 4,
     icon: Sparkles,
     title: "Approve your first content",
     minutes: "~5–10 min",
-    body: "Once kids have the family code and can pick their profile, they start seeing only what you've approved. Approve a handful of albums, a few YouTube channels, or a couple of books to start. Kids can request more — you review each request with a one-tap approve/deny.",
-    tip: "Tip: don't try to build the perfect library on day one. Start with 5–10 items and let kids request the rest — that's where the magic is.",
+    body: "Kids only see what you've approved. Approve a handful of albums, a few YouTube channels, or a couple of books to start. Kids can request more, and you approve or deny each request with one tap.",
+    tip: "Tip: don't try to build the perfect library on day one. Start with 5–10 items and let kids request the rest.",
   },
 ];
 
@@ -170,15 +171,22 @@ export default function SetupPage() {
                   Then lock down your kid&rsquo;s device
                 </h2>
                 <p className="text-red-900/90 leading-relaxed">
-                  Use Family Link or Screen Time to allow only{" "}
-                  <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">getsafefamily.com</code> and{" "}
-                  <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">youtube-nocookie.com</code>{" "}
-                  (SafeTube&rsquo;s video player only, no search or browsing).
+                  Safe Family controls what&rsquo;s inside the apps. To stop your child going around
+                  them, use Family Link, Screen Time or Microsoft Family to allow only these sites:
                 </p>
+                <ul className="mt-2 space-y-1 text-red-900/90">
+                  {ALLOW_SITES.map((s) => (
+                    <li key={s.site}>
+                      <code className="rounded bg-white px-1.5 py-0.5 font-mono text-sm">{s.site}</code>{" "}
+                      <span className="text-sm">{s.why}</span>
+                    </li>
+                  ))}
+                </ul>
                 <p className="mt-2 text-red-900/90 leading-relaxed">
                   <strong>Never approve youtube.com or m.youtube.com</strong>, even if a video
                   won&rsquo;t play. One approval unlocks all of YouTube. On a Chromebook, also turn off
-                  Guest browsing.
+                  Guest browsing. Using Circle, Bark or a router filter? The guide lists a few
+                  background services to allow too.
                 </p>
                 <Link
                   href="/guides/lock-down"
@@ -189,6 +197,32 @@ export default function SetupPage() {
                 </Link>
               </div>
             </div>
+          </section>
+
+          {/* Home-screen icon */}
+          <section className="mt-12 card-soft p-6 sm:p-8">
+            <h2 className="text-2xl font-bold text-navy mb-3">Give each app its own icon</h2>
+            <p className="text-navy/70 leading-relaxed">
+              There&rsquo;s nothing to download from an app store. On your child&rsquo;s iPhone or iPad:
+            </p>
+            <ol className="mt-3 space-y-2 text-navy/80 list-decimal pl-5">
+              <li>
+                Open Safari and go to the app&rsquo;s page:{" "}
+                <code>getsafefamily.com/play/tunes</code> (music), <code>/play/tube</code> (videos),{" "}
+                <code>/play/reads</code> (books) or <code>/play/study</code> (search).
+              </li>
+              <li>Tap Share, then <strong>Add to Home Screen</strong>.</li>
+              <li>Open the new icon and enter your family code once. It opens straight into that app.</li>
+            </ol>
+            <p className="mt-3 text-sm text-navy/60">
+              On Android or a Chromebook, open the same page in Chrome and use the menu&rsquo;s{" "}
+              <strong>Add to Home screen</strong> (or <strong>Install</strong>). Want every app under one
+              icon? Add <code>getsafefamily.com/play</code> instead.
+            </p>
+            <p className="mt-3 text-sm text-navy/60">
+              Had the old SafeTunes iPhone app? It no longer works. Delete it and add the SafeTunes
+              icon this way instead.
+            </p>
           </section>
 
           {/* Jump to apps */}
@@ -263,8 +297,8 @@ export default function SetupPage() {
                   Does my family code change per app?
                 </dt>
                 <dd className="mt-1 ml-7 text-navy/70 text-sm">
-                  Nope. One 6-character code works for SafeTunes, SafeTube, SafeReads, and
-                  SafeStudy. Share it once and you&rsquo;re done.
+                  Nope. One 6-character code works for every app. Share it once and you&rsquo;re
+                  done.
                 </dd>
               </div>
               <div>
@@ -273,9 +307,9 @@ export default function SetupPage() {
                   What if I don&rsquo;t have Apple Music?
                 </dt>
                 <dd className="mt-1 ml-7 text-navy/70 text-sm">
-                  Skip SafeTunes for now &mdash; the other three apps don&rsquo;t need Apple Music.
-                  SafeTunes works with individual or family Apple Music plans if you add one
-                  later.
+                  Skip SafeTunes for now &mdash; the other apps don&rsquo;t need Apple Music.
+                  SafeTunes works with an individual or family Apple Music plan if you add one
+                  later. You connect it once and your kids play through your account.
                 </dd>
               </div>
               <div>
@@ -285,8 +319,8 @@ export default function SetupPage() {
                 </dt>
                 <dd className="mt-1 ml-7 text-navy/70 text-sm">
                   Send them to <code>getsafefamily.com/play</code>. They enter your family code,
-                  pick their profile, and enter their PIN &mdash; that&rsquo;s it. One family code
-                  opens all of your family&rsquo;s apps, and they&rsquo;ll only see what you&rsquo;ve approved.
+                  tap the app (Music, Videos, Books or Search), pick their name, and enter their PIN
+                  if they have one. They&rsquo;ll only see what you&rsquo;ve approved.
                 </dd>
               </div>
             </dl>

@@ -34,7 +34,7 @@ function InstallationGuide() {
                   Open in Safari
                 </h4>
                 <p className="text-gray-600">
-                  Visit getsafefamily.com/play in Safari (not Chrome or other browsers)
+                  On iPhone or iPad, open getsafefamily.com/play/tunes in Safari
                 </p>
               </div>
 
@@ -68,7 +68,7 @@ function InstallationGuide() {
                   Launch Like an App
                 </h4>
                 <p className="text-gray-600">
-                  The SafeTunes icon appears on their home screen. Tap to open!
+                  The SafeTunes icon opens straight into SafeTunes. Enter your family code once.
                 </p>
               </div>
             </div>

@@ -15,6 +15,11 @@ import {
   ArrowRight,
   ListChecks,
 } from "lucide-react";
+import {
+  ALLOW_SITES,
+  BLOCK_SITES,
+  BACKGROUND_SERVICES,
+} from "@/lib/allowedSites";
 
 export const metadata: Metadata = {
   title: "Lock down your kid's device | Safe Family Guide",
@@ -27,18 +32,6 @@ export const metadata: Metadata = {
     type: "article",
   },
 };
-
-// The only sites Safe Family needs. youtube-nocookie.com is the video player
-// that SafeTube embeds: it plays one approved video and has no search, no
-// home page and no browsing. googlevideo.com / ytimg.com / googleapis.com are
-// NOT needed — Family Link filters page and frame loads only, not the video
-// stream or thumbnails.
-const ALLOW_SITES = [
-  { site: "getsafefamily.com", why: "Safe Family (every app)" },
-  { site: "youtube-nocookie.com", why: "SafeTube's video player only (no search, no browsing)" },
-];
-
-const BLOCK_SITES = ["youtube.com", "m.youtube.com"];
 
 function Code({ children }: { children: React.ReactNode }) {
   return (
@@ -119,8 +112,9 @@ function YouTubeWarning() {
           </p>
           <p className="mt-2 text-red-900/90 leading-relaxed">
             SafeTube only needs <Code>youtube-nocookie.com</Code>. That is just the video player:
-            no search, no home page, no browsing. You do <strong>not</strong> need{" "}
-            <Code>googlevideo.com</Code>, <Code>ytimg.com</Code> or <Code>googleapis.com</Code>.
+            no search, no home page, no browsing. With Family Link or Screen Time you do{" "}
+            <strong>not</strong> need <Code>googlevideo.com</Code>, <Code>ytimg.com</Code> or{" "}
+            <Code>googleapis.com</Code> (a network filter does; see below).
           </p>
           <p className="mt-2 text-sm text-red-900/80">
             If SafeTube videos won&rsquo;t play, check that <Code>youtube-nocookie.com</Code> is on
@@ -300,6 +294,7 @@ export default function LockDownGuidePage() {
                 ["#android", "Android"],
                 ["#ios", "iPhone / iPad"],
                 ["#computer", "Mac / Windows"],
+                ["#network", "Circle, Bark, router"],
                 ["#check", "5-minute check"],
               ].map(([href, label]) => (
                 <a
@@ -400,6 +395,11 @@ export default function LockDownGuidePage() {
                 With &ldquo;Allowed Websites Only&rdquo; on, everything not on the list is already
                 blocked, so there is no separate blocked list to fill in.
               </p>
+              <p className="mt-2 text-sm text-navy/60">
+                If Safe Family opens but songs, videos or pictures don&rsquo;t load, also add the{" "}
+                <a href="#network" className="font-semibold underline underline-offset-2">background services</a>{" "}
+                listed further down.
+              </p>
             </div>
             <div>
               <SubHead>2. Remove YouTube and other browsers</SubHead>
@@ -463,6 +463,34 @@ export default function LockDownGuidePage() {
               A computer where your child has an administrator account can always undo these
               settings. If a computer is the main device, keep it in a shared room.
             </p>
+          </DeviceSection>
+
+          {/* Network filters */}
+          <DeviceSection
+            id="network"
+            icon={ShieldCheck}
+            title="Circle, Bark, your router or another filter"
+            subtitle="Filters that block by website address for the whole network or device."
+          >
+            <div className="space-y-3 text-navy/80 leading-relaxed">
+              <p>
+                Allow <Code>getsafefamily.com</Code> and <Code>youtube-nocookie.com</Code> as above. These
+                filters also block the services a page talks to behind the scenes, so allow these too.
+                None of them is a site your child can browse.
+              </p>
+              <ul className="space-y-1.5 text-sm">
+                {BACKGROUND_SERVICES.map((s) => (
+                  <li key={s.site}>
+                    <Code>{s.site}</Code>{" "}
+                    <span className="text-navy/60">{s.why}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-sm">
+                Still block <Code>youtube.com</Code> and <Code>m.youtube.com</Code>, and don&rsquo;t allow{" "}
+                <Code>music.apple.com</Code>: that is the full Apple Music website.
+              </p>
+            </div>
           </DeviceSection>
 
           {/* Requests */}

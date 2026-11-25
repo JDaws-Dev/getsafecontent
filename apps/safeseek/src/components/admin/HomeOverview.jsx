@@ -252,7 +252,7 @@ export default function HomeOverview({
                 <span className="text-sm font-medium text-white/80">Family Code</span>
               </div>
               <p className="text-2xl font-mono font-bold tracking-wider">{userData.familyCode}</p>
-              <p className="text-xs text-white/60 mt-1">Kids go to getsafefamily.com/play and enter this code</p>
+              <p className="text-xs text-white/60 mt-1">Kids go to getsafefamily.com/play, enter this code and tap Search</p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <a
@@ -357,7 +357,7 @@ export default function HomeOverview({
                   <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-xs font-bold text-gray-400">4</span>
                   </div>
-                  <span className="text-sm text-gray-600">Share your family code with your kids</span>
+                  <span className="text-sm text-gray-600">Kids open getsafefamily.com/play, enter your family code and tap Search</span>
                 </div>
               </div>
               <button type="button" onClick={() => onNavigate('profiles')} className={`mt-5 ${primaryButton}`}>

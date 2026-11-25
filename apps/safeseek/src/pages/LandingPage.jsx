@@ -138,7 +138,7 @@ const faqs = [
   },
   {
     question: 'Can my kid bypass SafeStudy and use regular Google?',
-    answer: 'SafeStudy is a standalone search experience at its own URL. Your child uses SafeStudy instead of Google. You can block Google and other search engines using Screen Time (Apple), Family Link (Google), or your router settings. SafeStudy becomes their only way to search the internet.',
+    answer: 'Your child searches in SafeStudy at getsafefamily.com/play instead of Google. To make it their only way to search, set their device to allow only getsafefamily.com and youtube-nocookie.com with Screen Time (Apple) or Family Link (Google). Our step-by-step guide is at getsafefamily.com/guides/lock-down.',
   },
   {
     question: 'Can my child talk to SafeStudy?',

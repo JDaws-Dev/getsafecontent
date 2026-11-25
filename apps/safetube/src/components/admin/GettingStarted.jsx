@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { topNavigate } from '../../lib/embed';
 
 // QR Code component using external API
 function QRCode({ url, size = 120 }) {
@@ -195,7 +196,7 @@ export default function GettingStarted({ userData, onNavigate }) {
           <div>
             <h2 className="text-xl font-bold text-gray-900">Lock Down Their Device</h2>
             <p className="text-gray-600 text-sm mt-1">
-              Use your device's parental controls to block all websites except SafeTube.
+              Use the device's parental controls so it only opens Safe Family.
             </p>
           </div>
         </div>
@@ -343,8 +344,8 @@ export default function GettingStarted({ userData, onNavigate }) {
                 <li>1. Open their web browser</li>
                 <li>2. Go to: <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono font-bold text-accent-600">getsafefamily.com/play</code></li>
                 <li>3. Enter Family Code: <strong className="text-accent-600">{userData?.familyCode || '(loading...)'}</strong></li>
-                <li>4. Select their profile and enter their PIN</li>
-                <li>5. Start watching approved videos!</li>
+                <li>4. Tap <strong>Videos</strong>, pick their name, and enter their PIN if you set one</li>
+                <li>5. Start watching approved videos</li>
               </ol>
             </div>
 
@@ -357,6 +358,11 @@ export default function GettingStarted({ userData, onNavigate }) {
             </div>
           </div>
         </div>
+        <div className="mt-4 bg-accent-50 border border-accent-200 rounded-lg p-4">
+          <p className="text-sm text-gray-700">
+            <strong>Give SafeTube its own icon:</strong> On your kid&apos;s iPhone or iPad, open <strong>getsafefamily.com/play/tube</strong> in Safari, tap Share, then Add to Home Screen. It opens straight into SafeTube; enter your family code once inside it. On Android or a Chromebook, use Chrome&apos;s menu, then Add to Home screen. There is nothing to download from an app store.
+          </p>
+        </div>
       </div>
 
       {/* What's Next */}
@@ -364,13 +370,13 @@ export default function GettingStarted({ userData, onNavigate }) {
         <h3 className="text-lg font-display font-bold text-accent-900 mb-4">What's Next?</h3>
         <div className="space-y-3">
           <button
-            onClick={() => onNavigate?.('account')}
+            onClick={() => topNavigate('/dashboard/family')}
             className="w-full flex items-center gap-3 p-3 bg-white hover:bg-accent-100 rounded-lg border border-accent-200 transition text-left"
           >
             <span className="w-8 h-8 bg-accent-500 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</span>
             <div>
-              <p className="font-semibold text-gray-900">Add Kid Profiles</p>
-              <p className="text-sm text-gray-600">Create a profile for each child</p>
+              <p className="font-semibold text-gray-900">Add Your Kids</p>
+              <p className="text-sm text-gray-600">Add each child once in Family; every app uses the same profiles</p>
             </div>
           </button>
 

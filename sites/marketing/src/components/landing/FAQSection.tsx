@@ -12,7 +12,7 @@ const faqs: FAQItem[] = [
   {
     question: "Can my kids get around it?",
     answer:
-      "No. Unlike device-level parental controls that tech-savvy kids can disable, Safe Family uses a whitelist approach. Your kids can only access content you've specifically approved. There's nothing to bypass—if you haven't approved it, it simply doesn't exist in their view.",
+      "Not inside Safe Family. It uses an approval list: your kids only see the songs, videos and books you've approved. To stop them going around the apps (opening YouTube in the browser, for example), lock the device so it allows only getsafefamily.com and youtube-nocookie.com. Our free lock-down guide walks you through it for iPhone, iPad, Android, Chromebook and computers in about 15 minutes.",
   },
   {
     question: "How is SafeTube different from YouTube Kids?",
@@ -32,7 +32,7 @@ const faqs: FAQItem[] = [
   {
     question: "Does it work on all devices?",
     answer:
-      "SafeTunes connects to Apple Music and works on any device where Apple Music is available. SafeTube works in any web browser and has a Chrome extension for easy channel approval. SafeReads is a web app that works on any device with a browser.",
+      "Yes. Every app runs in the web browser, so it works on iPhone, iPad, Android, Chromebook, Mac and Windows. Kids go to getsafefamily.com/play; you manage everything at getsafefamily.com. SafeTunes also needs an Apple Music subscription for playback.",
   },
   {
     question: "Do I need an Apple Music subscription for SafeTunes?",
@@ -42,7 +42,7 @@ const faqs: FAQItem[] = [
   {
     question: "Do you have iOS or Android apps?",
     answer:
-      "There's nothing to download. On your child's phone, tablet or Chromebook, open getsafefamily.com/play in the browser, then use Add to Home Screen (in the Share menu on iPhone and iPad, or the browser menu on Android; on a Chromebook, use Chrome's Install or Create shortcut option). It gets its own icon and opens like an app.",
+      "There's nothing to download. On your child's device, open an app's kid page in the browser (getsafefamily.com/play/tunes for music, /play/tube for videos, /play/reads for books, /play/study for search) and use Add to Home Screen: in Safari's Share menu on iPhone and iPad, or Chrome's menu on Android and Chromebook. It gets its own icon and opens straight into that app. The old SafeTunes iPhone app no longer works; use the home-screen icon instead.",
   },
   {
     question: "Do I need a separate login for each app?",
@@ -57,7 +57,7 @@ const faqs: FAQItem[] = [
   {
     question: "What if I need help setting it up?",
     answer:
-      "Each app takes about 5 minutes to set up. We have step-by-step guides, and our support team (real humans, not bots) typically responds within a few hours. Most parents are up and running the same day they sign up.",
+      "Most families are set up in about 15 minutes with our setup guide (getsafefamily.com/setup). If you get stuck, email jeremiah@getsafefamily.com and a real person answers, usually within a few hours.",
   },
   {
     question: "Is my family's data safe?",

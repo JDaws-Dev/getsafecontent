@@ -75,10 +75,10 @@ export const sendTrialSignupEmails = internalAction({
             <p style="margin: 0 0 16px 0; font-size: 16px;">Here's what you can do:</p>
 
             <ul style="margin: 0 0 16px 0; padding-left: 20px;">
-              <li style="margin-bottom: 8px;">✅ Approve YouTube channels for your kids</li>
-              <li style="margin-bottom: 8px;">✅ Create separate profiles for each child</li>
-              <li style="margin-bottom: 8px;">✅ Kids can ONLY watch approved content</li>
-              <li style="margin-bottom: 8px;">✅ No YouTube algorithm or recommendations</li>
+              <li style="margin-bottom: 8px;">Approve YouTube channels for your kids</li>
+              <li style="margin-bottom: 8px;">Create separate profiles for each child</li>
+              <li style="margin-bottom: 8px;">Kids can ONLY watch approved content</li>
+              <li style="margin-bottom: 8px;">No YouTube algorithm or recommendations</li>
             </ul>
 
             <p style="margin: 0; font-size: 14px; color: #6b7280;">
@@ -99,10 +99,11 @@ export const sendTrialSignupEmails = internalAction({
           <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
             <p style="margin: 0; font-size: 14px; color: #991b1b;">
               <strong>Quick Start:</strong><br>
-              1. Create kid profiles<br>
+              1. Add your kids once in Family at getsafefamily.com/dashboard/family<br>
               2. Search and approve YouTube channels<br>
-              3. Share your Family Code with kids<br>
-              4. They can only watch what you approve!
+              3. On their device, open getsafefamily.com/play, enter your family code and tap Videos<br>
+              4. Lock the device to getsafefamily.com and youtube-nocookie.com. Never approve youtube.com.<br>
+              Step-by-step: <a href="https://getsafefamily.com/guides/lock-down" style="color: #991b1b;">getsafefamily.com/guides/lock-down</a>
             </p>
           </div>
 
@@ -178,10 +179,10 @@ export const sendSubscriptionConfirmation = internalAction({
       <p>Your 7-day free trial has started! You now have full access to:</p>
 
       <ul>
-        <li>✅ Approve YouTube channels for your kids</li>
-        <li>✅ Create separate profiles for each child</li>
-        <li>✅ Kids can ONLY watch approved content</li>
-        <li>✅ No YouTube algorithm or recommendations</li>
+        <li>Approve YouTube channels for your kids</li>
+        <li>Create separate profiles for each child</li>
+        <li>Kids can ONLY watch approved content</li>
+        <li>No YouTube algorithm or recommendations</li>
       </ul>
 
       <h2>What happens next?</h2>
@@ -190,9 +191,10 @@ export const sendSubscriptionConfirmation = internalAction({
 
       <h2>Get Started:</h2>
       <ol>
-        <li>Create profiles for your kids</li>
+        <li>Add your kids once in Family: getsafefamily.com/dashboard/family</li>
         <li>Search and approve YouTube channels</li>
-        <li>Share your Family Code with kids</li>
+        <li>On your kid's device, open getsafefamily.com/play, enter your family code and tap Videos</li>
+        <li>Lock their device to getsafefamily.com and youtube-nocookie.com (never youtube.com): <a href="https://getsafefamily.com/guides/lock-down">getsafefamily.com/guides/lock-down</a></li>
       </ol>
 
       <p><a href="https://getsafefamily.com/dashboard/tube" style="background: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Complete Onboarding →</a></p>
@@ -208,10 +210,10 @@ export const sendSubscriptionConfirmation = internalAction({
       <p>You now have full access to SafeTube:</p>
 
       <ul>
-        <li>✅ Unlimited YouTube channel approvals</li>
-        <li>✅ Complete parental controls</li>
-        <li>✅ Separate profiles for each child</li>
-        <li>✅ No YouTube algorithm exposure</li>
+        <li>Unlimited YouTube channel approvals</li>
+        <li>Complete parental controls</li>
+        <li>Separate profiles for each child</li>
+        <li>No YouTube algorithm exposure</li>
       </ul>
 
       <h2>Subscription Details:</h2>
@@ -267,9 +269,9 @@ export const sendCancellationConfirmation = internalAction({
 
       <h2>What this means:</h2>
       <ul>
-        <li>✅ You'll keep full access until <strong>${new Date(args.endsAt).toLocaleDateString()}</strong></li>
-        <li>✅ No further charges will be made</li>
-        <li>✅ You can reactivate anytime before this date</li>
+        <li>You'll keep full access until <strong>${new Date(args.endsAt).toLocaleDateString()}</strong></li>
+        <li>No further charges will be made</li>
+        <li>You can reactivate anytime before this date</li>
       </ul>
 
       <p>We're sorry to see you go! If there's anything we could improve, we'd love to hear from you.</p>

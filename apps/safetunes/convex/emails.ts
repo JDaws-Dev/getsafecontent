@@ -49,9 +49,11 @@ export const sendSubscriptionConfirmation = internalAction({
 
       <h2>Get Started:</h2>
       <ol>
-        <li>Connect your Apple Music account</li>
-        <li>Create profiles for your kids</li>
-        <li>Start approving music they'll love!</li>
+        <li>Connect your Apple Music account in SafeTunes</li>
+        <li>Add your kids once in Family: getsafefamily.com/dashboard/family</li>
+        <li>Start approving music they'll love</li>
+        <li>On your kid's device, open getsafefamily.com/play, enter your family code and tap Music</li>
+        <li>Lock their device so it only opens Safe Family: <a href="https://getsafefamily.com/guides/lock-down">getsafefamily.com/guides/lock-down</a></li>
       </ol>
 
       <p><a href="https://getsafefamily.com/dashboard/tunes" style="background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Complete Onboarding →</a></p>
@@ -80,9 +82,11 @@ export const sendSubscriptionConfirmation = internalAction({
 
       <h2>Get Started:</h2>
       <ol>
-        <li>Connect your Apple Music account</li>
-        <li>Create profiles for your kids</li>
-        <li>Start approving music they'll love!</li>
+        <li>Connect your Apple Music account in SafeTunes</li>
+        <li>Add your kids once in Family: getsafefamily.com/dashboard/family</li>
+        <li>Start approving music they'll love</li>
+        <li>On your kid's device, open getsafefamily.com/play, enter your family code and tap Music</li>
+        <li>Lock their device so it only opens Safe Family: <a href="https://getsafefamily.com/guides/lock-down">getsafefamily.com/guides/lock-down</a></li>
       </ol>
 
       <p><a href="https://getsafefamily.com/dashboard/tunes" style="background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; margin-top: 16px;">Go to Dashboard →</a></p>
@@ -564,6 +568,16 @@ export const sendTrialSignupEmails = internalAction({
                style="display: inline-block; background: #7C3AED; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
               Complete Setup →
             </a>
+          </div>
+
+          <!-- Getting your kids in -->
+          <div style="background: #f9fafb; border-radius: 12px; padding: 16px 24px; margin-bottom: 24px; font-size: 14px; color: #374151;">
+            <p style="margin: 0 0 8px 0;"><strong>Getting your kids in:</strong></p>
+            <ol style="margin: 0; padding-left: 20px;">
+              <li style="margin-bottom: 6px;">Add your kids once in Family at getsafefamily.com/dashboard/family.</li>
+              <li style="margin-bottom: 6px;">On their device, open getsafefamily.com/play and enter your family code.</li>
+              <li style="margin-bottom: 6px;">Lock the device so it only opens Safe Family: <a href="https://getsafefamily.com/guides/lock-down" style="color: #374151;">getsafefamily.com/guides/lock-down</a></li>
+            </ol>
           </div>
 
           <!-- Footer -->

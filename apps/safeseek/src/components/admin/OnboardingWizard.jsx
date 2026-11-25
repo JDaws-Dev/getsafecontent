@@ -577,7 +577,7 @@ function FamilyCodeStep({ data, familyCode, onNext, onBack, saving, error }) {
           </code>
         </div>
         <p className="text-xs text-gray-400 mt-3">
-          They'll pick their profile, enter their PIN, and start searching. All searches are filtered based on the settings you chose. One family code opens all your family's apps.
+          They tap Search, pick their name, enter their PIN if they have one, and start searching. All searches are filtered based on the settings you chose. One family code opens all your family's apps.
         </p>
       </div>
 

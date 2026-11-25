@@ -19,45 +19,51 @@ function QRCode({ url, size = 120 }) {
   );
 }
 
+// The full per-device walkthrough lives on the hub so every app links one place.
+const LOCK_DOWN_GUIDE_URL = 'https://getsafefamily.com/guides/lock-down';
+const ALLOWED_SITES = [
+  ['getsafefamily.com', 'Safe Family (every app)'],
+  ['youtube-nocookie.com', "SafeTube's video player only (no search, no browsing)"],
+];
+
 function SupportPage() {
-  const [activeGuide, setActiveGuide] = useState('ios');
   const [expandedFaq, setExpandedFaq] = useState(null);
 
   const faqs = [
     {
       id: 'blocked',
       question: "What if my child tries to access other websites?",
-      answer: "With proper whitelisting configured, they'll see a \"blocked\" message and won't be able to access anything except SafeTunes. The parental controls prevent them from changing these settings."
+      answer: "Once the device allows only getsafefamily.com and youtube-nocookie.com, other websites show a \"blocked\" page. With a parental-controls passcode they don't know, they can't change it."
     },
     {
       id: 'multiple-devices',
       question: "Do I need to do this on every device?",
-      answer: "Yes, you'll need to configure parental controls on each device your child uses. However, once set up, the SafeTunes account syncs across all devices—approved albums are the same everywhere. All devices use the same Family Code."
+      answer: "Yes, set up parental controls on each device your child uses. Approved music is the same on every device, and every device uses the same family code."
     },
     {
       id: 'remove-whitelist',
-      question: "Can my child remove SafeTunes from the whitelist?",
-      answer: "No. As long as you've set up parental controls with a password they don't know, they cannot modify the whitelist or disable restrictions."
+      question: "Can my child change the allowed websites?",
+      answer: "No. As long as your parental-controls passcode is one they don't know, they can't change the list or turn the restrictions off."
     },
     {
       id: 'apple-music',
       question: "Does my child need an Apple Music subscription?",
-      answer: "Yes, you'll need an active Apple Music subscription for your child to play full songs. SafeTunes works by only showing approved music from your Apple Music library through a kid-safe interface."
+      answer: "Your child doesn't need their own. You connect your Apple Music subscription (individual or family plan) once in SafeTunes, and your kids play the music you've approved through it."
     },
     {
       id: 'family-code',
       question: "Where do I find my Family Code?",
-      answer: "Your Family Code is shown at the top of the Getting Started page in your parent dashboard, and also in Settings → Account section. The code never changes—it's unique to your family."
+      answer: "Your family code is at the top of your dashboard at getsafefamily.com. The same code opens every Safe Family app."
     },
     {
       id: 'multiple-kids',
       question: "How do I set up multiple kids?",
-      answer: "Create a separate profile for each child in Settings → Family Management. Each profile can have different approved music and their own PIN. When kids log in with your Family Code, they'll choose their own profile."
+      answer: "Add each child once in Family at getsafefamily.com/dashboard/family, with their own optional PIN. Each child can have different approved music. After entering your family code, kids pick their own name."
     },
     {
       id: 'logged-out',
       question: "Why does my kid keep getting logged out?",
-      answer: "Make sure they're using Safari or Chrome (not private/incognito mode). For the best experience, open getsafefamily.com/play and add it to the home screen."
+      answer: "Make sure they're not in a private or incognito window. The SafeTunes home-screen icon (above) remembers your family code."
     },
     {
       id: 'resent',
@@ -126,7 +132,7 @@ function SupportPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg mb-1">Lock Down Their Device</h3>
-                  <p className="text-accent-100">Use parental controls to block all websites except SafeTunes</p>
+                  <p className="text-accent-100">Use parental controls so the device only opens Safe Family</p>
                 </div>
               </div>
               <div className="flex gap-4">
@@ -135,7 +141,7 @@ function SupportPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg mb-1">Kids Log In & Listen</h3>
-                  <p className="text-accent-100">They go to getsafefamily.com/play, enter your Family Code, and enjoy!</p>
+                  <p className="text-accent-100">They go to getsafefamily.com/play, enter your family code, and tap Music.</p>
                 </div>
               </div>
             </div>
@@ -157,11 +163,11 @@ function SupportPage() {
                   </li>
                   <li className="flex gap-3">
                     <span className="font-bold text-green-600 flex-shrink-0">3.</span>
-                    <span>Enter your Family Code (found in your parent dashboard)</span>
+                    <span>Enter your family code (at the top of your dashboard), then tap <strong>Music</strong></span>
                   </li>
                   <li className="flex gap-3">
                     <span className="font-bold text-green-600 flex-shrink-0">4.</span>
-                    <span>Select their profile and enter PIN (if set)</span>
+                    <span>Pick their name and enter their PIN (if you set one)</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="font-bold text-green-600 flex-shrink-0">5.</span>
@@ -181,527 +187,48 @@ function SupportPage() {
             </div>
           </div>
 
-          {/* Device Selection */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-              Step 1: Lock Down Their Device
-            </h2>
-            <p className="text-center text-gray-600 mb-6">Select their device type to see setup instructions:</p>
-            <div className="flex flex-wrap justify-center gap-3 mb-8">
-              {[
-                { id: 'ios', name: 'iPhone/iPad', difficulty: 'Easy' },
-                { id: 'android', name: 'Android', difficulty: 'Easy' },
-                { id: 'chromebook', name: 'Chromebook', difficulty: 'Easy' },
-                { id: 'windows', name: 'Windows', difficulty: 'Medium' },
-                { id: 'mac', name: 'Mac', difficulty: 'Medium' },
-                { id: 'kindle', name: 'Kindle Fire', difficulty: 'Easy' },
-              ].map((device) => (
-                <button
-                  key={device.id}
-                  onClick={() => setActiveGuide(device.id)}
-                  className={`px-5 py-3 rounded-xl font-semibold transition flex flex-col items-center min-w-[100px] ${
-                    activeGuide === device.id
-                      ? 'bg-accent-600 text-white shadow-lg'
-                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-accent-400'
-                  }`}
-                >
-                  <span className="text-sm">{device.name}</span>
-                </button>
+          {/* Step 1: lock down the device (full walkthrough lives on the hub) */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Step 1: Lock Down Their Device</h2>
+            <p className="text-gray-600 mb-4">
+              In Family Link (Android, Chromebook), Screen Time (iPhone, iPad, Mac) or Microsoft Family (Windows),
+              choose <strong>allowed websites only</strong> and add these two sites:
+            </p>
+            <div className="space-y-2">
+              {ALLOWED_SITES.map(([site, why]) => (
+                <div key={site} className="bg-accent-50 border border-accent-200 rounded-lg p-3">
+                  <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-700 break-all">{site}</code>
+                  <p className="text-xs text-gray-500 mt-1">{why}</p>
+                </div>
               ))}
             </div>
-          </div>
-
-          {/* iOS Guide */}
-          {activeGuide === 'ios' && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                iPhone / iPad Setup
-              </h2>
-
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Open Screen Time Settings</h3>
-                    <p className="text-gray-600">Go to <strong>Settings</strong> → <strong>Screen Time</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Turn On & Set Passcode</h3>
-                    <p className="text-gray-600">Turn on Screen Time and set a passcode (don't share with your child)</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Enable Content Restrictions</h3>
-                    <p className="text-gray-600">Tap <strong>Content & Privacy Restrictions</strong> → Turn it <strong>ON</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Restrict Web Content</h3>
-                    <p className="text-gray-600">Tap <strong>Content Restrictions</strong> → <strong>Web Content</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Select "Allowed Websites Only"</h3>
-                    <p className="text-gray-600">This blocks all websites except ones you approve</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">6</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Delete ALL Pre-Added Websites</h3>
-                    <p className="text-gray-600">
-                      <strong className="text-red-600">Important:</strong> Swipe left on each website in the list to delete them (Apple pre-adds sites like Discovery Kids - remove them all)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">7</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
-                    <p className="text-gray-600 mb-2">Tap <strong>"Add Website"</strong> and add this one site:</p>
-                    <div className="bg-accent-50 border-2 border-accent-300 rounded-lg p-4 space-y-2">
-                      <p><strong>Site:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafefamily.com</code></p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-sm text-red-900">
-                    <strong>Important:</strong> Do NOT include "https://", "www.", or "/play" - just type the domain: <code className="bg-white px-1 py-0.5 rounded">getsafefamily.com</code>
-                  </p>
-                </div>
-
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
-                  <div className="flex items-start space-x-3">
-                    <svg className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <div>
-                      <h4 className="font-bold text-green-900 mb-1">Setup Complete!</h4>
-                      <p className="text-green-800">Your child can now only browse SafeTunes. All other websites will be blocked.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Android Guide */}
-          {activeGuide === 'android' && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                Android Setup (Family Link)
-              </h2>
-
-              {/* Prerequisite Callout */}
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                <p className="text-amber-900">
-                  <strong>Prerequisite:</strong> Your child needs a supervised Google Family Link account.{' '}
-                  <a
-                    href="https://families.google.com/familylink/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-amber-700 underline hover:text-amber-800 inline-flex items-center gap-1"
-                  >
-                    Set up Family Link <ExternalLink className="w-3 h-3" />
-                  </a>
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Open Family Link App</h3>
-                    <p className="text-gray-600">Open the Family Link app on your phone</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Select Your Child</h3>
-                    <p className="text-gray-600">Select your child's account</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Configure Chrome Restrictions</h3>
-                    <p className="text-gray-600">Tap <strong>Controls</strong> → <strong>Content restrictions</strong> → <strong>Google Chrome</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Select "Only allow certain sites"</h3>
-                    <p className="text-gray-600">This blocks all sites except approved ones</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
-                    <p className="text-gray-600">Tap <strong>Manage sites</strong> → <strong>Add a website</strong></p>
-                    <p className="text-gray-600 mt-1">Add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">6</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Remove Other Websites</h3>
-                    <p className="text-gray-600">Remove any other websites from the "Approved" list</p>
-                  </div>
-                </div>
-
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
-                  <div className="flex items-start space-x-3">
-                    <svg className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <div>
-                      <h4 className="font-bold text-green-900 mb-1">All Done!</h4>
-                      <p className="text-green-800">Your child's Android device is now locked down to SafeTunes only.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Chromebook Guide */}
-          {activeGuide === 'chromebook' && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                Chromebook Setup
-              </h2>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                <p className="text-amber-900">
-                  <strong>Prerequisite:</strong> Your child must be signed in with a supervised Google Account (Family Link).
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Open Family Link App</h3>
-                    <p className="text-gray-600">On your phone, open the Family Link app</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Select Your Child</h3>
-                    <p className="text-gray-600">Select your child's account</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Configure Chrome</h3>
-                    <p className="text-gray-600">Tap <strong>Controls</strong> → <strong>Content restrictions</strong> → <strong>Google Chrome</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Select "Only allow certain sites"</h3>
-                    <p className="text-gray-600">Under "Permissions," tap <strong>Manage sites</strong> and choose this option</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
-                    <p className="text-gray-600">Under "Approved sites," tap <strong>Add a website</strong></p>
-                    <p className="text-gray-600 mt-1">Add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code></p>
-                  </div>
-                </div>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-900">
-                    <strong>Tip:</strong> You can also set the kids' player as the Chromebook homepage. On the Chromebook, go to Chrome Settings → On startup → Open a specific page → Add <code className="bg-white px-1 py-0.5 rounded">https://getsafefamily.com/play</code>
-                  </p>
-                </div>
-
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
-                  <div className="flex items-start space-x-3">
-                    <svg className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <div>
-                      <h4 className="font-bold text-green-900 mb-1">You're All Set!</h4>
-                      <p className="text-green-800">Your child can now only access SafeTunes on their Chromebook.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Windows Guide */}
-          {activeGuide === 'windows' && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                Windows Setup (Family Safety)
-              </h2>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                <p className="text-amber-900">
-                  <strong>Prerequisite:</strong> Your child must have a Microsoft Family account.{' '}
-                  <a
-                    href="https://family.microsoft.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-amber-700 underline hover:text-amber-800 inline-flex items-center gap-1"
-                  >
-                    Set up Microsoft Family <ExternalLink className="w-3 h-3" />
-                  </a>
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Go to Microsoft Family</h3>
-                    <p className="text-gray-600">Go to <strong>family.microsoft.com</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Select Your Child</h3>
-                    <p className="text-gray-600">Sign in and select your child's account</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Configure Web Browsing</h3>
-                    <p className="text-gray-600">Click <strong>Content Restrictions</strong> → <strong>Web Browsing</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Enable Website Restrictions</h3>
-                    <p className="text-gray-600">Turn on <strong>"Only allow these websites"</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Add SafeTunes</h3>
-                    <p className="text-gray-600">Click <strong>Add a website</strong> and add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code></p>
-                  </div>
-                </div>
-
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
-                  <div className="flex items-start space-x-3">
-                    <svg className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <div>
-                      <h4 className="font-bold text-green-900 mb-1">Setup Complete!</h4>
-                      <p className="text-green-800">Your Windows PC is now restricted to SafeTunes only.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Mac Guide */}
-          {activeGuide === 'mac' && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                Mac Setup (Screen Time)
-              </h2>
-
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Open Screen Time</h3>
-                    <p className="text-gray-600">Open <strong>System Settings</strong> → <strong>Screen Time</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Turn On & Set Passcode</h3>
-                    <p className="text-gray-600">Turn on Screen Time and set a passcode</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Configure Content & Privacy</h3>
-                    <p className="text-gray-600">Click <strong>Content & Privacy</strong> → <strong>Content</strong> tab</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Limit Web Content</h3>
-                    <p className="text-gray-600">Under "Web Content", select <strong>"Limit Adult Websites"</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">5</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Customize Allowed Sites</h3>
-                    <p className="text-gray-600">Click <strong>Customize</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">6</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Block Everything</h3>
-                    <p className="text-gray-600">In "Never Allow", add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">*</code> (this blocks everything)</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">7</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Allow SafeTunes</h3>
-                    <p className="text-gray-600">In "Always Allow", add: <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code></p>
-                  </div>
-                </div>
-
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
-                  <div className="flex items-start space-x-3">
-                    <svg className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <div>
-                      <h4 className="font-bold text-green-900 mb-1">Setup Complete!</h4>
-                      <p className="text-green-800">Your Mac is now restricted to SafeTunes only.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Kindle Fire Guide */}
-          {activeGuide === 'kindle' && (
-            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                Kindle Fire Setup
-              </h2>
-
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">1</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Set Up Child Profile</h3>
-                    <p className="text-gray-600">Swipe down from top → Settings → <strong>Profiles & Family Library</strong> → <strong>Add a Child Profile</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">2</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Configure Parental Controls</h3>
-                    <p className="text-gray-600">Go to Settings → <strong>Parental Controls</strong> → Turn ON → Create a password</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">3</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Block Websites</h3>
-                    <p className="text-gray-600">Tap <strong>Web Browser</strong> → Select <strong>"Block websites"</strong></p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="bg-accent-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">4</span>
-                  <div>
-                    <h3 className="font-bold text-gray-900">Allow SafeTunes</h3>
-                    <p className="text-gray-600">Tap <strong>"Approved websites"</strong> → add <code className="bg-accent-50 px-2 py-1 rounded font-mono">getsafefamily.com</code> → Tap Add</p>
-                  </div>
-                </div>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-900">
-                    <strong>Tip:</strong> Open Silk Browser, go to getsafefamily.com/play, tap menu → "Add to Home" to create a shortcut
-                  </p>
-                </div>
-
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
-                  <div className="flex items-start space-x-3">
-                    <svg className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <div>
-                      <h4 className="font-bold text-green-900 mb-1">Setup Complete!</h4>
-                      <p className="text-green-800">Your Kindle Fire is now restricted to SafeTunes only.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Guided Access Bonus Section */}
-      <section className="container mx-auto px-4 sm:px-6 pb-12">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-accent-500 rounded-2xl p-6 sm:p-8 text-white">
-            <h3 className="text-xl font-bold mb-3">Bonus: iOS Guided Access (Extra Security)</h3>
-            <p className="text-blue-100 mb-4">
-              Lock your child into the SafeTunes app so they can't exit to other apps.
+            <p className="text-sm text-gray-600 mt-3">
+              Type just the name, with no &quot;https://&quot;, &quot;www.&quot; or &quot;/play&quot;.
             </p>
-            <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-              <ol className="space-y-2 text-sm text-blue-50">
-                <li>1. Go to Settings → Accessibility → Guided Access</li>
-                <li>2. Turn on Guided Access and set a passcode</li>
-                <li>3. Open SafeTunes, then triple-click the side button</li>
-                <li>4. Tap "Start" to lock them in</li>
-              </ol>
-              <p className="text-xs text-blue-100 mt-3">
-                Triple-click again and enter your passcode to exit.
+            <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-sm text-red-900">
+                <strong>Never approve youtube.com or m.youtube.com</strong>, even if a video won&apos;t play. One approval unlocks all of YouTube.
               </p>
             </div>
+            <a
+              href={LOCK_DOWN_GUIDE_URL}
+              className="mt-5 inline-flex items-center gap-2 bg-accent-600 hover:bg-accent-700 text-white px-5 py-3 rounded-xl font-semibold transition"
+            >
+              Step-by-step for each device <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
+
+          {/* Home-screen icon */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border-2 border-gray-200 mt-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Give SafeTunes Its Own Icon</h2>
+            <ol className="space-y-2 text-gray-700 list-decimal pl-5">
+              <li>On your kid&apos;s iPhone or iPad, open <strong>getsafefamily.com/play/tunes</strong> in Safari.</li>
+              <li>Tap Share, then <strong>Add to Home Screen</strong>.</li>
+              <li>Open the new icon and enter your family code once. It opens straight into SafeTunes.</li>
+            </ol>
+            <p className="text-sm text-gray-600 mt-3">
+              On Android or a Chromebook, open the same page in Chrome and use the menu, then Add to Home screen. There is nothing to download from an app store. The old SafeTunes iPhone app no longer works; delete it and use this icon instead.
+            </p>
           </div>
         </div>
       </section>

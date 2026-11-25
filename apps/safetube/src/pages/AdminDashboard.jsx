@@ -830,7 +830,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
             <ol className="space-y-3 text-gray-600 text-sm">
               <li className="flex gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-medium">1</span>
-                <span>Go to <button onClick={() => onNavigate('account')} className="text-accent-600 hover:underline font-medium">Settings</button> and add a profile for each kid</span>
+                <span>Add your kids once in <button onClick={() => topNavigate('/dashboard/family')} className="text-accent-600 hover:underline font-medium">Family</button> (every app uses the same profiles)</span>
               </li>
               <li className="flex gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-medium">2</span>
@@ -842,7 +842,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
               </li>
               <li className="flex gap-3">
                 <span className="flex-shrink-0 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center text-white text-xs font-medium">4</span>
-                <span>Kids visit <a href="https://getsafefamily.com/play" className="text-accent-600 hover:underline font-medium">getsafefamily.com/play</a> and enter the code</span>
+                <span>Kids visit <a href="https://getsafefamily.com/play" target="_top" className="text-accent-600 hover:underline font-medium">getsafefamily.com/play</a>, enter the code and tap Videos</span>
               </li>
             </ol>
             <button
@@ -852,7 +852,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              View Full Setup Guide (Device Lockdown Instructions)
+              Full setup guide, including how to lock down their device
             </button>
           </div>
         )}

@@ -89,10 +89,10 @@ export const sendTrialSignupEmails = internalAction({
           <div style="background: #f5f3ff; border-left: 4px solid #7c3aed; padding: 16px; margin-bottom: 24px; border-radius: 4px;">
             <p style="margin: 0; font-size: 14px; color: #5b21b6;">
               <strong>Quick Start:</strong><br>
-              1. Create kid profiles with age ranges<br>
+              1. Add your kids once in Family at getsafefamily.com/dashboard/family<br>
               2. Set content strictness and blocked topics<br>
-              3. Share your Family Code with kids<br>
-              4. They search safely with AI protection!
+              3. On their device, open getsafefamily.com/play, enter your family code and tap Search<br>
+              4. Lock the device so it only opens Safe Family: <a href="https://getsafefamily.com/guides/lock-down" style="color: #5b21b6;">getsafefamily.com/guides/lock-down</a>
             </p>
           </div>
 

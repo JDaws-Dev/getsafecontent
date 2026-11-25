@@ -3,6 +3,7 @@ import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useToast } from '../common/Toast';
 import { Check, ExternalLink, Clock } from 'lucide-react';
+import { topNavigate } from '../../lib/embed';
 
 // ============================================================
 // ICONS (inline SVGs — no emoji in the UI)
@@ -13,33 +14,9 @@ const PhoneIcon = ({ className }) => (
   </svg>
 );
 
-const LaptopIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M5 16V6a1 1 0 011-1h12a1 1 0 011 1v10M3 19h18" />
-  </svg>
-);
-
-const WindowIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm0 4h16M11 10v10" />
-  </svg>
-);
-
-const DesktopIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-  </svg>
-);
-
 const LightbulbIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-  </svg>
-);
-
-const ArrowUpIcon = ({ className }) => (
-  <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
   </svg>
 );
 
@@ -102,11 +79,17 @@ function QRCode({ url, size = 120 }) {
   );
 }
 
+// The full per-device walkthrough lives on the hub so every app links one place.
+const LOCK_DOWN_GUIDE_URL = 'https://getsafefamily.com/guides/lock-down';
+const ALLOWED_SITES = [
+  ['getsafefamily.com', 'Safe Family (every app)'],
+  ['youtube-nocookie.com', "SafeTube's video player only (no search, no browsing)"],
+];
+
 function GettingStarted({ user, onNavigateToTab }) {
   const { showToast, ToastContainer } = useToast();
   const fullUser = useQuery(api.users.getUser, user ? { userId: user._id } : 'skip');
-  const [selectedDevice, setSelectedDevice] = useState(null);
-  const [showAdvancedTips, setShowAdvancedTips] = useState(false);
+    const [showAdvancedTips, setShowAdvancedTips] = useState(false);
 
   // Progress tracking state - persisted in localStorage
   const [completedSteps, setCompletedSteps] = useState(() => {
@@ -204,249 +187,41 @@ function GettingStarted({ user, onNavigateToTab }) {
               )}
             </div>
             <p className="text-gray-600 mt-1">
-              Use your device's parental controls to block all websites except SafeTunes.
+              Use the device's parental controls so it only opens Safe Family.
             </p>
           </div>
         </div>
 
-        <p className="text-sm font-semibold text-gray-700 mb-3">Select their device type:</p>
-
-        {/* Device Selection Buttons */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-          {[
-            { id: 'ios', icon: <PhoneIcon className="w-8 h-8" />, name: 'iPhone/iPad', difficulty: 'Easy' },
-            { id: 'android', icon: <PhoneIcon className="w-8 h-8" />, name: 'Android', difficulty: 'Easy' },
-            { id: 'chromebook', icon: <LaptopIcon className="w-8 h-8" />, name: 'Chromebook', difficulty: 'Easy' },
-            { id: 'windows', icon: <WindowIcon className="w-8 h-8" />, name: 'Windows', difficulty: 'Medium' },
-            { id: 'mac', icon: <DesktopIcon className="w-8 h-8" />, name: 'Mac', difficulty: 'Medium' },
-          ].map((device) => (
-            <button
-              key={device.id}
-              onClick={() => setSelectedDevice(device.id)}
-              className={`p-4 rounded-xl border-2 transition-all ${
-                selectedDevice === device.id
-                  ? 'border-accent-600 bg-accent-50 shadow-lg'
-                  : 'border-gray-300 bg-white hover:border-accent-400'
-              }`}
-            >
-              <div className="flex justify-center mb-2 text-accent-600">{device.icon}</div>
-              <div className="font-bold text-sm">{device.name}</div>
-              <div className="text-xs text-gray-600">{device.difficulty}</div>
-            </button>
-          ))}
+        <div className="bg-accent-50 border border-accent-200 rounded-lg p-6">
+          <p className="text-sm text-gray-700 mb-3">
+            In Family Link (Android, Chromebook), Screen Time (iPhone, iPad, Mac) or Microsoft Family (Windows),
+            choose <strong>allowed websites only</strong> and add these two sites:
+          </p>
+          <div className="space-y-2">
+            {ALLOWED_SITES.map(([site, why]) => (
+              <div key={site} className="bg-white border border-accent-200 rounded-lg p-3">
+                <code className="bg-yellow-100 px-2 py-0.5 rounded font-mono text-accent-700 break-all">{site}</code>
+                <p className="text-xs text-gray-500 mt-1">{why}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-600 mt-3">
+            Type just the name, with no &quot;https://&quot;, &quot;www.&quot; or &quot;/play&quot;.
+          </p>
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
+            <p className="text-sm text-red-900">
+              <strong>Never approve youtube.com or m.youtube.com</strong>, even if a video won&apos;t play. One approval unlocks all of YouTube.
+            </p>
+          </div>
+          <a
+            href={LOCK_DOWN_GUIDE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-accent-700 hover:underline"
+          >
+            Step-by-step for each device, plus a 5-minute check <ExternalLink className="w-4 h-4" />
+          </a>
         </div>
-
-        {/* Device Instructions */}
-        {selectedDevice === 'ios' && (
-          <div className="bg-accent-50 border border-accent-200 rounded-lg p-6">
-            <h3 className="font-display font-bold text-brand-navy mb-4 flex items-center gap-2">
-              <PhoneIcon className="w-5 h-5 text-accent-600 flex-shrink-0" />iPhone/iPad Setup
-            </h3>
-            <ol className="space-y-3 text-sm text-gray-700">
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">1.</span>
-                <span>Open <strong>Settings</strong> → <strong>Screen Time</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">2.</span>
-                <span>Turn on Screen Time and set a passcode (don't share with your child)</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">3.</span>
-                <span>Tap <strong>Content & Privacy Restrictions</strong> → Turn it ON</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">4.</span>
-                <span>Tap <strong>Content Restrictions</strong> → <strong>Web Content</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">5.</span>
-                <span>Select <strong>"Allowed Websites Only"</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">6.</span>
-                <span>Delete ALL websites in the list by swiping left on each one (Apple pre-adds sites like Discovery Kids - remove them all)</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">7.</span>
-                <span>Tap <strong>"Add Website"</strong> and add this one site:</span>
-              </li>
-            </ol>
-            <div className="mt-3 ml-8 bg-white border-2 border-accent-300 rounded-lg p-4 space-y-2">
-              <p className="text-sm"><strong>Site:</strong> <code className="bg-yellow-100 px-2 py-1 rounded font-mono text-accent-700">getsafefamily.com</code></p>
-            </div>
-            <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-xs text-red-900">
-                <strong>Important:</strong> Do NOT include "https://", "www.", or "/play" - just type the domain: <code className="bg-white px-1 py-0.5 rounded">getsafefamily.com</code>
-              </p>
-            </div>
-          </div>
-        )}
-
-        {selectedDevice === 'android' && (
-          <div className="bg-accent-50 border border-accent-200 rounded-lg p-6">
-            <h3 className="font-display font-bold text-brand-navy mb-4 flex items-center gap-2">
-              <PhoneIcon className="w-5 h-5 text-accent-600 flex-shrink-0" />Android Setup (Family Link)
-            </h3>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-              <p className="text-sm text-amber-900">
-                <strong>Prerequisite:</strong> Your child needs a supervised Google Family Link account.{' '}
-                <a
-                  href="https://families.google.com/familylink/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-amber-700 underline hover:text-amber-800 inline-flex items-center gap-1"
-                >
-                  Set up Family Link <ExternalLink className="w-3 h-3" />
-                </a>
-              </p>
-            </div>
-            <ol className="space-y-3 text-sm text-gray-700">
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">1.</span>
-                <span>Open the <strong>Family Link</strong> app on your phone</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">2.</span>
-                <span>Select your child's account</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">3.</span>
-                <span>Tap <strong>Controls</strong> → <strong>Content restrictions</strong> → <strong>Google Chrome</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">4.</span>
-                <span>Select <strong>"Only allow certain sites"</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">5.</span>
-                <span>Tap <strong>Manage sites</strong> → <strong>Add a website</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">6.</span>
-                <span>Add this site: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">7.</span>
-                <span>Remove any other websites from the "Approved" list</span>
-              </li>
-            </ol>
-          </div>
-        )}
-
-        {selectedDevice === 'chromebook' && (
-          <div className="bg-accent-50 border border-accent-200 rounded-lg p-6">
-            <h3 className="font-display font-bold text-brand-navy mb-4 flex items-center gap-2">
-              <LaptopIcon className="w-5 h-5 text-accent-600 flex-shrink-0" />Chromebook Setup
-            </h3>
-            <p className="text-xs text-gray-600 mb-4 italic">
-              Prerequisite: Your child must be signed in with a supervised Google Account (Family Link).
-            </p>
-            <ol className="space-y-3 text-sm text-gray-700">
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">1.</span>
-                <span>Open <strong>Settings</strong> on the Chromebook</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">2.</span>
-                <span>Go to <strong>People</strong> → <strong>Parental Controls</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">3.</span>
-                <span>Select your child's account → <strong>Permissions</strong> → <strong>Sites</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">4.</span>
-                <span>Select <strong>"Block all sites"</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">5.</span>
-                <span>Under "Allowed", click <strong>Add</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">6.</span>
-                <span>Add this site: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code></span>
-              </li>
-            </ol>
-          </div>
-        )}
-
-        {selectedDevice === 'windows' && (
-          <div className="bg-accent-50 border border-accent-200 rounded-lg p-6">
-            <h3 className="font-display font-bold text-brand-navy mb-4 flex items-center gap-2">
-              <WindowIcon className="w-5 h-5 text-accent-600 flex-shrink-0" />Windows Setup (Family Safety)
-            </h3>
-            <p className="text-xs text-gray-600 mb-4 italic">
-              Prerequisite: Your child must have a Microsoft Family account.
-            </p>
-            <ol className="space-y-3 text-sm text-gray-700">
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">1.</span>
-                <span>Go to <strong>family.microsoft.com</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">2.</span>
-                <span>Sign in and select your child's account</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">3.</span>
-                <span>Click <strong>Content Restrictions</strong> → <strong>Web Browsing</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">4.</span>
-                <span>Turn on <strong>"Only allow these websites"</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">5.</span>
-                <span>Click <strong>Add a website</strong> and add: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code></span>
-              </li>
-            </ol>
-          </div>
-        )}
-
-        {selectedDevice === 'mac' && (
-          <div className="bg-accent-50 border border-accent-200 rounded-lg p-6">
-            <h3 className="font-display font-bold text-brand-navy mb-4 flex items-center gap-2">
-              <DesktopIcon className="w-5 h-5 text-accent-600 flex-shrink-0" />Mac Setup (Screen Time)
-            </h3>
-            <ol className="space-y-3 text-sm text-gray-700">
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">1.</span>
-                <span>Open <strong>System Settings</strong> → <strong>Screen Time</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">2.</span>
-                <span>Turn on Screen Time and set a passcode</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">3.</span>
-                <span>Click <strong>Content & Privacy</strong> → <strong>Content</strong> tab</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">4.</span>
-                <span>Under "Web Content", select <strong>"Limit Adult Websites"</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">5.</span>
-                <span>Click <strong>Customize</strong></span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">6.</span>
-                <span>In "Never Allow", add: <code className="bg-white px-2 py-1 rounded font-mono">*</code> (blocks everything)</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="font-bold text-accent-600 flex-shrink-0">7.</span>
-                <span>In "Always Allow", add: <code className="bg-white px-2 py-1 rounded font-mono">getsafefamily.com</code></span>
-              </li>
-            </ol>
-          </div>
-        )}
-
-        {!selectedDevice && (
-          <div className="text-center text-gray-500 py-8 border-2 border-dashed border-gray-300 rounded-xl">
-            <p className="text-lg flex items-center justify-center gap-2"><ArrowUpIcon className="w-5 h-5 flex-shrink-0" />Select a device above to see instructions</p>
-          </div>
-        )}
       </div>
 
       {/* Step 2: Kids Log In */}
@@ -521,7 +296,7 @@ function GettingStarted({ user, onNavigateToTab }) {
           {/* Home Screen Tip */}
           <div className="bg-accent-50 border border-accent-200 rounded-lg p-4">
             <p className="text-sm text-gray-700">
-              <strong>Make it feel like an app:</strong> On your kid's device, open <strong>getsafefamily.com/play</strong> and add it to the home screen (on iPhone: Share, then Add to Home Screen; on Android: the browser menu, then Add to Home screen). There is no separate app to download.
+              <strong>Give SafeTunes its own icon:</strong> On your kid's iPhone or iPad, open <strong>getsafefamily.com/play/tunes</strong> in Safari, tap Share, then Add to Home Screen. The icon opens straight into SafeTunes; enter your family code once inside it. On Android or a Chromebook, use Chrome's menu, then Add to Home screen. There is nothing to download from an app store.
             </p>
           </div>
         </div>
@@ -561,17 +336,17 @@ function GettingStarted({ user, onNavigateToTab }) {
                 iOS Guided Access (Extra Security)
               </h4>
               <p className="text-accent-100 mb-4">
-                Lock your child into the SafeTunes app so they can't exit to other apps.
+                Keep your child in SafeTunes so they can't switch to other apps.
               </p>
               <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
                 <ol className="space-y-2 text-sm text-accent-50">
                   <li>1. Go to Settings → Accessibility → Guided Access</li>
                   <li>2. Turn on Guided Access and set a passcode</li>
-                  <li>3. Open SafeTunes, then triple-click the side button</li>
+                  <li>3. Open SafeTunes (the home-screen icon), then triple-click the side button</li>
                   <li>4. Tap "Start" to lock them in</li>
                 </ol>
                 <p className="text-xs text-accent-100 mt-3">
-                  Triple-click again and enter your passcode to exit.
+                  Works with the SafeTunes home-screen icon or Safari. Triple-click again and enter your passcode to exit.
                 </p>
               </div>
             </div>
@@ -583,18 +358,19 @@ function GettingStarted({ user, onNavigateToTab }) {
               <div className="bg-gray-50 rounded-lg p-4">
                 <h5 className="font-display font-semibold text-brand-navy mb-1 flex items-center gap-2"><XCircleIcon className="w-4 h-4 text-red-500 flex-shrink-0" />Kid can't access SafeTunes</h5>
                 <p className="text-sm text-gray-600">
-                  • Make sure you allowed <code className="bg-white px-1 rounded">getsafefamily.com</code><br/>
-                  • Verify all other websites are blocked/removed<br/>
-                  • Try visiting in an incognito/private window to test
+                  • Make sure <code className="bg-white px-1 rounded">getsafefamily.com</code> is on the allowed list<br/>
+                  • Check the spelling: no "https://", "www." or "/play"<br/>
+                  • Had the old SafeTunes iPhone app? It no longer works. Delete it and add the home-screen icon (above)
                 </p>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <h5 className="font-display font-semibold text-brand-navy mb-1 flex items-center gap-2"><MusicNoteIcon className="w-4 h-4 text-accent-600 flex-shrink-0" />Music won't play</h5>
                 <p className="text-sm text-gray-600">
-                  • Check that you have an active Apple Music subscription<br/>
-                  • Go to Settings → Apple Music and authorize your account<br/>
-                  • Make sure you've approved some albums in your library
+                  • Check that your Apple Music subscription is active<br/>
+                  • Connect Apple Music in SafeTunes (in Safari or Chrome, not from a home-screen icon)<br/>
+                  • Make sure you've approved some albums for that kid<br/>
+                  • Using Circle, Bark or a router filter? See the background services in the lock-down guide
                 </p>
               </div>
 
@@ -602,7 +378,7 @@ function GettingStarted({ user, onNavigateToTab }) {
                 <h5 className="font-display font-semibold text-brand-navy mb-1 flex items-center gap-2"><GlobeIcon className="w-4 h-4 text-accent-600 flex-shrink-0" />Kid accessed other websites</h5>
                 <p className="text-sm text-gray-600">
                   • Double-check your parental control settings<br/>
-                  • Make sure you selected "Only allow these sites" or "Block all sites"<br/>
+                  • Make sure you chose "Only allow approved sites" (Family Link) or "Allowed Websites Only" (Screen Time)<br/>
                   • Remove ALL pre-approved websites from the allowed list
                 </p>
               </div>
@@ -611,8 +387,8 @@ function GettingStarted({ user, onNavigateToTab }) {
                 <h5 className="font-display font-semibold text-brand-navy mb-1 flex items-center gap-2"><KeyIcon className="w-4 h-4 text-accent-600 flex-shrink-0" />Where's my Family Code?</h5>
                 <p className="text-sm text-gray-600">
                   • Your Family Code is shown at the top of this page<br/>
-                  • It's also in Settings → Account section<br/>
-                  • The code never changes - it's unique to your family
+                  • It's also at the top of your dashboard at getsafefamily.com<br/>
+                  • The same code opens every Safe Family app
                 </p>
               </div>
 
@@ -628,7 +404,7 @@ function GettingStarted({ user, onNavigateToTab }) {
               <div className="bg-gray-50 rounded-lg p-4">
                 <h5 className="font-display font-semibold text-brand-navy mb-1 flex items-center gap-2"><UsersIcon className="w-4 h-4 text-accent-600 flex-shrink-0" />Multiple kids in the family</h5>
                 <p className="text-sm text-gray-600">
-                  • Create a separate profile for each child in Settings<br/>
+                  • Add each child once in Family at getsafefamily.com/dashboard/family<br/>
                   • Each profile can have different approved music<br/>
                   • Kids choose their profile when they log in
                 </p>
@@ -638,7 +414,7 @@ function GettingStarted({ user, onNavigateToTab }) {
                 <h5 className="font-display font-semibold text-brand-navy mb-1 flex items-center gap-2"><RefreshIcon className="w-4 h-4 text-accent-600 flex-shrink-0" />Kid keeps getting logged out</h5>
                 <p className="text-sm text-gray-600">
                   • Make sure they're using Safari or Chrome (not private/incognito mode)<br/>
-                  • Open getsafefamily.com/play and add it to the home screen (Share, then Add to Home Screen)
+                  • Use the SafeTunes home-screen icon (above) so the family code is remembered
                 </p>
               </div>
             </div>
@@ -653,13 +429,13 @@ function GettingStarted({ user, onNavigateToTab }) {
         </h3>
         <div className="space-y-3">
           <button
-            onClick={() => onNavigateToTab?.('settings')}
+            onClick={() => topNavigate('/dashboard/family')}
             className="w-full flex items-center gap-3 p-3 bg-white hover:bg-green-100 rounded-lg border border-green-200 transition text-left group"
           >
             <span className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">1</span>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900">Add Kid Profiles</p>
-              <p className="text-sm text-gray-600">Create a profile for each child with their own PIN</p>
+              <p className="font-semibold text-gray-900">Add Your Kids</p>
+              <p className="text-sm text-gray-600">Add each child once in Family; every app uses the same profiles</p>
             </div>
             <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-green-600 flex-shrink-0" />
           </button>
@@ -671,7 +447,7 @@ function GettingStarted({ user, onNavigateToTab }) {
             <span className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">2</span>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-gray-900">Connect Apple Music</p>
-              <p className="text-sm text-gray-600">Authorize your Apple Music subscription</p>
+              <p className="text-sm text-gray-600">Connect your Apple Music once; your kids play through it</p>
             </div>
             <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-green-600 flex-shrink-0" />
           </button>

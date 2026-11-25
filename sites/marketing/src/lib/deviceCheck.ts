@@ -4,6 +4,8 @@
  * both always say the same thing.
  */
 
+import { ALLOW_SITES_TEXT, LOCK_DOWN_GUIDE_URL } from "./allowedSites";
+
 export type DeviceKind = "chromebook" | "android" | "ios" | "windows" | "mac" | "other";
 
 export type CheckResults = {
@@ -72,7 +74,7 @@ export type Fix = { title: string; steps: string[]; note?: string };
 /** What to change, by device, when regular YouTube is reachable or SafeTube is blocked. */
 export function fixesFor(kind: DeviceKind, problem: "youtube" | "safetube"): Fix[] {
   const approved =
-    "Approved sites should be getsafefamily.com and youtube-nocookie.com. Never approve youtube.com.";
+    `Approved sites should be ${ALLOW_SITES_TEXT}. Never approve youtube.com.`;
   switch (kind) {
     case "chromebook":
     case "android":
@@ -81,7 +83,7 @@ export function fixesFor(kind: DeviceKind, problem: "youtube" | "safetube"): Fix
             title: "In the Family Link app on your phone",
             steps: [
               `Open Family Link, pick your child, then Controls > Content restrictions > Google Chrome.`,
-              `Choose "Only allow approved sites" (or keep your current setting) and add getsafefamily.com and youtube-nocookie.com to Approved sites.`,
+              `Choose "Only allow approved sites" (or keep your current setting) and add ${ALLOW_SITES_TEXT} to Approved sites.`,
               "Run this check again on the device.",
             ],
             note: approved,
@@ -113,7 +115,7 @@ export function fixesFor(kind: DeviceKind, problem: "youtube" | "safetube"): Fix
             title: "In Screen Time on your child's iPhone or iPad",
             steps: [
               "Settings > Screen Time > Content & Privacy Restrictions > App Store, Media, Web & Games > Web Content.",
-              "If it is set to Allowed Websites Only, add getsafefamily.com and youtube-nocookie.com.",
+              `If it is set to Allowed Websites Only, add ${ALLOW_SITES_TEXT}.`,
               "Run this check again on the device.",
             ],
           }]
@@ -121,7 +123,7 @@ export function fixesFor(kind: DeviceKind, problem: "youtube" | "safetube"): Fix
             title: "In Screen Time on your child's iPhone or iPad",
             steps: [
               "Settings > Screen Time > Content & Privacy Restrictions > App Store, Media, Web & Games > Web Content.",
-              "Choose Allowed Websites Only. Remove YouTube if it is on the list, and add getsafefamily.com and youtube-nocookie.com.",
+              `Choose Allowed Websites Only. Remove YouTube if it is on the list, and add ${ALLOW_SITES_TEXT}.`,
               "Delete the YouTube app, and under App Store purchases set Installing Apps to Don't Allow so it can't come back.",
             ],
           }];
@@ -143,6 +145,7 @@ export function fixesFor(kind: DeviceKind, problem: "youtube" | "safetube"): Fix
         steps: [
           `Use the device's parental controls to allow only approved websites. ${approved}`,
           "Remove or block any YouTube app.",
+          `Using Circle, Bark or a router filter? See ${LOCK_DOWN_GUIDE_URL} for the background services to allow.`,
         ],
       }];
   }

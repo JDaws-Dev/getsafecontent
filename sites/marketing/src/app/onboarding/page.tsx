@@ -608,6 +608,16 @@ function CompletionStep({
         </div>
       )}
 
+      <div className="bg-white border border-gray-200 rounded-xl p-4 mb-8 text-left">
+        <p className="text-sm text-navy/80">
+          <strong>Next:</strong> kids get in at <span className="font-mono">getsafefamily.com/play</span> with
+          your family code. Then lock down their device so it only opens Safe Family.
+        </p>
+        <Link href="/setup" className="mt-2 inline-block text-sm font-semibold text-indigo-600 underline underline-offset-2">
+          Open the setup guide
+        </Link>
+      </div>
+
       <Link
         href="/"
         className="inline-flex items-center text-sm text-navy/60 hover:text-navy"
