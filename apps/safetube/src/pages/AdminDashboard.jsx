@@ -255,7 +255,9 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-brand-cream">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      {/* Embedded on a phone the header would be an empty strip (no top bar,
+          tabs live in the bottom nav), so it only shows from md up. */}
+      <header className={`bg-white shadow-sm border-b border-gray-200 ${embedded ? 'hidden md:block' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top Bar — hidden when embedded in the hub dashboard (the shell has one) */}
           {!embedded && (<div className="flex items-center justify-between py-4">
@@ -654,7 +656,9 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Your Kids</h2>
-            <p className="text-sm text-gray-500">Toggle switch pauses or enables video access instantly</p>
+            <p className="text-sm text-gray-500">
+              {isEmbedded() ? 'Time left today. Pause a child in Family.' : 'Toggle switch pauses or enables video access instantly'}
+            </p>
           </div>
           <button
             onClick={() => onNavigate('account')}
@@ -675,12 +679,14 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No kids yet</h3>
-            <p className="text-gray-500 text-sm mb-4">Add a profile for each child to get started</p>
+            <p className="text-gray-500 text-sm mb-4">
+              {isEmbedded() ? 'Add your children once in Family and they show up here.' : 'Add a profile for each child to get started'}
+            </p>
             <button
-              onClick={() => onNavigate('account')}
-              className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
+              onClick={() => (isEmbedded() ? topNavigate('/dashboard/family') : onNavigate('account'))}
+              className="min-h-[44px] bg-accent-500 hover:bg-accent-600 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
             >
-              Add Kids in Settings
+              {isEmbedded() ? 'Open Family' : 'Add Kids in Settings'}
             </button>
           </div>
         ) : (
@@ -743,8 +749,13 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
                       </div>
                     </div>
 
-                    {/* Quick Pause Toggle - iOS style switch */}
-                    <button
+                    {/* Quick Pause Toggle - iOS style switch. Embedded, pause is
+                        the Family tab's (the hub would undo a SafeTube-only one). */}
+                    {isEmbedded() ? (
+                      kid.videoPaused && (
+                        <span className="flex-shrink-0 rounded-full bg-accent-100 px-2.5 py-1 text-xs font-semibold text-accent-700">Paused</span>
+                      )
+                    ) : (<button
                       onClick={() => handleQuickPause(kid)}
                       className={`relative flex-shrink-0 w-14 h-8 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                         kid.videoPaused
@@ -770,7 +781,7 @@ function HomeTab({ userData, kidProfiles, userId, onNavigate, onCopyCode, codeCo
                           </svg>
                         )}
                       </span>
-                    </button>
+                    </button>)}
                   </div>
                 );
               })}
@@ -946,7 +957,15 @@ function TrialExpiredScreen({ userData, onLogout }) {
         </div>
 
         <div className="space-y-3">
-          <a
+          {isEmbedded() ? (
+            <button
+              type="button"
+              onClick={() => topNavigate('/account')}
+              className="w-full bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-xl font-semibold transition shadow-md"
+            >
+              Go to Account
+            </button>
+          ) : (<a
             href="mailto:jeremiah@getsafefamily.com?subject=SafeTube%20Subscription"
             className="w-full bg-accent-500 hover:bg-accent-600 text-white py-3 rounded-xl font-semibold transition shadow-md flex items-center justify-center gap-2"
           >
@@ -954,14 +973,14 @@ function TrialExpiredScreen({ userData, onLogout }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
             Contact Us to Subscribe
-          </a>
+          </a>)}
 
-          <button
+          {!isEmbedded() && (<button
             onClick={onLogout}
             className="w-full text-gray-500 hover:text-gray-700 py-2 transition"
           >
             Log Out
-          </button>
+          </button>)}
         </div>
 
         {/* Promo code section - subtle link */}

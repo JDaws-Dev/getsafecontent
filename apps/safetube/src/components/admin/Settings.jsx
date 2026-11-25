@@ -1,4 +1,5 @@
-import { topNavigate } from '../../lib/embed';
+import { topNavigate, isEmbedded } from '../../lib/embed';
+import FamilyNote from './FamilyNote';
 import { withBase } from '../../lib/appBase';
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useAction } from 'convex/react';
@@ -69,6 +70,10 @@ function formatTimeAgo(timestamp) {
 
 export default function Settings({ userData, onLogout }) {
   const { token } = useAuth();
+  // Inside the hub dashboard: the hub owns the account (Account page), kids'
+  // names/PINs/pause/requests (Family tab), and the look. This tab keeps only
+  // what is SafeTube's own: Shorts, time limits, activity, device guide.
+  const embedded = isEmbedded();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSetupGuide, setShowSetupGuide] = useState(false);
   const [activeSection, setActiveSection] = useState('kids'); // 'kids', 'account', 'support'
@@ -176,11 +181,13 @@ export default function Settings({ userData, onLogout }) {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Settings</h1>
-        <p className="text-gray-500 text-sm">Manage your kids, account, and preferences</p>
+        <p className="text-gray-500 text-sm">
+          {embedded ? 'Shorts and video time for each child' : 'Manage your kids, account, and preferences'}
+        </p>
       </div>
 
-      {/* Section Tabs */}
-      <div className="flex gap-2 border-b border-gray-200 pb-0">
+      {/* Section Tabs — standalone only; embedded, the hub has Account */}
+      {!embedded && (<div className="flex gap-2 border-b border-gray-200 pb-0 overflow-x-auto">
         <button
           onClick={() => setActiveSection('kids')}
           className={`px-4 py-2 font-medium text-sm rounded-t-lg transition ${
@@ -221,19 +228,20 @@ export default function Settings({ userData, onLogout }) {
         >
           Appearance
         </button>
-      </div>
+      </div>)}
 
       {/* KIDS SECTION */}
-      {activeSection === 'kids' && (
+      {(embedded || activeSection === 'kids') && (
         <div className="space-y-6">
+          {embedded && <FamilyNote />}
           {/* Kids Management Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-accent-500">
               <div>
                 <h2 className="text-lg font-semibold text-white">Kid Profiles</h2>
-                <p className="text-sm text-white/80">Manage access and time limits for each child</p>
+                <p className="text-sm text-white/80">{embedded ? 'Tap a child for Shorts and time limits' : 'Manage access and time limits for each child'}</p>
               </div>
-              <button
+              {!embedded && (<button
                 onClick={() => setShowAddKid(true)}
                 className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition"
               >
@@ -241,7 +249,7 @@ export default function Settings({ userData, onLogout }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 Add Kid
-              </button>
+              </button>)}
             </div>
 
             {!kidProfiles || kidProfiles.length === 0 ? (
@@ -252,12 +260,14 @@ export default function Settings({ userData, onLogout }) {
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No kids yet</h3>
-                <p className="text-gray-500 text-sm mb-4">Add a profile for each child to get started</p>
+                <p className="text-gray-500 text-sm mb-4">
+                  {embedded ? 'Add your children once in Family and they show up here.' : 'Add a profile for each child to get started'}
+                </p>
                 <button
-                  onClick={() => setShowAddKid(true)}
+                  onClick={() => (embedded ? topNavigate('/dashboard/family') : setShowAddKid(true))}
                   className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
                 >
-                  Add Your First Kid
+                  {embedded ? 'Open Family' : 'Add Your First Kid'}
                 </button>
               </div>
             ) : (
@@ -304,7 +314,7 @@ export default function Settings({ userData, onLogout }) {
       )}
 
       {/* ACCOUNT SECTION */}
-      {activeSection === 'account' && (
+      {!embedded && activeSection === 'account' && (
         <div className="space-y-6">
           {/* Account Information */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -523,7 +533,7 @@ export default function Settings({ userData, onLogout }) {
       )}
 
       {/* SUPPORT SECTION */}
-      {activeSection === 'support' && (
+      {!embedded && activeSection === 'support' && (
         <div className="space-y-6">
           {/* Support Links */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -586,7 +596,7 @@ export default function Settings({ userData, onLogout }) {
       )}
 
       {/* APPEARANCE SECTION */}
-      {activeSection === 'appearance' && (
+      {!embedded && activeSection === 'appearance' && (
         <div className="space-y-6">
           {/* Theme Selection Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -776,6 +786,9 @@ function Toggle({ enabled, onChange, color = 'green' }) {
 
 // Kid Card - expandable with full inline editing
 function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, recentHistory }) {
+  // Embedded in the hub: name, colour, PIN, requests and pause come from the
+  // Family tab (and are overwritten here on every sync), so they're not shown.
+  const embedded = isEmbedded();
   // Own useAuth call — sibling component, parent's `token` isn't in scope.
   const { token } = useAuth();
   const [saving, setSaving] = useState(false);
@@ -875,19 +888,27 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
-    // Validate PIN if provided (must be exactly 4 digits or empty)
-    if (form.pin && !/^\d{4}$/.test(form.pin)) {
+    // The stored PIN is a hash, not 4 digits, so only send it when the parent
+    // actually changed it — otherwise saving Shorts/time limits for any child
+    // with a PIN failed the 4-digit check (or would re-hash the hash).
+    const pinChanged = form.pin !== (kid.pin || '');
+    if (!embedded && pinChanged && form.pin && !/^\d{4}$/.test(form.pin)) {
       alert('PIN must be exactly 4 digits');
       return;
     }
     setSaving(true);
     try {
-      // Save profile settings
-      await updateProfile({
+      // Embedded in the hub, only SafeTube's own setting is saved here; the
+      // Family tab owns name, colour, PIN, requests and pause.
+      await updateProfile(embedded ? {
+        profileId: kid._id,
+        shortsEnabled: form.shortsEnabled,
+        userToken: token ?? undefined,
+      } : {
         profileId: kid._id,
         name: form.name.trim(),
         color: form.color,
-        pin: form.pin, // Pass PIN (empty string removes it)
+        ...(pinChanged ? { pin: form.pin } : {}), // empty string removes it
         requestsEnabled: form.requestsEnabled,
         shortsEnabled: form.shortsEnabled,
         videoPaused: form.videoPaused,
@@ -967,8 +988,8 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
       {isExpanded && (
         <div className="border-t border-gray-200 p-4 space-y-6 bg-white">
 
-          {/* Profile Section */}
-          <div>
+          {/* Profile Section — standalone only (embedded, Family owns it) */}
+          {!embedded && (<div>
             <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Profile</h4>
 
             {/* Name */}
@@ -1043,13 +1064,15 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
             </div>
           </div>
 
+          )}
+
           {/* Content Controls Section */}
           <div>
             <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Content Controls</h4>
 
             <div className="space-y-3">
               {/* Requests */}
-              <div className="flex items-center justify-between py-2">
+              {!embedded && (<div className="flex items-center justify-between py-2">
                 <div>
                   <p className="text-sm font-medium text-gray-900">Allow Requests</p>
                   <p className="text-xs text-gray-500">Search and request new videos</p>
@@ -1058,7 +1081,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                   enabled={form.requestsEnabled}
                   onChange={(val) => updateForm({ requestsEnabled: val })}
                 />
-              </div>
+              </div>)}
 
               {/* Shorts */}
               <div className="flex items-center justify-between py-2">
@@ -1073,7 +1096,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
               </div>
 
               {/* Video Paused - styled differently as it's a lockout */}
-              <div className="flex items-center justify-between py-2 px-3 bg-accent-50 rounded-lg -mx-3">
+              {!embedded && (<div className="flex items-center justify-between py-2 px-3 bg-accent-50 rounded-lg -mx-3">
                 <div>
                   <p className="text-sm font-medium text-accent-700">Pause All Videos</p>
                   <p className="text-xs text-accent-600/70">Temporarily block playback</p>
@@ -1083,7 +1106,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                   onChange={(val) => updateForm({ videoPaused: val })}
                   color="red"
                 />
-              </div>
+              </div>)}
             </div>
           </div>
 
@@ -1122,7 +1145,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                         type="button"
                         disabled={familyLimitBusy}
                         onClick={() => saveFamilyLimit(preset.value)}
-                        className={`py-2 px-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
+                        className={`min-h-[40px] py-2 px-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
                           familyLimit?.limitMinutes === preset.value
                             ? 'bg-accent-500 text-white'
                             : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -1175,7 +1198,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                         key={preset.value}
                         type="button"
                         onClick={() => updateForm({ dailyLimitMinutes: preset.value })}
-                        className={`px-2 py-1.5 rounded-lg text-xs font-medium transition ${
+                        className={`min-h-[40px] px-2 py-2 rounded-lg text-xs font-medium transition ${
                           form.dailyLimitMinutes === preset.value
                             ? 'bg-accent-500 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1208,7 +1231,7 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                           key={preset.value}
                           type="button"
                           onClick={() => updateForm({ weekendLimitMinutes: preset.value })}
-                          className={`px-2 py-1.5 rounded-lg text-xs font-medium transition ${
+                          className={`min-h-[40px] px-2 py-2 rounded-lg text-xs font-medium transition ${
                             form.weekendLimitMinutes === preset.value
                               ? 'bg-accent-500 text-white'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1311,12 +1334,12 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
             >
               {saving ? 'Saving...' : hasChanges ? 'Save Changes' : 'No Changes'}
             </button>
-            <button
+            {!embedded && (<button
               onClick={() => onDelete(kid._id, kid.name)}
               className="px-4 py-2.5 text-accent-600 hover:bg-accent-50 rounded-lg font-medium transition"
             >
               Delete
-            </button>
+            </button>)}
           </div>
         </div>
       )}

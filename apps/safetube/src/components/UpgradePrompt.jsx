@@ -1,4 +1,5 @@
 import { withBase } from '../lib/appBase';
+import { isEmbedded } from '../lib/embed';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -22,7 +23,12 @@ export default function UpgradePrompt({ user, onLogout }) {
     }
   };
 
-  const upgradeUrl = `https://getsafefamily.com/account?upgrade=safetube&email=${encodeURIComponent(user?.email || '')}`;
+  // Inside the hub dashboard the account page is next door (same origin) and
+  // must open in the top window, not inside this frame.
+  const embedded = isEmbedded();
+  const upgradeUrl = embedded
+    ? '/account?upgrade=safetube'
+    : `https://getsafefamily.com/account?upgrade=safetube&email=${encodeURIComponent(user?.email || '')}`;
 
   return (
     <div className="min-h-screen bg-brand-cream flex items-center justify-center p-6">
@@ -91,18 +97,19 @@ export default function UpgradePrompt({ user, onLogout }) {
           {/* CTA Button */}
           <a
             href={upgradeUrl}
+            target={embedded ? '_top' : undefined}
             className="block w-full bg-accent-500 hover:bg-accent-600 text-white py-4 rounded-xl font-bold text-lg text-center transition shadow-lg mb-4"
           >
             Upgrade Now
           </a>
 
-          {/* Use different account */}
-          <button
+          {/* Use different account — the hub header has Sign out when embedded */}
+          {!embedded && (<button
             onClick={handleLogout}
             className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-center transition"
           >
             Use a Different Account
-          </button>
+          </button>)}
 
           {/* Support link */}
           <div className="text-center mt-6 text-sm text-gray-500">
