@@ -6,7 +6,6 @@ import AlbumSearch from './AlbumSearch';
 import MusicLibrarySeparate from './MusicLibrarySeparate';
 import AddMusic from './AddMusic';
 import AppleMusicAuth from './AppleMusicAuth';
-import KidProfileManager from './KidProfileManager';
 import RequestsView from './RequestsView';
 import ListeningHistory from './ListeningHistory';
 import Settings from './Settings';
@@ -671,8 +670,11 @@ function AdminDashboard({ user, onLogout }) {
             <SafeFamilyParentSwitcher current="safetunes" familyCode={fullUser?.familyCode} tile={40} />
           </div>)}
 
-          {/* Desktop Tabs — the shared Safe Family sub-nav pattern (same in every app) */}
-          <div className="hidden md:block">
+          {/* Section tabs — the shared Safe Family sub-nav pattern (same in every app).
+              Standalone phones use the bottom bar + menu instead; inside the hub
+              dashboard there is no menu (the shell owns the header), so the tabs
+              show at every width and scroll sideways on a phone. */}
+          <div className={embedded ? 'block' : 'hidden md:block'}>
             <nav className="flex -mb-px overflow-x-auto [scrollbar-width:none]" aria-label="SafeTunes sections">
               <button
                 type="button"
@@ -820,7 +822,8 @@ function AdminDashboard({ user, onLogout }) {
         </div>
       )}
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation — standalone only (embedded uses the top tabs) */}
+      {!embedded && (
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-inset-bottom">
         <div className="grid grid-cols-4">
           {/* Home */}
@@ -903,9 +906,10 @@ function AdminDashboard({ user, onLogout }) {
           </button>
         </div>
       </nav>
+      )}
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:pb-8">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 ${embedded ? 'pb-8' : 'pb-24 md:pb-8'}`}>
         {/* Home Tab - Command Center */}
         {activeTab === 'home' && (
           <ParentDashboardHome
@@ -1121,7 +1125,7 @@ function AdminDashboard({ user, onLogout }) {
       {/* Kid Selection Modal for Deletion */}
       {albumToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-xl font-display font-bold text-brand-navy">Remove Album</h3>

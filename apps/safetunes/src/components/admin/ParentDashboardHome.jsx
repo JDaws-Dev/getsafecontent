@@ -4,7 +4,7 @@ import { api } from '../../../convex/_generated/api';
 import { COLORS } from '../../constants/avatars';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { isEmbedded } from '../../lib/embed';
+import { isEmbedded, topNavigate } from '../../lib/embed';
 import {
   Music,
   ChevronRight,
@@ -123,7 +123,7 @@ function AlertBanner({ count, onDismiss, onNavigate }) {
 }
 
 // Kid Card - Smart Accordion with Safety-First Design
-function KidCard({ kid, onPauseToggle, onManageProfile }) {
+function KidCard({ kid, onPauseToggle, onManageProfile, embedded = false }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const isMusicEnabled = !kid.isPaused;
 
@@ -219,7 +219,10 @@ function KidCard({ kid, onPauseToggle, onManageProfile }) {
               </div>
             </div>
 
-            {/* Right: Music Access Toggle Switch */}
+            {/* Right: Music Access Toggle Switch. Inside the hub dashboard,
+                pausing a child is a Family setting (the hub overwrites a local
+                pause on its next sync), so the switch is not shown there. */}
+            {!embedded && (
             <button
               onClick={handleToggle}
               className={`relative w-14 h-8 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
@@ -242,6 +245,7 @@ function KidCard({ kid, onPauseToggle, onManageProfile }) {
                 )}
               </span>
             </button>
+            )}
           </div>
 
           {/* 3 Key Metrics Row */}
@@ -406,7 +410,7 @@ function KidCard({ kid, onPauseToggle, onManageProfile }) {
               className="w-full mt-2 py-2.5 px-4 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition flex items-center justify-center gap-2"
             >
               <Settings className="w-4 h-4" />
-              Manage Profile & Limits
+              {embedded ? 'Listening limits' : 'Manage Profile & Limits'}
             </button>
           </div>
         )}
@@ -720,6 +724,7 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
                 kid={kid}
                 onPauseToggle={handlePauseToggle}
                 onManageProfile={handleManageKidProfile}
+                embedded={embedded}
               />
             ))}
           </div>
@@ -735,14 +740,18 @@ export default function ParentDashboardHome({ user, onNavigateToTab }) {
             </div>
             <div>
               <h2 className="text-xl font-bold mb-1">Add Your First Kid</h2>
-              <p className="text-white/80 text-sm">Create a profile for each child to start managing their music</p>
+              <p className="text-white/80 text-sm">
+                {embedded
+                  ? 'Add your kids once in Family and they show up here, ready for music.'
+                  : 'Create a profile for each child to start managing their music'}
+              </p>
             </div>
           </div>
           <button
-            onClick={() => onNavigateToTab?.('settings')}
+            onClick={() => (embedded ? topNavigate('/dashboard/family') : onNavigateToTab?.('settings'))}
             className="w-full bg-white/20 hover:bg-white/30 rounded-xl p-4 flex items-center justify-between transition group"
           >
-            <span className="font-medium">Create Kid Profile</span>
+            <span className="font-medium">{embedded ? 'Open Family' : 'Create Kid Profile'}</span>
             <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition" />
           </button>
         </div>

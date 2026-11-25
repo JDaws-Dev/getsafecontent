@@ -1699,7 +1699,7 @@ function RequestsView({ user }) {
         await approveSongRequest({ requestId, hideArtwork, userToken: token ?? undefined });
       }
 
-      showToast(`${requestName || 'Request'} approved ✓`, 'success');
+      showToast(`${requestName || 'Request'} approved`, 'success');
     } catch (error) {
       showToast('Failed to approve', 'error');
     }
@@ -1725,7 +1725,7 @@ function RequestsView({ user }) {
       if (skippedCount > 0) {
         showToast(`Approved ${selectedTracks.length} songs. ${skippedCount} restricted songs were skipped.`, 'success');
       } else {
-        showToast(`${request.albumName} approved ✓`, 'success');
+        showToast(`${request.albumName} approved`, 'success');
       }
     } catch (error) {
       showToast('Failed to approve', 'error');

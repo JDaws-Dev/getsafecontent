@@ -11,6 +11,23 @@ import { useIsNativeApp } from '../../hooks/useIsNativeApp';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { ThemeSelector } from '../common/ThemeToggle';
+import { isEmbedded, topNavigate } from '../../lib/embed';
+
+// Inside the hub dashboard, a child's name, PIN, colour, pause and allowed
+// hours belong to the Family tab: the hub overwrites them here on every sync,
+// so editing them in SafeTunes would silently undo itself.
+const FamilyNote = () => (
+  <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between rounded-xl border border-gray-200 bg-white p-4">
+    <p className="text-sm text-gray-700">Names, PINs, pause and allowed hours are set in Family.</p>
+    <button
+      type="button"
+      onClick={() => topNavigate('/dashboard/family')}
+      className="inline-flex h-10 items-center justify-center rounded-full bg-brand-navy px-4 text-sm font-semibold text-white whitespace-nowrap"
+    >
+      Open Family
+    </button>
+  </div>
+);
 
 // Chevron Right Icon Component
 const ChevronRight = () => (
@@ -37,6 +54,7 @@ function Settings({ user, onLogout, initialSection }) {
   const { showToast, ToastContainer } = useToast();
   const { token } = useAuth();
   const isNativeApp = useIsNativeApp();
+  const embedded = isEmbedded();
   const fullUser = useQuery(api.users.getUser, user ? { userId: user._id } : 'skip');
   const kidProfiles = useQuery(api.kidProfiles.getKidProfiles, user ? { userId: user._id, userToken: token ?? undefined } : 'skip') || [];
   const updateKidProfile = useMutation(api.kidProfiles.updateKidProfile);
@@ -445,20 +463,28 @@ function Settings({ user, onLogout, initialSection }) {
         });
         setFormSuccess('Kid profile created successfully!');
       } else {
-        const updates = {
-          profileId: editingKidId,
-          userToken: token ?? undefined,
-          name: formData.name,
-          color: formData.color,
-          timeLimitEnabled: formData.timeLimitEnabled,
-          dailyTimeLimitMinutes: formData.timeLimitEnabled ? formData.dailyTimeLimitMinutes : undefined,
-          // Time-of-day restrictions
-          timeOfDayEnabled: formData.timeOfDayEnabled,
-          allowedStartTime: formData.timeOfDayEnabled ? formData.allowedStartTime : undefined,
-          allowedEndTime: formData.timeOfDayEnabled ? formData.allowedEndTime : undefined,
-        };
+        const updates = embedded
+          ? {
+              // Hub-owned fields (name, colour, PIN, hours) are left alone here.
+              profileId: editingKidId,
+              userToken: token ?? undefined,
+              timeLimitEnabled: formData.timeLimitEnabled,
+              dailyTimeLimitMinutes: formData.timeLimitEnabled ? formData.dailyTimeLimitMinutes : undefined,
+            }
+          : {
+              profileId: editingKidId,
+              userToken: token ?? undefined,
+              name: formData.name,
+              color: formData.color,
+              timeLimitEnabled: formData.timeLimitEnabled,
+              dailyTimeLimitMinutes: formData.timeLimitEnabled ? formData.dailyTimeLimitMinutes : undefined,
+              // Time-of-day restrictions
+              timeOfDayEnabled: formData.timeOfDayEnabled,
+              allowedStartTime: formData.timeOfDayEnabled ? formData.allowedStartTime : undefined,
+              allowedEndTime: formData.timeOfDayEnabled ? formData.allowedEndTime : undefined,
+            };
 
-        if (formData.pin) {
+        if (formData.pin && !embedded) {
           updates.pin = formData.pin;
         }
 
@@ -549,8 +575,9 @@ function Settings({ user, onLogout, initialSection }) {
     },
   ];
 
-  // Only add subscription if NOT in native iOS app
-  if (!isNativeApp) {
+  // Only add subscription if NOT in native iOS app (and not inside the hub,
+  // whose Account page owns account details and billing)
+  if (!isNativeApp && !embedded) {
     menuItems.push({
       id: 'subscription',
       label: 'Subscription',
@@ -564,6 +591,29 @@ function Settings({ user, onLogout, initialSection }) {
       ),
     });
   }
+
+  // Inside the hub dashboard: account details, billing and sign-out live on
+  // the hub's Account page, so they are one link here instead of a copy.
+  const visibleMenuItems = embedded
+    ? [
+        ...menuItems
+          .filter((item) => item.id !== 'account')
+          .map((item) => (item.id === 'kids'
+            ? { ...item, label: 'Kids', sublabel: 'Listening limits and playlists' }
+            : item)),
+        {
+          id: 'hub-account',
+          label: 'Account and billing',
+          sublabel: 'Email, password, plan and sign-out',
+          onClick: () => topNavigate('/account'),
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          ),
+        },
+      ]
+    : menuItems;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -592,12 +642,12 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Main Menu View */}
       {activeSection === 'menu' && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {menuItems.map((item, index) => (
+          {visibleMenuItems.map((item, index) => (
             <button
               key={item.id}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => (item.onClick ? item.onClick() : setActiveSection(item.id))}
               className={`w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition ${
-                index !== menuItems.length - 1 ? 'border-b border-gray-100' : ''
+                index !== visibleMenuItems.length - 1 ? 'border-b border-gray-100' : ''
               }`}
             >
               <div className="flex items-center gap-4">
@@ -613,7 +663,8 @@ function Settings({ user, onLogout, initialSection }) {
             </button>
           ))}
 
-          {/* Logout at bottom of menu */}
+          {/* Logout at bottom of menu (the hub header has Sign out when embedded) */}
+          {!embedded && (
           <div className="border-t border-gray-200 mt-2">
             <button
               onClick={onLogout}
@@ -625,6 +676,25 @@ function Settings({ user, onLogout, initialSection }) {
                 </svg>
               </div>
               <span className="font-medium">Logout</span>
+            </button>
+          </div>
+          )}
+        </div>
+      )}
+
+      {/* Account / subscription opened from elsewhere while embedded: point at the hub */}
+      {embedded && (activeSection === 'account' || activeSection === 'subscription') && (
+        <div className="space-y-6">
+          <BackButton onClick={() => setActiveSection('menu')} label="Settings" />
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <h2 className="text-xl font-display font-semibold text-brand-navy mb-2">Account and billing</h2>
+            <p className="text-sm text-gray-600 mb-4">Your email, password, plan and billing are on your Safe Family account page.</p>
+            <button
+              type="button"
+              onClick={() => topNavigate('/account')}
+              className="inline-flex h-10 items-center justify-center rounded-full bg-brand-navy px-5 text-sm font-semibold text-white"
+            >
+              Open Account
             </button>
           </div>
         </div>
@@ -724,7 +794,7 @@ function Settings({ user, onLogout, initialSection }) {
       )}
 
       {/* Account & Security Section */}
-      {activeSection === 'account' && (
+      {activeSection === 'account' && !embedded && (
         <div className="space-y-6">
           <BackButton onClick={() => setActiveSection('menu')} label="Settings" />
 
@@ -999,7 +1069,7 @@ function Settings({ user, onLogout, initialSection }) {
           <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-display font-semibold text-brand-navy">Kid Profiles</h2>
-              {!isCreatingKid && !editingKidId && (
+              {!isCreatingKid && !editingKidId && !embedded && (
                 <button
                   onClick={startCreatingKid}
                   className="bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
@@ -1011,6 +1081,10 @@ function Settings({ user, onLogout, initialSection }) {
                 </button>
               )}
             </div>
+
+            {embedded && (
+              <div className="mb-4"><FamilyNote /></div>
+            )}
 
             {formSuccess && (
               <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
@@ -1028,10 +1102,12 @@ function Settings({ user, onLogout, initialSection }) {
             {(isCreatingKid || editingKidId) && (
               <div className="border border-accent-300 rounded-lg p-6 mb-6 bg-accent-50">
                 <h3 className="text-lg font-display font-semibold text-brand-navy mb-4">
-                  {isCreatingKid ? 'Create New Kid Profile' : 'Edit Kid Profile'}
+                  {isCreatingKid ? 'Create New Kid Profile' : embedded ? `${formData.name}: listening limits` : 'Edit Kid Profile'}
                 </h3>
 
                 <div className="space-y-4">
+                  {/* Name + colour: Family owns these inside the hub */}
+                  {!embedded && (<>
                   {/* Name */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -1062,6 +1138,7 @@ function Settings({ user, onLogout, initialSection }) {
                       ))}
                     </div>
                   </div>
+                  </>)}
 
                   {/* One limit across every Safe Family app.
                       Saves immediately (it lives in Marketing Central, not in
@@ -1198,7 +1275,8 @@ function Settings({ user, onLogout, initialSection }) {
                     )}
                   </div>
 
-                  {/* Time-of-Day Restrictions */}
+                  {/* Time-of-Day Restrictions (Family owns these inside the hub) */}
+                  {!embedded && (
                   <div className="border-t border-gray-200 pt-4 mt-4">
                     <div className="flex items-center justify-between mb-3">
                       <div>
@@ -1274,7 +1352,10 @@ function Settings({ user, onLogout, initialSection }) {
                     )}
                   </div>
 
-                  {/* PIN */}
+                  )}
+
+                  {/* PIN (Family owns it inside the hub) */}
+                  {!embedded && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {isCreatingKid ? 'PIN (Optional)' : 'New PIN (Optional - leave blank to keep current)'}
@@ -1305,18 +1386,19 @@ function Settings({ user, onLogout, initialSection }) {
                       />
                     </div>
                   </div>
+                  )}
 
                   {/* Buttons */}
                   <div className="flex gap-3 pt-4">
                     <button
                       onClick={cancelEditing}
-                      className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition"
+                      className="flex-1 min-h-[44px] px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSaveKid}
-                      className="flex-1 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition"
+                      className="flex-1 min-h-[44px] px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-medium transition"
                     >
                       {isCreatingKid ? 'Create Profile' : 'Save Changes'}
                     </button>
@@ -1357,7 +1439,8 @@ function Settings({ user, onLogout, initialSection }) {
                         </svg>
                         Reset Profile (Fresh Start)
                       </button>
-                      {/* Delete Profile Button */}
+                      {/* Delete Profile Button (removing a child happens in Family inside the hub) */}
+                      {!embedded && (
                       <button
                         onClick={() => {
                           const kid = kidProfiles.find(k => k._id === editingKidId);
@@ -1373,6 +1456,7 @@ function Settings({ user, onLogout, initialSection }) {
                         </svg>
                         Delete Profile
                       </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1429,14 +1513,14 @@ function Settings({ user, onLogout, initialSection }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                   <p className="font-medium mb-1">No kid profiles yet</p>
-                  <p className="text-sm">Click "Add Kid" to create your first profile</p>
+                  <p className="text-sm">{embedded ? 'Add your kids in Family and they appear here.' : 'Click "Add Kid" to create your first profile'}</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Archived Profiles Section */}
-          {archivedProfiles.length > 0 && (
+          {/* Archived Profiles Section (kids are added and removed in Family inside the hub) */}
+          {archivedProfiles.length > 0 && !embedded && (
             <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
               <h2 className="text-lg font-display font-semibold text-brand-navy mb-4 flex items-center gap-2">
                 <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1496,7 +1580,7 @@ function Settings({ user, onLogout, initialSection }) {
       )}
 
       {/* Subscription Section */}
-      {activeSection === 'subscription' && !isNativeApp && (
+      {activeSection === 'subscription' && !isNativeApp && !embedded && (
         <div className="space-y-6">
           <BackButton onClick={() => setActiveSection('menu')} label="Settings" />
 
@@ -1693,7 +1777,7 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Account Deletion Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1777,7 +1861,7 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Kid Profile Deletion Modal - Now archives for 30 days */}
       {showDeleteKidModal && kidToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1845,7 +1929,7 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Kid Profile Reset Modal */}
       {showResetKidModal && kidToReset && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1914,7 +1998,7 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Restore Archive Modal */}
       {showRestoreModal && archiveToRestore && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1972,7 +2056,7 @@ function Settings({ user, onLogout, initialSection }) {
       {/* Cancellation Reason Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
