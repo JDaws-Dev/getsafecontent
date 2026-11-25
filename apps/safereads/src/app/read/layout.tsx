@@ -7,7 +7,7 @@ import { PauseCircle } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { KidNav } from "@/components/kid/KidNav";
-import { redirectKidToHubPlay } from "@/lib/embed";
+import { redirectKidToHubPlay, useIsEmbedded } from "@/lib/embed";
 
 /**
  * A kid deep link under the hub (any /read/* opened directly, not inside the
@@ -90,6 +90,7 @@ export default function PlayLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const embedded = useIsEmbedded();
 
   // Don't show kid nav on the code entry page, profile selection, reader, or Bible reading view
   const isReaderRoute = pathname?.startsWith("/read/book/");
@@ -115,7 +116,7 @@ export default function PlayLayout({
 
   return (
     <HubPlayGuard>
-    <div className="kid-bg-pattern min-h-screen overflow-x-hidden">
+    <div className={`${embedded && isEntryRoute ? "bg-[#FBF6EF]" : "kid-bg-pattern"} min-h-screen overflow-x-hidden`}>
       <div className={`${showNav ? "lg:pl-[200px]" : ""}`}>
         <div className={`mx-auto max-w-2xl px-4 lg:max-w-4xl ${showNav ? "pb-40 lg:pb-8" : ""}`}>
           {gated}

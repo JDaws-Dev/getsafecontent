@@ -623,7 +623,7 @@ export default function ParentDashboard() {
 
         <section className="rounded-3xl border border-brand-cream-2 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-widest text-accent-700">Profiles in your family</p>
               <h2 className="font-display text-lg font-bold text-brand-navy">
                 {family?.kids.length ?? 0} profile{family?.kids.length === 1 ? '' : 's'}
@@ -631,7 +631,7 @@ export default function ParentDashboard() {
             </div>
             <Link
               href="/parent/setup"
-              className="inline-flex items-center gap-1 rounded-2xl border border-brand-cream-2 bg-white px-3 py-2 text-sm font-bold text-brand-navy hover:bg-brand-cream"
+              className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-2xl border border-brand-cream-2 bg-white px-3 py-2 text-sm font-bold text-brand-navy hover:bg-brand-cream"
             >
               <Users className="h-4 w-4" />
               Add a profile
@@ -717,21 +717,24 @@ function KidRow({ kid, stats }: { kid: Kid; stats?: KidStats }) {
           : 'rounded-2xl border border-brand-cream-2 bg-brand-cream p-4'
       }
     >
-      <div className="flex items-center gap-3">
+      {/* Phone: name + meta take the full width, the pause switch and
+          Settings sit on their own line, right-aligned. sm+: one row. */}
+      <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
         <Link
           href={`/parent/profile/${kid.id}`}
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-xl -m-1 p-1 hover:bg-white/60"
+          className="flex min-w-0 basis-full items-center gap-3 rounded-xl -m-1 p-1 hover:bg-white/60 sm:flex-1 sm:basis-auto"
         >
           <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${colorClass} font-display text-lg font-bold text-white shadow`}>
             {kid.displayName.slice(0, 1).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-bold text-brand-navy">{kid.displayName}</h3>
-            <p className="text-xs font-bold text-brand-ink-soft">
+            <p className="truncate text-xs font-bold text-brand-ink-soft">
               {kid.age != null ? `Age ${kid.age} · ` : ''}{kid.projects.length} project{kid.projects.length === 1 ? '' : 's'} · View all →
             </p>
           </div>
         </Link>
+        <div className="ml-auto flex shrink-0 items-center gap-3">
         {/* Pause toggle — iOS-style switch. Paused state shows amber
             border on the whole kid card so a quick scan flags any
             paused kid. Server enforces the gate so a paused kid
@@ -758,12 +761,13 @@ function KidRow({ kid, stats }: { kid: Kid; stats?: KidStats }) {
         <button
           type="button"
           onClick={() => setSettingsOpen((open) => !open)}
-          className="inline-flex items-center gap-1 rounded-xl border border-brand-cream-2 bg-white px-2.5 py-1.5 text-xs font-bold text-brand-ink-soft hover:bg-brand-cream-2"
+          className="inline-flex items-center gap-1 whitespace-nowrap rounded-xl border border-brand-cream-2 bg-white px-2.5 py-1.5 text-xs font-bold text-brand-ink-soft hover:bg-brand-cream-2"
           aria-expanded={settingsOpen}
         >
           <Settings2 className="h-3.5 w-3.5" />
           Settings
         </button>
+        </div>
       </div>
       {effectivePaused && (
         <p className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-amber-100 px-3 py-1.5 text-xs font-bold text-amber-800">

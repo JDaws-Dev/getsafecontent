@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { AVATAR_ICONS, COLORS } from '../constants/avatars';
+import { COLORS } from '../constants/avatars';
+import KidAvatarIcon from '../components/child/KidAvatarIcon';
+import { Lock } from 'lucide-react';
 import musicKitService from '../config/musickit';
 import ChildDashboard from '../components/child/ChildDashboard';
 import { useIsNativeApp } from '../hooks/useIsNativeApp';
@@ -144,11 +146,6 @@ function ChildLoginPage() {
     if (!savedFamilyCode) return;
     pullFamilySync({ familyCode: savedFamilyCode }).catch(() => {});
   }, [savedFamilyCode]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const getAvatarIcon = (avatarId) => {
-    const icon = AVATAR_ICONS.find(a => a.id === avatarId);
-    return icon ? icon.svg : AVATAR_ICONS[0].svg;
-  };
 
   const getColorClass = (colorId) => {
     const color = COLORS.find(c => c.id === colorId);
@@ -299,9 +296,10 @@ function ChildLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-accent-100">
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        {/* Logo */}
+    <div className="min-h-screen bg-brand-cream">
+      <div className={`min-h-screen flex flex-col items-center p-4 ${embedded && step === 'select-profile' ? 'justify-start px-6 pt-12 sm:pt-20 pb-12' : 'justify-center'}`}>
+        {/* Logo — inside the hub's kid tabs the shell already says where you are */}
+        {!(embedded && step === 'select-profile') && (
         <div className="mb-8 text-center">
           <div className="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 88.994 96.651">
@@ -311,6 +309,7 @@ function ChildLoginPage() {
           <h1 className="text-4xl font-display font-bold text-brand-navy mb-2">SafeTunes</h1>
           <p className="text-gray-600">Your Music, Your Way</p>
         </div>
+        )}
 
         {/* Step 1: Enter Family Code */}
         {step === 'family-code' && (
@@ -360,35 +359,41 @@ function ChildLoginPage() {
           </div>
         )}
 
-        {/* Step 2: Select Profile */}
+        {/* Step 2: Select Profile — same picker look as SafeTube, SafeReads, SafeStudy */}
         {step === 'select-profile' && familyData && familyData.profiles && (
-          <div className="w-full max-w-4xl">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-display font-bold text-brand-navy mb-2">Who's Listening?</h2>
-              <p className="text-gray-600">{familyData.familyName}'s Family</p>
+          <div className="w-full max-w-2xl flex flex-col items-center">
+            <h1 className="font-display text-3xl font-semibold text-[#221D2E] text-center">Who's listening?</h1>
+            {familyData.familyName && (
+              <p className="mt-1 text-sm text-[#221D2E]/55 text-center">{familyData.familyName}'s Family</p>
+            )}
+            {!embedded && (
               <button
                 onClick={handleChangeFamilyCode}
                 className="mt-2 text-sm text-accent-600 hover:text-accent-700"
               >
                 Change family code
               </button>
-            </div>
+            )}
 
             {familyData.profiles.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+              <div className="mt-8 bg-white rounded-3xl shadow-[0_8px_30px_rgba(34,29,46,0.08)] p-8 text-center max-w-sm">
                 <p className="text-gray-600">No profiles found. Ask your parent to create a profile for you!</p>
               </div>
             ) : (
-              <div className="flex flex-wrap justify-center gap-6">
+              <div className="mt-8 flex flex-wrap justify-center gap-4 sm:gap-6">
                 {familyData.profiles.map((profile) => (
                   <button
                     key={profile._id}
                     onClick={() => handleProfileSelect(profile)}
-                    className="bg-white rounded-2xl shadow-xl p-6 hover:shadow-2xl transform hover:scale-105 transition-all w-48"
+                    className="w-36 sm:w-40 flex flex-col items-center gap-3 rounded-3xl bg-white p-5 shadow-[0_8px_30px_rgba(34,29,46,0.08)] ring-1 ring-[#221D2E]/5 transition hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(34,29,46,0.12)] active:scale-[0.98]"
                   >
-                    <div className={`w-24 h-24 ${getColorClass(profile.color)} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                    <div className={`w-20 h-20 ${getColorClass(profile.color)} rounded-full shadow-md flex items-center justify-center`}>
+                      <KidAvatarIcon color={profile.color} className="w-9 h-9 text-white" />
                     </div>
-                    <h3 className="text-xl font-display font-bold text-brand-navy">{profile.name}</h3>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="truncate text-lg font-semibold text-[#221D2E]">{profile.name}</span>
+                      {profile.hasPin && <Lock className="w-4 h-4 shrink-0 text-[#221D2E]/35" aria-label="Has a PIN" />}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -410,7 +415,8 @@ function ChildLoginPage() {
             </button>
 
             <div className="text-center mb-8">
-              <div className={`w-20 h-20 ${getColorClass(selectedProfile.color)} rounded-full flex items-center justify-center mx-auto mb-4`}>
+              <div className={`w-20 h-20 ${getColorClass(selectedProfile.color)} rounded-full flex items-center justify-center mx-auto mb-4 shadow-md`}>
+                <KidAvatarIcon color={selectedProfile.color} className="w-9 h-9 text-white" />
               </div>
               <h2 className="text-2xl font-display font-bold text-brand-navy mb-2">{selectedProfile.name}</h2>
               <p className="text-gray-600">Enter your 4-digit PIN</p>

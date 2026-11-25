@@ -2,6 +2,9 @@ import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import { Lock } from 'lucide-react';
+import { isEmbedded } from '../../lib/embed';
+import KidAvatarIcon from './KidAvatarIcon';
 
 export default function ProfileSelector({ profiles, onSelect, familyCode, onChangeCode }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -9,6 +12,9 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
   const [pinInput, setPinInput] = useState(['', '', '', '']);
   const [pinError, setPinError] = useState('');
   const pinRefs = [useRef(), useRef(), useRef(), useRef()];
+  // Inside the hub's kid tabs the shell has the logo, "Not you?" and "Parents",
+  // so this screen drops its own top bar, family code and parent link.
+  const embedded = isEmbedded();
 
   // Server-side PIN check with failed-attempt lockout
   const attemptKidPin = useMutation(api.kidProfiles.attemptKidPin);
@@ -100,6 +106,7 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
   return (
     <div className="min-h-screen bg-brand-cream flex flex-col">
       {/* Header */}
+      {!embedded && (
       <header className="px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center shadow-md">
@@ -120,14 +127,15 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
           Change Code
         </button>
       </header>
+      )}
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+      <main className={`flex-1 flex flex-col items-center px-6 ${embedded && !selectedProfile ? 'justify-start pt-12 sm:pt-20 pb-12' : 'justify-center py-12'}`}>
         {/* PIN Entry Screen */}
         {selectedProfile ? (
           <div className="text-center">
-            <div className={`w-24 h-24 mx-auto mb-4 rounded-full ${getColorClass(selectedProfile.color)} flex items-center justify-center text-white text-3xl font-bold shadow-lg`}>
-              {selectedProfile.name.charAt(0).toUpperCase()}
+            <div className={`w-24 h-24 mx-auto mb-4 rounded-full ${getColorClass(selectedProfile.color)} flex items-center justify-center shadow-lg`}>
+              <KidAvatarIcon color={selectedProfile.color} className="w-11 h-11 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">{selectedProfile.name}</h1>
             <p className="text-gray-600 mb-6">Enter your 4-digit PIN</p>
@@ -167,8 +175,8 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
           </div>
         ) : (
           <>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Who's Watching?</h1>
-            <p className="text-gray-600 mb-8">Select your profile</p>
+            {/* Same picker look as SafeTunes, SafeReads, SafeStudy */}
+            <h1 className="font-display text-3xl font-semibold text-[#221D2E] text-center mb-8">Who's watching?</h1>
 
             {profiles.length === 0 ? (
               <div className="text-center bg-white rounded-2xl p-8 shadow-sm border border-gray-100 max-w-sm">
@@ -181,24 +189,20 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
                 <p className="text-gray-500 text-sm">Ask your parent to create a profile for you.</p>
               </div>
             ) : (
-              <div className="flex flex-wrap justify-center gap-6 max-w-2xl">
+              <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-2xl">
                 {profiles.map((profile) => (
                   <button
                     key={profile._id}
                     onClick={() => handleSelect(profile)}
                     disabled={isLoading}
-                    className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white shadow-sm border border-gray-100 hover:shadow-lg hover:border-accent-200 transition transform hover:scale-105 disabled:opacity-50"
+                    className="w-36 sm:w-40 flex flex-col items-center gap-3 rounded-3xl bg-white p-5 shadow-[0_8px_30px_rgba(34,29,46,0.08)] ring-1 ring-[#221D2E]/5 transition hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(34,29,46,0.12)] active:scale-[0.98] disabled:opacity-50"
                   >
-                    <div className={`w-20 h-20 rounded-full shadow-md flex items-center justify-center text-white text-2xl font-bold ${getColorClass(profile.color)}`}>
-                      {profile.name.charAt(0).toUpperCase()}
+                    <div className={`w-20 h-20 rounded-full shadow-md flex items-center justify-center ${getColorClass(profile.color)}`}>
+                      <KidAvatarIcon color={profile.color} className="w-9 h-9 text-white" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-900 font-semibold text-lg">{profile.name}</span>
-                      {profile.hasPin && (
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                      )}
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="truncate text-lg font-semibold text-[#221D2E]">{profile.name}</span>
+                      {profile.hasPin && <Lock className="w-4 h-4 shrink-0 text-[#221D2E]/35" aria-label="Has a PIN" />}
                     </div>
                   </button>
                 ))}
@@ -207,8 +211,8 @@ export default function ProfileSelector({ profiles, onSelect, familyCode, onChan
           </>
         )}
 
-        {/* Family Code Display - hidden during PIN entry */}
-        {!selectedProfile && (
+        {/* Family Code Display - hidden during PIN entry, and in the hub's kid tabs */}
+        {!selectedProfile && !embedded && (
           <>
             <div className="mt-12 text-center">
               <p className="text-gray-500 text-sm">Family Code</p>

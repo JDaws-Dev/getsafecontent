@@ -249,7 +249,7 @@ export default function PlayPage() {
   if (familyData && "kids" in familyData && familyData.kids && familyData.kids.length > 0) {
     return (
       <ProfileSelector
-        familyName={familyData.familyName ?? "Your Family"}
+        familyName={familyData.familyName ?? ""}
         kids={familyData.kids}
         familyCode={familyCode}
         userId={familyData.userId}

@@ -13,9 +13,10 @@
  * only a small "Parents" link to the sign-in page.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { SafeFamilyLogo } from "@/components/brand/Brand";
 
 const CODE_KEY = "safefamily_family_code";
 const LAST_APP_KEY = "safefamily_last_kid_app";
@@ -39,11 +40,11 @@ const APPS = [
   },
 ];
 
-const Glyph = ({ slug }: { slug: string }) => {
-  const c = { width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke: "white", strokeWidth: 2.2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+const Glyph = ({ slug, size = 22 }: { slug: string; size?: number }) => {
+  const c = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "white", strokeWidth: 2.2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   switch (slug) {
     case "tunes": return <svg {...c}><path d="M9 17V5l10-2v12M9 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm10-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" /></svg>;
-    case "tube": return <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M7 5.5v13a1 1 0 0 0 1.5.87l11-6.5a1 1 0 0 0 0-1.74l-11-6.5A1 1 0 0 0 7 5.5Z" /></svg>;
+    case "tube": return <svg width={size} height={size} viewBox="0 0 24 24" fill="white"><path d="M7 5.5v13a1 1 0 0 0 1.5.87l11-6.5a1 1 0 0 0 0-1.74l-11-6.5A1 1 0 0 0 7 5.5Z" /></svg>;
     case "reads": return <svg {...c}><path d="M4 5a2 2 0 0 1 2-2h9a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2V5Zm0 0a2 2 0 0 0 2 2h10" /></svg>;
     case "study": return <svg {...c}><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm10 2-4.35-4.35" /></svg>;
     default: return <svg {...c}><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3Z" /></svg>;
@@ -86,6 +87,20 @@ export default function PlayPage() {
   useEffect(() => {
     try { if (active) localStorage.setItem(LAST_APP_KEY, active.slug); } catch { /* ignore */ }
   }, [active]);
+
+  // Phone: the tab strip scrolls sideways and Search/Build sit off-screen at
+  // 390px, so centre the active tab. Scroll only the strip (scrollIntoView
+  // would scroll the page too).
+  const tabsRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const strip = tabsRef.current;
+    if (!strip || !active) return;
+    const tab = strip.querySelector<HTMLElement>(`[data-tab="${active.slug}"]`);
+    if (!tab) return;
+    const s = strip.getBoundingClientRect();
+    const t = tab.getBoundingClientRect();
+    strip.scrollLeft = Math.max(0, strip.scrollLeft + (t.left - s.left) - (s.width - t.width) / 2);
+  }, [active, code]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,14 +154,16 @@ export default function PlayPage() {
   return (
     <div className="h-[100dvh] bg-cream flex flex-col">
       <Header code={code} onForget={forget} slim={solo} />
-      {!solo && <nav className="bg-white border-b border-navy/10 px-3 sm:px-6 flex items-center gap-1 overflow-x-auto" aria-label="Apps">
+      {!solo && <nav ref={tabsRef} className="shrink-0 bg-white border-b border-navy/10 px-3 sm:px-6 flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Apps">
         {APPS.map((a) => {
           const on = active?.slug === a.slug;
           return (
             <Link
               key={a.slug}
               href={`/play/${a.slug}`}
-              className={`inline-flex items-center gap-2 px-3 sm:px-4 py-3 text-sm sm:text-base font-bold border-b-[3px] whitespace-nowrap ${on ? "text-navy" : "border-transparent text-navy/55 hover:text-navy"}`}
+              data-tab={a.slug}
+              aria-current={on ? "page" : undefined}
+              className={`shrink-0 inline-flex items-center gap-2 px-3 sm:px-4 py-3 text-sm sm:text-base font-bold border-b-[3px] whitespace-nowrap ${on ? "text-navy" : "border-transparent text-navy/55 hover:text-navy"}`}
               style={on ? { borderColor: a.color } : undefined}
             >
               <span className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: a.color, opacity: on ? 1 : 0.6 }}><Glyph slug={a.slug} /></span>
@@ -164,7 +181,7 @@ export default function PlayPage() {
         <main className="flex-1 overflow-y-auto px-6 py-10">
           <div className="max-w-xl mx-auto text-center flex flex-col items-center gap-5">
             <span className="w-20 h-20 rounded-3xl flex items-center justify-center" style={{ background: active.color }}>
-              <Glyph slug={active.slug} />
+              <Glyph slug={active.slug} size={40} />
             </span>
             <h1 className="text-3xl font-bold text-navy">{active.name} is almost ready</h1>
             <p className="text-lg text-navy/70 leading-relaxed">{active.blurb}</p>
@@ -188,7 +205,7 @@ export default function PlayPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {APPS.map((a) => (
                 <Link key={a.slug} href={`/play/${a.slug}`} className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(34,29,46,0.10)] p-5 flex flex-col items-center gap-3 hover:-translate-y-0.5 transition">
-                  <span className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: a.color }}><Glyph slug={a.slug} /></span>
+                  <span className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: a.color }}><Glyph slug={a.slug} size={32} /></span>
                   <span className="text-lg font-bold text-navy">{a.name}</span>
                   <span className="text-xs text-navy/50">{a.comingSoon ? "Coming soon" : a.app}</span>
                 </Link>
@@ -213,19 +230,22 @@ function Header({ code, onForget, slim }: { code?: string; onForget?: () => void
     );
   }
   return (
-    <header className="h-16 shrink-0 bg-white border-b border-navy/10 px-4 sm:px-6 flex items-center justify-between">
-      <Link href="/play" className="inline-flex items-center gap-2">
-        <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#F5A962] to-[#E88B6A] flex items-center justify-center">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3C7 3 3 7 3 12h18c0-5-4-9-9-9Z" /><path d="M12 12v7a2 2 0 0 0 4 0" /></svg>
-        </span>
-        <span className="text-lg font-bold text-navy">Safe Family</span>
+    <header className="h-14 sm:h-16 shrink-0 bg-white border-b border-navy/10 px-4 sm:px-6 flex items-center justify-between gap-3">
+      <Link href="/play" className="inline-flex shrink-0" aria-label="Safe Family">
+        <SafeFamilyLogo />
       </Link>
-      <div className="flex items-center gap-3 text-sm">
+      <div className="flex items-center gap-3 sm:gap-4 text-sm whitespace-nowrap">
         {code ? (
-          <span className="inline-flex items-center gap-2 rounded-full border border-navy/10 bg-cream px-3 py-1.5 text-navy/70">
-            Family <span className="font-mono font-bold tracking-widest text-navy">{code}</span>
-            <button onClick={onForget} className="text-navy/50 hover:text-navy font-semibold">Not you?</button>
-          </span>
+          <>
+            {/* Desktop: the family pill. Phone: just "Not you?" — kids don't need the code. */}
+            <span className="hidden sm:inline-flex items-center gap-2 rounded-full border border-navy/10 bg-cream px-3 py-1.5 text-navy/70">
+              Family <span className="font-mono font-bold tracking-widest text-navy">{code}</span>
+              <button onClick={onForget} className="text-navy/50 hover:text-navy font-semibold">Not you?</button>
+            </span>
+            <button onClick={onForget} className="sm:hidden rounded-full border border-navy/10 bg-cream px-3 py-1.5 text-navy/60 hover:text-navy font-semibold">
+              Not you?
+            </button>
+          </>
         ) : null}
         <Link href="/login" className="text-navy/50 hover:text-navy font-semibold">Parents</Link>
       </div>

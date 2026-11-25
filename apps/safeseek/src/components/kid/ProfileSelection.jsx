@@ -18,10 +18,14 @@ export default function ProfileSelection({
   onToggleDarkMode,
   onChangeCode,
   pinRefs,
+  embedded = false,
 }) {
+  // Inside the hub's kid tabs the shell has the logo, "Not you?" and "Parents",
+  // so this screen drops its own top bar, family code and parent link.
   return (
     <div className="min-h-screen bg-brand-cream dark:bg-gray-900 flex flex-col">
       {/* Header */}
+      {!embedded && (
       <header className="px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-accent-600 rounded-lg flex items-center justify-center">
@@ -46,9 +50,10 @@ export default function ProfileSelection({
           </button>
         </div>
       </header>
+      )}
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+      <main className={`flex-1 flex flex-col items-center px-6 ${embedded && !pinProfile ? 'justify-start pt-12 sm:pt-20 pb-12' : 'justify-center py-12'}`}>
         {pinProfile ? (
           /* PIN Entry Screen */
           <div className="text-center">
@@ -93,26 +98,26 @@ export default function ProfileSelection({
         ) : (
           /* Profile Selection */
           <>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">Who's searching?</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Select your profile to get started</p>
+            {/* Same picker look as SafeTunes, SafeTube, SafeReads */}
+            <h1 className="font-display text-3xl font-semibold text-[#221D2E] dark:text-white text-center mb-8">Who's searching?</h1>
 
             {kidProfiles && kidProfiles.length > 0 ? (
-              <div className="flex flex-wrap justify-center gap-6 max-w-2xl">
+              <div className="flex flex-wrap justify-center gap-4 sm:gap-6 max-w-2xl">
                 {kidProfiles.map((profile) => (
                   <button
                     key={profile._id}
                     onClick={() => onProfileClick(profile)}
-                    className="flex flex-col items-center gap-3 p-5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-accent-300 dark:hover:border-accent-600 transition-all duration-200 active:scale-[0.98]"
+                    className="w-36 sm:w-40 flex flex-col items-center gap-3 rounded-3xl bg-white dark:bg-gray-800 p-5 shadow-[0_8px_30px_rgba(34,29,46,0.08)] ring-1 ring-[#221D2E]/5 dark:ring-gray-700 transition hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(34,29,46,0.12)] active:scale-[0.98]"
                   >
                     <div
                       className={`w-20 h-20 rounded-full shadow-md flex items-center justify-center ${getColorClass(profile.color)}`}
                     >
-                      <AvatarIcon color={profile.color} className="w-9 h-9 text-white drop-shadow-sm" />
+                      <AvatarIcon color={profile.color} className="w-9 h-9 text-white" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-900 dark:text-white font-semibold text-lg">{profile.name}</span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="truncate text-lg font-semibold text-[#221D2E] dark:text-white">{profile.name}</span>
                       {profile.hasPin && (
-                        <Lock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        <Lock className="w-4 h-4 shrink-0 text-[#221D2E]/35 dark:text-gray-500" aria-label="Has a PIN" />
                       )}
                     </div>
                   </button>
@@ -128,6 +133,7 @@ export default function ProfileSelection({
               </div>
             )}
 
+            {!embedded && (<>
             {/* Family Code Display */}
             <div className="mt-12 text-center">
               <p className="text-gray-500 dark:text-gray-400 text-sm">Your family's secret code</p>
@@ -143,6 +149,7 @@ export default function ProfileSelection({
                 </a>
               </p>
             </div>
+            </>)}
           </>
         )}
       </main>

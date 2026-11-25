@@ -7,29 +7,19 @@ import { api } from "../../../convex/_generated/api";
 import { ArrowLeft, Lock, Library } from "lucide-react";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { AvatarIcon } from "./KidIcons";
+import { useIsEmbedded } from "@/lib/embed";
 
-// Gradient backgrounds for avatar circles
-const COLOR_GRADIENTS: Record<string, string> = {
-  red: "from-red-400 to-rose-500",
-  blue: "from-blue-400 to-indigo-500",
-  green: "from-emerald-400 to-teal-500",
-  purple: "from-purple-400 to-violet-500",
-  orange: "from-orange-400 to-amber-500",
-  pink: "from-pink-400 to-rose-400",
-  teal: "from-teal-400 to-cyan-500",
-  yellow: "from-yellow-400 to-amber-400",
-};
-
-// Outer ring colors
-const COLOR_RINGS: Record<string, string> = {
-  red: "ring-red-200",
-  blue: "ring-blue-200",
-  green: "ring-emerald-200",
-  purple: "ring-purple-200",
-  orange: "ring-orange-200",
-  pink: "ring-pink-200",
-  teal: "ring-teal-200",
-  yellow: "ring-yellow-200",
+// Solid avatar colours, the same treatment as the SafeTunes, SafeTube and
+// SafeStudy pickers.
+const COLOR_FILLS: Record<string, string> = {
+  red: "bg-red-500",
+  blue: "bg-blue-500",
+  green: "bg-emerald-500",
+  purple: "bg-purple-500",
+  orange: "bg-orange-500",
+  pink: "bg-pink-500",
+  teal: "bg-teal-500",
+  yellow: "bg-yellow-500",
 };
 
 interface KidProfile {
@@ -63,6 +53,9 @@ export function ProfileSelector({
   const [pinError, setPinError] = useState("");
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinChecking, setPinChecking] = useState(false);
+  // Inside the hub's kid tabs the shell has the logo, "Not you?" and "Parents",
+  // so this screen drops its own back button, code chip and library tile.
+  const embedded = useIsEmbedded();
 
   // Verify PIN via mutation (with brute-force protection)
   const verifyPinMutation = useMutation(api.kids.verifyPinWithRateLimit);
@@ -144,68 +137,54 @@ export function ProfileSelector({
   };
 
   return (
-    <div className="flex min-h-[80vh] flex-col items-center px-4 pt-6">
-      {/* Header with back button */}
-      <div className="mb-8 flex w-full max-w-md items-center justify-between">
-        <button
-          onClick={onBack}
-          className="kid-touch flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-gray-500 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-gray-700"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Different code
-        </button>
-        <div className="rounded-full bg-white/60 px-3 py-1 text-xs font-mono font-bold tracking-widest text-gray-400 backdrop-blur-sm">
-          {familyCode}
-        </div>
-      </div>
+    <div className={`flex min-h-[80vh] flex-col items-center px-4 ${embedded ? "pt-12 sm:pt-20 pb-12" : "pt-6"}`}>
+      {!embedded && (
+        <>
+          {/* Header with back button */}
+          <div className="mb-8 flex w-full max-w-md items-center justify-between">
+            <button
+              onClick={onBack}
+              className="kid-touch flex items-center gap-1.5 rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-gray-500 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-gray-700"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Different code
+            </button>
+            <div className="rounded-full bg-white/60 px-3 py-1 text-xs font-mono font-bold tracking-widest text-gray-400 backdrop-blur-sm">
+              {familyCode}
+            </div>
+          </div>
+          <div className="relative mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md ring-1 ring-black/5">
+            <Library className="h-8 w-8 text-accent-600" strokeWidth={2.25} aria-hidden="true" />
+          </div>
+        </>
+      )}
 
-      {/* Header */}
-      <div className="mb-2 text-center">
-        <div className="relative mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md ring-1 ring-black/5">
-          <Library className="h-8 w-8 text-accent-600" strokeWidth={2.25} aria-hidden="true" />
-        </div>
-        <h1 className="text-center font-display text-2xl font-bold text-brand-navy">
-          {familyName}&apos;s Library
-        </h1>
-        <p className="mt-2 text-center text-lg font-medium text-accent-600">
-          Who&apos;s reading today?
+      {/* Same picker look as SafeTunes, SafeTube, SafeStudy */}
+      <h1 className="text-center font-display text-3xl font-semibold text-[#221D2E]">
+        Who&apos;s reading today?
+      </h1>
+      {familyName && (
+        <p className="mt-1 text-center text-sm text-[#221D2E]/55">
+          {familyName}&apos;s Family
         </p>
-      </div>
+      )}
 
       {/* Profile Grid */}
-      <div className="mt-8 grid w-full max-w-md grid-cols-2 gap-4 sm:max-w-lg sm:grid-cols-3 sm:gap-5 lg:max-w-2xl lg:grid-cols-4">
+      <div className="mt-8 flex w-full max-w-2xl flex-wrap justify-center gap-4 sm:gap-6">
         {kids.map((kid) => {
-          const gradientClass = COLOR_GRADIENTS[kid.color] || COLOR_GRADIENTS.purple;
-          const ringClass = COLOR_RINGS[kid.color] || COLOR_RINGS.purple;
+          const fillClass = COLOR_FILLS[kid.color] || COLOR_FILLS.purple;
           return (
             <button
               key={kid._id}
               onClick={() => handleProfileSelect(kid)}
-              className="animate-bounce-in group flex min-h-[140px] flex-col items-center gap-3 rounded-3xl border-2 border-transparent bg-white p-5 shadow-md transition-all duration-200 hover:border-accent-200 hover:shadow-xl hover:-translate-y-1.5 active:scale-95 sm:p-6"
+              className="flex w-36 flex-col items-center gap-3 rounded-3xl bg-white p-5 shadow-[0_8px_30px_rgba(34,29,46,0.08)] ring-1 ring-[#221D2E]/5 transition hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(34,29,46,0.12)] active:scale-[0.98] sm:w-40"
             >
-              {/* Avatar with gradient + icon */}
-              <div className={`relative flex h-[84px] w-[84px] items-center justify-center rounded-full bg-gradient-to-br ${gradientClass} ring-4 ${ringClass} shadow-lg transition-transform duration-200 group-hover:scale-110 sm:h-24 sm:w-24`}>
-                <AvatarIcon color={kid.color} className="h-10 w-10 text-white drop-shadow-sm sm:h-12 sm:w-12" />
-                {kid.hasPin && (
-                  <div className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md ring-2 ring-white">
-                    <Lock className="h-3.5 w-3.5 text-gray-400" />
-                  </div>
-                )}
+              <div className={`flex h-20 w-20 items-center justify-center rounded-full shadow-md ${fillClass}`}>
+                <AvatarIcon color={kid.color} className="h-9 w-9 text-white" />
               </div>
-              <div className="text-center">
-                <span className="text-lg font-bold text-brand-navy">
-                  {kid.name}
-                </span>
-                {kid.age !== undefined && (
-                  <p className="mt-0.5 text-xs font-medium text-gray-400">
-                    Age {kid.age}
-                  </p>
-                )}
-                {kid.readingLevel && (
-                  <p className="mt-1 inline-block rounded-full bg-accent-50 px-2 py-0.5 text-[10px] font-bold text-accent-500">
-                    {kid.readingLevel}
-                  </p>
-                )}
+              <div className="flex min-w-0 items-center gap-1.5">
+                <span className="truncate text-lg font-semibold text-[#221D2E]">{kid.name}</span>
+                {kid.hasPin && <Lock className="h-4 w-4 shrink-0 text-[#221D2E]/35" aria-label="Has a PIN" />}
               </div>
             </button>
           );
@@ -217,7 +196,7 @@ export function ProfileSelector({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-xs rounded-3xl bg-white p-6 shadow-2xl">
             <div className="text-center">
-              <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br ${COLOR_GRADIENTS[selectedKid.color] || COLOR_GRADIENTS.purple}`}>
+              <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${COLOR_FILLS[selectedKid.color] || COLOR_FILLS.purple}`}>
                 <AvatarIcon color={selectedKid.color} className="h-8 w-8 text-white" />
               </div>
               <h2 className="mt-3 font-display text-lg font-bold text-brand-navy">

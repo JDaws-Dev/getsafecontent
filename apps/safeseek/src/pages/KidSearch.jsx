@@ -1143,6 +1143,7 @@ export default function KidSearch() {
           navigate('/search');
         }}
         pinRefs={pinRefs}
+        embedded={embedded}
       />
     );
   }
