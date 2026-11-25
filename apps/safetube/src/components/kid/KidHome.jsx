@@ -5,6 +5,22 @@ import { useQuery, useMutation } from 'convex/react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../../convex/_generated/api';
 import SafeFamilySwitcher, { SafeFamilyHeaderSwitcher } from '../SafeFamilySwitcher';
+import { tellKidDoorPass } from '../../lib/kidDoor';
+import KidAvatarIcon from './KidAvatarIcon';
+
+// Profile colours are names ("blue"), not CSS colours: the same palette as
+// the profile picker, with the kid's icon on top instead of a bare dot.
+const AVATAR_BG = {
+  red: 'bg-accent-500', orange: 'bg-orange-500', yellow: 'bg-yellow-500', green: 'bg-green-500',
+  blue: 'bg-blue-500', purple: 'bg-purple-500', pink: 'bg-pink-500',
+};
+function KidBadge({ color, size }) {
+  return (
+    <div className={`${size === 'lg' ? 'w-10 h-10' : 'w-8 h-8'} rounded-full shadow-sm flex-shrink-0 flex items-center justify-center ${AVATAR_BG[color] || 'bg-accent-500'}`}>
+      <KidAvatarIcon color={color} className={size === 'lg' ? 'w-5 h-5 text-white' : 'w-4 h-4 text-white'} />
+    </div>
+  );
+}
 import { formatDuration, getChannelVideos, searchVideos, searchChannels, formatSubscribers } from '../../config/youtube';
 import { validateSearchQuery, filterVideoResults, filterChannelResults } from '../../utils/contentFilter';
 
@@ -54,6 +70,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [appsOpen, setAppsOpen] = useState(false);
+  const embedded = isEmbedded();
   const { familyCode } = useParams();
   const [showAddToPlaylistModal, setShowAddToPlaylistModal] = useState(null); // Video to add to playlist (for channel detail view)
   const profileMenuRef = useRef(null);
@@ -81,7 +98,11 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
           color: profile.color,
           kidSession: kidSession || undefined,
         });
-        if (active) setKidToken(res?.token || null);
+        if (active) {
+          setKidToken(res?.token || null);
+          // The kid door carries it to the next app tab (no second PIN).
+          tellKidDoorPass(res?.token || null);
+        }
       } catch {
         // non-fatal — the switcher still works; the destination just asks for the PIN
       }
@@ -91,6 +112,8 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
     return () => {
       active = false;
       clearInterval(id);
+      // Back to the picker (or another kid): the door must not carry this kid on.
+      tellKidDoorPass(null);
     };
   }, [familyCode, profile?.name, profile?.icon, profile?.avatar, profile?.color, kidSession, mintKidPass]);
 
@@ -666,17 +689,15 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
         </div>
 
         {/* Safe Family cross-app switcher (desktop) */}
-        <div className="hidden lg:flex justify-center px-4 py-3 border-b border-gray-100">
+        {/* Inside the kid door its tab bar is the switcher: no second one here. */}
+        {!embedded && <div className="hidden lg:flex justify-center px-4 py-3 border-b border-gray-100">
           <SafeFamilyHeaderSwitcher current="safetube" familyCode={familyCode} kidToken={kidToken} showLabel={false} tile={40} />
-        </div>
+        </div>}
 
         {/* Profile Card */}
         <div className="px-4 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3 p-3 bg-accent-50 rounded-xl">
-            <div
-              className="w-10 h-10 rounded-full shadow-sm flex-shrink-0"
-              style={{ backgroundColor: profile?.color || '#F0603A' }}
-            />
+            <KidBadge color={profile?.color} size="lg" />
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-gray-900 truncate">{profile?.name}</p>
               {remainingTimeDisplay && (
@@ -739,7 +760,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
             </svg>
             <span>Switch Profile</span>
           </button>
-          <button
+          {!embedded && <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-100 transition"
           >
@@ -747,20 +768,17 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
             <span>Log Out</span>
-          </button>
+          </button>}
         </div>
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col lg:ml-64">
         {/* Mobile Header - Hidden on desktop */}
-        <header className="lg:hidden px-4 py-3 flex items-center justify-between bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+        <header className="lg:hidden px-4 py-3 flex items-center justify-between bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
           {/* Profile (left) */}
           <div className="flex items-center gap-2">
-            <div
-              className="w-8 h-8 rounded-full shadow-sm flex-shrink-0"
-              style={{ backgroundColor: profile?.color || '#F0603A' }}
-            />
+            <KidBadge color={profile?.color} />
             <span className="text-gray-900 font-semibold">{profile?.name}</span>
             {/* Time remaining badge */}
             {remainingTimeDisplay && (
@@ -779,7 +797,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
           <div className="relative" ref={profileMenuRef}>
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              className="p-2.5 -mr-1.5 hover:bg-gray-100 rounded-lg transition"
               aria-label="Menu"
             >
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -814,7 +832,7 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                   </svg>
                   Switch Profile
                 </button>
-                <button
+                {!embedded && <button
                   onClick={() => {
                     setShowProfileMenu(false);
                     handleLogout();
@@ -825,8 +843,10 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                   Log Out
-                </button>
-                <div className="border-t border-gray-100 mt-1 pt-1">
+                </button>}
+                {/* No parent sign-in inside the kid door: a kid who tapped it
+                    would be stuck on a parent page with no way back. */}
+                {!embedded && <div className="border-t border-gray-100 mt-1 pt-1">
                   <a
                     href={withBase('/login')}
                     className="w-full px-4 py-2.5 text-left text-gray-500 hover:bg-gray-50 flex items-center gap-3 transition text-sm"
@@ -836,16 +856,16 @@ export default function KidHome({ profile, channels, videos, onBack, onPlayVideo
                     </svg>
                     Parent Login
                   </a>
-                </div>
+                </div>}
               </div>
             )}
           </div>
         </header>
 
         {/* Safe Family cross-app switcher (mobile) */}
-        <div className="lg:hidden flex justify-center py-2 bg-white border-b border-gray-200">
+        {!embedded && <div className="lg:hidden flex justify-center py-2 bg-white border-b border-gray-200">
           <SafeFamilyHeaderSwitcher current="safetube" familyCode={familyCode} kidToken={kidToken} tile={40} />
-        </div>
+        </div>}
 
         {/* Content - with bottom padding for mobile nav, no padding on desktop */}
         {/* Max-width container prevents content from stretching too wide on large screens */}

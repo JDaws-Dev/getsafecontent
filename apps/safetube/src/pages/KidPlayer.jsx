@@ -1,4 +1,5 @@
 import { isEmbedded, redirectKidToHubPlay } from '../lib/embed';
+import { tellKidDoorBadCode } from '../lib/kidDoor';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useAction } from 'convex/react';
@@ -191,6 +192,14 @@ export default function KidPlayer() {
     }
   }, [familyCode, user, navigate]);
 
+  // Inside the kid door the door owns the family code: a code that matches no
+  // family sends the kid back to the door's code screen, never to a second
+  // code box in here.
+  const badCode = embedded && !!familyCode && user === null;
+  useEffect(() => {
+    if (badCode) tellKidDoorBadCode();
+  }, [badCode]);
+
   const handleCodeSubmit = (e) => {
     e.preventDefault();
     const trimmed = codeInput.trim();
@@ -269,6 +278,20 @@ export default function KidPlayer() {
     setPlayingVideo(nextVideo);
   };
 
+  // Inside the kid door: no code screen of our own. Wait quietly while the
+  // door's code resolves (it arrives via ?fc= a moment after first paint).
+  if (embedded && (!familyCode || !user)) {
+    return (
+      <div className="min-h-screen bg-brand-cream flex flex-col items-center justify-center p-6 text-center">
+        {badCode ? (
+          <p className="text-gray-600 max-w-xs">We couldn&apos;t find that family code. Check it with a parent.</p>
+        ) : (
+          <div className="w-10 h-10 rounded-full border-4 border-accent-200 border-t-accent-500 animate-spin" aria-label="Loading" />
+        )}
+      </div>
+    );
+  }
+
   // Family code entry screen
   if (!familyCode || !user) {
     return (
@@ -338,16 +361,18 @@ export default function KidPlayer() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Videos Unavailable</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Videos are off right now</h1>
           <p className="text-gray-600 mb-6">
-            Ask your parent to update SafeTube so you can watch videos again!
+            Ask a parent to check the family account, then come back.
           </p>
-          <button
-            onClick={() => setFamilyCode('')}
-            className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-xl font-semibold transition shadow-md"
-          >
-            Try Different Code
-          </button>
+          {!embedded && (
+            <button
+              onClick={() => setFamilyCode('')}
+              className="bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-xl font-semibold transition shadow-md"
+            >
+              Try a different code
+            </button>
+          )}
         </div>
       </div>
     );
