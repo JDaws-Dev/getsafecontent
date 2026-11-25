@@ -479,7 +479,7 @@ export default function Settings({ userData, onLogout }) {
               </a>
 
               <p className="text-xs text-gray-500 mt-3 text-center">
-                Add SafeTunes, SafeReads, or manage billing at getsafefamily.com
+                Add SafeTunes, SafeStudy, or manage billing at getsafefamily.com
               </p>
             </div>
           </div>
@@ -1097,8 +1097,8 @@ function KidCard({ kid, userId, isExpanded, onToggle, onDelete, allTimeLimits, r
                 <div className="pr-3">
                   <p className="text-sm font-medium text-brand-navy">One limit for all apps</p>
                   <p className="text-xs text-gray-600">
-                    {kid.name}&rsquo;s time counts across SafeTunes, SafeTube, SafeReads,
-                    SafeStudy and SafeSpark together &mdash; not a separate allowance in each.
+                    {kid.name}&rsquo;s time counts across SafeTunes, SafeTube
+                    and SafeStudy together &mdash; not a separate allowance in each.
                   </p>
                 </div>
                 <Toggle

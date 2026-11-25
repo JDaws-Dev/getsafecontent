@@ -967,7 +967,6 @@ export default function LandingPage() {
                   'SafeStudy \u2014 Safe search + built-in tutor + research from trusted sources',
                   'SafeTunes \u2014 They hear only music you\'ve approved',
                   'SafeTube \u2014 They watch only channels you\'ve approved',
-                  'SafeReads \u2014 Know what\'s in a book before they read it',
                   'All features included',
                   'One family account',
                 ].map((item) => (
@@ -985,21 +984,6 @@ export default function LandingPage() {
                 View Bundle
               </a>
 
-              {/* SafeSpark NEW callout — separate from bundle */}
-              <div className="mt-5 pt-5 border-t border-gray-200 text-center">
-                <a
-                  href="https://getsafefamily.com/spark"
-                  className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-brand-navy transition-colors"
-                >
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-                    New
-                  </span>
-                  <span>
-                    Meet <strong>SafeSpark</strong> — the AI training lab for kids
-                  </span>
-                  <ArrowRight className="w-4 h-4" />
-                </a>
-              </div>
             </div>
           </div>
         </div>

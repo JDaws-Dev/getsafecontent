@@ -861,7 +861,7 @@ function Settings({ user, onLogout, initialSection }) {
             </a>
 
             <p className="text-xs text-gray-500 mt-3 text-center">
-              Add SafeTube, SafeReads, or manage billing at getsafefamily.com
+              Add SafeTube, SafeStudy, or manage billing at getsafefamily.com
             </p>
           </div>
 
@@ -1073,8 +1073,8 @@ function Settings({ user, onLogout, initialSection }) {
                           <div className="pr-3">
                             <p className="text-sm font-medium text-brand-navy">One limit for all apps</p>
                             <p className="text-xs text-gray-600">
-                              {formData.name || 'This kid'}&rsquo;s time counts across SafeTunes, SafeTube,
-                              SafeReads, SafeStudy and SafeSpark together &mdash; not a separate
+                              {formData.name || 'This kid'}&rsquo;s time counts across SafeTunes, SafeTube
+                              and SafeStudy together &mdash; not a separate
                               allowance in each.
                             </p>
                           </div>

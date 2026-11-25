@@ -1,5 +1,13 @@
 import type { NextConfig } from 'next';
 
+// RETIRED (2026-11-25): SafeSpark is hidden from everyone. While true, every
+// page on this app (any host, including getsafespark.com and the hub path
+// /spark/*) redirects to the getsafefamily.com home page; only /api routes
+// still answer. Code, Convex backend and data are untouched. To bring
+// SafeSpark back: set this to false AND remove "safespark" from RETIRED_APPS
+// in sites/marketing/src/lib/retiredApps.ts, then deploy both.
+const RETIRED = true;
+
 const nextConfig: NextConfig = {
   // One-site: served at getsafefamily.com/spark behind the hub's rewrite, prefix
   // intact. Keep in sync with APP_BASE in src/lib/appBase.ts. Next prefixes the
@@ -8,7 +16,13 @@ const nextConfig: NextConfig = {
   // The hub rewrites /spark to <origin>/spark/ (trailing slash). Next's default
   // 308 back to /spark would loop through the hub, so serve both forms as-is.
   skipTrailingSlashRedirect: true,
-  redirects: async () => [
+  redirects: async () => RETIRED ? [
+    { source: '/', destination: 'https://getsafefamily.com/' },
+    {
+      source: '/:path((?!api(?:/|$)|spark/api(?:/|$)).+)',
+      destination: 'https://getsafefamily.com/',
+    },
+  ].map((r) => ({ ...r, permanent: false, basePath: false as const })) : [
     // Maker-route aliases — the canonical path is /make. /lumi was the
     // original codename, /demo was a guest-mode side door, /spark was
     // the earlier SafeSpark name. All keep working as bookmarks.

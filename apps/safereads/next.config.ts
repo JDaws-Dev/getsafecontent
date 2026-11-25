@@ -1,5 +1,13 @@
 import type { NextConfig } from "next";
 
+// RETIRED (2026-11-25): SafeReads is hidden from everyone. While true, every
+// page on this app (any host, including getsafereads.com and the hub path
+// /reads/*) redirects to the getsafefamily.com home page; only /api routes
+// (webhooks) still answer. Code, Convex backend and data are untouched. To
+// bring SafeReads back: set this to false AND remove "safereads" from
+// RETIRED_APPS in sites/marketing/src/lib/retiredApps.ts, then deploy both.
+const RETIRED = true;
+
 const nextConfig: NextConfig = {
   // One-site: served at getsafefamily.com/reads behind the hub proxy (prefix intact).
   basePath: "/reads",
@@ -54,6 +62,15 @@ const nextConfig: NextConfig = {
   // - basePath:false so sources match the real root, not /reads/...
   // Order matters: the first match wins.
   redirects: async () => {
+    if (RETIRED) {
+      return [
+        { source: "/", destination: "https://getsafefamily.com/" },
+        {
+          source: "/:path((?!api(?:/|$)|reads/api(?:/|$)).+)",
+          destination: "https://getsafefamily.com/",
+        },
+      ].map((r) => ({ ...r, permanent: false, basePath: false as const }));
+    }
     const hosts = ["getsafereads.com", "www.getsafereads.com"];
     const rules: { source: string; destination: string }[] = [
       // Kid reading pages -> the kid door.

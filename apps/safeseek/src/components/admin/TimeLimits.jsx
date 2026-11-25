@@ -279,8 +279,8 @@ export default function TimeLimits({ userId, defaultKidId }) {
                 <p className="text-sm font-medium text-gray-900">One limit for all apps</p>
                 <p className="text-xs text-gray-600 mt-0.5">
                   {timeLimitsData.find(k => k.kidProfileId === selectedKid)?.kidName}&rsquo;s
-                  time counts across SafeTunes, SafeTube, SafeReads, SafeStudy and
-                  SafeSpark together &mdash; not a separate allowance in each. In
+                  time counts across SafeTunes, SafeTube and
+                  SafeStudy together &mdash; not a separate allowance in each. In
                   SafeStudy that&rsquo;s time spent searching and working with the tutor.
                 </p>
               </div>

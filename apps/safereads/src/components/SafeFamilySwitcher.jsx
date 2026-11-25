@@ -30,9 +30,15 @@
 // packages/ui/ and re-run scripts/sync-safe-family-switcher.mjs.
 // ─────────────────────────────────────────────────────────────────────────
 
+// Retired apps (2026-11-25): never shown in any switcher. This is the switch
+// for the kept apps' switchers; remove an id here (and from RETIRED_APPS in
+// sites/marketing/src/lib/retiredApps.ts), re-run the sync script and
+// redeploy to bring an app back.
+const RETIRED_APPS = ['safereads', 'safespark'];
+
 // Canonical app catalog. Colors are the locked brand palette — keep in
 // sync with packages/ui/brand-tokens.js and the hub's AppCards.tsx.
-const APPS = [
+const ALL_APPS = [
   {
     id: 'safetunes',
     name: 'SafeTunes',
@@ -89,6 +95,7 @@ const APPS = [
     glyph: 'spark',
   },
 ];
+const APPS = ALL_APPS.filter((a) => !RETIRED_APPS.includes(a.id));
 
 // White brand glyphs, 24x24, currentColor-free (always white on the chip).
 const GLYPHS = {

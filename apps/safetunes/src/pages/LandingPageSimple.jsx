@@ -960,12 +960,7 @@ function LandingPageSimple() {
           <div className="mt-4 pt-4 border-t border-gray-800 flex flex-wrap items-center justify-center gap-4 text-xs">
             <span className="text-gray-500">Safe Family Apps:</span>
             <a href="https://getsafefamily.com/tube" className="hover:text-white transition">SafeTube</a>
-            <a href="https://getsafefamily.com/reads" className="hover:text-white transition">SafeReads</a>
             <a href="https://getsafefamily.com/study" className="hover:text-white transition">SafeStudy</a>
-            <a href="https://getsafefamily.com/spark" className="inline-flex items-center gap-1.5 hover:text-white transition">
-              SafeSpark
-              <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#1a1a2e]">New</span>
-            </a>
             <a href="https://getsafefamily.com" className="hover:text-white transition">Safe Family</a>
           </div>
         </div>

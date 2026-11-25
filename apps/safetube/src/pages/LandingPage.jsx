@@ -1001,10 +1001,10 @@ export default function LandingPage() {
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-sm font-medium text-white/90 mb-2">Save with the Safe Family Bundle</p>
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">
-              Get all 4 apps for $9.99/month
+              Get all 3 apps for $9.99/month
             </h3>
             <p className="text-white/80 text-sm mb-6 max-w-xl mx-auto">
-              Protect your family across music, videos, books, and search — all in one subscription.
+              Protect your family across music, videos, and search — all in one subscription.
             </p>
 
             {/* Other apps */}
@@ -1019,19 +1019,6 @@ export default function LandingPage() {
                 <div className="text-left">
                   <p className="text-sm font-semibold text-white">SafeTunes</p>
                   <p className="text-xs text-white/70">Kid-safe Apple Music</p>
-                </div>
-              </div>
-
-              {/* SafeReads */}
-              <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3 backdrop-blur-sm">
-                <div className="w-10 h-10 bg-[#3AA06B] rounded-xl flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-white">SafeReads</p>
-                  <p className="text-xs text-white/70">AI book screening</p>
                 </div>
               </div>
 
@@ -1062,23 +1049,6 @@ export default function LandingPage() {
               <span className="line-through">$19.96/mo</span> → $9.99/mo · Save 50%
             </p>
 
-            {/* SafeSpark NEW callout — separate from bundle */}
-            <div className="mt-6 pt-6 border-t border-white/20">
-              <a
-                href="https://getsafefamily.com/spark"
-                className="inline-flex items-center gap-2 text-sm text-white/90 hover:text-white transition-colors"
-              >
-                <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a2e]">
-                  New
-                </span>
-                <span>
-                  Meet <strong>SafeSpark</strong> — the AI training lab for kids
-                </span>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
-              </a>
-            </div>
           </div>
         </div>
       </section>
@@ -1094,15 +1064,8 @@ export default function LandingPage() {
             <a href="https://getsafefamily.com/tube" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeTube
             </a>
-            <a href="https://getsafefamily.com/reads" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-              SafeReads
-            </a>
             <a href="https://getsafefamily.com/study" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               SafeStudy
-            </a>
-            <a href="https://getsafefamily.com/spark" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-white/70 hover:text-white transition-colors">
-              SafeSpark
-              <span className="rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#1a1a2e]">New</span>
             </a>
           </div>
 
