@@ -13,6 +13,10 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import { DeviceCheckCard } from "./DeviceCheckCard";
 
+// Daily screen time choices, in minutes (0 = no limit).
+const LIMITS = [0, 30, 45, 60, 90, 120, 180, 240];
+const fmtMinutes = (m: number) => (m === 0 ? "No limit" : m < 60 ? `${m} min` : m % 60 === 0 ? `${m / 60} hr` : `${Math.floor(m / 60)} hr ${m % 60} min`);
+
 const COLORS = ["#F0603A", "#7C4DE0", "#3AA06B", "#2F6BF0", "#F2A413", "#E0457B", "#0EA5A4"];
 
 export function FamilyTab() {
@@ -25,6 +29,8 @@ export function FamilyTab() {
   const updateSettings = useMutation(api.familySettings.updateMine);
   const quietAlerts = useQuery(api.inactivityAlerts.listMine, {});
   const setQuietSnooze = useMutation(api.inactivityAlerts.setSnooze);
+  const screenTime = useQuery(api.parentScreenTime.listMine, {});
+  const setScreenTime = useMutation(api.parentScreenTime.setMine);
 
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -67,7 +73,7 @@ export function FamilyTab() {
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-navy">Your family</h1>
-        <p className="text-navy/60 mt-1">Set things once here. Every app picks them up within a minute.</p>
+        <p className="text-navy/60 mt-1">Set things once here. SafeTunes, SafeTube and SafeStudy pick them up within a minute.</p>
       </div>
 
       {error && <div className="rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm px-4 py-3">{error}</div>}
@@ -77,7 +83,7 @@ export function FamilyTab() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-navy">Kids</h2>
           {!adding && (
-            <button onClick={() => setAdding(true)} className="rounded-full bg-navy text-white text-sm font-semibold px-4 py-2">Add a child</button>
+            <button onClick={() => setAdding(true)} className="h-10 rounded-full bg-navy text-white dark:text-cream text-sm font-semibold px-4">Add a child</button>
           )}
         </div>
 
@@ -89,7 +95,7 @@ export function FamilyTab() {
             <label className="text-sm font-semibold text-navy">Name<input value={newName} onChange={(e) => setNewName(e.target.value)} className="mt-1 w-full h-11 rounded-xl border border-navy/15 px-3" placeholder="First name" autoFocus /></label>
             <label className="text-sm font-semibold text-navy">Age<input value={newAge} onChange={(e) => setNewAge(e.target.value.replace(/\D/g, "").slice(0, 2))} inputMode="numeric" className="mt-1 w-full h-11 rounded-xl border border-navy/15 px-3" placeholder="10" /></label>
             <label className="text-sm font-semibold text-navy">PIN (optional)<input value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, "").slice(0, 4))} inputMode="numeric" className="mt-1 w-full h-11 rounded-xl border border-navy/15 px-3 font-mono tracking-widest" placeholder="4 digits" /></label>
-            <button type="submit" disabled={!newName.trim()} className="h-11 rounded-full bg-navy text-white text-sm font-semibold px-5 disabled:opacity-40">Save</button>
+            <button type="submit" disabled={!newName.trim()} className="h-11 rounded-full bg-navy text-white dark:text-cream text-sm font-semibold px-5 disabled:opacity-40">Save</button>
             <button type="button" onClick={() => setAdding(false)} className="h-11 rounded-full border border-navy/15 text-sm font-semibold px-4 text-navy/70">Cancel</button>
           </form>
         )}
@@ -111,43 +117,69 @@ export function FamilyTab() {
                     <div className="text-xs text-navy/60">{k.age ? `Age ${k.age} · ` : ""}{k.hasPin ? "PIN on" : "No PIN"}</div>
                   </div>
                 </div>
-                <label className={`inline-flex items-center gap-2 text-sm font-semibold ${k.paused ? "text-red-700" : "text-navy/70"}`}>
-                  <input type="checkbox" checked={!!k.paused} onChange={(e) => run(() => updateKid({ kidId: k._id, paused: e.target.checked }))} className="w-4 h-4" />
+                <label className={`inline-flex min-h-10 items-center gap-2 text-sm font-semibold cursor-pointer ${k.paused ? "text-red-700" : "text-navy/70"}`}>
+                  <input type="checkbox" checked={!!k.paused} onChange={(e) => run(() => updateKid({ kidId: k._id, paused: e.target.checked }))} className="w-5 h-5 accent-[#E88B6A]" />
                   {k.paused ? "Paused everywhere" : "Pause everything"}
                 </label>
               </div>
 
               <div className="flex flex-col gap-3 text-sm">
-                <label className="inline-flex items-center gap-2 text-navy/80">
-                  <input type="checkbox" checked={k.requestsEnabled !== false} onChange={(e) => run(() => updateKid({ kidId: k._id, requestsEnabled: e.target.checked }))} className="w-4 h-4" />
-                  Can send requests
+                <label className="inline-flex min-h-10 items-center gap-2 text-navy/80 cursor-pointer">
+                  <input type="checkbox" checked={k.requestsEnabled !== false} onChange={(e) => run(() => updateKid({ kidId: k._id, requestsEnabled: e.target.checked }))} className="w-5 h-5 accent-[#E88B6A]" />
+                  Can ask for new songs, videos and channels
                 </label>
+                {/* One daily allowance across all three apps — the same setting
+                    as "One limit for all apps" inside each app. */}
+                {(() => {
+                  const st = screenTime?.find((r) => r.kidId === k._id);
+                  const current = st?.limitMinutes ?? 0;
+                  const options = LIMITS.includes(current) ? LIMITS : [...LIMITS, current].sort((a, b) => a - b);
+                  return (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-navy/80">
+                      <label htmlFor={`limit-${k._id}`} className="whitespace-nowrap">Daily screen time</label>
+                      <select
+                        id={`limit-${k._id}`}
+                        value={current}
+                        disabled={screenTime === undefined}
+                        onChange={(e) => run(() => setScreenTime({ kidId: k._id, dailyLimitMinutes: Number(e.target.value) }))}
+                        className="h-10 min-w-0 flex-1 basis-40 rounded-lg border border-navy/15 bg-white px-2 text-navy"
+                      >
+                        {options.map((m) => (
+                          <option key={m} value={m}>{m === 0 ? "No limit" : `${fmtMinutes(m)} a day, all apps`}</option>
+                        ))}
+                      </select>
+                      {st && st.usedMinutes > 0 && (
+                        <span className="basis-full text-xs text-navy/55">Used today: {fmtMinutes(st.usedMinutes)}{current ? ` of ${fmtMinutes(current)}` : ""}</span>
+                      )}
+                    </div>
+                  );
+                })()}
                 {/* Hours: label on its own, then the two times side by side. Each
                     input may shrink (min-w-0) so the row always stays inside the
                     card, from a 390px phone to two cards side by side. */}
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-navy/80">
                   <span className="whitespace-nowrap">Allowed hours</span>
                   <div className="flex items-center gap-2 min-w-0 flex-1 basis-56">
-                    <input type="time" aria-label="Allowed from" value={k.allowedStartTime ?? ""} onChange={(e) => run(() => updateKid({ kidId: k._id, allowedStartTime: e.target.value || null }))} className="h-9 min-w-0 flex-1 rounded-lg border border-navy/15 px-2" />
+                    <input type="time" aria-label="Allowed from" value={k.allowedStartTime ?? ""} onChange={(e) => run(() => updateKid({ kidId: k._id, allowedStartTime: e.target.value || null }))} className="h-10 min-w-0 flex-1 rounded-lg border border-navy/15 px-2" />
                     <span className="shrink-0 text-navy/50">to</span>
-                    <input type="time" aria-label="Allowed until" value={k.allowedEndTime ?? ""} onChange={(e) => run(() => updateKid({ kidId: k._id, allowedEndTime: e.target.value || null }))} className="h-9 min-w-0 flex-1 rounded-lg border border-navy/15 px-2" />
+                    <input type="time" aria-label="Allowed until" value={k.allowedEndTime ?? ""} onChange={(e) => run(() => updateKid({ kidId: k._id, allowedEndTime: e.target.value || null }))} className="h-10 min-w-0 flex-1 rounded-lg border border-navy/15 px-2" />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-navy/10">
+              <div className="flex flex-wrap items-center justify-between gap-x-4 pt-2 border-t border-navy/10">
                 {pinEditing === k._id ? (
                   <form onSubmit={(e) => { e.preventDefault(); run(async () => { await setPin({ kidId: k._id, pin: pinDraft }); setPinEditing(null); setPinDraft(""); }); }} className="flex items-center gap-2">
-                    <input value={pinDraft} onChange={(e) => setPinDraft(e.target.value.replace(/\D/g, "").slice(0, 4))} inputMode="numeric" autoFocus placeholder="4 digits" className="h-9 w-28 rounded-lg border border-navy/15 px-2 font-mono tracking-widest" />
-                    <button type="submit" className="h-9 rounded-full bg-navy text-white text-xs font-semibold px-3">{pinDraft ? "Set PIN" : "Remove PIN"}</button>
-                    <button type="button" onClick={() => { setPinEditing(null); setPinDraft(""); }} className="text-xs text-navy/60">Cancel</button>
+                    <input value={pinDraft} onChange={(e) => setPinDraft(e.target.value.replace(/\D/g, "").slice(0, 4))} inputMode="numeric" autoFocus placeholder="4 digits" className="h-10 w-24 rounded-lg border border-navy/15 px-2 font-mono tracking-widest" />
+                    <button type="submit" className="h-10 rounded-full bg-navy text-white dark:text-cream text-xs font-semibold px-3 whitespace-nowrap">{pinDraft ? "Set PIN" : "Remove PIN"}</button>
+                    <button type="button" onClick={() => { setPinEditing(null); setPinDraft(""); }} className="h-10 px-1 text-xs text-navy/60">Cancel</button>
                   </form>
                 ) : (
-                  <button onClick={() => setPinEditing(k._id)} className="text-sm font-semibold text-navy/70 hover:text-navy">{k.hasPin ? "Change PIN" : "Set a PIN"}</button>
+                  <button onClick={() => setPinEditing(k._id)} className="h-10 text-sm font-semibold text-navy/70 hover:text-navy">{k.hasPin ? "Change PIN" : "Set a PIN"}</button>
                 )}
                 <div className="flex items-center gap-4">
-                  <button onClick={() => { const next = prompt(`What should ${k.name} be called in every app?`, k.name)?.trim(); if (next && next !== k.name) run(() => updateKid({ kidId: k._id, name: next })); }} className="text-sm font-semibold text-navy/70 hover:text-navy">Rename</button>
-                  <button onClick={() => { if (confirm(`Remove ${k.name} from your family? Their history stays, but they'll disappear from every app.`)) run(() => archiveKid({ kidId: k._id })); }} className="text-sm text-red-700/70 hover:text-red-700">Remove</button>
+                  <button onClick={() => { const next = prompt(`What should ${k.name} be called in every app?`, k.name)?.trim(); if (next && next !== k.name) run(() => updateKid({ kidId: k._id, name: next })); }} className="h-10 text-sm font-semibold text-navy/70 hover:text-navy">Rename</button>
+                  <button onClick={() => { if (confirm(`Remove ${k.name} from your family? Their history stays, but they'll disappear from every app.`)) run(() => archiveKid({ kidId: k._id })); }} className="h-10 text-sm text-red-700/70 hover:text-red-700">Remove</button>
                 </div>
               </div>
             </div>

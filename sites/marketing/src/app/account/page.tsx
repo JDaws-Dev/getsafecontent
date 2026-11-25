@@ -8,6 +8,7 @@ import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../../convex/_generated/api";
 import { UmbrellaMark } from "@/components/brand/Brand";
+import { ParentHeader } from "@/components/dashboard/ParentHeader";
 import {
   Shield,
   User,
@@ -25,10 +26,8 @@ import {
   CreditCard,
   AlertTriangle,
   Trash2,
-  LogOut,
   Loader2,
   Plus,
-  Minus,
   MessageCircle,
   FileText,
   Search,
@@ -39,34 +38,34 @@ import { isRetiredApp } from "@/lib/retiredApps";
 
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 
-const APP_INFO: Record<AppId, { name: string; domain: string; icon: React.ReactNode; color: string }> = {
+const APP_INFO: Record<AppId, { name: string; href: string; icon: React.ReactNode; color: string }> = {
   safetunes: {
     name: "SafeTunes",
-    domain: "getsafefamily.com/dashboard/tunes",
+    href: "/dashboard/tunes",
     icon: <Music className="w-5 h-5 text-white" />,
     color: "#7C4DE0",
   },
   safetube: {
     name: "SafeTube",
-    domain: "getsafefamily.com/dashboard/tube",
+    href: "/dashboard/tube",
     icon: <Play className="w-5 h-5 text-white" />,
     color: "#F0603A",
   },
   safereads: {
     name: "SafeReads",
-    domain: "getsafefamily.com/dashboard/reads",
+    href: "/dashboard/reads",
     icon: <BookOpen className="w-5 h-5 text-white" />,
     color: "#3AA06B",
   },
   safestudy: {
     name: "SafeStudy",
-    domain: "getsafefamily.com/dashboard/study",
+    href: "/dashboard/study",
     icon: <Search className="w-5 h-5 text-white" />,
     color: "#2F6BF0",
   },
   safespark: {
     name: "SafeSpark",
-    domain: "getsafefamily.com/dashboard/spark",
+    href: "/dashboard/spark",
     icon: <Sparkles className="w-5 h-5 text-white" />,
     color: "#F2A413",
   },
@@ -103,7 +102,6 @@ function AccountPageContent() {
   // Mutations
   const updateAccount = useMutation(api.accounts.updateAccount);
   const deleteAccount = useMutation(api.accounts.deleteAccount);
-  const removeAppEntitlement = useMutation(api.accounts.removeAppEntitlement);
 
   // UI State
   const [editingName, setEditingName] = useState(false);
@@ -121,7 +119,7 @@ function AccountPageContent() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.replace("/login");
+      router.replace("/login?returnTo=%2Faccount");
     }
   }, [authLoading, isAuthenticated, router]);
 
@@ -205,26 +203,6 @@ function AccountPageContent() {
     }
   };
 
-  // Handle app removal
-  const handleRemoveApp = async (app: AppId) => {
-    if (!currentUser?.id) return;
-
-    const confirmed = window.confirm(
-      `Are you sure you want to remove ${APP_INFO[app].name} from your subscription? You can re-add it later from Settings.`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await removeAppEntitlement({
-        userId: currentUser.id,
-        app,
-      });
-    } catch (error) {
-      console.error("[AccountPage] Failed to remove app:", error);
-    }
-  };
-
   // Loading state
   if (authLoading || !isAuthenticated) {
     return (
@@ -281,38 +259,12 @@ function AccountPageContent() {
 
   return (
     <div className="min-h-screen bg-cream">
-      {/* Header */}
-      {/* Same bar as /dashboard: umbrella + wordmark, Dashboard / Account, Sign out */}
-      <header className="bg-white border-b border-navy/10 px-4 sm:px-6">
-        <div className="h-16 flex items-center justify-between gap-2 sm:gap-4">
-          <div className="flex items-center gap-3 sm:gap-6 min-w-0">
-            <Link href="/dashboard" className="inline-flex items-center gap-2 shrink-0 whitespace-nowrap">
-              <UmbrellaMark />
-              <span className="text-base sm:text-lg font-bold text-navy">Safe Family</span>
-            </Link>
-            <nav className="flex items-center gap-1 text-sm font-semibold">
-              <Link href="/dashboard" className="px-2.5 sm:px-3 py-1.5 rounded-full text-navy/60 hover:text-navy">Dashboard</Link>
-              <Link href="/account" className="hidden sm:inline-flex px-3 py-1.5 rounded-full bg-cream-dark text-navy">Account</Link>
-            </nav>
-          </div>
-          <button
-            onClick={async () => {
-              clearAppSession();
-              await signOut();
-              router.push("/");
-            }}
-            className="text-sm text-navy/60 hover:text-navy inline-flex items-center gap-1 whitespace-nowrap shrink-0"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign out
-          </button>
-        </div>
-      </header>
+      <ParentHeader current="account" familyCode={(currentUser as { familyCode?: string | null }).familyCode} />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 py-8 pb-16">
         <div className="max-w-2xl mx-auto space-y-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-navy">Account Settings</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-navy">Account</h1>
 
           {/* Family code + Setup guide — post-purchase "what now?" card */}
           {entitledApps.length > 0 && (
@@ -367,7 +319,7 @@ function AccountPageContent() {
                     Add {APP_INFO[upgradeApp].name} to Your Plan
                   </h2>
                   <p className="text-sm text-gray-600 mb-4">
-                    Your current subscription doesn't include {APP_INFO[upgradeApp].name}.
+                    Your current subscription doesn&rsquo;t include {APP_INFO[upgradeApp].name}.
                     Upgrade your plan to get access to all Safe Family apps.
                   </p>
                   <div className="flex flex-wrap gap-3">
@@ -400,7 +352,7 @@ function AccountPageContent() {
                     setEditingName(true);
                     setNameValue(currentUser.name || "");
                   }}
-                  className="text-sm text-navy/70 hover:text-navy font-semibold flex items-center gap-1"
+                  className="h-10 -my-2 px-2 text-sm text-navy/70 hover:text-navy font-semibold flex items-center gap-1"
                 >
                   <Edit2 className="w-3 h-3" />
                   Edit
@@ -446,14 +398,15 @@ function AccountPageContent() {
                         type="text"
                         value={nameValue}
                         onChange={(e) => setNameValue(e.target.value)}
-                        className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-navy/10 focus:border-navy/40 focus:outline-none"
+                        className="flex-1 min-w-0 h-10 rounded-lg border border-gray-300 px-3 text-sm focus:ring-2 focus:ring-navy/10 focus:border-navy/40 focus:outline-none"
                         placeholder="Enter your name"
                         autoFocus
                       />
                       <button
                         onClick={handleSaveName}
                         disabled={nameSaving || !nameValue.trim()}
-                        className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50"
+                        aria-label="Save name"
+                        className="h-10 w-10 shrink-0 inline-flex items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50"
                       >
                         {nameSaving ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -466,7 +419,8 @@ function AccountPageContent() {
                           setEditingName(false);
                           setNameValue(currentUser.name || "");
                         }}
-                        className="p-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        aria-label="Cancel"
+                        className="h-10 w-10 shrink-0 inline-flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -496,86 +450,33 @@ function AccountPageContent() {
             </div>
           </section>
 
-          {/* Connected Apps */}
-          <section className="bg-white rounded-2xl border border-navy/10 p-6">
-            <h2 className="font-semibold text-navy mb-4">Your Apps</h2>
-
-            {entitledApps.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">No apps connected yet</p>
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-navy text-white dark:text-cream rounded-full font-semibold hover:bg-navy-light"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Apps
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
+          {/* Your apps — each opens its tab on the one dashboard. Apps come
+              with the plan, so there's nothing to add or remove one by one. */}
+          {entitledApps.length > 0 && (
+            <section className="bg-white rounded-2xl border border-navy/10 p-6">
+              <h2 className="font-semibold text-navy mb-3">Your apps</h2>
+              <div className="divide-y divide-navy/5">
                 {entitledApps.map((app) => {
                   const info = APP_INFO[app as AppId];
-                  // Defensive: skip if the entitled app id isn't one we know.
-                  // Without this, an unknown app in entitledApps crashes the
-                  // whole /account render (seen 2026-05-27 when safespark
-                  // entitlements appeared before this page had been updated).
+                  // Defensive: an unknown app id must not crash the page.
                   if (!info) return null;
                   return (
-                    <div
+                    <Link
                       key={app}
-                      className="flex items-center justify-between p-4 rounded-xl border border-navy/10 hover:border-navy/20 transition"
+                      href={info.href}
+                      className="flex items-center gap-3 py-3 min-h-[56px] -mx-2 px-2 rounded-lg hover:bg-cream transition"
                     >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-lg flex items-center justify-center"
-                          style={{ background: info.color }}
-                        >
-                          {info.icon}
-                        </div>
-                        <div>
-                          <p className="font-medium text-navy">{info.name}</p>
-                          <p className="text-xs text-gray-500">{info.domain}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <a
-                          href={`https://${info.domain}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1.5 text-sm font-medium text-navy/70 hover:text-navy hover:bg-cream rounded-lg transition flex items-center gap-1"
-                        >
-                          Open
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                        {!isLifetime && entitledApps.length > 1 && (
-                          <button
-                            onClick={() => handleRemoveApp(app)}
-                            className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition flex items-center gap-1"
-                          >
-                            <Minus className="w-3 h-3" />
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                      <span className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: info.color }}>
+                        {info.icon}
+                      </span>
+                      <span className="flex-1 font-medium text-navy">{info.name}</span>
+                      <ChevronRight className="w-4 h-4 text-navy/30" />
+                    </Link>
                   );
                 })}
               </div>
-            )}
-
-            {/* Add more apps link */}
-            {entitledApps.length > 0 && entitledApps.length < 3 && !isLifetime && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <Link
-                  href="/signup"
-                  className="text-sm text-navy/70 hover:text-navy font-semibold flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add more apps to your subscription
-                </Link>
-              </div>
-            )}
-          </section>
+            </section>
+          )}
 
           {/* Subscription */}
           <section className="bg-white rounded-2xl border border-navy/10 p-6">
@@ -721,7 +622,7 @@ function AccountPageContent() {
                 <span className="flex-1 text-sm font-medium text-navy">
                   Terms of Service
                 </span>
-                <ExternalLink className="h-4 w-4 text-gray-400" />
+                <ChevronRight className="h-4 w-4 text-gray-400" />
               </a>
             </div>
           </section>

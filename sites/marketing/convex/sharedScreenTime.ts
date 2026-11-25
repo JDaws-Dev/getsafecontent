@@ -39,7 +39,7 @@ function norm(name: string): string {
  * buckets. Falls back to the normalised name when no identity exists yet, so
  * this is safe to deploy before the backfill has run.
  */
-async function identityKey(
+export async function identityKey(
   ctx: { db: any },
   familyCode: string,
   kidName: string,
@@ -61,7 +61,7 @@ async function identityKey(
  * `import()` of local modules inside queries/mutations ("dynamic module import
  * unsupported"), and a plain helper avoids needing one at all.
  */
-async function readStatus(
+export async function readStatus(
   ctx: { db: any },
   familyCode: string,
   kidName: string,

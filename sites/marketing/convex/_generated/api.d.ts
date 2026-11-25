@@ -26,6 +26,7 @@ import type * as inactivityAlerts from "../inactivityAlerts.js";
 import type * as kidIdentity from "../kidIdentity.js";
 import type * as kids from "../kids.js";
 import type * as migrations from "../migrations.js";
+import type * as parentScreenTime from "../parentScreenTime.js";
 import type * as passwordReset from "../passwordReset.js";
 import type * as pinHash from "../pinHash.js";
 import type * as sharedScreenTime from "../sharedScreenTime.js";
@@ -59,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   kidIdentity: typeof kidIdentity;
   kids: typeof kids;
   migrations: typeof migrations;
+  parentScreenTime: typeof parentScreenTime;
   passwordReset: typeof passwordReset;
   pinHash: typeof pinHash;
   sharedScreenTime: typeof sharedScreenTime;
