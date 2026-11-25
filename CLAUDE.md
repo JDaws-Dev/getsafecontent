@@ -6,11 +6,11 @@
 
 | App | Domain | Convex Prod | Tech |
 |-----|--------|-------------|------|
-| SafeTunes | getsafetunes.com | `formal-chihuahua-623` | React + Vite |
-| SafeTube | getsafetube.com | `rightful-rabbit-333` | React + Vite |
-| SafeReads | getsafereads.com | `exuberant-puffin-838` | Next.js |
-| SafeStudy | getsafestudy.com | `strong-scorpion-227` | React + Vite + OpenAI |
-| SafeSpark | getsafespark.com | `giddy-peacock-124` | Next.js + OpenAI |
+| SafeTunes | getsafefamily.com/tunes (getsafetunes.com expired) | `formal-chihuahua-623` | React + Vite |
+| SafeTube | getsafefamily.com/tube | `rightful-rabbit-333` | React + Vite |
+| SafeReads | getsafefamily.com/reads | `exuberant-puffin-838` | Next.js |
+| SafeStudy | getsafefamily.com/study | `strong-scorpion-227` | React + Vite + OpenAI |
+| SafeSpark | getsafefamily.com/spark | `giddy-peacock-124` | Next.js + OpenAI |
 | Marketing | getsafefamily.com | `adamant-crow-705` | Next.js |
 | Blog | getsafefamily.com/blog | N/A (shares Marketing) | MDX + Velite |
 
