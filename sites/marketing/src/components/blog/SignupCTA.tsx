@@ -1,9 +1,11 @@
 "use client";
 
-import { ArrowRight, Music, PlaySquare, Book, Shield } from "lucide-react";
+import { ArrowRight, Music, PlaySquare, Search, Shield } from "lucide-react";
 
 interface SignupCTAProps {
-  product?: "SafeTunes" | "SafeTube" | "SafeReads" | "all";
+  // SafeReads/SafeSpark are accepted (older posts use them) but show the
+  // Safe Family plan, since they are no longer offered on their own.
+  product?: "SafeTunes" | "SafeTube" | "SafeStudy" | "SafeReads" | "SafeSpark" | "all" | string;
   headline?: string;
   description?: string;
 }
@@ -23,19 +25,19 @@ const productConfig = {
     defaultDescription:
       "With SafeTube, kids only watch channels you've approved. Try it free for 7 days.",
   },
-  SafeReads: {
-    icon: Book,
-    color: "from-emerald-500 to-teal-500",
-    defaultHeadline: "Know what's in the books they read",
+  SafeStudy: {
+    icon: Search,
+    color: "from-blue-500 to-cyan-500",
+    defaultHeadline: "Give your kids a search engine built for them",
     defaultDescription:
-      "SafeReads flags concerning content before your kids find it. Try it free for 7 days.",
+      "With SafeStudy, kids search and get homework help safely, and you see every search. Try it free for 7 days.",
   },
   all: {
     icon: Shield,
     color: "from-peach-start to-peach-end",
-    defaultHeadline: "Get all 5 apps for one low price",
+    defaultHeadline: "Get all three apps for one low price",
     defaultDescription:
-      "SafeTunes + SafeTube + SafeReads + SafeStudy + SafeSpark. Just $14.99/month. Try free for 7 days.",
+      "SafeTunes + SafeTube + SafeStudy. Just $14.99/month. Try free for 7 days.",
   },
 };
 
@@ -44,7 +46,10 @@ export default function SignupCTA({
   headline,
   description,
 }: SignupCTAProps) {
-  const config = productConfig[product];
+  // Unknown or retired products fall back to the family plan instead of
+  // crashing the page.
+  const config =
+    productConfig[product as keyof typeof productConfig] ?? productConfig.all;
   const Icon = config.icon;
 
   return (

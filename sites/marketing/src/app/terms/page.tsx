@@ -4,7 +4,7 @@ import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "Terms of Service for Safe Family - SafeTunes, SafeTube, and SafeReads",
+  description: "Terms of Service for Safe Family - SafeTunes, SafeTube, and SafeStudy",
 };
 
 export default function TermsPage() {
@@ -64,7 +64,7 @@ export default function TermsPage() {
 
               <h3 className="text-xl font-medium text-navy mb-3">Pricing</h3>
               <ul className="list-disc pl-6 text-navy/80 mb-4 space-y-2">
-                <li>Safe Family Bundle: $14.99/month or $149/year (includes SafeTunes, SafeTube, SafeReads and SafeStudy, plus SafeSpark when it launches)</li>
+                <li>Safe Family Bundle: $14.99/month or $149/year (includes SafeTunes, SafeTube and SafeStudy; families who already use SafeReads or SafeSpark keep them)</li>
                 <li>Legacy single-app subscriptions ($4.99/month) are grandfathered for existing subscribers and not available to new customers.</li>
               </ul>
 

@@ -11,7 +11,6 @@ import {
   ArrowRight,
   Music,
   PlaySquare,
-  Book,
   Search,
   ShieldAlert,
 } from "lucide-react";
@@ -42,7 +41,7 @@ const steps = [
     icon: Music,
     title: "Set up the apps you'll use",
     minutes: "~4 min",
-    body: "SafeTunes: connect your Apple Music account once (individual or family plan); your kids play through it. SafeTube: approve the channels and videos your kids already watch. SafeReads: approve books for their shelf. SafeStudy works right away. You only need to set up the apps you're using today.",
+    body: "SafeTunes: connect your Apple Music account once (individual or family plan); your kids play through it. SafeTube: approve the channels and videos your kids already watch. SafeStudy works right away. You only need to set up the apps you're using today.",
     tip: "Tip: start with one app. You can add the others later.",
   },
   {
@@ -50,7 +49,7 @@ const steps = [
     icon: KeyRound,
     title: "Show your kids how to get in",
     minutes: "~2 min",
-    body: "On your child's device, open getsafefamily.com/play. Enter your family code (6 letters and numbers, shown at the top of your dashboard). Then they tap Music, Videos, Books or Search, pick their name, and enter their PIN if you set one. One code opens every app.",
+    body: "On your child's device, open getsafefamily.com/play. Enter your family code (6 letters and numbers, shown at the top of your dashboard). Then they tap Music, Videos or Search, pick their name, and enter their PIN if you set one. One code opens every app.",
     tip: "Tip: write the family code on a sticky note on the fridge. Our most-successful families literally do this.",
   },
   {
@@ -58,7 +57,7 @@ const steps = [
     icon: Sparkles,
     title: "Approve your first content",
     minutes: "~5–10 min",
-    body: "Kids only see what you've approved. Approve a handful of albums, a few YouTube channels, or a couple of books to start. Kids can request more, and you approve or deny each request with one tap.",
+    body: "Kids only see what you've approved. Approve a handful of albums, or a few YouTube channels to start. Kids can request more, and you approve or deny each request with one tap.",
     tip: "Tip: don't try to build the perfect library on day one. Start with 5–10 items and let kids request the rest.",
   },
 ];
@@ -79,26 +78,11 @@ const apps = [
     description: "Approve YouTube channels",
   },
   {
-    name: "SafeReads",
-    href: "/dashboard/reads",
-    icon: Book,
-    color: "from-emerald-500 to-teal-500",
-    description: "Analyze books for content",
-  },
-  {
     name: "SafeStudy",
     href: "/dashboard/study",
     icon: Search,
     color: "from-blue-500 to-cyan-500",
     description: "Safe search + AI tutor",
-  },
-  {
-    name: "SafeSpark",
-    href: "/dashboard/spark",
-    icon: Sparkles,
-    color: "from-amber-500 to-orange-500",
-    description: "AI training lab for kids",
-    comingSoon: true,
   },
 ];
 
@@ -208,8 +192,8 @@ export default function SetupPage() {
             <ol className="mt-3 space-y-2 text-navy/80 list-decimal pl-5">
               <li>
                 Open Safari and go to the app&rsquo;s page:{" "}
-                <code>getsafefamily.com/play/tunes</code> (music), <code>/play/tube</code> (videos),{" "}
-                <code>/play/reads</code> (books) or <code>/play/study</code> (search).
+                <code>getsafefamily.com/play/tunes</code> (music), <code>/play/tube</code> (videos){" "}
+                or <code>/play/study</code> (search).
               </li>
               <li>Tap Share, then <strong>Add to Home Screen</strong>.</li>
               <li>Open the new icon and enter your family code once. It opens straight into that app.</li>
@@ -243,7 +227,7 @@ export default function SetupPage() {
               to approve content, set limits, and manage every app you have from one place.
               Prefer to jump straight into one app? Open it below.
             </p>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-3 gap-4">
               {apps.map((app) => {
                 const Icon = app.icon;
                 return (
@@ -260,11 +244,6 @@ export default function SetupPage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-navy group-hover:text-indigo-600 transition-colors flex items-center gap-2">
                         Open {app.name} &rarr;
-                        {app.comingSoon && (
-                          <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-                            COMING SOON
-                          </span>
-                        )}
                       </h3>
                       <p className="text-sm text-navy/60">{app.description}</p>
                     </div>
@@ -319,7 +298,7 @@ export default function SetupPage() {
                 </dt>
                 <dd className="mt-1 ml-7 text-navy/70 text-sm">
                   Send them to <code>getsafefamily.com/play</code>. They enter your family code,
-                  tap the app (Music, Videos, Books or Search), pick their name, and enter their PIN
+                  tap the app (Music, Videos or Search), pick their name, and enter their PIN
                   if they have one. They&rsquo;ll only see what you&rsquo;ve approved.
                 </dd>
               </div>

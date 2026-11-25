@@ -1,4 +1,4 @@
-import { MessageCircle, Music, PlaySquare, Book, Search, ArrowRight } from "lucide-react";
+import { MessageCircle, Music, PlaySquare, Search, ArrowRight } from "lucide-react";
 
 const painPoints = [
   {
@@ -18,15 +18,6 @@ const painPoints = [
     color: "from-purple-500 to-purple-600",
     bgColor: "bg-purple-50",
     textColor: "text-purple-700",
-  },
-  {
-    icon: Book,
-    problem: "You can't read every book before they do.",
-    description: "That popular YA novel everyone's talking about? You don't know what's inside until they've already read it.",
-    solution: "SafeReads: AI analyzes 10 content categories. Facts, not opinions.",
-    color: "from-emerald-500 to-teal-500",
-    bgColor: "bg-emerald-50",
-    textColor: "text-emerald-700",
   },
   {
     icon: Search,
@@ -53,7 +44,7 @@ export default function ProblemSolutionSection() {
             Kids apps are too limited. Regular apps are too open.
           </h2>
           <p className="text-lg text-navy/60 max-w-2xl mx-auto">
-            Your kids want access to YouTube, Apple Music, popular books, and the internet. You just want to know what they&apos;re consuming. <strong>Now you can have both.</strong>
+            Your kids want access to YouTube, Apple Music, and the internet. You just want to know what they&apos;re consuming. <strong>Now you can have both.</strong>
           </p>
         </div>
 

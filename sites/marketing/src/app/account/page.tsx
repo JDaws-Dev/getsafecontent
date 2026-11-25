@@ -94,7 +94,9 @@ function AccountPageContent() {
 
   // Check for upgrade request from query params
   const upgradeApp = searchParams.get("upgrade") as AppId | null;
-  const isValidUpgradeApp = upgradeApp && Object.keys(APP_INFO).includes(upgradeApp);
+  // SafeReads and SafeSpark are no longer offered, so ?upgrade= can't sell them.
+  const isValidUpgradeApp =
+    upgradeApp && Object.keys(APP_INFO).includes(upgradeApp) && upgradeApp !== "safereads" && upgradeApp !== "safespark";
 
   // Mutations
   const updateAccount = useMutation(api.accounts.updateAccount);

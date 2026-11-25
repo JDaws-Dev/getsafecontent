@@ -43,7 +43,7 @@ function LoginContent() {
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
         <div className="mb-6">
           <div className="w-16 h-16 bg-gradient-to-br from-slate-700 to-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">🔐</span>
+            <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Admin Access</h1>
           <p className="text-gray-600 mt-2">

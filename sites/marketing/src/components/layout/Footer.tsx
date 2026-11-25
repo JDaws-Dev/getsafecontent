@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { UmbrellaMark } from "../brand/Brand";
-import { Music, PlaySquare, Book, Search, Sparkles } from "lucide-react";
+import { Music, PlaySquare, Search } from "lucide-react";
 
 const apps = [
   { name: "SafeTunes", href: "/tunes", icon: Music, comingSoon: false },
   { name: "SafeTube", href: "/tube", icon: PlaySquare, comingSoon: false },
-  { name: "SafeReads", href: "/reads", icon: Book, comingSoon: false },
   { name: "SafeStudy", href: "/study", icon: Search, comingSoon: false },
-  { name: "SafeSpark", href: "/spark", icon: Sparkles, comingSoon: true },
 ];
 
 const companyLinks = [
@@ -39,7 +37,7 @@ export default function Footer() {
                 <span className="text-lg font-semibold">Safe Family</span>
               </Link>
               <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">
-                Apps that let kids use real music, video, books, and search (and soon AI building, with SafeSpark) &mdash; with only
+                Apps that let kids use real music, video, and search &mdash; with only
                 the content you&rsquo;ve approved. Built by a homeschool parent, for parents who
                 want a real answer, not another blocklist.
               </p>

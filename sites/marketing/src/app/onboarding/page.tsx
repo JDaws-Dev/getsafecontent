@@ -673,9 +673,9 @@ function OnboardingContent() {
   const emailParam = searchParams.get("email");
   const selectedApps: AppId[] = appsParam
     ? (appsParam.split(",").filter((a): a is AppId =>
-        ["safetunes", "safetube", "safereads", "safestudy"].includes(a)
+        ["safetunes", "safetube", "safestudy"].includes(a)
       ))
-    : ["safetunes", "safetube", "safereads", "safestudy"];
+    : ["safetunes", "safetube", "safestudy"];
 
   // State
   const [currentStepIndex, setCurrentStepIndex] = useState(-1); // -1 = welcome

@@ -8,9 +8,19 @@ export const KID_APPS: Record<string, { name: string; icon192?: string; icon512?
     icon512: "/kid-icons/tunes-full-512.png",
     apple: "/kid-icons/tunes-apple-180.png",
   },
-  tube: { name: "SafeTube" },
+  tube: {
+    name: "SafeTube",
+    icon192: "/kid-icons/tube-full-192.png",
+    icon512: "/kid-icons/tube-full-512.png",
+    apple: "/kid-icons/tube-apple-180.png",
+  },
   reads: { name: "SafeReads" },
-  study: { name: "SafeStudy" },
+  study: {
+    name: "SafeStudy",
+    icon192: "/kid-icons/study-full-192.png",
+    icon512: "/kid-icons/study-full-512.png",
+    apple: "/kid-icons/study-apple-180.png",
+  },
   spark: { name: "SafeSpark" },
 };
 

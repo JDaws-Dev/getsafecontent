@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "10 Ways to Keep Your Kids Safe Online | Safe Family Guide",
+  title: "10 Ways to Keep Your Kids Safe Online — Free Guide",
   description:
     "A practical guide with 10 actionable tips every parent needs to protect their children in the digital age.",
 };

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight, Music, PlaySquare, BookOpen, Search, Home, type LucideIcon } from "lucide-react";
 
 interface BlogPost {
   slug: string;
@@ -30,13 +30,18 @@ const categoryColors: Record<string, string> = {
   General: "bg-gray-100 text-gray-700",
 };
 
-const categoryEmoji: Record<string, string> = {
-  SafeTunes: "🎵",
-  SafeTube: "📺",
-  SafeReads: "📚",
-  SafeStudy: "🔍",
-  General: "🏠",
+const categoryIcon: Record<string, LucideIcon> = {
+  SafeTunes: Music,
+  SafeTube: PlaySquare,
+  SafeReads: BookOpen,
+  SafeStudy: Search,
+  General: Home,
 };
+
+function CategoryIcon({ category, className }: { category: string; className: string }) {
+  const Icon = categoryIcon[category] ?? Home;
+  return <Icon className={className} aria-hidden="true" />;
+}
 
 export function BlogListClient({
   featuredPost,
@@ -99,7 +104,7 @@ export function BlogListClient({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-6xl">{categoryEmoji[visibleFeatured.category]}</span>
+                      <CategoryIcon category={visibleFeatured.category} className="w-16 h-16 text-navy/30" />
                     )}
                   </div>
                 </div>
@@ -148,7 +153,7 @@ export function BlogListClient({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-5xl">{categoryEmoji[post.category]}</span>
+                  <CategoryIcon category={post.category} className="w-12 h-12 text-navy/30" />
                 )}
               </div>
               <div className="p-5 flex flex-col flex-1">

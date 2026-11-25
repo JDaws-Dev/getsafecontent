@@ -34,15 +34,6 @@ const testimonials: Testimonial[] = [
   },
   {
     quote:
-      "I'm not usually someone who looks up content warnings on every book. But my 9-year-old came home with a YA novel that was clearly way above her reading level, and SafeReads showed me exactly which chapters had what. Mobile UI could be a little snappier, but honestly it's the first tool that gave me a real answer instead of a generic rating.",
-    author: "Emily T.",
-    role: "Mom of 2, Raleigh, NC",
-    app: "safereads",
-    rating: 5,
-    avatar: "from-emerald-400 to-green-500",
-  },
-  {
-    quote:
       "YouTube Kids was way too babyish for my 10-year-old but regular YouTube is a minefield. SafeTube is the in-between we needed.",
     author: "Jennifer K.",
     role: "Mom of 4, San Antonio, TX",
@@ -58,15 +49,6 @@ const testimonials: Testimonial[] = [
     app: "safetunes",
     rating: 5,
     avatar: "from-violet-400 to-purple-500",
-  },
-  {
-    quote:
-      "We have a library card and a rule: mom checks SafeReads first. Takes about 20 seconds per book. The kids grab what's already on the list. Done.",
-    author: "David P.",
-    role: "Dad of 3, Tampa, FL",
-    app: "safereads",
-    rating: 5,
-    avatar: "from-sky-400 to-blue-500",
   },
 ];
 

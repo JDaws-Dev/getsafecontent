@@ -22,7 +22,7 @@ import {
 } from "@/lib/allowedSites";
 
 export const metadata: Metadata = {
-  title: "Lock down your kid's device | Safe Family Guide",
+  title: "Lock down your kid's device — Guide",
   description:
     "Plain-English steps for Chromebook, Android, iPhone/iPad, Mac and Windows: allow only the sites your kids need, block YouTube, close the Chromebook Guest loophole, and test it in 5 minutes.",
   openGraph: {

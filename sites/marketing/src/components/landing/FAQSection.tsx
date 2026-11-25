@@ -12,7 +12,7 @@ const faqs: FAQItem[] = [
   {
     question: "Can my kids get around it?",
     answer:
-      "Not inside Safe Family. It uses an approval list: your kids only see the songs, videos and books you've approved. To stop them going around the apps (opening YouTube in the browser, for example), lock the device so it allows only getsafefamily.com and youtube-nocookie.com. Our free lock-down guide walks you through it for iPhone, iPad, Android, Chromebook and computers in about 15 minutes.",
+      "Not inside Safe Family. It uses an approval list: your kids only see the songs, videos and search results you've allowed. To stop them going around the apps (opening YouTube in the browser, for example), lock the device so it allows only getsafefamily.com and youtube-nocookie.com. Our free lock-down guide walks you through it for iPhone, iPad, Android, Chromebook and computers in about 15 minutes.",
   },
   {
     question: "How is SafeTube different from YouTube Kids?",
@@ -37,12 +37,12 @@ const faqs: FAQItem[] = [
   {
     question: "Do I need an Apple Music subscription for SafeTunes?",
     answer:
-      "Yes — SafeTunes layers on top of Apple Music's catalog, so your family needs an active Apple Music subscription (individual or family plan). We don't charge for the music; we charge for the parental controls around it. If you don't have Apple Music, the other three apps (SafeTube, SafeReads, SafeStudy) work on their own.",
+      "Yes — SafeTunes layers on top of Apple Music's catalog, so your family needs an active Apple Music subscription (individual or family plan). We don't charge for the music; we charge for the parental controls around it. If you don't have Apple Music, SafeTube and SafeStudy work on their own.",
   },
   {
     question: "Do you have iOS or Android apps?",
     answer:
-      "There's nothing to download. On your child's device, open an app's kid page in the browser (getsafefamily.com/play/tunes for music, /play/tube for videos, /play/reads for books, /play/study for search) and use Add to Home Screen: in Safari's Share menu on iPhone and iPad, or Chrome's menu on Android and Chromebook. It gets its own icon and opens straight into that app. The old SafeTunes iPhone app no longer works; use the home-screen icon instead.",
+      "There's nothing to download. On your child's device, open an app's kid page in the browser (getsafefamily.com/play/tunes for music, /play/tube for videos, /play/study for search) and use Add to Home Screen: in Safari's Share menu on iPhone and iPad, or Chrome's menu on Android and Chromebook. It gets its own icon and opens straight into that app. The old SafeTunes iPhone app no longer works; use the home-screen icon instead.",
   },
   {
     question: "Do I need a separate login for each app?",

@@ -7,18 +7,18 @@ import { BlogListClient } from "@/components/blog/BlogListClient";
 export const metadata: Metadata = {
   title: "Blog - Parenting Tips for Digital Safety",
   description:
-    "Practical guides for parents on managing kids' music, videos, and books. Learn how to set up parental controls and keep your family safe online.",
+    "Practical guides for parents on managing kids' music, videos, and search. Learn how to set up parental controls and keep your family safe online.",
   openGraph: {
     title: "Safe Family Blog - Digital Parenting Tips",
     description:
-      "Practical guides for parents on managing kids' music, videos, and books.",
+      "Practical guides for parents on managing kids' music, videos, and search.",
     type: "website",
     images: [
       {
         url: "https://getsafefamily.com/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Safe Family - Parental controls for music, YouTube, books, and search",
+        alt: "Safe Family - Parental controls for music, YouTube, and search",
       },
     ],
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Safe Family Blog - Digital Parenting Tips",
     description:
-      "Practical guides for parents on managing kids' music, videos, and books.",
+      "Practical guides for parents on managing kids' music, videos, and search.",
     images: ["https://getsafefamily.com/og-image.png"],
   },
 };
@@ -35,8 +35,11 @@ export default function BlogPage() {
   // Sort posts by date (newest first) and filter published only
   // Also filter out future-dated posts (scheduled publishing)
   const now = new Date();
+  // SafeReads is no longer offered to new families, so its posts stay live at
+  // their URLs (and in the sitemap) but are left out of the index and chips.
   const publishedPosts = posts
     .filter((post) => post.published && new Date(post.date) <= now)
+    .filter((post) => post.category !== "SafeReads")
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const featuredPost = publishedPosts.find((post) => post.featured) ?? null;

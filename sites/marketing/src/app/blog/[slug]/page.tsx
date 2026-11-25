@@ -7,7 +7,7 @@ import SocialShare from "@/components/blog/SocialShare";
 import SignupCTA from "@/components/blog/SignupCTA";
 import EmailCapture from "@/components/blog/EmailCapture";
 import { posts } from "#site/content";
-import { Calendar, ArrowLeft, ArrowRight, User, Clock } from "lucide-react";
+import { Calendar, ArrowLeft, ArrowRight, User, Clock, Music, PlaySquare, BookOpen, Home } from "lucide-react";
 import { MDXContent } from "@/components/blog/MDXContent";
 
 interface PostPageProps {
@@ -297,7 +297,7 @@ export default async function PostPage({ params }: PostPageProps) {
               product={
                 post.category === "General"
                   ? "all"
-                  : (post.category as "SafeTunes" | "SafeTube" | "SafeReads")
+                  : (post.category as "SafeTunes" | "SafeTube" | "SafeStudy" | "SafeReads")
               }
             />
           </div>
@@ -461,12 +461,14 @@ export default async function PostPage({ params }: PostPageProps) {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-4xl">
-                          {relatedPost.category === "SafeTunes" && "🎵"}
-                          {relatedPost.category === "SafeTube" && "📺"}
-                          {relatedPost.category === "SafeReads" && "📚"}
-                          {relatedPost.category === "General" && "🏠"}
-                        </span>
+                        (() => {
+                          const Icon =
+                            relatedPost.category === "SafeTunes" ? Music
+                            : relatedPost.category === "SafeTube" ? PlaySquare
+                            : relatedPost.category === "SafeReads" ? BookOpen
+                            : Home;
+                          return <Icon className="w-10 h-10 text-navy/30" aria-hidden="true" />;
+                        })()
                       )}
                     </div>
                     <div className="p-4">

@@ -22,6 +22,9 @@ export async function generateMetadata({
   const name = entry ? entry.name : "Safe Family";
   return {
     title: slug ? `${name} for kids` : "Safe Family for kids",
+    description: slug
+      ? `Kids: open ${name} with your family code. Only what your parent approved.`
+      : "Kids: enter your family code to open your Safe Family apps. Only what your parent approved.",
     manifest: slug ? `/kid-app-manifest/${slug}` : "/kid-app-manifest",
     appleWebApp: { capable: true, title: name, statusBarStyle: "default" },
     ...(entry?.apple ? {

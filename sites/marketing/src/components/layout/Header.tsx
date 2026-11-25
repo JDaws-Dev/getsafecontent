@@ -2,18 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Music, PlaySquare, Book, Search, Sparkles, Menu, X } from "lucide-react";
+import { Music, PlaySquare, Search, Menu, X } from "lucide-react";
 import { ThemeToggle } from "../ThemeToggle";
 import { UmbrellaMark } from "../brand/Brand";
 
 const apps = [
-  // App accents from the glow-up system (Tunes grape, Tube coral, Reads leaf,
-  // Study cobalt, Spark amber).
+  // App accents from the glow-up system (Tunes grape, Tube coral, Study cobalt).
   { name: "SafeTunes", href: "/tunes", icon: Music, color: "text-[#7C4DE0]", comingSoon: false },
   { name: "SafeTube", href: "/tube", icon: PlaySquare, color: "text-[#F0603A]", comingSoon: false },
-  { name: "SafeReads", href: "/reads", icon: Book, color: "text-[#3AA06B]", comingSoon: false },
   { name: "SafeStudy", href: "/study", icon: Search, color: "text-[#2F6BF0]", comingSoon: false },
-  { name: "SafeSpark", href: "/spark", icon: Sparkles, color: "text-[#D48C00]", comingSoon: true },
 ];
 
 export default function Header() {

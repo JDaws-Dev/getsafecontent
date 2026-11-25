@@ -14,7 +14,7 @@ import { isUnifiedPricingEnabledClient } from "@/lib/feature-flags";
  * Unified Signup Page
  *
  * Combines AppSelector and AccountForm into a two-step signup flow.
- * Accepts ?app=safetunes (or safetube, safereads) query param to pre-select app.
+ * Accepts ?app=safetunes (or safetube, safestudy) query param to pre-select app.
  *
  * FLOW (depends on ENABLE_UNIFIED_AUTH feature flag):
  *
@@ -120,12 +120,14 @@ function SignupContent() {
 
   // Get initial app selection from query params
   const initialApp = searchParams.get("app") as AppId | null;
-  const validApps: AppId[] = ["safetunes", "safetube", "safereads", "safestudy"];
+  // SafeReads and SafeSpark are no longer offered to new families, so
+  // ?app=safereads simply lands on the standard plan.
+  const validApps: AppId[] = ["safetunes", "safetube", "safestudy"];
   const preSelectedApp = initialApp && validApps.includes(initialApp) ? initialApp : null;
 
   // Unified-pricing flow: ?plan=unified&interval=monthly|yearly
   // When set, the AppSelector is skipped and checkout uses the unified
-  // Price IDs (all 5 apps including SafeSpark, $14.99/mo or $149/yr).
+  // Price IDs (one plan for SafeTunes, SafeTube and SafeStudy).
   //
   // ALSO: when the global ENABLE_UNIFIED_PRICING flag is on, route every
   // legacy ?app=safetunes-style entry through the unified flow too.
@@ -142,7 +144,7 @@ function SignupContent() {
 
   // State for selected apps - default to pre-selected app or all apps
   const [selectedApps, setSelectedApps] = useState<AppId[]>(
-    preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safereads", "safestudy"]
+    preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safestudy"]
   );
 
   // State for pricing info
@@ -336,8 +338,13 @@ function SignupContent() {
           }
         } else {
           console.log("[SignupPage] Central user created successfully:", signupResult.email);
-          // New account — skip Stripe, start free trial
-          if (!hasLifetimeCode) {
+          // New account on MONTHLY — skip Stripe, start the card-less free
+          // trial. YEARLY falls through to Stripe checkout: the page says
+          // "billed annually" and yearly has no trial, so silently starting a
+          // free trial instead (the old behaviour) meant a parent who chose
+          // yearly was never asked to pay. The account already exists, so
+          // checkout treats them like any returning user.
+          if (!hasLifetimeCode && !isYearly) {
             console.log("[SignupPage] Account created with trial — skipping Stripe checkout");
             window.location.href = `/success?trial=true&email=${encodeURIComponent(data.email)}`;
             return;
@@ -508,7 +515,7 @@ function SignupContent() {
             </h1>
             <p className="text-lg text-navy/60 max-w-xl mx-auto">
               {isUnifiedPlan
-                ? `SafeTunes, SafeTube, SafeReads and SafeStudy for $${isYearly ? "149/year" : "14.99/month"}, with SafeSpark coming soon. 7-day free trial — no credit card to start.`
+                ? `SafeTunes, SafeTube and SafeStudy for $${isYearly ? "149/year" : "14.99/month"}. ${isYearly ? "Yearly is billed at checkout." : "7-day free trial — no credit card to start."}`
                 : "Choose the apps you need and create your account. Your 7-day free trial starts immediately."}
             </p>
           </div>
@@ -521,7 +528,7 @@ function SignupContent() {
                 <UnifiedPlanSummary isYearly={isYearly} onIntervalChange={setIsYearly} />
               ) : (
                 <AppSelector
-                  initialApps={preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safereads", "safestudy"]}
+                  initialApps={preSelectedApp ? [preSelectedApp] : ["safetunes", "safetube", "safestudy"]}
                   onChange={handleAppSelectionChange}
                   showYearlyToggle={true}
                 />
@@ -532,6 +539,7 @@ function SignupContent() {
             <div>
               <AccountForm
                 selectedApps={appSelection}
+                hidePrice={isUnifiedPlan}
                 monthlyPrice={pricingInfo.monthly}
                 yearlyPrice={pricingInfo.yearly}
                 isYearly={isYearly}
@@ -550,7 +558,7 @@ function SignupContent() {
             <h3 className="font-semibold text-navy text-center mb-6">
               What&apos;s included in your trial:
             </h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-3">
               {selectedApps.includes("safetunes") && (
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[#7C4DE0] flex items-center justify-center flex-shrink-0">
@@ -670,7 +678,7 @@ function SignupContent() {
 }
 
 // Unified-plan summary — replaces the AppSelector when ?plan=unified is set.
-// Shows all 5 apps as a fixed list plus the monthly/yearly toggle, with
+// Shows the three apps as a fixed list plus the monthly/yearly toggle, with
 // pricing locked at $14.99/mo or $149/yr.
 function UnifiedPlanSummary({
   isYearly,
@@ -684,15 +692,13 @@ function UnifiedPlanSummary({
   const apps = [
     "SafeTunes — Apple Music, parent-curated",
     "SafeTube — YouTube without the algorithm",
-    "SafeReads — every book analyzed before they read it",
     "SafeStudy — safe search + AI tutor",
-    "SafeSpark — AI training lab for kids (coming soon)",
   ];
   return (
     <div>
       <h2 className="text-xl font-bold text-navy mb-2">Safe Family</h2>
       <p className="text-sm text-navy/60 mb-5">
-        One subscription. Four apps today, SafeSpark coming soon. Built for homeschool families.
+        One subscription, three apps. Built for homeschool families.
       </p>
 
       {/* Interval toggle */}

@@ -38,6 +38,8 @@ interface AccountFormProps {
   showPromoCode?: boolean;
   /** Lifetime promo codes that unlock free access */
   lifetimeCodes?: string[];
+  /** Hide the price in the app summary (the unified plan shows it beside the form) */
+  hidePrice?: boolean;
 }
 
 const APP_LABELS: Record<keyof AppSelection, string> = {
@@ -58,6 +60,7 @@ export default function AccountForm({
   isLoading = false,
   showPromoCode = true,
   lifetimeCodes = ["DAWSFRIEND", "DEWITT"],
+  hidePrice = false,
 }: AccountFormProps) {
   const [formData, setFormData] = useState({
     name: "",
@@ -191,7 +194,7 @@ export default function AccountForm({
             ? "Your code unlocks free access forever!"
             : isYearly
               ? "Save 17% with yearly billing"
-              : "7 days free — all 5 apps. No credit card required."}
+              : "7 days free. No credit card required."}
         </p>
       </div>
 
@@ -209,7 +212,7 @@ export default function AccountForm({
                 </span>
               ))}
             </div>
-            <div className="sm:text-right">
+            {!hidePrice && <div className="sm:text-right">
               <div className="text-lg font-bold text-navy">
                 {isYearly && yearlyPrice
                   ? `$${yearlyPrice}/year`
@@ -218,7 +221,7 @@ export default function AccountForm({
               <div className="text-xs text-navy/50">
                 {isYearly ? "billed annually" : "after trial"}
               </div>
-            </div>
+            </div>}
           </div>
         </div>
       )}

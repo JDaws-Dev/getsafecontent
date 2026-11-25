@@ -4,7 +4,7 @@ import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "Privacy Policy for Safe Family - SafeTunes, SafeTube, and SafeReads",
+  description: "Privacy Policy for Safe Family - SafeTunes, SafeTube, and SafeStudy",
 };
 
 export default function PrivacyPage() {

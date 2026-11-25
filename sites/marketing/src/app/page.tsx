@@ -20,7 +20,7 @@ export default function Home() {
         {/* 2. Problem - Why parents need this */}
         <ProblemSolutionSection />
 
-        {/* 3. The 5 apps — broad strokes only. Deep dives live on each app's own LP. */}
+        {/* 3. The 3 apps — broad strokes only. Deep dives live on each app's own LP. */}
         <AppCards />
 
         {/* 4. Social Proof - Testimonials */}

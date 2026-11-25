@@ -23,13 +23,14 @@ import { AppTile, UmbrellaMark } from "@/components/brand/Brand";
 
 type AppId = "safetunes" | "safetube" | "safereads" | "safestudy" | "safespark";
 
-// SafeSpark is presented as COMING SOON for now: parents see what it is and that
-// it's on the way, but it does not open, unless the family already has
-// SafeSpark, in which case its tab opens the real parent screens.
-const APPS: { id: AppId; slug: string; name: string; tagline: string; color: string; adminPath: string; comingSoon?: boolean; blurb?: string }[] = [
+// SafeReads and SafeSpark are no longer offered to new families (2026-11-25).
+// They are `retired`: a family that already has one still gets its tab and its
+// real parent screens (entitlement decides, as for every app), but nobody is
+// shown a teaser for them or nudged to "add" them.
+const APPS: { id: AppId; slug: string; name: string; tagline: string; color: string; adminPath: string; comingSoon?: boolean; retired?: boolean; blurb?: string }[] = [
   { id: "safetunes", slug: "tunes", name: "SafeTunes", tagline: "Music", color: "#7C4DE0", adminPath: "/tunes/admin" },
   { id: "safetube", slug: "tube", name: "SafeTube", tagline: "Video", color: "#F0603A", adminPath: "/tube/admin" },
-  { id: "safereads", slug: "reads", name: "SafeReads", tagline: "Books", color: "#3AA06B", adminPath: "/reads/dashboard" },
+  { id: "safereads", slug: "reads", name: "SafeReads", tagline: "Books", color: "#3AA06B", adminPath: "/reads/dashboard", retired: true },
   { id: "safestudy", slug: "study", name: "SafeStudy", tagline: "Search", color: "#2F6BF0", adminPath: "/study/admin" },
   {
     id: "safespark",
@@ -38,7 +39,7 @@ const APPS: { id: AppId; slug: string; name: string; tagline: string; color: str
     tagline: "Build",
     color: "#F2A413",
     adminPath: "/spark/parent",
-    comingSoon: true,
+    retired: true,
     blurb:
       "A supervised AI lab where kids learn to use AI well, rather than just use it. They practice asking better questions, checking the answers they get, improving the result, and owning the work. Every prompt and every project stays visible to you, with per-kid limits and a parent off-switch. Built for ages 9 to 15.",
   },
@@ -55,8 +56,8 @@ export default function DashboardPage() {
   const showFamily = slug === "family";
   // Apps the family actually has, plus any coming-soon app (shown to everyone so
   // parents know what's on the way). A family that already has a coming-soon
-  // app (e.g. SafeSpark comps) gets the real app, not the teaser; its safety
-  // alert emails link here.
+  // app gets the real app, not the teaser. Retired apps (SafeReads, SafeSpark)
+  // appear only for families that have them; their safety alert emails link here.
   const entitled = useMemo(() => {
     const has = currentUser?.entitledApps ?? [];
     return APPS.filter((a) => a.comingSoon || has.includes(a.id)).map((a) =>
@@ -233,7 +234,7 @@ export default function DashboardPage() {
                   </span>
                 </Link>
               ))}
-              {entitled.length < APPS.length && (
+              {APPS.some((a) => !a.retired && !entitled.some((e) => e.id === a.id)) && (
                 <Link href="/account" className="rounded-2xl border border-dashed border-navy/20 p-5 flex items-center justify-center text-sm font-semibold text-navy/60 hover:text-navy">
                   Add more apps to your plan
                 </Link>

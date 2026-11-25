@@ -1,7 +1,7 @@
-import { Music, PlaySquare, BookOpen, Search, Sparkles, ArrowRight } from "lucide-react";
+import { Music, PlaySquare, Search, ArrowRight } from "lucide-react";
 
 /**
- * Compact 5-app grid — broad strokes only.
+ * Compact 3-app grid — broad strokes only.
  *
  * Each app gets one line about the BIG thing it does + a deep-link to
  * its own landing page. Detailed selling, screenshots, demos, and
@@ -29,15 +29,6 @@ const apps = [
     comingSoon: false,
   },
   {
-    id: "safereads",
-    name: "SafeReads",
-    big: "Know what's in any book before they read it.",
-    icon: BookOpen,
-    gradient: "from-amber-500 to-amber-700",
-    href: "/reads",
-    comingSoon: false,
-  },
-  {
     id: "safestudy",
     name: "SafeStudy",
     big: "Safe search + an AI tutor built for kids.",
@@ -45,15 +36,6 @@ const apps = [
     gradient: "from-blue-500 to-cyan-500",
     href: "/study",
     comingSoon: false,
-  },
-  {
-    id: "safespark",
-    name: "SafeSpark",
-    big: "Teach kids to use AI well — not just use it.",
-    icon: Sparkles,
-    gradient: "from-violet-600 to-fuchsia-500",
-    href: "/spark",
-    comingSoon: true,
   },
 ];
 
@@ -63,14 +45,14 @@ export default function AppCards() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 sm:mb-12">
           <h2 className="text-3xl sm:text-4xl font-bold text-navy dark:text-white mb-3">
-            Four apps today. One more on the way.
+            Three apps. One family plan.
           </h2>
           <p className="text-lg text-navy/60 dark:text-slate-300 max-w-2xl mx-auto">
             One trusted set of tools for the parts of childhood that happen on a screen.
           </p>
         </div>
 
-        <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-5 sm:grid-cols-3">
           {apps.map((app) => (
             <a
               key={app.id}
@@ -102,7 +84,7 @@ export default function AppCards() {
         </div>
 
         <p className="text-center mt-10 text-sm text-navy/50 dark:text-slate-400">
-          SafeTunes, SafeTube, SafeReads and SafeStudy are included in Safe Family — $14.99/month. SafeSpark joins the plan when it launches.
+          SafeTunes, SafeTube and SafeStudy are all included in Safe Family — $14.99/month.
         </p>
       </div>
     </section>

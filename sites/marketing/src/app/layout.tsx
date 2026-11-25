@@ -24,11 +24,11 @@ const siteUrl = process.env.NEXT_PUBLIC_URL || "https://getsafefamily.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Safe Family — SafeTunes, SafeTube, SafeReads, SafeStudy",
+    default: "Safe Family — SafeTunes, SafeTube, SafeStudy",
     template: "%s | Safe Family",
   },
   description:
-    "Four apps that let you approve every song, video, book, and search before your kids see it. All four for $14.99/month, with SafeSpark coming soon.",
+    "Three apps that let you approve every song, video, and search before your kids see it. All three for $14.99/month.",
   keywords: [
     "parental controls",
     "safe content",
@@ -36,10 +36,8 @@ export const metadata: Metadata = {
     "family",
     "music",
     "youtube",
-    "books",
     "SafeTunes",
     "SafeTube",
-    "SafeReads",
     "SafeStudy",
     "safe search",
   ],
@@ -55,9 +53,9 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Safe Family — Music, Video, Books, Search. All Parent-Approved.",
+    title: "Safe Family — Music, Video, Search. All Parent-Approved.",
     description:
-      "Four apps that let you approve every song, video, book, and search before your kids see it. All four for $14.99/month, with SafeSpark coming soon.",
+      "Three apps that let you approve every song, video, and search before your kids see it. All three for $14.99/month.",
     url: siteUrl,
     siteName: "Safe Family",
     images: [
@@ -73,9 +71,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Safe Family — Music, Video, Books, Search. All Parent-Approved.",
+    title: "Safe Family — Music, Video, Search. All Parent-Approved.",
     description:
-      "Four apps that let you approve every song, video, book, and search before your kids see it. All four for $14.99/month, with SafeSpark coming soon.",
+      "Three apps that let you approve every song, video, and search before your kids see it. All three for $14.99/month.",
     images: ["/og-image.png"],
   },
   icons: {

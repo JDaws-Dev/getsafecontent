@@ -44,14 +44,14 @@ function SuccessContent() {
       // Trial signups (unified auth) also get all apps during trial
       if (isPromoSignup || isTrialSignup) {
         setLoading(false);
-        setSessionData({ apps: ["safetunes", "safetube", "safereads", "safestudy"] });
+        setSessionData({ apps: ["safetunes", "safetube", "safestudy"] });
         return;
       }
 
       if (!sessionId) {
         // No session ID - show default success page
         setLoading(false);
-        setSessionData({ apps: ["safetunes", "safetube", "safereads", "safestudy"] });
+        setSessionData({ apps: ["safetunes", "safetube", "safestudy"] });
         return;
       }
 
@@ -62,12 +62,17 @@ function SuccessContent() {
         }
         const data = await response.json();
         setSessionData({
-          apps: data.apps || ["safetunes", "safetube", "safereads", "safestudy"],
+          // The unified plan still carries SafeReads/SafeSpark in its metadata
+          // (existing families keep them), but new families are welcomed to the
+          // three apps we offer.
+          apps: (data.apps || ["safetunes", "safetube", "safestudy"]).filter(
+            (a: string) => a !== "safereads" && a !== "safespark"
+          ),
         });
       } catch (err) {
         console.error("Error fetching session:", err);
         // Default to all apps on error
-        setSessionData({ apps: ["safetunes", "safetube", "safereads", "safestudy"] });
+        setSessionData({ apps: ["safetunes", "safetube", "safestudy"] });
       } finally {
         setLoading(false);
       }
@@ -127,7 +132,7 @@ function SuccessContent() {
     );
   }
 
-  const selectedApps = sessionData?.apps || ["safetunes", "safetube", "safereads", "safestudy"];
+  const selectedApps = sessionData?.apps || ["safetunes", "safetube", "safestudy"];
 
   const APP_ICONS = {
     safetunes: { icon: Music, gradient: "from-purple-600 to-pink-500", name: "SafeTunes" },
@@ -177,7 +182,7 @@ function SuccessContent() {
             {isPromoSignup
               ? "Your lifetime access is now active! Let's set up your apps so your kids can start using them safely."
               : isTrialSignup
-                ? "Your 7-day free trial is now active — all four apps, no credit card needed! Explore everything and see which apps your family loves."
+                ? "Your 7-day free trial is now active — all three apps, no credit card needed! Explore everything and see which apps your family loves."
                 : "Your subscription is now active. Let's set up your apps so your kids can start using them safely."}
           </p>
 

@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, Sparkles, Music, PlaySquare, Book, Search } from "lucide-react";
+import { Check, Sparkles, Music, PlaySquare, Search } from "lucide-react";
 
 /**
- * Unified pricing section — single plan, all 5 apps, $14.99/mo or $149/yr.
+ * Unified pricing section — single plan, all 3 apps, $14.99/mo or $149/yr.
  *
  * Rendered when ENABLE_UNIFIED_PRICING is on. Replaces the 3-card legacy
- * PricingSection (Single / Two-app / Bundle). Includes SafeSpark in the
- * value list; the per-app marketing story collapses into "one trusted
+ * PricingSection (Single / Two-app / Bundle). SafeReads and SafeSpark are
+ * no longer sold to new families (2026-11-25), so the list is Tunes/Tube/Study; the per-app marketing story collapses into "one trusted
  * subscription, everything your family needs."
  *
  * Existing $9.99 bundle subscribers don't see this — they're grandfathered
@@ -23,9 +23,7 @@ const APPLE_ONE_FAMILY = 19.99; // anchor price for comparison
 const apps = [
   { name: "SafeTunes", icon: Music, blurb: "Apple Music your kids can actually use" },
   { name: "SafeTube", icon: PlaySquare, blurb: "YouTube without the algorithm" },
-  { name: "SafeReads", icon: Book, blurb: "Know what's in the book before they read it" },
   { name: "SafeStudy", icon: Search, blurb: "Search + AI tutor built for kids" },
-  { name: "SafeSpark", icon: Sparkles, blurb: "Teach kids to use AI well", comingSoon: true },
 ];
 
 const includedFeatures = [
@@ -58,8 +56,7 @@ export default function UnifiedPricingSection() {
               One subscription. Everything your family needs.
             </h2>
             <p className="mt-4 text-lg text-navy/60 max-w-2xl mx-auto">
-              Music, video, books, and search in one plan, for less than Apple One Family.
-              SafeSpark, our AI training app, joins the plan when it launches.
+              Music, video, and search in one plan, for less than Apple One Family.
             </p>
           </div>
 
@@ -132,7 +129,7 @@ export default function UnifiedPricingSection() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-navy/40 mb-4">
                   Included in your plan
                 </p>
-                <div className="grid sm:grid-cols-2 gap-3">
+                <div className="grid gap-3">
                   {apps.map((app) => (
                     <div
                       key={app.name}
@@ -142,16 +139,9 @@ export default function UnifiedPricingSection() {
                         <app.icon className="h-4 w-4 text-navy" />
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold text-navy">
-                            {app.name}
-                          </p>
-                          {app.comingSoon && (
-                            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-700">
-                              Coming soon
-                            </span>
-                          )}
-                        </div>
+                        <p className="text-sm font-semibold text-navy">
+                          {app.name}
+                        </p>
                         <p className="text-xs text-navy/60 leading-snug mt-0.5">
                           {app.blurb}
                         </p>

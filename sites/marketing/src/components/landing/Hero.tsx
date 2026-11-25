@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Music, PlaySquare, Book, Search, Shield, Sparkles } from "lucide-react";
+import { Search, Shield } from "lucide-react";
 
-const rotatingWords = ["watching", "listening to", "reading", "searching", "asking AI"];
+const rotatingWords = ["watching", "listening to", "searching", "learning"];
 
 export default function Hero() {
   const [wordIndex, setWordIndex] = useState(0);
@@ -62,26 +62,15 @@ export default function Hero() {
                 YouTube
               </span>
               <span className="inline-flex items-center gap-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-4 py-2 rounded-full font-medium text-gray-700 dark:text-gray-200 shadow-sm">
-                <Book className="w-5 h-5 text-emerald-600" />
-                Any Book
-              </span>
-              <span className="inline-flex items-center gap-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-4 py-2 rounded-full font-medium text-gray-700 dark:text-gray-200 shadow-sm">
                 <Search className="w-5 h-5 text-cyan-600" />
                 Any Search
-              </span>
-              <span className="inline-flex items-center gap-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-4 py-2 rounded-full font-medium text-gray-700 dark:text-gray-200 shadow-sm">
-                <Sparkles className="w-5 h-5 text-amber-600" />
-                AI for Kids
-                <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-                  Coming soon
-                </span>
               </span>
             </div>
 
             {/* Subheadline */}
             <p className="text-xl text-navy/70 mb-8 max-w-lg mx-auto lg:mx-0">
-              Your kids use real YouTube, real Apple Music, real books, and real
-              search&mdash;but only the content you&apos;ve approved. Nothing slips through.
+              Your kids use real YouTube, real Apple Music, and real search&mdash;but
+              only the content you&apos;ve approved. Nothing slips through.
             </p>
 
             {/* Price + CTA */}

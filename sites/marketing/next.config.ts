@@ -21,6 +21,11 @@ const ONE_SITE_APPS: Array<[string, "vite" | "next", string | undefined]> = [
 ];
 
 const nextConfig: NextConfig = {
+  // Plans live in the pricing section of the home page; /pricing was linked
+  // from app pages and ads but never existed.
+  async redirects() {
+    return [{ source: "/pricing", destination: "/#pricing", permanent: false }];
+  },
   async rewrites() {
     const beforeFiles = ONE_SITE_APPS.flatMap(([path, kind, origin]) => {
       if (!origin) return [];
