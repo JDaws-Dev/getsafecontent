@@ -80,10 +80,31 @@ function ChildLoginPage() {
         }
       }
 
-      // 2) Bare family code — skip straight to profile selection.
+      // 2) Bare family code. The kid door adds ?fc= to EVERY load of this
+      // page, including each cold start of a home-screen app, so a kid who
+      // already signed in on this device with this same code stays signed in
+      // (exactly as a return visit to the old getsafetunes.com did, step 3).
+      // Only a different code means a different family: forget the kid and
+      // pick a profile. Without this, every relaunch asked for the PIN again.
       if (fcParam) {
         const normalized = fcParam.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
         if (normalized.length === 6) {
+          let savedCode = null;
+          let savedProfile = null;
+          try {
+            savedCode = localStorage.getItem('safetunes_family_code');
+            savedProfile = JSON.parse(localStorage.getItem('safetunes_kid_profile') || 'null');
+          } catch { /* storage blocked or bad JSON: pick a profile */ }
+          if (savedCode === normalized && savedProfile?._id && savedProfile?.userId) {
+            setFamilyCode(normalized);
+            setSavedFamilyCode(normalized);
+            setKidProfile(savedProfile);
+            setStep('dashboard');
+            return;
+          }
+          if (savedCode !== normalized) {
+            try { localStorage.removeItem('safetunes_kid_profile'); } catch { /* ignore */ }
+          }
           localStorage.setItem('safetunes_family_code', normalized);
           setFamilyCode(normalized);
           setSavedFamilyCode(normalized);

@@ -21,6 +21,9 @@ import { isRetiredApp } from "@/lib/retiredApps";
 
 const CODE_KEY = "safefamily_family_code";
 const LAST_APP_KEY = "safefamily_last_kid_app";
+// Each app's remembered signed-in kid on this device (apps/*/src). Cleared by
+// "Not you?" so the next kid picks their own name.
+const KID_SESSION_KEYS = ["safetunes_kid_profile"];
 
 // Every kid app. Retired ones (src/lib/retiredApps.ts: SafeReads "Books" and
 // SafeSpark "Build" since 2026-11-25) are dropped below: no tab, no tile, and
@@ -130,11 +133,32 @@ export default function PlayPage() {
         setCode(fromUrl);
       } else {
         const saved = localStorage.getItem(CODE_KEY);
-        setCode(saved && saved.length === 6 ? saved : null);
+        // homefc= comes from a home-screen icon's start address (see
+        // kid-app-manifest): its first launch has empty storage of its own.
+        // Only a seed: a code this device already remembers wins.
+        const seed = normalize(search.get("homefc") || "");
+        if (saved && saved.length === 6) setCode(saved);
+        else if (seed.length === 6) {
+          localStorage.setItem(CODE_KEY, seed);
+          setCode(seed);
+        } else setCode(null);
       }
     } catch { /* storage unavailable */ }
     setReady(true);
   }, [search]);
+
+  // Add to Home Screen reads this page's manifest. Once the code is known,
+  // point it at a manifest whose start address carries the code, so the new
+  // icon opens straight into the family instead of the code screen.
+  useEffect(() => {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!link) return;
+    const url = new URL(link.getAttribute("href") || "", window.location.origin);
+    if (!url.pathname.startsWith("/kid-app-manifest")) return;
+    if (code) url.searchParams.set("fc", code);
+    else url.searchParams.delete("fc");
+    link.setAttribute("href", url.pathname + url.search);
+  }, [code, slug]);
 
   // Remember the last app so a return visit lands straight back in it.
   useEffect(() => {
@@ -171,7 +195,13 @@ export default function PlayPage() {
   };
 
   const forget = useCallback((reason?: "bad-code") => {
-    try { localStorage.removeItem(CODE_KEY); } catch { /* ignore */ }
+    try {
+      localStorage.removeItem(CODE_KEY);
+      // "Not you?" means a different kid: the apps remember the signed-in
+      // kid on this device (same origin, so the door can clear it), and a
+      // kid re-entering the same code must pick their own name again.
+      for (const k of KID_SESSION_KEYS) localStorage.removeItem(k);
+    } catch { /* ignore */ }
     savePass(null);
     setCode(null); setInput("");
     // The page remounts on a new path, so the reason rides in the URL.
