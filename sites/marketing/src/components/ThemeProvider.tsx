@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { usePathname } from "next/navigation";
 
 type Theme = "light" | "dark" | "system";
 
@@ -14,10 +15,17 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = "safefamily-theme";
 
+// The one dashboard and the kid door are light-only. Their app screens are
+// same-origin iframes designed on the cream ground; a dark frame around them
+// (or a dark app inside them) left navy text on a dark background.
+const LIGHT_ONLY_PATHS = /^\/(dashboard|play)(\/|$)/;
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+  const forceLight = LIGHT_ONLY_PATHS.test(pathname || "");
 
   // Get system preference
   const getSystemTheme = useCallback((): "light" | "dark" => {
@@ -27,11 +35,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Resolve the actual theme to apply
   const resolveTheme = useCallback((themeValue: Theme): "light" | "dark" => {
+    if (forceLight) return "light";
     if (themeValue === "system") {
       return getSystemTheme();
     }
     return themeValue;
-  }, [getSystemTheme]);
+  }, [getSystemTheme, forceLight]);
 
   // Apply theme to document
   const applyTheme = useCallback((resolved: "light" | "dark") => {
@@ -65,13 +74,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const handleChange = () => {
       if (theme === "system") {
-        applyTheme(getSystemTheme());
+        applyTheme(resolveTheme("system"));
       }
     };
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, mounted, applyTheme, getSystemTheme]);
+  }, [theme, mounted, applyTheme, resolveTheme]);
 
   // Prevent flash of wrong theme
   if (!mounted) {
@@ -82,7 +91,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             (function() {
               const stored = localStorage.getItem('${STORAGE_KEY}');
               const theme = stored || 'system';
-              const resolved = theme === 'system'
+              const resolved = ${LIGHT_ONLY_PATHS}.test(location.pathname)
+                ? 'light'
+                : theme === 'system'
                 ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
                 : theme;
               document.documentElement.classList.add(resolved);

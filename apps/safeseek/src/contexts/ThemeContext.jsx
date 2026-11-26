@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { isEmbedded } from '../lib/embed';
 
 const ThemeContext = createContext(undefined);
 
@@ -16,7 +17,11 @@ export function ThemeProvider({ children }) {
   }, []);
 
   // Resolve the actual theme to apply
+  // Embedded in the hub (dashboard or kid door), the app is always light: the
+  // hub frame around it is light-only, and the embedded screens are designed
+  // on the cream ground. Following the OS here drew navy-on-dark tabs and text.
   const resolveTheme = useCallback((themeValue) => {
+    if (isEmbedded()) return 'light';
     if (themeValue === 'system') {
       return getSystemTheme();
     }
@@ -55,23 +60,21 @@ export function ThemeProvider({ children }) {
 
     const handleChange = () => {
       if (theme === 'system') {
-        applyTheme(getSystemTheme());
+        applyTheme(resolveTheme('system'));
       }
     };
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme, mounted, applyTheme, getSystemTheme]);
+  }, [theme, mounted, applyTheme, resolveTheme]);
 
   // Apply initial theme immediately to prevent flash
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     const initialTheme = stored || 'system';
-    const resolved = initialTheme === 'system'
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : initialTheme;
+    const resolved = resolveTheme(initialTheme);
     document.documentElement.classList.add(resolved);
-  }, []);
+  }, [resolveTheme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>

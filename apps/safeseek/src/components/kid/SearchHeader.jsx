@@ -103,6 +103,8 @@ export default function SearchHeader({
               <span className="hidden sm:inline">Apps</span>
             </button>
           )}
+          {/* Embedded in the hub the app is always light, so no dark toggle */}
+          {!isEmbedded() && (
           <button
             onClick={onToggleDarkMode}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
@@ -111,6 +113,7 @@ export default function SearchHeader({
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
           </button>
+          )}
           <button
             onClick={onToggleRequestsInbox}
             className={`relative flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 active:scale-[0.98] ${
